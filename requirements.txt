@@ -1,0 +1,10 @@
+# nas-dotfiles: dependencias del agente
+# Instalar con: pip install -r requirements.txt
+
+# Strands Agents SDK
+strands-agents>=1.0.0
+strands-agents-tools>=0.1.0
+
+# Parsing de frontmatter YAML (catálogo)
+python-frontmatter>=1.0.0
+PyYAML>=6.0
