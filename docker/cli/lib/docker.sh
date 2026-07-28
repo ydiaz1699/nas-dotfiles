@@ -1,4 +1,4 @@
-# /docker/cli/lib/docker.sh
+# docker/cli/lib/docker.sh
 # update-all con confirmacion y uso correcto de svc_compose_file
 
 svc_update_all() {

@@ -1,4 +1,4 @@
-# /home/aadm/shell/lib/git.sh
+# shell/lib/git.sh
 # Aliases y helpers de git
 
 # ── Aliases ────────────────────────────────────────────────────────────────

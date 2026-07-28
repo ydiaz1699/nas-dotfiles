@@ -1,13 +1,27 @@
 #!/usr/bin/env bash
-# /home/aadm/shell/init.sh
-# Loader unico — sourced por aadm y root
+# shell/init.sh — Loader único del shell framework
+# Sourced por ~/.bashrc (tanto aadm como root)
+#
+# Requiere: export NAS_DOTFILES="$HOME/nas-dotfiles" en ~/.bashrc ANTES de este source
 
 [[ -n "$SHELL_INIT_LOADED" ]] && return
 export SHELL_INIT_LOADED=1
 
-SHELL_DIR="/home/aadm/shell"
+# ── Validar NAS_DOTFILES ──────────────────────────────────────────────────
+if [[ -z "$NAS_DOTFILES" ]]; then
+  echo "  ⚠  NAS_DOTFILES no definida. Agrega a ~/.bashrc:" >&2
+  echo '     export NAS_DOTFILES="$HOME/nas-dotfiles"' >&2
+  return 1
+fi
 
-# ── path_add disponible antes de los modulos ──────────────────────────────
+if [[ ! -d "$NAS_DOTFILES/shell" ]]; then
+  echo "  ⚠  $NAS_DOTFILES/shell no existe. Verifica NAS_DOTFILES." >&2
+  return 1
+fi
+
+SHELL_DIR="$NAS_DOTFILES/shell"
+
+# ── path_add disponible antes de los módulos ──────────────────────────────
 path_add() {
   case ":$PATH:" in
     *":$1:"*) ;;
@@ -18,16 +32,19 @@ path_add() {
 export -f path_add
 
 # ── PATH base ─────────────────────────────────────────────────────────────
-path_add "/home/aadm/scripts"
-path_add "/home/aadm/.cargo/bin"
-path_add "/docker/cli"
+path_add "$HOME/scripts"
+path_add "$HOME/.cargo/bin"
 export PATH
 
 # ── Variables base ─────────────────────────────────────────────────────────
-export aadm=/home/aadm
+export aadm="$HOME"
 export dkco=/docker
+export DOCKER_BASE=/docker
 
-# ── Cargar modulos en orden ────────────────────────────────────────────────
+# ── Alias de svc (evita symlink en /usr/local/bin) ─────────────────────────
+alias svc="$NAS_DOTFILES/docker/cli/svc.sh"
+
+# ── Cargar módulos en orden ────────────────────────────────────────────────
 for _mod in \
   aliases \
   nav \
@@ -43,7 +60,7 @@ do
     # shellcheck disable=SC1090
     source "$_f"
   else
-    echo "  ⚠  shell: modulo '$_mod' no encontrado en $SHELL_DIR/lib/" >&2
+    echo "  ⚠  shell: módulo '$_mod' no encontrado en $SHELL_DIR/lib/" >&2
   fi
 done
 unset _mod _f

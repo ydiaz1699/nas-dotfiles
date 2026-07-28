@@ -1,4 +1,4 @@
-# /home/aadm/shell/lib/docker.sh
+# shell/lib/docker.sh
 # Autocompletado de svc
 
 # ── Comandos globales (no necesitan servicio) ──────────────────────────────
@@ -14,7 +14,8 @@ update backup restore depends open env
 "
 
 _svc_services() {
-  find /docker -mindepth 2 -maxdepth 2 \
+  local base="${DOCKER_BASE:-/docker}"
+  find "$base" -mindepth 2 -maxdepth 2 \
     \( -name "docker-compose.yml" -o -name "docker-compose.yaml" \
        -o -name "compose.yml"     -o -name "compose.yaml" \) \
     2>/dev/null \

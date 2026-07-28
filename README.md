@@ -1,12 +1,20 @@
 # nas-dotfiles
 
-Shell framework y Docker CLI para administrar un NAS Debian/Ubuntu con Docker.
+Shell framework, Docker CLI y agente inteligente para administrar un NAS Debian/Ubuntu con Docker.
+
+## Filosofía
+
+**Todo el código vive exclusivamente dentro de `nas-dotfiles/`.** No se crean symlinks de `shell/` ni `docker/cli/` hacia rutas del sistema. El único rastro fuera del repo son 2 líneas en `~/.bashrc`.
+
+Borrar el proyecto = `./uninstall.sh && rm -rf ~/nas-dotfiles/`
 
 ## Estructura
 
 ```
 nas-dotfiles/
-├── install.sh              # Instalador: crea symlinks en el sistema
+├── install.sh              # Configurar ~/.bashrc (sin symlinks)
+├── uninstall.sh            # Revertir instalación completamente
+├── requirements.txt        # Dependencias Python del agente
 ├── shell/
 │   ├── init.sh             # Loader principal (sourced por ~/.bashrc)
 │   └── lib/
@@ -29,48 +37,75 @@ nas-dotfiles/
 │           ├── extras.sh     # port-map, size, net, env, create, open, watch
 │           ├── menu.sh       # TUI interactivo con fzf
 │           └── help.sh       # Ayuda
-└── scripts/                # Scripts sueltos (opcional)
+└── agent/                    # Agente Python (Strands Agents SDK)
+    ├── nas_agent.py          # Punto de entrada del agente
+    ├── catalog/              # Fichas de servicios catalogados
+    └── tools/                # Tools del agente (docker, backup, etc.)
 ```
 
-## Instalacion
+## Instalación
 
 ```bash
 git clone git@github.com:ydiaz1699/nas-dotfiles.git ~/nas-dotfiles
 cd ~/nas-dotfiles
 ./install.sh
+source ~/.bashrc
 ```
 
-El instalador crea symlinks:
-- `~/shell` → `~/nas-dotfiles/shell`
-- `/docker/cli` → `~/nas-dotfiles/docker/cli`
-- `/docker/cli/svc.sh` → `/usr/local/bin/svc`
-
-Luego anade a `~/.bashrc` (si no esta ya):
+El instalador agrega a `~/.bashrc`:
 ```bash
-source ~/shell/init.sh
+# nas-dotfiles shell framework
+export NAS_DOTFILES="$HOME/nas-dotfiles"
+source "$NAS_DOTFILES/shell/init.sh"
 ```
 
-## Uso rapido
+**No se crean symlinks.** El comando `svc` se define como alias dentro de `init.sh`.
+
+### Para root
+
+Si querés que root también use el framework:
+```bash
+# En /root/.bashrc
+export NAS_DOTFILES="/home/aadm/nas-dotfiles"
+source "$NAS_DOTFILES/shell/init.sh"
+```
+
+## Desinstalación
+
+```bash
+cd ~/nas-dotfiles
+./uninstall.sh
+rm -rf ~/nas-dotfiles
+```
+
+Esto deja el sistema completamente limpio, sin residuos.
+
+## Uso rápido
 
 ```bash
 # Shell
-adm           # cd /home/aadm
+adm           # cd $HOME
 dk traefik    # cd /docker/traefik
 nas           # dashboard del NAS
 instal htop   # instalar paquete con log
 
-# Docker
+# Docker (svc)
 svc lista              # ver servicios con estado
 svc up nextcloud       # levantar servicio
 svc logs grafana       # ver logs
 svc health             # dashboard de salud
 svc port-map           # mapa de puertos
 svc size               # consumo de disco
-svc backup plex        # backup de volumenes
+svc backup plex        # backup de volúmenes
 svc restore plex       # restaurar backup
 svc create mi-app      # scaffolding de nuevo servicio
 svc watch              # monitoreo continuo
 svc menu               # TUI interactivo
+
+# Agente (requiere Strands SDK + credenciales)
+cd ~/nas-dotfiles
+python -m agent.nas_agent "¿Qué servicios están caídos?"
+python -m agent.nas_agent "Quiero instalar Vaultwarden"
 ```
 
 ## Requisitos
@@ -80,12 +115,35 @@ svc menu               # TUI interactivo
 - `eza` (reemplazo de ls)
 - Opcional: `fzf`, `qrencode`, `apt-fast`
 
-## Configuracion
+### Para el agente Python (opcional)
 
-Variables en `shell/init.sh`:
-- `SHELL_DIR` — ruta al directorio shell
-- `aadm` — home del usuario principal
-- `dkco` — directorio base de docker (/docker)
+```bash
+pip install -r requirements.txt
+```
+
+Proveedores soportados:
+- Amazon Bedrock (default) — Claude Sonnet
+- Ollama (local) — llama3.1
+
+## Configuración
+
+Variable principal en `~/.bashrc`:
+- `NAS_DOTFILES` — ruta absoluta al repo (única fuente de verdad)
+
+Variables derivadas (definidas en `shell/init.sh`):
+- `SHELL_DIR` — `$NAS_DOTFILES/shell`
+- `aadm` — home del usuario
+- `dkco` — directorio base de servicios Docker (`/docker`)
+- `DOCKER_BASE` — igual que `dkco`, usado por el CLI y agente
+
+## Portabilidad
+
+Si movés el repo a otra ruta, solo cambiás una línea en `~/.bashrc`:
+```bash
+export NAS_DOTFILES="/nueva/ruta/nas-dotfiles"
+```
+
+Todo lo demás se adapta automáticamente.
 
 ## Licencia
 

@@ -1,4 +1,4 @@
-# /docker/cli/lib/backup.sh
+# docker/cli/lib/backup.sh
 # Backup y restore de volumenes Docker con rotacion
 
 BACKUP_DIR="${BACKUP_DIR:-/docker/backups}"

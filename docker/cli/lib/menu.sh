@@ -12,19 +12,29 @@ svc_menu() {
     return 1
   fi
 
-  export DOCKER_DIR="${DOCKER_BASE:-/docker}"
+  # Usar DOCKER_BASE (datos) y CLI_DIR (código) ya definidos
+  local docker_dir="${DOCKER_BASE:-/docker}"
+  local cli_dir="${CLI_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+
+  export DOCKER_DIR="$docker_dir"
 
   # Preview exportado para fzf
   _svc_preview() {
     local svc
     svc=$(echo "$1" | awk '{print $NF}')
     echo "-- Contenedores --"
-    docker compose -f "${DOCKER_DIR}/${svc}/docker-compose.yml" ps 2>/dev/null \
-      || echo "(sin datos)"
-    echo ""
-    echo "-- Imagenes --"
-    docker compose -f "${DOCKER_DIR}/${svc}/docker-compose.yml" images 2>/dev/null \
-      || echo "(sin datos)"
+    local compose=""
+    for name in docker-compose.yml docker-compose.yaml compose.yml compose.yaml; do
+      [[ -f "${DOCKER_DIR}/${svc}/${name}" ]] && compose="${DOCKER_DIR}/${svc}/${name}" && break
+    done
+    if [[ -n "$compose" ]]; then
+      docker compose -f "$compose" ps 2>/dev/null || echo "(sin datos)"
+      echo ""
+      echo "-- Imagenes --"
+      docker compose -f "$compose" images 2>/dev/null || echo "(sin datos)"
+    else
+      echo "(compose file no encontrado)"
+    fi
   }
   export -f _svc_preview
 
@@ -34,7 +44,7 @@ svc_menu() {
     while IFS= read -r svc; do
       local f
       f=$(svc_compose_file "$svc" 2>/dev/null)
-      [[ -z "$f" ]] && f="${DOCKER_DIR}/${svc}/docker-compose.yml"
+      [[ -z "$f" ]] && continue
       if docker compose -f "$f" ps -q 2>/dev/null | grep -q .; then
         printf "\033[0;32m● activo  \033[0m  %s\n" "$svc"
       else
@@ -107,20 +117,20 @@ svc_menu() {
 
     # Para exec: abrir shell directamente
     if [[ "$action" == "exec" ]]; then
-      container=$(docker compose -f "$DOCKER_DIR/$service/docker-compose.yml" \
-        ps --services | head -n1)
-      docker compose -f "$DOCKER_DIR/$service/docker-compose.yml" \
-        exec "$container" sh 2>/dev/null \
-        || docker compose -f "$DOCKER_DIR/$service/docker-compose.yml" \
-          exec "$container" bash
+      local compose_f
+      compose_f=$(svc_compose_file "$service")
+      local container
+      container=$(docker compose -f "$compose_f" ps --services | head -n1)
+      docker compose -f "$compose_f" exec "$container" sh 2>/dev/null \
+        || docker compose -f "$compose_f" exec "$container" bash
       continue
     fi
 
-    # 3. Ejecutar via svc.sh
+    # 3. Ejecutar via svc.sh (auto-detecta su ubicación)
     echo ""
     echo -e "\033[0;36m  > ${action} ${service}\033[0m"
     echo "  ──────────────────────────────────"
-    "$DOCKER_DIR/cli/svc.sh" "$action" "$service"
+    "$cli_dir/svc.sh" "$action" "$service"
     echo ""
 
     read -r -t 3 -p "  Volviendo al menu en 3s... (Enter para continuar)" || true
