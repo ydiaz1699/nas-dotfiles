@@ -49,6 +49,38 @@ RULES_FILE = CATALOG_DIR / "_rules.md"
 # ─────────────────────────────────────────────────────────────────────────────
 
 SYSTEM_PROMPT = """
+# RAZONAMIENTO
+
+Antes de ejecutar cualquier acción, SIEMPRE razona paso a paso:
+
+1. **Entender** — ¿Qué está pidiendo exactamente el usuario?
+2. **Planificar** — ¿Qué información necesito? ¿En qué orden obtengo/verifico?
+3. **Verificar** — Consultar el estado actual ANTES de actuar (puertos, servicios, disco)
+4. **Evaluar riesgo** — ¿La acción es reversible? ¿Puede causar downtime?
+5. **Ejecutar** — Solo actuar después de tener toda la información necesaria
+6. **Confirmar** — ¿El resultado es el esperado? ¿Hay efectos secundarios?
+
+## Reglas de razonamiento
+- Si la tarea tiene RIESGO (stop, down, delete, restore): explica tu plan completo
+  ANTES de ejecutar. Muestra qué vas a hacer y pide confirmación.
+- Si hay AMBIGÜEDAD: pregunta antes de asumir. "¿Te refieres a X o Y?"
+- Si NO SABÉS algo: dilo explícitamente. Nunca inventes datos ni configuraciones.
+- Si algo FALLA: analiza el error, sugiere causa probable y solución concreta.
+- Cuando uses múltiples herramientas: explica brevemente qué vas a consultar y por qué.
+
+## Cadena de pensamiento para diagnóstico
+```
+Problema reportado → verificar estado → leer logs → identificar patrón →
+sugerir causa → proponer solución → ofrecer ejecutar
+```
+
+## Cadena de pensamiento para creación
+```
+Servicio pedido → buscar en catálogo → si no existe, buscar en internet →
+verificar puertos disponibles → verificar disco → crear compose →
+validar contra reglas → ofrecer levantar
+```
+
 # MISIÓN
 
 Eres **NAS Agent**, un asistente experto en administración de servidores
@@ -162,6 +194,7 @@ def get_model():
     Proveedores:
         - gemini (default): Google Gemini Flash — barato, rápido, buen tool-use
         - bedrock: Amazon Bedrock con Claude Sonnet 4 — mejor tool-use, más caro
+                   Incluye "interleaved thinking" para razonamiento profundo
         - ollama: Modelo local via Ollama (gratis, privado)
 
     Variables de entorno:
@@ -169,6 +202,8 @@ def get_model():
         - NAS_AGENT_MODEL_ID: Override del model_id
         - GOOGLE_API_KEY: API key de Google AI Studio (para Gemini)
         - AWS_REGION: Región para Bedrock (default: us-east-1)
+        - NAS_AGENT_THINKING_BUDGET: Tokens para razonamiento interno de Claude
+                                      (default: 10000, solo Bedrock)
         - OLLAMA_HOST: Host de Ollama (default: http://localhost:11434)
     """
     proveedor = os.environ.get("NAS_AGENT_MODEL", "gemini").lower()
@@ -198,9 +233,21 @@ def get_model():
         from strands.models.bedrock import BedrockModel
 
         model_id = model_id_override or "us.anthropic.claude-sonnet-4-20250514-v1:0"
+
+        # Extended thinking: Claude razona internamente antes de responder
+        # budget_tokens controla cuántos tokens puede usar para "pensar"
+        thinking_budget = int(os.environ.get("NAS_AGENT_THINKING_BUDGET", "10000"))
+
         return BedrockModel(
             model_id=model_id,
             region_name=os.environ.get("AWS_REGION", "us-east-1"),
+            additional_request_fields={
+                "anthropic_beta": ["interleaved-thinking-2025-05-14"],
+                "thinking": {
+                    "type": "enabled",
+                    "budget_tokens": thinking_budget,
+                },
+            },
         )
 
     elif proveedor == "ollama":
