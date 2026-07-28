@@ -388,7 +388,11 @@ def main():
     # Mostrar resumen de auditoría si hubo actividad
     from agent.tools._audit import get_session_summary, _is_audit_enabled
     if _is_audit_enabled():
-        print("\n📋 Acciones registradas en audit log.")
+        summary = get_session_summary(last_n=20)
+        if summary and "vacío" not in summary:
+            print(f"\n📋 Resumen de sesión:\n{summary}")
+        else:
+            print("\n📋 Sin acciones registradas en esta sesión.")
 
     print("\n✅ Tarea completada.")
 

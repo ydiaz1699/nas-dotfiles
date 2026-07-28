@@ -126,7 +126,7 @@ def validate_compose(service_name: str) -> str:
                     if "${" not in e:
                         errores.append(f"❌ credencial inline: {e.split('=')[0]}")
 
-    svc_dir = DOCKER_BASE / service_name
+    svc_dir = validated_service_path(service_name)
     if (svc_dir / ".env").exists():
         ok.append("✅ .env presente")
     else:
@@ -217,6 +217,62 @@ def create_service(
 
     vol_list = [v.strip() for v in volumes.split(";") if v.strip()]
     env_list = [e.strip() for e in env_vars.split(";") if e.strip()]
+
+    # Sanitizar inputs que se escribirán al YAML
+    # Bloquear caracteres que podrían inyectar YAML malicioso
+    _YAML_UNSAFE_RE = __import__("re").compile(r'[`$\x00-\x1f]')
+
+    def _sanitize_yaml_value(val: str, field_name: str) -> str:
+        """Limpia un valor antes de escribirlo en YAML."""
+        val = val.strip()
+        if _YAML_UNSAFE_RE.search(val):
+            raise InvalidServiceName(
+                f"Valor de '{field_name}' contiene caracteres no permitidos: {val[:50]}"
+            )
+        if ".." in val or "\\" in val:
+            raise InvalidServiceName(
+                f"Valor de '{field_name}' contiene path traversal: {val[:50]}"
+            )
+        return val
+
+    # Validar image (formato: namespace/name:tag o name:tag)
+    try:
+        image = _sanitize_yaml_value(image, "image")
+        if not __import__("re").match(r'^[a-zA-Z0-9][a-zA-Z0-9._/:@-]{0,200}$', image):
+            return f"ERROR: Imagen '{image}' no tiene formato válido (namespace/name:tag)"
+    except InvalidServiceName as e:
+        return f"ERROR: {e}"
+
+    # Validar volumes
+    safe_vol_list = []
+    for v in vol_list:
+        try:
+            v = _sanitize_yaml_value(v, "volumes")
+            safe_vol_list.append(v)
+        except InvalidServiceName as e:
+            return f"ERROR: {e}"
+    vol_list = safe_vol_list
+
+    # Validar env_vars (formato KEY=VALUE)
+    safe_env_list = []
+    for e in env_list:
+        try:
+            e = _sanitize_yaml_value(e, "env_vars")
+            if "=" not in e and not __import__("re").match(r'^[A-Za-z_][A-Za-z0-9_]*$', e):
+                return f"ERROR: Variable '{e}' no tiene formato válido (KEY=VALUE o KEY)"
+            safe_env_list.append(e)
+        except InvalidServiceName as e_err:
+            return f"ERROR: {e_err}"
+    env_list = safe_env_list
+
+    # Validar healthcheck_url
+    if healthcheck_url:
+        try:
+            healthcheck_url = _sanitize_yaml_value(healthcheck_url, "healthcheck_url")
+            if not healthcheck_url.startswith(("http://", "https://")):
+                return f"ERROR: healthcheck_url debe empezar con http:// o https://"
+        except InvalidServiceName as e:
+            return f"ERROR: {e}"
 
     # docker-compose.yml
     compose = f"services:\n  {service_name}:\n"

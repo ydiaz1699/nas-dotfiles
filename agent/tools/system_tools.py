@@ -118,14 +118,9 @@ def memory_info() -> str:
     if not free_output:
         return "ERROR: No se pudo obtener información de memoria"
 
-    # Obtener porcentaje via awk
-    mem_pct = safe_run(
-        ["awk", "/^Mem:/{printf \"%.0f\", $3/$2*100}", "/proc/meminfo"],
-        timeout=5,
-    )
-    # Fallback: parsear de free
-    if not mem_pct or "ERROR" in mem_pct:
-        mem_pct = _calc_mem_pct(free_output)
+    # Calcular porcentaje real: usar 'free' sin -h para obtener números
+    free_raw = safe_run(["free", "-b"], timeout=5)
+    mem_pct = _calc_mem_pct(free_raw)
 
     # Top procesos por memoria
     top_mem = safe_run(
@@ -156,16 +151,22 @@ def memory_info() -> str:
     )
 
 
-def _calc_mem_pct(free_output: str) -> str:
-    """Calcula porcentaje de memoria desde output de free."""
+def _calc_mem_pct(free_raw: str) -> str:
+    """Calcula porcentaje de memoria usado desde output de 'free -b'.
+
+    Parsea la línea 'Mem:' que tiene formato:
+    Mem: total used free shared buff/cache available
+    """
     try:
-        for line in free_output.splitlines():
+        for line in free_raw.splitlines():
             if line.startswith("Mem:"):
                 parts = line.split()
-                # free -h: Mem: total used free shared buff/cache available
-                # Intentar con free sin -h para cálculo
-                return "?"
-    except Exception:
+                if len(parts) >= 3:
+                    total = int(parts[1])
+                    used = int(parts[2])
+                    if total > 0:
+                        return str(round(used * 100 / total))
+    except (ValueError, IndexError):
         pass
     return "?"
 
