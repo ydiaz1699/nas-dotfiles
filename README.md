@@ -127,30 +127,88 @@ NAS_AGENT_MODEL=ollama python -m agent.nas_agent "..."
 pip install -r requirements.txt
 ```
 
-Variables de entorno:
+### Configuración del agente
+
+El agente soporta 3 proveedores de IA. Configura con variables de entorno:
+
 ```bash
-# Gemini (default) — barato, rápido
-export GOOGLE_API_KEY="tu-key-de-aistudio.google.com"
+# ─── Gemini (default) ────────────────────────────────────────────────
+# El más barato (~$0.15/1M tokens). Solo necesita una API key.
+# Obtener gratis en: https://aistudio.google.com/apikey
+export GOOGLE_API_KEY="tu-api-key"
 
-# Bedrock (opcional) — mejor tool-use, requiere AWS
+# Modelo default: gemini-2.5-flash (override opcional)
+# export NAS_AGENT_MODEL_ID="gemini-2.5-pro"
+
+# ─── Bedrock / Claude (opcional) ─────────────────────────────────────
+# Mejor razonamiento y tool-use (~$3/1M tokens). Requiere cuenta AWS.
 export NAS_AGENT_MODEL=bedrock
-# (necesita aws configure)
+# Necesita: aws configure (con acceso a Bedrock en us-east-1)
+# export AWS_REGION=us-east-1
 
-# Ollama (opcional) — gratis, local, privado
+# Extended Thinking: Claude razona internamente entre tool calls.
+# Ajustar presupuesto de tokens para pensar (default: 10000)
+# export NAS_AGENT_THINKING_BUDGET=16000
+
+# ─── Ollama (opcional) ───────────────────────────────────────────────
+# Gratis, local, sin internet. Requiere Ollama instalado.
 export NAS_AGENT_MODEL=ollama
-# (necesita ollama serve + ollama pull llama3.1)
+# Necesita: ollama serve + ollama pull llama3.1
+# export OLLAMA_HOST=http://localhost:11434
+# export NAS_AGENT_MODEL_ID=llama3.1
+```
+
+### Comparación de proveedores
+
+| Provider | Modelo | Costo/1M tokens | Setup | Razonamiento |
+|----------|--------|:---------------:|-------|:------------:|
+| **Gemini** (default) | gemini-2.5-flash | ~$0.15 | Solo API key | Bueno |
+| **Bedrock** | Claude Sonnet 4 | ~$3.00 | AWS credentials | Excelente + thinking |
+| **Ollama** | llama3.1 | Gratis | Ollama local | Básico |
+
+### Ejecutar el agente
+
+```bash
+cd ~/nas-dotfiles
+
+# Modo interactivo
+python -m agent.nas_agent
+
+# Con query directa
+python -m agent.nas_agent "¿Qué servicios están caídos?"
+python -m agent.nas_agent "Quiero instalar Vaultwarden"
+python -m agent.nas_agent "Diagnostica nextcloud"
+python -m agent.nas_agent "Hazme backup de grafana"
+
+# Cambiar provider en el momento (sin modificar bashrc)
+NAS_AGENT_MODEL=bedrock python -m agent.nas_agent "tarea compleja..."
+NAS_AGENT_MODEL=ollama python -m agent.nas_agent "tarea privada..."
 ```
 
 ## Configuración
 
-Variable principal en `~/.bashrc`:
-- `NAS_DOTFILES` — ruta absoluta al repo (única fuente de verdad)
+### Variables del shell framework (en `~/.bashrc`)
 
-Variables derivadas (definidas en `shell/init.sh`):
+| Variable | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `NAS_DOTFILES` | Ruta absoluta al repo (única fuente de verdad) | `$HOME/nas-dotfiles` |
+
+Variables derivadas (definidas automáticamente en `shell/init.sh`):
 - `SHELL_DIR` — `$NAS_DOTFILES/shell`
 - `aadm` — home del usuario
 - `dkco` — directorio base de servicios Docker (`/docker`)
 - `DOCKER_BASE` — igual que `dkco`, usado por el CLI y agente
+
+### Variables del agente (opcionales)
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `NAS_AGENT_MODEL` | `gemini` | Provider: `gemini`, `bedrock`, `ollama` |
+| `NAS_AGENT_MODEL_ID` | (auto) | Override del modelo específico |
+| `GOOGLE_API_KEY` | — | API key de Google AI Studio |
+| `AWS_REGION` | `us-east-1` | Región AWS para Bedrock |
+| `NAS_AGENT_THINKING_BUDGET` | `10000` | Tokens para razonamiento de Claude (solo Bedrock) |
+| `OLLAMA_HOST` | `http://localhost:11434` | Host de Ollama |
 
 ## Portabilidad
 
