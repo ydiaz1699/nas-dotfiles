@@ -29,6 +29,8 @@ case "$cmd" in
   net)         svc_net ;          exit 0 ;;
   watch)       svc_watch ;        exit 0 ;;
   create)      svc_create "$@" ;  exit 0 ;;
+  doctor)      svc_doctor ;       exit 0 ;;
+  diff)        svc_diff "$@" ;    exit 0 ;;
   ""|"-h"|"--help") _svc_ayuda ; exit 0 ;;
 esac
 

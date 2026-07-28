@@ -271,13 +271,52 @@ def get_model():
 
 
 def create_nas_agent() -> Agent:
-    """Crea y retorna el agente NAS configurado."""
+    """Crea y retorna el agente NAS configurado.
+
+    Modos especiales (via env vars):
+    - NAS_AGENT_READONLY=1: Bloquea tools destructivas a nivel de ejecución
+    - NAS_AGENT_DRYRUN=1: El agente muestra plan completo sin ejecutar nada
+    """
     model = get_model()
+
+    system_prompt = SYSTEM_PROMPT
+
+    # Dry-run mode: agregar instrucciones que fuerzan plan-only
+    if os.environ.get("NAS_AGENT_DRYRUN", "0").strip() in ("1", "true", "yes"):
+        system_prompt += """
+
+# 🔒 MODO DRY-RUN ACTIVO
+
+ESTÁS EN MODO DRY-RUN. NO EJECUTES NINGUNA HERRAMIENTA.
+
+En vez de ejecutar, debes:
+1. Analizar la petición del usuario
+2. Explicar paso a paso qué harías (qué tools llamarías, con qué argumentos)
+3. Mostrar el plan completo con los comandos específicos
+4. Indicar qué riesgos tiene cada acción
+5. Preguntar si el usuario quiere que lo ejecute (necesitaría desactivar dry-run)
+
+Formato del plan:
+```
+PLAN DE EJECUCIÓN:
+  1. [tool_name](args) — razón
+  2. [tool_name](args) — razón
+  ...
+
+RIESGOS:
+  - ...
+
+PARA EJECUTAR:
+  Desactivar dry-run: unset NAS_AGENT_DRYRUN
+```
+
+REPITO: NO llames ninguna herramienta. Solo muestra el plan.
+"""
 
     agent = Agent(
         model=model,
         tools=ALL_TOOLS,
-        system_prompt=SYSTEM_PROMPT,
+        system_prompt=system_prompt,
     )
 
     return agent
@@ -333,9 +372,24 @@ def main():
         sys.exit(1)
 
     print("🚀 Procesando...\n")
+
+    # Indicadores de modo
+    if os.environ.get("NAS_AGENT_DRYRUN", "0").strip() in ("1", "true", "yes"):
+        print("🔒 MODO DRY-RUN: Solo mostrará el plan, sin ejecutar nada.")
+        print("")
+    if os.environ.get("NAS_AGENT_READONLY", "0").strip() in ("1", "true", "yes"):
+        print("🔒 MODO READ-ONLY: Acciones destructivas bloqueadas.")
+        print("")
+
     print("-" * 50)
     result = agent(query)
     print("-" * 50)
+
+    # Mostrar resumen de auditoría si hubo actividad
+    from agent.tools._audit import get_session_summary, _is_audit_enabled
+    if _is_audit_enabled():
+        print("\n📋 Acciones registradas en audit log.")
+
     print("\n✅ Tarea completada.")
 
     return result

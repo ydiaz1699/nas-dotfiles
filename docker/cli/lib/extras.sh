@@ -437,3 +437,229 @@ svc_watch() {
     sleep "$interval"
   done
 }
+
+
+# ── svc doctor — chequeo general del NAS ───────────────────────────────────
+svc_doctor() {
+  echo ""
+  echo -e "\033[1m  svc doctor — Chequeo general del NAS\033[0m"
+  echo "  ═══════════════════════════════════════════════════════════════"
+  echo ""
+
+  local issues=0
+  local warnings=0
+
+  # 1. Disco
+  echo -e "\033[0;34m  [1/6] Disco\033[0m"
+  while IFS= read -r line; do
+    local pct
+    pct=$(echo "$line" | awk '{print $5}' | tr -d '%')
+    local mount
+    mount=$(echo "$line" | awk '{print $6}')
+    if [[ -n "$pct" && "$pct" =~ ^[0-9]+$ ]]; then
+      if [[ $pct -ge 90 ]]; then
+        echo -e "    \033[0;31m✗ CRÍTICO: $mount al ${pct}%\033[0m"
+        ((issues++))
+      elif [[ $pct -ge 75 ]]; then
+        echo -e "    \033[1;33m⚠ ATENCIÓN: $mount al ${pct}%\033[0m"
+        ((warnings++))
+      fi
+    fi
+  done < <(df -h --type=ext4 --type=btrfs --type=xfs 2>/dev/null | tail -n+2)
+  [[ $issues -eq 0 && $warnings -eq 0 ]] && echo "    ✓ Disco OK"
+  echo ""
+
+  # 2. Memoria
+  echo -e "\033[0;34m  [2/6] Memoria\033[0m"
+  local mem_pct
+  mem_pct=$(free | awk '/^Mem:/{printf "%.0f", $3/$2*100}')
+  if [[ $mem_pct -ge 90 ]]; then
+    echo -e "    \033[0;31m✗ CRÍTICO: Memoria al ${mem_pct}%\033[0m"
+    ((issues++))
+  elif [[ $mem_pct -ge 80 ]]; then
+    echo -e "    \033[1;33m⚠ Memoria al ${mem_pct}%\033[0m"
+    ((warnings++))
+  else
+    echo "    ✓ Memoria al ${mem_pct}% (OK)"
+  fi
+  echo ""
+
+  # 3. Servicios caídos
+  echo -e "\033[0;34m  [3/6] Servicios Docker\033[0m"
+  local total_svc=0
+  local down_svc=0
+  local restarting_svc=0
+  for svc in $(svc_list 2>/dev/null); do
+    ((total_svc++))
+    local f
+    f=$(svc_compose_file "$svc" 2>/dev/null)
+    [[ -z "$f" ]] && continue
+    local running
+    running=$(docker compose -f "$f" ps -q 2>/dev/null | wc -l)
+    if [[ $running -eq 0 ]]; then
+      echo -e "    \033[0;31m✗ $svc: DETENIDO\033[0m"
+      ((down_svc++))
+      ((issues++))
+    fi
+  done
+  # Contenedores reiniciando
+  local restarting
+  restarting=$(docker ps --filter "status=restarting" --format "{{.Names}}" 2>/dev/null)
+  if [[ -n "$restarting" ]]; then
+    echo "$restarting" | while read -r name; do
+      echo -e "    \033[1;33m⚠ $name: REINICIANDO (crash loop?)\033[0m"
+      ((warnings++))
+    done
+  fi
+  [[ $down_svc -eq 0 && -z "$restarting" ]] && echo "    ✓ $total_svc servicios, todos activos"
+  echo ""
+
+  # 4. Puertos reservados
+  echo -e "\033[0;34m  [4/6] Puertos reservados\033[0m"
+  local reserved_conflict=0
+  for rp in 22 53 80 443; do
+    if ss -tlnp 2>/dev/null | grep -q ":${rp} "; then
+      # Verificar que sea un servicio esperado
+      local proc
+      proc=$(ss -tlnp 2>/dev/null | grep ":${rp} " | grep -oP 'users:\(\("\K[^"]+' | head -1)
+      if [[ "$proc" != "sshd" && "$proc" != "systemd-resolve" && "$proc" != "traefik" && "$proc" != "nginx" && "$proc" != "pihole" ]]; then
+        echo -e "    \033[1;33m⚠ Puerto $rp usado por: $proc (¿inesperado?)\033[0m"
+        ((warnings++))
+        ((reserved_conflict++))
+      fi
+    fi
+  done
+  [[ $reserved_conflict -eq 0 ]] && echo "    ✓ Puertos reservados libres/esperados"
+  echo ""
+
+  # 5. Contenedores con muchos restarts
+  echo -e "\033[0;34m  [5/6] Restart count\033[0m"
+  local high_restarts=0
+  docker ps -q 2>/dev/null | while read -r cid; do
+    local name restarts
+    name=$(docker inspect --format '{{.Name}}' "$cid" 2>/dev/null | tr -d '/')
+    restarts=$(docker inspect --format '{{.RestartCount}}' "$cid" 2>/dev/null)
+    if [[ -n "$restarts" && "$restarts" -gt 5 ]]; then
+      echo -e "    \033[1;33m⚠ $name: $restarts restarts\033[0m"
+      ((high_restarts++))
+      ((warnings++))
+    fi
+  done
+  [[ $high_restarts -eq 0 ]] && echo "    ✓ Sin contenedores con restarts excesivos"
+  echo ""
+
+  # 6. Docker disk usage
+  echo -e "\033[0;34m  [6/6] Docker storage\033[0m"
+  local docker_disk
+  docker_disk=$(docker system df 2>/dev/null | tail -n+2)
+  echo "$docker_disk" | sed 's/^/    /'
+  # Verificar dangling images
+  local dangling
+  dangling=$(docker images -f "dangling=true" -q 2>/dev/null | wc -l)
+  if [[ $dangling -gt 5 ]]; then
+    echo -e "    \033[1;33m⚠ $dangling imágenes dangling (limpiar con: docker image prune)\033[0m"
+    ((warnings++))
+  fi
+  echo ""
+
+  # Resumen
+  echo "  ═══════════════════════════════════════════════════════════════"
+  if [[ $issues -gt 0 ]]; then
+    echo -e "  \033[0;31m  RESULTADO: $issues error(es), $warnings advertencia(s)\033[0m"
+  elif [[ $warnings -gt 0 ]]; then
+    echo -e "  \033[1;33m  RESULTADO: 0 errores, $warnings advertencia(s)\033[0m"
+  else
+    echo -e "  \033[0;32m  RESULTADO: ✓ Todo en orden\033[0m"
+  fi
+  echo ""
+}
+
+# ── svc diff — comparar compose en disco vs resuelto ───────────────────────
+svc_diff() {
+  local svc="$1"
+
+  if [[ -z "$svc" ]]; then
+    echo ""
+    echo "  Uso: svc diff <servicio>"
+    echo ""
+    echo "  Compara el docker-compose.yml en disco contra la"
+    echo "  configuración resuelta por 'docker compose config'."
+    echo "  Detecta drift (variables no resueltas, overrides, etc.)"
+    echo ""
+    return 1
+  fi
+
+  local compose_file
+  compose_file=$(svc_compose_file "$svc")
+
+  if [[ -z "$compose_file" ]]; then
+    echo ""
+    echo "  Servicio '$svc' no encontrado."
+    echo ""
+    return 1
+  fi
+
+  echo ""
+  echo -e "\033[0;34m  svc diff: $svc\033[0m"
+  echo "  Archivo: $compose_file"
+  echo "  ───────────────────────────────────────────────────────────"
+  echo ""
+
+  # Generar config resuelta
+  local resolved
+  resolved=$(docker compose -f "$compose_file" config 2>&1)
+
+  if [[ $? -ne 0 ]]; then
+    echo -e "  \033[0;31m  Error resolviendo config:\033[0m"
+    echo "$resolved" | sed 's/^/    /'
+    echo ""
+    return 1
+  fi
+
+  # Comparar con diff
+  local disk_content
+  disk_content=$(cat "$compose_file")
+
+  local diff_output
+  diff_output=$(diff --color=always -u \
+    <(echo "$disk_content") \
+    <(echo "$resolved") \
+    2>/dev/null)
+
+  if [[ -z "$diff_output" ]]; then
+    echo -e "  \033[0;32m  ✓ Sin diferencias — compose y config resuelto son idénticos\033[0m"
+  else
+    echo -e "  \033[1;33m  Diferencias encontradas:\033[0m"
+    echo "  (izq = disco, der = resuelto por Docker)"
+    echo ""
+    echo "$diff_output" | sed 's/^/  /'
+  fi
+
+  # Variables sin resolver
+  local unresolved
+  unresolved=$(grep -oP '\$\{[^}]+\}' "$compose_file" 2>/dev/null | sort -u)
+  if [[ -n "$unresolved" ]]; then
+    echo ""
+    echo -e "  \033[0;34m  Variables referenciadas:\033[0m"
+    echo "$unresolved" | sed 's/^/    /'
+
+    # Verificar cuáles no están definidas en .env
+    local env_file
+    env_file="$(dirname "$compose_file")/.env"
+    if [[ -f "$env_file" ]]; then
+      echo ""
+      echo -e "  \033[0;34m  Estado en .env:\033[0m"
+      echo "$unresolved" | while read -r var; do
+        local varname
+        varname=$(echo "$var" | tr -d '${}' | cut -d: -f1 | cut -d- -f1)
+        if grep -q "^${varname}=" "$env_file" 2>/dev/null; then
+          echo -e "    ✓ $varname (definida)"
+        else
+          echo -e "    \033[1;33m⚠ $varname (NO definida en .env)\033[0m"
+        fi
+      done
+    fi
+  fi
+
+  echo ""
+}
