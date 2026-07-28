@@ -134,6 +134,9 @@ def safe_run(
 ) -> str:
     """Ejecuta un comando de forma segura SIN shell=True.
 
+    En modo dry-run (NAS_AGENT_DRYRUN=1), NO ejecuta el comando —
+    solo retorna una descripción de lo que se habría ejecutado.
+
     Args:
         args: Lista de argumentos del comando.
               Ejemplo: ["docker", "compose", "-f", "/docker/svc/compose.yml", "ps"]
@@ -143,7 +146,14 @@ def safe_run(
 
     Returns:
         str: stdout + stderr combinados (stderr solo si hay error).
+             En dry-run: "[DRY-RUN] ..." con el comando que se habría ejecutado.
     """
+    # Hard dry-run guard: interceptar ANTES de ejecutar
+    if is_dryrun():
+        cmd_str = " ".join(args)
+        cwd_info = f" (en {cwd})" if cwd else ""
+        return f"[DRY-RUN] Se ejecutaría:{cwd_info}\n  $ {cmd_str}"
+
     try:
         result = subprocess.run(
             args,
@@ -250,6 +260,15 @@ def is_readonly() -> bool:
     Se activa con: export NAS_AGENT_READONLY=1
     """
     return os.environ.get("NAS_AGENT_READONLY", "0").strip() in ("1", "true", "yes")
+
+
+def is_dryrun() -> bool:
+    """Retorna True si el agente está en modo dry-run.
+
+    Se activa con: export NAS_AGENT_DRYRUN=1
+    En este modo, safe_run() NO ejecuta comandos — solo describe qué haría.
+    """
+    return os.environ.get("NAS_AGENT_DRYRUN", "0").strip() in ("1", "true", "yes")
 
 
 def readonly_guard(tool_name: str) -> Optional[str]:
