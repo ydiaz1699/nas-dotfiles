@@ -1,5 +1,5 @@
-# /docker/cli/lib/discovery.sh
-# Deteccion de servicios Docker Compose en /docker/
+# docker/cli/lib/discovery.sh
+# Deteccion de servicios Docker Compose
 
 DOCKER_BASE="${DOCKER_BASE:-/docker}"
 

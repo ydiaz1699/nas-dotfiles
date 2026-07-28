@@ -1,4 +1,4 @@
-# /home/aadm/shell/lib/instal.sh
+# shell/lib/instal.sh
 
 # ── _apt_cmd — detecta apt-fast o fallback a apt-get ──────────────────────
 _apt_cmd() {

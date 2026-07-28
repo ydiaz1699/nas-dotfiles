@@ -1,4 +1,4 @@
-# /home/aadm/shell/lib/completions.sh
+# shell/lib/completions.sh
 # Completions adicionales
 
 # ── instal — completa con paquetes disponibles ─────────────────────────────

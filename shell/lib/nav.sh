@@ -1,4 +1,4 @@
-# /home/aadm/shell/lib/nav.sh
+# shell/lib/nav.sh
 
 # ── up() — subir N niveles ─────────────────────────────────────────────────
 up() {

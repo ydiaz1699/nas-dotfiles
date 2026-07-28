@@ -1,4 +1,4 @@
-# /home/aadm/shell/lib/aliases.sh
+# shell/lib/aliases.sh
 
 # ── Navegacion ────────────────────────────────────────────────────────────
 alias ..='cd ..'

@@ -1,4 +1,4 @@
-# /home/aadm/shell/lib/system.sh
+# shell/lib/system.sh
 
 # ── nas — dashboard rapido del NAS ────────────────────────────────────────
 nas() {

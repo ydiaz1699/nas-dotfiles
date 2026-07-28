@@ -1,4 +1,4 @@
-# /home/aadm/shell/lib/prompt.sh
+# shell/lib/prompt.sh
 #
 # Prompt resultante (ejemplo):
 #   root@Nas /docker/cli 4↑ 71% #

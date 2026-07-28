@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 set -e
 
-BASE="/docker"
+# ── Auto-detectar ubicación del CLI via BASH_SOURCE ────────────────────────
+CLI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-source "$BASE/cli/lib/discovery.sh"
-source "$BASE/cli/lib/docker.sh"
-source "$BASE/cli/lib/health.sh"
-source "$BASE/cli/lib/backup.sh"
-source "$BASE/cli/lib/extras.sh"
-source "$BASE/cli/lib/menu.sh"
-source "$BASE/cli/lib/help.sh"
+# DOCKER_BASE = carpeta de DATOS de servicios (no del código)
+BASE="${DOCKER_BASE:-/docker}"
+
+source "$CLI_DIR/lib/discovery.sh"
+source "$CLI_DIR/lib/docker.sh"
+source "$CLI_DIR/lib/health.sh"
+source "$CLI_DIR/lib/backup.sh"
+source "$CLI_DIR/lib/extras.sh"
+source "$CLI_DIR/lib/menu.sh"
+source "$CLI_DIR/lib/help.sh"
 
 cmd="$1"
 shift || true
@@ -47,7 +51,7 @@ COMPOSE_FILE=$(svc_compose_file "$servicio")
 
 if [[ -z "$COMPOSE_FILE" ]]; then
   echo ""
-  echo "  Servicio '$servicio' no encontrado en /docker/"
+  echo "  Servicio '$servicio' no encontrado en $BASE/"
   echo ""
   echo "  Servicios disponibles:"
   svc_list | while read -r s; do echo "    - $s"; done
