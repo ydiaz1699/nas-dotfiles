@@ -102,10 +102,16 @@ svc create mi-app      # scaffolding de nuevo servicio
 svc watch              # monitoreo continuo
 svc menu               # TUI interactivo
 
-# Agente (requiere Strands SDK + credenciales)
+# Agente (requiere Strands SDK + GOOGLE_API_KEY)
 cd ~/nas-dotfiles
 python -m agent.nas_agent "¿Qué servicios están caídos?"
 python -m agent.nas_agent "Quiero instalar Vaultwarden"
+
+# Con Bedrock (Claude) en vez de Gemini
+NAS_AGENT_MODEL=bedrock python -m agent.nas_agent "..."
+
+# Con Ollama local (gratis, sin API key)
+NAS_AGENT_MODEL=ollama python -m agent.nas_agent "..."
 ```
 
 ## Requisitos
@@ -121,9 +127,19 @@ python -m agent.nas_agent "Quiero instalar Vaultwarden"
 pip install -r requirements.txt
 ```
 
-Proveedores soportados:
-- Amazon Bedrock (default) — Claude Sonnet
-- Ollama (local) — llama3.1
+Variables de entorno:
+```bash
+# Gemini (default) — barato, rápido
+export GOOGLE_API_KEY="tu-key-de-aistudio.google.com"
+
+# Bedrock (opcional) — mejor tool-use, requiere AWS
+export NAS_AGENT_MODEL=bedrock
+# (necesita aws configure)
+
+# Ollama (opcional) — gratis, local, privado
+export NAS_AGENT_MODEL=ollama
+# (necesita ollama serve + ollama pull llama3.1)
+```
 
 ## Configuración
 

@@ -6,21 +6,25 @@ catálogo local + web search como fallback, y reglas estandarizadas
 para crear, diagnosticar y administrar servicios en el NAS.
 
 Proveedores soportados:
-    - Amazon Bedrock (default) — Claude Sonnet
+    - Google Gemini (default) — gemini-2.5-flash (barato, rápido)
+    - Amazon Bedrock — Claude Sonnet 4 (mejor tool-use, más caro)
     - Ollama (local, gratis) — llama3.1 o cualquier modelo
 
 Uso:
-    # Modo interactivo
+    # Modo interactivo (usa Gemini por defecto)
     python -m agent.nas_agent
 
     # Con query directa
     python -m agent.nas_agent "¿Qué servicios están caídos?"
 
+    # Con Bedrock (Claude)
+    NAS_AGENT_MODEL=bedrock python -m agent.nas_agent "..."
+
     # Con Ollama local
     NAS_AGENT_MODEL=ollama python -m agent.nas_agent "..."
 
 Requisitos:
-    pip install strands-agents strands-agents-tools python-frontmatter pyyaml
+    pip install 'strands-agents[gemini]' strands-agents-tools python-frontmatter pyyaml
 """
 
 import os
@@ -156,20 +160,43 @@ def get_model():
     """Selecciona el modelo según variable de entorno NAS_AGENT_MODEL.
 
     Proveedores:
-        - bedrock (default): Amazon Bedrock con Claude Sonnet 4
+        - gemini (default): Google Gemini Flash — barato, rápido, buen tool-use
+        - bedrock: Amazon Bedrock con Claude Sonnet 4 — mejor tool-use, más caro
         - ollama: Modelo local via Ollama (gratis, privado)
 
     Variables de entorno:
-        - NAS_AGENT_MODEL: bedrock | ollama
+        - NAS_AGENT_MODEL: gemini | bedrock | ollama (default: gemini)
         - NAS_AGENT_MODEL_ID: Override del model_id
+        - GOOGLE_API_KEY: API key de Google AI Studio (para Gemini)
         - AWS_REGION: Región para Bedrock (default: us-east-1)
         - OLLAMA_HOST: Host de Ollama (default: http://localhost:11434)
     """
-    proveedor = os.environ.get("NAS_AGENT_MODEL", "bedrock").lower()
+    proveedor = os.environ.get("NAS_AGENT_MODEL", "gemini").lower()
     model_id_override = os.environ.get("NAS_AGENT_MODEL_ID")
 
-    if proveedor == "bedrock":
+    if proveedor == "gemini":
+        from strands.models.gemini import GeminiModel
+
+        model_id = model_id_override or "gemini-2.5-flash"
+
+        # API key: se lee de GOOGLE_API_KEY automáticamente si no se pasa
+        api_key = os.environ.get("GOOGLE_API_KEY")
+        client_args = {}
+        if api_key:
+            client_args["api_key"] = api_key
+
+        return GeminiModel(
+            model_id=model_id,
+            client_args=client_args if client_args else None,
+            params={
+                "temperature": 0.3,
+                "max_output_tokens": 4096,
+            },
+        )
+
+    elif proveedor == "bedrock":
         from strands.models.bedrock import BedrockModel
+
         model_id = model_id_override or "us.anthropic.claude-sonnet-4-20250514-v1:0"
         return BedrockModel(
             model_id=model_id,
@@ -178,6 +205,7 @@ def get_model():
 
     elif proveedor == "ollama":
         from strands.models.ollama import OllamaModel
+
         model_id = model_id_override or "llama3.1"
         host = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
         return OllamaModel(model_id=model_id, host=host)
@@ -185,7 +213,7 @@ def get_model():
     else:
         raise ValueError(
             f"Proveedor '{proveedor}' no soportado.\n"
-            f"Opciones: bedrock, ollama\n"
+            f"Opciones: gemini, bedrock, ollama\n"
             f"Configura con: export NAS_AGENT_MODEL=<opción>"
         )
 
@@ -243,9 +271,18 @@ def main():
     except Exception as e:
         print(f"\n❌ Error al inicializar: {e}")
         print("\nVerifica:")
-        print("  - AWS credentials (para Bedrock)")
-        print("  - Ollama corriendo (para Ollama)")
-        print("  - export NAS_AGENT_MODEL=ollama  (para usar local)")
+        proveedor = os.environ.get("NAS_AGENT_MODEL", "gemini").lower()
+        if proveedor == "gemini":
+            print("  - GOOGLE_API_KEY definida (obtener en https://aistudio.google.com/apikey)")
+            print("  - pip install 'strands-agents[gemini]'")
+        elif proveedor == "bedrock":
+            print("  - AWS credentials configuradas")
+            print("  - Región correcta (AWS_REGION)")
+        elif proveedor == "ollama":
+            print("  - Ollama corriendo (ollama serve)")
+            print("  - Modelo descargado (ollama pull llama3.1)")
+        print(f"\n  Provider actual: {proveedor}")
+        print("  Cambiar con: export NAS_AGENT_MODEL=gemini|bedrock|ollama")
         sys.exit(1)
 
     print("🚀 Procesando...\n")
