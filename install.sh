@@ -8,18 +8,41 @@ set -e
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# Ruta destino: /nas-dotfiles (independiente del usuario)
+INSTALL_DIR="/nas-dotfiles"
+
 echo ""
 echo "  nas-dotfiles installer (v2 — sin symlinks)"
 echo "  ────────────────────────────────────────────"
 echo ""
-echo "  Repo detectado: $REPO_DIR"
+echo "  Repo origen: $REPO_DIR"
+echo "  Destino:     $INSTALL_DIR"
 echo ""
 
-# ── [1/3] Configurar ~/.bashrc ─────────────────────────────────────────────
-echo "  [1/3] Configurando ~/.bashrc"
+# ── [0/4] Copiar/mover a /nas-dotfiles si no está ahí ─────────────────────
+if [[ "$REPO_DIR" != "$INSTALL_DIR" ]]; then
+  echo "  [0/4] Instalando en $INSTALL_DIR"
+  if [[ -d "$INSTALL_DIR" ]]; then
+    echo "  ~ $INSTALL_DIR ya existe — actualizando..."
+    rsync -a --delete "$REPO_DIR/" "$INSTALL_DIR/"
+  else
+    sudo cp -a "$REPO_DIR" "$INSTALL_DIR"
+  fi
+  # Permisos: aadm es dueño, todos pueden leer/ejecutar
+  sudo chown -R "$(whoami):$(whoami)" "$INSTALL_DIR"
+  sudo chmod -R 755 "$INSTALL_DIR"
+  echo "  + Copiado a $INSTALL_DIR (dueño: $(whoami))"
+  echo ""
+else
+  echo "  [0/4] Ya está en $INSTALL_DIR — OK"
+  echo ""
+fi
+
+# ── [1/4] Configurar ~/.bashrc ─────────────────────────────────────────────
+echo "  [1/4] Configurando ~/.bashrc"
 
 BASHRC="$HOME/.bashrc"
-EXPORT_LINE="export NAS_DOTFILES=\"$REPO_DIR\""
+EXPORT_LINE='export NAS_DOTFILES="/nas-dotfiles"'
 SOURCE_LINE='source "$NAS_DOTFILES/shell/init.sh"'
 MARKER="# nas-dotfiles shell framework"
 
@@ -60,13 +83,47 @@ else
   echo "      $SOURCE_LINE"
 fi
 
-# ── [2/3] Permisos de ejecución ────────────────────────────────────────────
-echo "  [2/3] Verificando permisos"
-chmod +x "$REPO_DIR/docker/cli/svc.sh"
+# ── [2/4] Configurar /root/.bashrc (si somos root o tenemos sudo) ──────────
+echo "  [2/4] Configurando /root/.bashrc"
+
+ROOT_BASHRC="/root/.bashrc"
+if [[ "$EUID" -eq 0 ]]; then
+  # Somos root
+  if ! grep -qF "$EXPORT_LINE" "$ROOT_BASHRC" 2>/dev/null; then
+    cp "$ROOT_BASHRC" "$ROOT_BASHRC.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
+    {
+      echo ""
+      echo "$MARKER"
+      echo "$EXPORT_LINE"
+      echo "$SOURCE_LINE"
+    } >> "$ROOT_BASHRC"
+    echo "  + Agregado a /root/.bashrc"
+  else
+    echo "  ~ /root/.bashrc ya configurado"
+  fi
+elif sudo -n true 2>/dev/null; then
+  # Tenemos sudo sin password
+  if ! sudo grep -qF "$EXPORT_LINE" "$ROOT_BASHRC" 2>/dev/null; then
+    sudo cp "$ROOT_BASHRC" "$ROOT_BASHRC.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
+    echo -e "\n$MARKER\n$EXPORT_LINE\n$SOURCE_LINE" | sudo tee -a "$ROOT_BASHRC" >/dev/null
+    echo "  + Agregado a /root/.bashrc"
+  else
+    echo "  ~ /root/.bashrc ya configurado"
+  fi
+else
+  echo "  ~ Sin acceso a /root/.bashrc (ejecutar como root o con sudo)"
+  echo "    Agregar manualmente a /root/.bashrc:"
+  echo "      $EXPORT_LINE"
+  echo "      $SOURCE_LINE"
+fi
+
+# ── [3/4] Permisos de ejecución ────────────────────────────────────────────
+echo "  [3/4] Verificando permisos"
+chmod +x "$INSTALL_DIR/docker/cli/svc.sh"
 echo "  + docker/cli/svc.sh → ejecutable"
 
-# ── [3/3] Limpiar symlinks antiguos (si existen) ───────────────────────────
-echo "  [3/3] Limpiando symlinks antiguos (si existen)"
+# ── [4/4] Limpiar symlinks antiguos (si existen) ───────────────────────────
+echo "  [4/4] Limpiando symlinks antiguos (si existen)"
 
 _remove_old_symlink() {
   local target="$1"
@@ -86,19 +143,10 @@ echo ""
 echo "  ────────────────────────────────────────────"
 echo "  ✅ Instalación completa."
 echo ""
-echo "  Rastro fuera del repo: SOLO 2 líneas en ~/.bashrc"
+echo "  Ruta del proyecto: $INSTALL_DIR"
+echo "  Funciona para: $(whoami) + root"
 echo ""
 echo "  Ejecuta:  source ~/.bashrc"
 echo ""
-echo "  Para desinstalar:  $REPO_DIR/uninstall.sh"
+echo "  Para desinstalar:  $INSTALL_DIR/uninstall.sh"
 echo ""
-
-# ── Nota para root ─────────────────────────────────────────────────────────
-if [[ "$EUID" -ne 0 ]]; then
-  echo "  NOTA: Para que root también use el framework,"
-  echo "        agrega a /root/.bashrc:"
-  echo ""
-  echo "        export NAS_DOTFILES=\"$REPO_DIR\""
-  echo '        source "$NAS_DOTFILES/shell/init.sh"'
-  echo ""
-fi

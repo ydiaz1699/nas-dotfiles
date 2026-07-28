@@ -6,7 +6,7 @@
 # sistema queda completamente limpio.
 set -e
 
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_DIR="/nas-dotfiles"
 
 echo ""
 echo "  nas-dotfiles uninstaller"
@@ -53,22 +53,32 @@ _remove_if_symlink "$HOME/shell"
 _remove_if_symlink "/docker/cli"
 _remove_if_symlink "/usr/local/bin/svc"
 
-# ── [3/3] Limpiar /root/.bashrc si tiene referencia ───────────────────────
-echo "  [3/3] Verificando /root/.bashrc"
+# ── [3/3] Limpiar /root/.bashrc ────────────────────────────────────────────
+echo "  [3/3] Limpiando /root/.bashrc"
 
 ROOT_BASHRC="/root/.bashrc"
-if [[ -f "$ROOT_BASHRC" ]] && grep -q "NAS_DOTFILES" "$ROOT_BASHRC" 2>/dev/null; then
-  if [[ "$EUID" -eq 0 ]]; then
+if [[ "$EUID" -eq 0 ]]; then
+  if grep -q "NAS_DOTFILES" "$ROOT_BASHRC" 2>/dev/null; then
+    cp "$ROOT_BASHRC" "$ROOT_BASHRC.bak.$(date +%Y%m%d%H%M%S)"
     sed -i '/# nas-dotfiles shell framework/d' "$ROOT_BASHRC"
     sed -i '\|export NAS_DOTFILES=|d' "$ROOT_BASHRC"
     sed -i '\|source "\$NAS_DOTFILES/shell/init.sh"|d' "$ROOT_BASHRC"
     echo "  - Limpiado /root/.bashrc"
   else
-    echo "  ~ /root/.bashrc tiene referencia a nas-dotfiles."
-    echo "    Ejecuta como root: sudo sed -i '/NAS_DOTFILES/d' /root/.bashrc"
+    echo "  ~ /root/.bashrc limpio"
+  fi
+elif sudo -n true 2>/dev/null; then
+  if sudo grep -q "NAS_DOTFILES" "$ROOT_BASHRC" 2>/dev/null; then
+    sudo cp "$ROOT_BASHRC" "$ROOT_BASHRC.bak.$(date +%Y%m%d%H%M%S)"
+    sudo sed -i '/# nas-dotfiles shell framework/d' "$ROOT_BASHRC"
+    sudo sed -i '\|export NAS_DOTFILES=|d' "$ROOT_BASHRC"
+    sudo sed -i '\|source "\$NAS_DOTFILES/shell/init.sh"|d' "$ROOT_BASHRC"
+    echo "  - Limpiado /root/.bashrc"
+  else
+    echo "  ~ /root/.bashrc limpio"
   fi
 else
-  echo "  ~ /root/.bashrc limpio (nada que hacer)"
+  echo "  ~ Sin acceso a /root/.bashrc — limpiar manualmente si es necesario"
 fi
 
 # ── Resultado ──────────────────────────────────────────────────────────────
@@ -77,9 +87,9 @@ echo "  ────────────────────────
 echo "  ✅ Desinstalación completa."
 echo ""
 echo "  El sistema ya no tiene referencias a nas-dotfiles."
-echo "  Puedes borrar el repo con:"
+echo "  Puedes borrar el proyecto con:"
 echo ""
-echo "    rm -rf $REPO_DIR"
+echo "    sudo rm -rf /nas-dotfiles"
 echo ""
 echo "  Para aplicar los cambios en la sesión actual:"
 echo "    exec bash"

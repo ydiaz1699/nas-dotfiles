@@ -4,9 +4,9 @@ Shell framework, Docker CLI y agente inteligente para administrar un NAS Debian/
 
 ## Filosofía
 
-**Todo el código vive exclusivamente dentro de `nas-dotfiles/`.** No se crean symlinks de `shell/` ni `docker/cli/` hacia rutas del sistema. El único rastro fuera del repo son 2 líneas en `~/.bashrc`.
+**Todo el código vive exclusivamente en `/nas-dotfiles/`.** Ruta fija en la raíz del sistema, independiente del usuario. No se crean symlinks. El único rastro fuera son 2 líneas en cada `.bashrc` (tu usuario + root).
 
-Borrar el proyecto = `./uninstall.sh && rm -rf ~/nas-dotfiles/`
+Borrar el proyecto = `./uninstall.sh && sudo rm -rf /nas-dotfiles/`
 
 ## Estructura
 
@@ -46,36 +46,35 @@ nas-dotfiles/
 ## Instalación
 
 ```bash
-git clone git@github.com:ydiaz1699/nas-dotfiles.git ~/nas-dotfiles
-cd ~/nas-dotfiles
+# Clonar en /nas-dotfiles (raíz del sistema, independiente del usuario)
+sudo git clone git@github.com:ydiaz1699/nas-dotfiles.git /nas-dotfiles
+cd /nas-dotfiles
+sudo chown -R $(whoami):$(whoami) /nas-dotfiles
 ./install.sh
 source ~/.bashrc
 ```
 
-El instalador agrega a `~/.bashrc`:
+El instalador configura automáticamente tanto `~/.bashrc` como `/root/.bashrc`:
 ```bash
 # nas-dotfiles shell framework
-export NAS_DOTFILES="$HOME/nas-dotfiles"
+export NAS_DOTFILES="/nas-dotfiles"
 source "$NAS_DOTFILES/shell/init.sh"
 ```
 
 **No se crean symlinks.** El comando `svc` se define como alias dentro de `init.sh`.
+Funciona para tu usuario y para root.
 
-### Para root
+### Ruta fija
 
-Si querés que root también use el framework:
-```bash
-# En /root/.bashrc
-export NAS_DOTFILES="/home/aadm/nas-dotfiles"
-source "$NAS_DOTFILES/shell/init.sh"
-```
+El proyecto siempre vive en `/nas-dotfiles/`. No depende de ningún home de usuario.
+Si cambiás de usuario o creás uno nuevo, solo agregás las 2 líneas a su `.bashrc`.
 
 ## Desinstalación
 
 ```bash
-cd ~/nas-dotfiles
+cd /nas-dotfiles
 ./uninstall.sh
-rm -rf ~/nas-dotfiles
+sudo rm -rf /nas-dotfiles
 ```
 
 Esto deja el sistema completamente limpio, sin residuos.
@@ -169,7 +168,7 @@ export NAS_AGENT_MODEL=ollama
 ### Ejecutar el agente
 
 ```bash
-cd ~/nas-dotfiles
+cd /nas-dotfiles
 
 # Modo interactivo
 python -m agent.nas_agent
@@ -189,9 +188,9 @@ NAS_AGENT_MODEL=ollama python -m agent.nas_agent "tarea privada..."
 
 ### Variables del shell framework (en `~/.bashrc`)
 
-| Variable | Descripción | Ejemplo |
-|----------|-------------|---------|
-| `NAS_DOTFILES` | Ruta absoluta al repo (única fuente de verdad) | `$HOME/nas-dotfiles` |
+| Variable | Descripción | Valor |
+|----------|-------------|-------|
+| `NAS_DOTFILES` | Ruta fija al proyecto (independiente del usuario) | `/nas-dotfiles` |
 
 Variables derivadas (definidas automáticamente en `shell/init.sh`):
 - `SHELL_DIR` — `$NAS_DOTFILES/shell`
@@ -212,12 +211,11 @@ Variables derivadas (definidas automáticamente en `shell/init.sh`):
 
 ## Portabilidad
 
-Si movés el repo a otra ruta, solo cambiás una línea en `~/.bashrc`:
+La ruta es fija: `/nas-dotfiles/`. Si necesitás moverla (no recomendado),
+cambiá la variable en los `.bashrc` de cada usuario:
 ```bash
-export NAS_DOTFILES="/nueva/ruta/nas-dotfiles"
+export NAS_DOTFILES="/nueva/ruta"
 ```
-
-Todo lo demás se adapta automáticamente.
 
 ## Licencia
 
