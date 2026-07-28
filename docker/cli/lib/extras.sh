@@ -111,7 +111,7 @@ svc_port_map() {
                   "$ext_port" "$svc" "$name" "$proto"
               done
         done
-  done | sort -t' ' -k2 -n
+  done | sort -k1,1n
 
   echo ""
 
@@ -506,10 +506,10 @@ svc_doctor() {
   local restarting
   restarting=$(docker ps --filter "status=restarting" --format "{{.Names}}" 2>/dev/null)
   if [[ -n "$restarting" ]]; then
-    echo "$restarting" | while read -r name; do
+    while read -r name; do
       echo -e "    \033[1;33m⚠ $name: REINICIANDO (crash loop?)\033[0m"
       ((warnings++))
-    done
+    done <<< "$restarting"
   fi
   [[ $down_svc -eq 0 && -z "$restarting" ]] && echo "    ✓ $total_svc servicios, todos activos"
   echo ""
@@ -535,7 +535,8 @@ svc_doctor() {
   # 5. Contenedores con muchos restarts
   echo -e "\033[0;34m  [5/6] Restart count\033[0m"
   local high_restarts=0
-  docker ps -q 2>/dev/null | while read -r cid; do
+  while read -r cid; do
+    [[ -z "$cid" ]] && continue
     local name restarts
     name=$(docker inspect --format '{{.Name}}' "$cid" 2>/dev/null | tr -d '/')
     restarts=$(docker inspect --format '{{.RestartCount}}' "$cid" 2>/dev/null)
@@ -544,7 +545,7 @@ svc_doctor() {
       ((high_restarts++))
       ((warnings++))
     fi
-  done
+  done < <(docker ps -q 2>/dev/null)
   [[ $high_restarts -eq 0 ]] && echo "    ✓ Sin contenedores con restarts excesivos"
   echo ""
 
