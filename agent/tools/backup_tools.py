@@ -5,29 +5,19 @@ Se integra con la lógica existente de svc backup/restore
 del CLI de nas-dotfiles.
 """
 
-import subprocess
+from datetime import datetime
 from pathlib import Path
 from strands.tools import tool
 
-DOCKER_BASE = Path("/docker")
-BACKUP_DIR = Path("/docker/backups")
-
-
-def _run(cmd: str, timeout: int = 300) -> str:
-    """Ejecuta un comando shell."""
-    try:
-        result = subprocess.run(
-            cmd, shell=True, capture_output=True,
-            text=True, timeout=timeout
-        )
-        output = result.stdout.strip()
-        if result.returncode != 0 and result.stderr:
-            output += f"\n⚠️ {result.stderr.strip()}"
-        return output
-    except subprocess.TimeoutExpired:
-        return "ERROR: Timeout (backup puede tardar)"
-    except Exception as e:
-        return f"ERROR: {e}"
+from agent.tools._shell import (
+    DOCKER_BASE,
+    BACKUP_DIR,
+    safe_run,
+    validate_service_name,
+    validated_service_path,
+    readonly_guard,
+    InvalidServiceName,
+)
 
 
 
@@ -42,13 +32,21 @@ def backup_service(service_name: str) -> str:
         service_name: Nombre del servicio a respaldar.
                       Ejemplos: nextcloud, vaultwarden, grafana
     """
-    # Verificar que el servicio existe
-    svc_dir = DOCKER_BASE / service_name
-    if not svc_dir.exists():
+    # Read-only guard
+    blocked = readonly_guard("backup_service")
+    if blocked:
+        return blocked
+
+    try:
+        svc_path = validated_service_path(service_name)
+    except InvalidServiceName as e:
+        return f"ERROR: {e}"
+
+    if not svc_path.exists():
         return f"ERROR: Servicio '{service_name}' no encontrado en {DOCKER_BASE}"
 
-    # Usar el CLI existente (svc backup)
-    output = _run(f"svc backup {service_name}", timeout=600)
+    # Usar el CLI existente (svc backup) — no shell=True
+    output = safe_run(["svc", "backup", service_name], timeout=600)
 
     if not output:
         return f"Backup de '{service_name}' ejecutado (sin salida)"
@@ -60,7 +58,7 @@ def backup_service(service_name: str) -> str:
 def restore_service(service_name: str, confirm: str = "no") -> str:
     """Lista backups disponibles o restaura un servicio desde backup.
 
-    ⚠️ ACCIÓN DESTRUCTIVA: Sin confirm="si" solo lista los backups.
+    ACCION DESTRUCTIVA: Sin confirm="si" solo lista los backups.
     Con confirm="si" restaura el más reciente.
 
     Args:
@@ -68,6 +66,16 @@ def restore_service(service_name: str, confirm: str = "no") -> str:
         confirm: "si" para ejecutar restauración del más reciente.
                  Cualquier otro valor solo lista backups disponibles.
     """
+    # Read-only guard
+    blocked = readonly_guard("restore_service")
+    if blocked:
+        return blocked
+
+    try:
+        validate_service_name(service_name)
+    except InvalidServiceName as e:
+        return f"ERROR: {e}"
+
     if not BACKUP_DIR.exists():
         return f"ERROR: Directorio de backups no encontrado: {BACKUP_DIR}"
 
@@ -83,9 +91,7 @@ def restore_service(service_name: str, confirm: str = "no") -> str:
 
     lista = []
     for i, b in enumerate(backups[:10], 1):
-        size_bytes = b.stat().st_size
-        size_mb = size_bytes / (1024 * 1024)
-        from datetime import datetime
+        size_mb = b.stat().st_size / (1024 * 1024)
         mtime = datetime.fromtimestamp(b.stat().st_mtime)
         lista.append(
             f"  {i}. {b.name} ({size_mb:.1f} MB) — {mtime:%Y-%m-%d %H:%M}"
@@ -105,8 +111,8 @@ def restore_service(service_name: str, confirm: str = "no") -> str:
 
     # Restaurar el más reciente
     latest = backups[0]
-    output = _run(
-        f"svc restore {service_name} {latest}",
+    output = safe_run(
+        ["svc", "restore", service_name, str(latest)],
         timeout=600,
     )
 
@@ -133,12 +139,10 @@ def list_backups() -> str:
     if not backups:
         return "No hay backups en /docker/backups/"
 
-    # Agrupar por servicio
     por_servicio = {}
     total_size = 0
 
     for b in backups:
-        # Nombre: servicio_tipo_nombre_timestamp.tar.gz
         parts = b.name.split("_")
         svc = parts[0] if parts else "desconocido"
         if svc not in por_servicio:

@@ -23,6 +23,12 @@ EXPORT_LINE="export NAS_DOTFILES=\"$REPO_DIR\""
 SOURCE_LINE='source "$NAS_DOTFILES/shell/init.sh"'
 MARKER="# nas-dotfiles shell framework"
 
+# Backup de seguridad antes de modificar
+if [[ -f "$BASHRC" ]]; then
+  cp "$BASHRC" "$BASHRC.bak.$(date +%Y%m%d%H%M%S)"
+  echo "  ~ Backup creado: $BASHRC.bak.*"
+fi
+
 # Limpiar cualquier config antigua (source ~/shell/init.sh, etc.)
 if grep -qF "source ~/shell/init.sh" "$BASHRC" 2>/dev/null; then
   echo "  ~ Eliminando referencia antigua: source ~/shell/init.sh"

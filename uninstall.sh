@@ -19,6 +19,10 @@ echo "  [1/3] Limpiando ~/.bashrc"
 BASHRC="$HOME/.bashrc"
 
 if [[ -f "$BASHRC" ]]; then
+  # Backup de seguridad antes de modificar
+  cp "$BASHRC" "$BASHRC.bak.$(date +%Y%m%d%H%M%S)"
+  echo "  ~ Backup creado: $BASHRC.bak.*"
+
   # Eliminar líneas relacionadas con nas-dotfiles
   sed -i '/# nas-dotfiles shell framework/d' "$BASHRC"
   sed -i '\|export NAS_DOTFILES=|d' "$BASHRC"

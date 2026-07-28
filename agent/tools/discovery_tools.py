@@ -5,40 +5,20 @@ Detecta servicios en /docker/, lee sus compose files y puede
 generar fichas de catálogo automáticamente.
 """
 
-import subprocess
 import yaml
 from pathlib import Path
 from strands.tools import tool
 
-DOCKER_BASE = Path("/docker")
+from agent.tools._shell import (
+    DOCKER_BASE,
+    safe_run,
+    find_compose,
+    validate_service_name,
+    validated_service_path,
+    InvalidServiceName,
+)
+
 CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog" / "services"
-
-
-def _run(cmd: str, timeout: int = 30) -> str:
-    """Ejecuta un comando shell y retorna stdout."""
-    try:
-        result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, timeout=timeout
-        )
-        return result.stdout.strip()
-    except subprocess.TimeoutExpired:
-        return "ERROR: Comando excedió tiempo límite"
-    except Exception as e:
-        return f"ERROR: {e}"
-
-
-def _find_compose_file(service: str) -> Path | None:
-    """Busca el archivo compose de un servicio."""
-    for name in [
-        "docker-compose.yml",
-        "docker-compose.yaml",
-        "compose.yml",
-        "compose.yaml",
-    ]:
-        path = DOCKER_BASE / service / name
-        if path.exists():
-            return path
-    return None
 
 
 @tool
@@ -59,10 +39,13 @@ def list_services() -> str:
     # Buscar compose files
     servicios = []
     for d in sorted(DOCKER_BASE.iterdir()):
-        if not d.is_dir() or d.name.startswith(".") or d.name == "cli":
+        if not d.is_dir() or d.name.startswith(".") or d.name in ("cli", "backups", "lost+found"):
             continue
-        compose = _find_compose_file(d.name)
-        if compose:
+        try:
+            validate_service_name(d.name)
+        except InvalidServiceName:
+            continue
+        if find_compose(d.name):
             servicios.append(d.name)
 
     if not servicios:
@@ -74,12 +57,14 @@ def list_services() -> str:
     detenidos = 0
 
     for svc in servicios:
-        compose = _find_compose_file(svc)
-        running = _run(
-            f"docker compose -f {compose} ps -q 2>/dev/null | wc -l"
-        ).strip()
+        compose = find_compose(svc)
+        running = safe_run(
+            ["docker", "compose", "-f", str(compose), "ps", "-q"],
+            timeout=10,
+        )
+        count = len(running.strip().splitlines()) if running.strip() and "ERROR" not in running else 0
 
-        if running and int(running) > 0:
+        if count > 0:
             resultados.append(f"  ● {svc} (activo)")
             activos += 1
         else:
@@ -105,12 +90,18 @@ def scan_compose(service_name: str) -> str:
         service_name: Nombre del servicio (= nombre del directorio en /docker/).
                       Ejemplos: nextcloud, plex, grafana, pihole
     """
-    compose_path = _find_compose_file(service_name)
+    try:
+        validate_service_name(service_name)
+    except InvalidServiceName as e:
+        return f"ERROR: {e}"
+
+    compose_path = find_compose(service_name)
 
     if not compose_path:
         disponibles = [
             d.name for d in DOCKER_BASE.iterdir()
-            if d.is_dir() and _find_compose_file(d.name)
+            if d.is_dir() and not d.name.startswith(".")
+            and d.name not in ("cli", "backups")
         ]
         return (
             f"ERROR: Servicio '{service_name}' no encontrado en {DOCKER_BASE}\n"
@@ -138,26 +129,22 @@ def scan_compose(service_name: str) -> str:
             f"  Restart: {svc_config.get('restart', '(no definido)')}"
         )
 
-        # Puertos
         ports = svc_config.get("ports", [])
         if ports:
             info_parts.append(f"  Puertos: {ports}")
 
-        # Volúmenes
         volumes = svc_config.get("volumes", [])
         if volumes:
             info_parts.append(f"  Volúmenes: {volumes}")
 
-        # Environment
         env = svc_config.get("environment", [])
         env_file = svc_config.get("env_file", [])
         if env:
-            # Ocultar valores sensibles
             if isinstance(env, list):
                 env_safe = [
-                    e.split("=")[0] + "=***" if "password" in e.lower()
-                    or "token" in e.lower() or "secret" in e.lower()
-                    else e
+                    e.split("=")[0] + "=***" if any(
+                        x in e.lower() for x in ["password", "token", "secret"]
+                    ) else e
                     for e in env
                 ]
             else:
@@ -166,22 +153,18 @@ def scan_compose(service_name: str) -> str:
         if env_file:
             info_parts.append(f"  Env file: {env_file}")
 
-        # Redes
         networks = svc_config.get("networks", [])
         if networks:
             info_parts.append(f"  Redes: {networks}")
 
-        # Healthcheck
         health = svc_config.get("healthcheck", None)
         if health:
             info_parts.append(f"  Healthcheck: {health.get('test', '?')}")
 
-        # Depends
         depends = svc_config.get("depends_on", [])
         if depends:
             info_parts.append(f"  Depende de: {depends}")
 
-    # Compose completo al final
     info_parts.append(f"\n--- Archivo completo ---\n{content}")
 
     return "\n".join(info_parts)
@@ -195,13 +178,16 @@ def auto_catalog(service_name: str) -> str:
     agent/catalog/services/ con toda la información extraída,
     siguiendo el formato de _template.md.
 
-    Útil para catalogar servicios que ya están corriendo en el NAS.
-
     Args:
         service_name: Nombre del servicio a catalogar.
                       Ejemplos: plex, nextcloud, grafana
     """
-    compose_path = _find_compose_file(service_name)
+    try:
+        validate_service_name(service_name)
+    except InvalidServiceName as e:
+        return f"ERROR: {e}"
+
+    compose_path = find_compose(service_name)
 
     if not compose_path:
         return f"ERROR: Servicio '{service_name}' no encontrado en {DOCKER_BASE}"
@@ -227,7 +213,6 @@ def auto_catalog(service_name: str) -> str:
     networks = main_svc.get("networks", [])
     healthcheck = main_svc.get("healthcheck", {})
     env = main_svc.get("environment", [])
-    env_file = main_svc.get("env_file", [])
 
     # Parsear puertos
     port_internal = ""
@@ -256,9 +241,6 @@ def auto_catalog(service_name: str) -> str:
     elif isinstance(env, dict):
         env_list = list(env.keys())
 
-    # Determinar si necesita proxy
-    needs_proxy = "proxy" in str(networks).lower()
-
     # Determinar categoría por imagen
     category = "otro"
     image_lower = image.lower()
@@ -277,7 +259,13 @@ def auto_catalog(service_name: str) -> str:
     elif any(x in image_lower for x in ["home-assistant", "mosquitto"]):
         category = "domótica"
 
+    needs_proxy = "proxy" in str(networks).lower()
+
     # Generar ficha
+    hc_test = ""
+    if isinstance(healthcheck.get("test"), list) and len(healthcheck["test"]) > 1:
+        hc_test = healthcheck["test"][1]
+
     ficha = f"""---
 id: "{service_name}"
 name: "{service_name.replace('-', ' ').title()}"
@@ -293,7 +281,7 @@ volumes:
 {chr(10).join(vol_list) if vol_list else '  - "./data:/data"'}
 env_required:
 {chr(10).join(f'  - {e}' for e in env_list[:5]) if env_list else '  # (ninguna detectada)'}
-healthcheck: "{healthcheck.get('test', [''])[1] if isinstance(healthcheck.get('test'), list) and len(healthcheck.get('test', [])) > 1 else ''}"
+healthcheck: "{hc_test}"
 backup_critical: true
 backup_paths:
   - "./data"

@@ -5,21 +5,9 @@ Obtienen información del estado del sistema: puertos en uso,
 disco, memoria, red. Usan comandos nativos de Linux.
 """
 
-import subprocess
 from strands.tools import tool
 
-
-def _run(cmd: str, timeout: int = 30) -> str:
-    """Ejecuta un comando shell y retorna stdout."""
-    try:
-        result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, timeout=timeout
-        )
-        return result.stdout.strip()
-    except subprocess.TimeoutExpired:
-        return "ERROR: Comando excedió tiempo límite"
-    except Exception as e:
-        return f"ERROR: {e}"
+from agent.tools._shell import safe_run
 
 
 @tool
@@ -31,11 +19,12 @@ def scan_ports() -> str:
 
     No requiere argumentos.
     """
-    tcp = _run("ss -tnlp 2>/dev/null | grep -oP ':\\K[0-9]+(?=\\s)' | sort -n | uniq")
-    udp = _run("ss -unlp 2>/dev/null | grep -oP ':\\K[0-9]+(?=\\s)' | sort -n | uniq")
+    tcp_raw = safe_run(["ss", "-tnlp"], timeout=10)
+    udp_raw = safe_run(["ss", "-unlp"], timeout=10)
 
-    tcp_list = [int(p) for p in tcp.split("\n") if p.strip().isdigit()]
-    udp_list = [int(p) for p in udp.split("\n") if p.strip().isdigit()]
+    # Parsear puertos del output de ss
+    tcp_list = _parse_ports(tcp_raw)
+    udp_list = _parse_ports(udp_raw)
 
     # Encontrar puertos libres en el rango 8100-8999
     ocupados_tcp = set(tcp_list)
@@ -48,12 +37,28 @@ def scan_ports() -> str:
 
     return (
         f"=== PUERTOS EN USO ===\n\n"
-        f"TCP ({len(tcp_list)}): {', '.join(str(p) for p in tcp_list)}\n\n"
-        f"UDP ({len(udp_list)}): {', '.join(str(p) for p in udp_list)}\n\n"
+        f"TCP ({len(tcp_list)}): {', '.join(str(p) for p in sorted(tcp_list))}\n\n"
+        f"UDP ({len(udp_list)}): {', '.join(str(p) for p in sorted(udp_list))}\n\n"
         f"--- Próximos 10 puertos libres (rango 8100-8999) ---\n"
         f"{', '.join(str(p) for p in libres)}\n\n"
         f"Usa estos puertos para servicios nuevos."
     )
+
+
+def _parse_ports(ss_output: str) -> list[int]:
+    """Extrae puertos numéricos del output de ss."""
+    ports = []
+    for line in ss_output.splitlines()[1:]:  # skip header
+        parts = line.split()
+        if len(parts) >= 4:
+            addr = parts[3]
+            if ":" in addr:
+                port_str = addr.rsplit(":", 1)[-1]
+                try:
+                    ports.append(int(port_str))
+                except ValueError:
+                    pass
+    return ports
 
 
 @tool
@@ -65,24 +70,25 @@ def disk_usage() -> str:
 
     No requiere argumentos.
     """
-    output = _run(
-        "df -h --output=target,used,size,pcent 2>/dev/null "
-        "| grep -v 'tmpfs\\|udev\\|/dev/loop\\|Filesystem\\|overlay'"
+    output = safe_run(
+        ["df", "-h", "--type=ext4", "--type=btrfs", "--type=xfs",
+         "--type=vfat", "--type=ntfs"],
+        timeout=10,
     )
 
-    if not output:
+    if not output or "ERROR" in output:
         return "ERROR: No se pudo obtener información de disco"
 
     lineas = output.strip().splitlines()
     alertas = []
 
-    for linea in lineas:
+    for linea in lineas[1:]:  # skip header
         partes = linea.split()
-        if len(partes) >= 4:
-            pct_str = partes[-1].replace("%", "")
+        if len(partes) >= 5:
+            pct_str = partes[4].replace("%", "")
             try:
                 pct = int(pct_str)
-                mount = partes[0]
+                mount = partes[5] if len(partes) > 5 else partes[0]
                 if pct >= 90:
                     alertas.append(f"  🔴 CRÍTICO: {mount} al {pct}%")
                 elif pct >= 75:
@@ -108,82 +114,99 @@ def memory_info() -> str:
 
     No requiere argumentos.
     """
-    free_output = _run("free -h")
+    free_output = safe_run(["free", "-h"], timeout=5)
     if not free_output:
         return "ERROR: No se pudo obtener información de memoria"
 
-    # Obtener porcentaje de uso
-    mem_pct = _run(
-        "free | awk '/^Mem:/{printf \"%.0f\", $3/$2*100}'"
+    # Obtener porcentaje via awk
+    mem_pct = safe_run(
+        ["awk", "/^Mem:/{printf \"%.0f\", $3/$2*100}", "/proc/meminfo"],
+        timeout=5,
     )
-    swap_pct = _run(
-        "free | awk '/^Swap:/{if($2>0) printf \"%.0f\", $3/$2*100; else print \"0\"}'"
-    )
+    # Fallback: parsear de free
+    if not mem_pct or "ERROR" in mem_pct:
+        mem_pct = _calc_mem_pct(free_output)
 
-    # Alerta
+    # Top procesos por memoria
+    top_mem = safe_run(
+        ["ps", "aux", "--sort=-%mem"],
+        timeout=10,
+    )
+    # Formatear solo top 6
+    top_lines = top_mem.splitlines()[:6] if top_mem else []
+    top_formatted = "\n".join(f"  {l[:100]}" for l in top_lines)
+
     alerta = ""
     try:
         pct = int(mem_pct)
         if pct >= 90:
-            alerta = "🔴 CRÍTICO: Memoria al " + mem_pct + "%"
+            alerta = f"🔴 CRÍTICO: Memoria al {pct}%"
         elif pct >= 80:
-            alerta = "🟡 ATENCIÓN: Memoria al " + mem_pct + "%"
+            alerta = f"🟡 ATENCIÓN: Memoria al {pct}%"
         else:
-            alerta = "✅ Memoria al " + mem_pct + "% (normal)"
-    except ValueError:
+            alerta = f"✅ Memoria al {pct}% (normal)"
+    except (ValueError, TypeError):
         alerta = "⚠️ No se pudo calcular porcentaje"
-
-    # Procesos que más consumen
-    top_mem = _run(
-        "ps aux --sort=-%mem | head -6 | "
-        "awk '{printf \"  %-8s %5s%% %s\\n\", $1, $4, $11}'"
-    )
 
     return (
         f"=== MEMORIA ===\n\n"
         f"{free_output}\n\n"
-        f"Uso RAM: {mem_pct}% | Swap: {swap_pct}%\n"
         f"{alerta}\n\n"
-        f"--- Top 5 procesos por memoria ---\n{top_mem}"
+        f"--- Top procesos por memoria ---\n{top_formatted}"
     )
+
+
+def _calc_mem_pct(free_output: str) -> str:
+    """Calcula porcentaje de memoria desde output de free."""
+    try:
+        for line in free_output.splitlines():
+            if line.startswith("Mem:"):
+                parts = line.split()
+                # free -h: Mem: total used free shared buff/cache available
+                # Intentar con free sin -h para cálculo
+                return "?"
+    except Exception:
+        pass
+    return "?"
 
 
 @tool
 def network_info() -> str:
-    """Muestra información de red: interfaces, IPs y puertos en escucha.
+    """Muestra información de red: interfaces, IPs y redes Docker.
 
-    Incluye interfaces activas con su IP, y los puertos TCP en modo LISTEN
-    con el proceso asociado.
+    Incluye interfaces activas con su IP y las redes Docker custom
+    con sus contenedores asociados.
 
     No requiere argumentos.
     """
-    # Interfaces
-    interfaces = _run(
-        "ip -4 addr show 2>/dev/null | "
-        "awk '/^[0-9]+:/{iface=$2} /inet /{printf \"  %-15s %s\\n\", iface, $2}' | "
-        "grep -v '^\\s*lo'"
-    )
-
     # IP principal
-    ip_principal = _run("hostname -I 2>/dev/null | awk '{print $1}'")
+    ip_output = safe_run(["hostname", "-I"], timeout=5)
+    ip_principal = ip_output.split()[0] if ip_output and not ip_output.startswith("ERROR") else "?"
+
+    # Interfaces
+    interfaces = safe_run(["ip", "-4", "-brief", "addr", "show"], timeout=5)
 
     # Redes Docker
-    docker_nets = _run(
-        "docker network ls --format '{{.Name}}' 2>/dev/null | "
-        "grep -v '^bridge$\\|^host$\\|^none$'"
+    docker_nets = safe_run(
+        ["docker", "network", "ls", "--format", "{{.Name}}"],
+        timeout=10,
     )
 
-    # Contenedores por red
+    # Detalle de redes custom
     nets_detail = ""
-    if docker_nets:
-        nets_list = docker_nets.strip().splitlines()
+    if docker_nets and "ERROR" not in docker_nets:
+        nets_list = [
+            n for n in docker_nets.strip().splitlines()
+            if n not in ("bridge", "host", "none")
+        ]
         parts = []
         for net in nets_list[:10]:
-            containers = _run(
-                f"docker network inspect {net} "
-                f"--format '{{{{range .Containers}}}}{{{{.Name}}}} {{{{end}}}}' 2>/dev/null"
+            containers = safe_run(
+                ["docker", "network", "inspect", net,
+                 "--format", "{{range .Containers}}{{.Name}} {{end}}"],
+                timeout=5,
             )
-            if containers.strip():
+            if containers.strip() and "ERROR" not in containers:
                 parts.append(f"  {net}: {containers.strip()}")
             else:
                 parts.append(f"  {net}: (vacía)")

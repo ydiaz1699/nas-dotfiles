@@ -6,33 +6,18 @@ conflictos de puertos, contenedores con muchos restarts,
 uso excesivo de recursos, etc.
 """
 
-import subprocess
+import yaml
 from pathlib import Path
 from strands.tools import tool
 
-DOCKER_BASE = Path("/docker")
-
-
-def _run(cmd: str, timeout: int = 30) -> str:
-    """Ejecuta un comando shell."""
-    try:
-        result = subprocess.run(
-            cmd, shell=True, capture_output=True,
-            text=True, timeout=timeout
-        )
-        return result.stdout.strip()
-    except Exception as e:
-        return f"ERROR: {e}"
-
-
-def _find_compose(service: str) -> Path | None:
-    """Busca el archivo compose de un servicio."""
-    for name in ["docker-compose.yml", "docker-compose.yaml",
-                 "compose.yml", "compose.yaml"]:
-        path = DOCKER_BASE / service / name
-        if path.exists():
-            return path
-    return None
+from agent.tools._shell import (
+    DOCKER_BASE,
+    safe_run,
+    find_compose,
+    service_exists_or_error,
+    validate_service_name,
+    InvalidServiceName,
+)
 
 
 
@@ -45,25 +30,25 @@ def service_health() -> str:
 
     No requiere argumentos.
     """
-    output = _run("svc health 2>/dev/null", timeout=60)
+    # Intentar usar el CLI primero
+    output = safe_run(["svc", "health"], timeout=60)
 
-    if output:
+    if output and "ERROR" not in output:
         return f"=== SALUD DE SERVICIOS ===\n\n{output}"
 
     # Fallback si el CLI no está disponible
-    containers = _run(
-        "docker ps -a --format "
-        "'{{.Names}}\\t{{.Status}}\\t{{.State}}' 2>/dev/null"
+    containers = safe_run(
+        ["docker", "ps", "-a", "--format", "{{.Names}}\t{{.Status}}\t{{.State}}"],
+        timeout=15,
     )
 
-    if not containers:
+    if not containers or "ERROR" in containers:
         return "No hay contenedores Docker corriendo"
 
     lines = containers.strip().splitlines()
-    activos = sum(1 for l in lines if "running" in l.lower() or "up" in l.lower())
+    activos = sum(1 for l in lines if "running" in l.lower())
     total = len(lines)
 
-    # Buscar problemas
     problemas = []
     for line in lines:
         parts = line.split("\t")
@@ -92,6 +77,7 @@ def service_health() -> str:
     return resultado
 
 
+
 @tool
 def port_conflicts() -> str:
     """Detecta conflictos de puertos entre servicios Docker.
@@ -101,15 +87,16 @@ def port_conflicts() -> str:
 
     No requiere argumentos.
     """
-    import yaml
-
     puertos = {}  # puerto → [servicio, ...]
 
-    # Escanear compose files
     for d in sorted(DOCKER_BASE.iterdir()):
-        if not d.is_dir() or d.name.startswith(".") or d.name == "cli":
+        if not d.is_dir() or d.name.startswith(".") or d.name in ("cli", "backups"):
             continue
-        compose = _find_compose(d.name)
+        try:
+            validate_service_name(d.name)
+        except InvalidServiceName:
+            continue
+        compose = find_compose(d.name)
         if not compose:
             continue
 
@@ -129,11 +116,10 @@ def port_conflicts() -> str:
         except Exception:
             continue
 
-    # Detectar conflictos
     conflictos = {p: svcs for p, svcs in puertos.items() if len(svcs) > 1}
 
     resultado = "=== ANÁLISIS DE PUERTOS ===\n\n"
-    resultado += f"Servicios escaneados: {len([d for d in DOCKER_BASE.iterdir() if d.is_dir()])}\n"
+    resultado += f"Servicios escaneados: {sum(1 for d in DOCKER_BASE.iterdir() if d.is_dir())}\n"
     resultado += f"Puertos asignados: {len(puertos)}\n\n"
 
     if conflictos:
@@ -144,7 +130,6 @@ def port_conflicts() -> str:
     else:
         resultado += "✅ Sin conflictos de puertos.\n\n"
 
-    # Mapa de puertos
     resultado += "--- Mapa de puertos ---\n"
     for port in sorted(puertos.keys()):
         svcs = puertos[port]
@@ -164,55 +149,64 @@ def troubleshoot(service_name: str) -> str:
     Args:
         service_name: Nombre del servicio a diagnosticar.
     """
-    compose = _find_compose(service_name)
-    if not compose:
-        return f"ERROR: Servicio '{service_name}' no encontrado"
+    error = service_exists_or_error(service_name)
+    if error:
+        return error
 
+    compose = find_compose(service_name)
     resultado = f"=== DIAGNÓSTICO: {service_name} ===\n\n"
 
     # 1. Estado
-    status = _run(
-        f"docker compose -f {compose} ps --format "
-        f"'{{{{.Name}}}}\\t{{{{.Status}}}}\\t{{{{.State}}}}' 2>/dev/null"
+    status = safe_run(
+        ["docker", "compose", "-f", str(compose), "ps",
+         "--format", "{{.Name}}\t{{.Status}}\t{{.State}}"],
+        timeout=15,
     )
     resultado += f"--- Estado ---\n{status or '(no hay contenedores)'}\n\n"
 
-    # 2. Healthcheck
-    container_id = _run(
-        f"docker compose -f {compose} ps -q 2>/dev/null | head -1"
+    # 2. Container ID + health + restarts
+    container_id = safe_run(
+        ["docker", "compose", "-f", str(compose), "ps", "-q"],
+        timeout=10,
     )
-    if container_id:
-        health = _run(
-            f"docker inspect --format="
-            f"'{{{{if .State.Health}}}}{{{{.State.Health.Status}}}}{{{{else}}}}sin-healthcheck{{{{end}}}}' "
-            f"{container_id} 2>/dev/null"
+    first_container = container_id.strip().splitlines()[0] if container_id.strip() else ""
+
+    restarts = "0"
+    if first_container:
+        health = safe_run(
+            ["docker", "inspect", "--format",
+             "{{if .State.Health}}{{.State.Health.Status}}{{else}}sin-healthcheck{{end}}",
+             first_container],
+            timeout=10,
         )
         resultado += f"--- Healthcheck ---\n  {health}\n\n"
 
-        # Restart count
-        restarts = _run(
-            f"docker inspect --format='{{{{.RestartCount}}}}' "
-            f"{container_id} 2>/dev/null"
+        restarts = safe_run(
+            ["docker", "inspect", "--format", "{{.RestartCount}}", first_container],
+            timeout=10,
         )
         resultado += f"--- Restarts ---\n  {restarts} veces\n"
-        if restarts and int(restarts) > 5:
-            resultado += "  ⚠️ Muchos restarts — posible crash loop\n"
+        try:
+            if int(restarts) > 5:
+                resultado += "  ⚠️ Muchos restarts — posible crash loop\n"
+        except (ValueError, TypeError):
+            pass
         resultado += "\n"
 
         # Recursos
-        stats = _run(
-            f"docker stats --no-stream --format "
-            f"'CPU: {{{{.CPUPerc}}}}  MEM: {{{{.MemUsage}}}}  NET: {{{{.NetIO}}}}' "
-            f"{container_id} 2>/dev/null"
+        stats = safe_run(
+            ["docker", "stats", "--no-stream", "--format",
+             "CPU: {{.CPUPerc}}  MEM: {{.MemUsage}}  NET: {{.NetIO}}",
+             first_container],
+            timeout=10,
         )
         resultado += f"--- Recursos ---\n  {stats}\n\n"
 
-    # 3. Últimos logs (últimas 30 líneas)
-    logs = _run(
-        f"docker compose -f {compose} logs --tail=30 --no-color 2>&1",
+    # 3. Logs recientes
+    logs = safe_run(
+        ["docker", "compose", "-f", str(compose), "logs", "--tail=30", "--no-color"],
         timeout=15,
     )
-    # Buscar errores en logs
     error_lines = [
         l for l in (logs or "").splitlines()
         if any(x in l.lower() for x in ["error", "fatal", "panic", "exception"])
@@ -231,13 +225,13 @@ def troubleshoot(service_name: str) -> str:
     sugerencias = []
 
     if not status or "running" not in (status or "").lower():
-        sugerencias.append("  → Intentar: service_start('" + service_name + "')")
-    if restarts and int(restarts) > 5:
-        sugerencias.append("  → Revisar config: read_compose('" + service_name + "')")
-        sugerencias.append("  → Ver logs completos: service_logs('" + service_name + "')")
-    if health and "unhealthy" in health:
-        sugerencias.append("  → Verificar healthcheck endpoint")
-        sugerencias.append("  → Intentar restart: service_restart('" + service_name + "')")
+        sugerencias.append(f"  → Intentar: service_start('{service_name}')")
+    try:
+        if int(restarts) > 5:
+            sugerencias.append(f"  → Revisar config: read_compose('{service_name}')")
+            sugerencias.append(f"  → Ver logs completos: service_logs('{service_name}')")
+    except (ValueError, TypeError):
+        pass
 
     if sugerencias:
         resultado += "\n".join(sugerencias)

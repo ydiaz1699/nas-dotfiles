@@ -5,13 +5,21 @@ Permiten al agente generar servicios nuevos siguiendo las
 reglas de _rules.md y el formato estándar del NAS.
 """
 
-import subprocess
 import yaml
 from pathlib import Path
 from strands.tools import tool
 import frontmatter
 
-DOCKER_BASE = Path("/docker")
+from agent.tools._shell import (
+    DOCKER_BASE,
+    safe_run,
+    find_compose,
+    validate_service_name,
+    validated_service_path,
+    readonly_guard,
+    InvalidServiceName,
+)
+
 CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog"
 RULES_FILE = CATALOG_DIR / "_rules.md"
 
@@ -24,28 +32,6 @@ def _load_rules() -> dict:
     return {}
 
 
-def _run(cmd: str, timeout: int = 30) -> str:
-    """Ejecuta un comando shell."""
-    try:
-        result = subprocess.run(
-            cmd, shell=True, capture_output=True,
-            text=True, timeout=timeout
-        )
-        return result.stdout.strip()
-    except Exception as e:
-        return f"ERROR: {e}"
-
-
-def _find_compose(service: str) -> Path | None:
-    """Busca el archivo compose de un servicio."""
-    for name in ["docker-compose.yml", "docker-compose.yaml",
-                 "compose.yml", "compose.yaml"]:
-        path = DOCKER_BASE / service / name
-        if path.exists():
-            return path
-    return None
-
-
 
 @tool
 def read_compose(service_name: str) -> str:
@@ -56,12 +42,16 @@ def read_compose(service_name: str) -> str:
     Args:
         service_name: Nombre del servicio en /docker/.
     """
-    compose = _find_compose(service_name)
+    try:
+        validate_service_name(service_name)
+    except InvalidServiceName as e:
+        return f"ERROR: {e}"
+
+    compose = find_compose(service_name)
     if not compose:
         return f"ERROR: Servicio '{service_name}' no encontrado en {DOCKER_BASE}"
     content = compose.read_text(encoding="utf-8")
     return f"=== {compose} ===\n\n{content}"
-
 
 
 @tool
@@ -74,7 +64,12 @@ def validate_compose(service_name: str) -> str:
     Args:
         service_name: Nombre del servicio a validar.
     """
-    compose_path = _find_compose(service_name)
+    try:
+        validate_service_name(service_name)
+    except InvalidServiceName as e:
+        return f"ERROR: {e}"
+
+    compose_path = find_compose(service_name)
     if not compose_path:
         return f"ERROR: Servicio '{service_name}' no encontrado"
 
@@ -141,7 +136,11 @@ def validate_compose(service_name: str) -> str:
     else:
         advertencias.append("⚠️  Falta README.md")
 
-    config_check = _run(f"docker compose -f {compose_path} config --quiet 2>&1")
+    # Validar sintaxis con docker compose config
+    config_check = safe_run(
+        ["docker", "compose", "-f", str(compose_path), "config", "--quiet"],
+        timeout=15,
+    )
     if "error" in config_check.lower():
         errores.append(f"❌ docker compose config: {config_check}")
     else:
@@ -191,7 +190,16 @@ def create_service(
         healthcheck_url: URL para healthcheck (ej: http://localhost:8080/health).
         description: Descripción corta del servicio para README.
     """
-    svc_dir = DOCKER_BASE / service_name
+    # Read-only guard
+    blocked = readonly_guard("create_service")
+    if blocked:
+        return blocked
+
+    # Validar nombre de servicio
+    try:
+        svc_dir = validated_service_path(service_name)
+    except InvalidServiceName as e:
+        return f"ERROR: {e}"
 
     if svc_dir.exists():
         return (
@@ -200,10 +208,8 @@ def create_service(
         )
 
     # Verificar puerto
-    ports_in_use = _run(
-        "ss -tnlp 2>/dev/null | grep -oP ':\\K[0-9]+(?=\\s)' | sort -n | uniq"
-    )
-    if str(port_external) in ports_in_use.split("\n"):
+    port_check = safe_run(["ss", "-tnlp"], timeout=10)
+    if f":{port_external} " in port_check or f":{port_external}\t" in port_check:
         return f"ERROR: Puerto {port_external} en uso. Usa scan_ports()."
 
     rules = _load_rules()
@@ -217,7 +223,7 @@ def create_service(
     compose += f"    image: {image}\n"
     compose += f"    container_name: {service_name}\n"
     compose += f"    restart: unless-stopped\n"
-    compose += f"    ports:\n      - \"{port_external}:{port_internal}\"\n"
+    compose += f'    ports:\n      - "{port_external}:{port_internal}"\n'
     compose += f"    volumes:\n"
     for v in vol_list:
         compose += f"      - {v}\n"
@@ -229,7 +235,7 @@ def create_service(
     compose += f"    env_file:\n      - .env\n"
     if healthcheck_url:
         compose += f"    healthcheck:\n"
-        compose += f"      test: [\"CMD\", \"curl\", \"-f\", \"{healthcheck_url}\"]\n"
+        compose += f'      test: ["CMD", "curl", "-f", "{healthcheck_url}"]\n'
         compose += f"      interval: 30s\n"
         compose += f"      timeout: 10s\n"
         compose += f"      retries: 3\n"
