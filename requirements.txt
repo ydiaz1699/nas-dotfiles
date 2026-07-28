@@ -1,8 +1,8 @@
 # nas-dotfiles: dependencias del agente
 # Instalar con: pip install -r requirements.txt
 
-# Strands Agents SDK
-strands-agents>=1.0.0
+# Strands Agents SDK con soporte Gemini
+strands-agents[gemini]>=1.0.0
 strands-agents-tools>=0.1.0
 
 # Parsing de frontmatter YAML (catálogo)
