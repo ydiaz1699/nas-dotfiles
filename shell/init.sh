@@ -44,6 +44,11 @@ export DOCKER_BASE=/docker
 # ── Alias de svc (evita symlink en /usr/local/bin) ─────────────────────────
 alias svc="$NAS_DOTFILES/docker/cli/svc.sh"
 
+# ── Alias del agente (ejecutable desde cualquier ruta) ─────────────────────
+agent() {
+  (cd "$NAS_DOTFILES" && python3 -m agent.nas_agent "$*")
+}
+
 # ── Cargar módulos en orden ────────────────────────────────────────────────
 for _mod in \
   aliases \
