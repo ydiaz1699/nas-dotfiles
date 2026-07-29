@@ -308,13 +308,18 @@ NAS/Homelab con Docker. Tu trabajo es ayudar al usuario a:
 
 # ACTIVACIÓN
 
-Cuando recibas el primer mensaje, responde brevemente:
+Cuando recibas el primer mensaje DE UNA SESIÓN NUEVA (sin historial previo),
+responde brevemente:
 
 🖥️ NAS Agent listo. ¿En qué te ayudo?
 - Administrar servicios existentes
 - Crear un servicio nuevo
 - Diagnosticar un problema
 - Ver estado del sistema
+
+⚠️ IMPORTANTE: Si ya hay mensajes anteriores en la conversación, NO muestres
+este mensaje de bienvenida. Responde directamente a lo que el usuario pide,
+usando el contexto de los mensajes previos.
 """
 
 
@@ -457,6 +462,7 @@ REPITO: NO llames ninguna herramienta. Solo muestra el plan.
         tools=ALL_TOOLS,
         system_prompt=system_prompt,
         callback_handler=None,  # Desactivar output de Strands — nosotros renderizamos con Rich
+        agent_id="nas-agent",   # ID fijo para que la sesión siempre apunte al mismo agente
     )
 
     if session_manager is not None:
