@@ -26,7 +26,37 @@ echo -e "${CYN}  │${NC}     ${DIM}Modo: bash interactivo${NC}                 
 echo -e "${CYN}  ╰──────────────────────────────────────────────╯${NC}"
 echo ""
 
-# ── [1/7] Detectar sistema ─────────────────────────────────────────────────
+# ── [0/7] Pre-requisitos del sistema ───────────────────────────────────────
+echo -e "  ${BOLD}[0/7] Verificando pre-requisitos${NC}"
+echo ""
+
+_check_install_pkg() {
+  local pkg="$1"
+  local desc="$2"
+  if dpkg -l "$pkg" 2>/dev/null | grep -q "^ii"; then
+    echo -e "    ${GRN}✓${NC} $desc ($pkg)"
+  else
+    echo -e "    ${YLW}⚠${NC} $desc no instalado — instalando $pkg..."
+    apt-get install -y -q "$pkg" >/dev/null 2>&1 || sudo apt-get install -y -q "$pkg" >/dev/null 2>&1 || {
+      echo -e "    ${RED}✗${NC} No se pudo instalar $pkg"
+      echo -e "    ${DIM}   Ejecutar manualmente: apt install $pkg${NC}"
+    }
+  fi
+}
+
+# Python + pip + venv (necesarios para el agente)
+if command -v python3 &>/dev/null; then
+  PY_MAJOR_MINOR=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+  _check_install_pkg "python3-pip" "pip"
+  _check_install_pkg "python3.${PY_MAJOR_MINOR##*.}-venv" "venv (python3.${PY_MAJOR_MINOR##*.}-venv)"
+else
+  echo -e "    ${DIM}~ Python no instalado — el agente no estará disponible${NC}"
+fi
+
+# Herramientas opcionales
+_check_install_pkg "eza" "eza (reemplazo de ls)"
+command -v fzf &>/dev/null || _check_install_pkg "fzf" "fzf (menú interactivo)"
+echo ""
 echo -e "  ${BOLD}[1/7] Detectando sistema${NC}"
 echo ""
 
