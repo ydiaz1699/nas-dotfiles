@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# setup — Entry point universal de instalación
+#
+# Detecta qué hay disponible y lanza el mejor modo:
+#   1. Python + Rich + InquirerPy → TUI moderno (setup.py)
+#   2. Python sin deps → intenta instalar deps, si falla → bash
+#   3. Sin Python → bash interactivo (install.sh)
+#
+# El usuario siempre ejecuta: ./setup
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Colores
+RED='\033[0;31m'
+GRN='\033[0;32m'
+BLU='\033[0;34m'
+CYN='\033[0;36m'
+YLW='\033[1;33m'
+DIM='\033[0;37m'
+NC='\033[0m'
+
+echo ""
+echo -e "${CYN}  ╭──────────────────────────────────────────────╮${NC}"
+echo -e "${CYN}  │${NC}     🖥️  ${BLU}nas-dotfiles — Setup${NC}                ${CYN}│${NC}"
+echo -e "${CYN}  │${NC}     ${DIM}Administración inteligente de NAS${NC}        ${CYN}│${NC}"
+echo -e "${CYN}  ╰──────────────────────────────────────────────╯${NC}"
+echo ""
+
+# ── Detectar Python ────────────────────────────────────────────────────────
+PYTHON=""
+for py in python3 python; do
+  if command -v "$py" &>/dev/null; then
+    PYTHON="$py"
+    break
+  fi
+done
+
+if [[ -z "$PYTHON" ]]; then
+  echo -e "  ${YLW}⚠  Python no detectado${NC}"
+  echo -e "  ${DIM}Usando instalador bash (funcional, menos bonito)${NC}"
+  echo ""
+  exec "$SCRIPT_DIR/install.sh"
+fi
+
+PY_VERSION=$($PYTHON --version 2>&1 | awk '{print $2}')
+echo -e "  ${GRN}✓${NC} Python detectado: ${PY_VERSION}"
+
+# ── Verificar dependencias del TUI ────────────────────────────────────────
+HAS_RICH=false
+HAS_INQUIRER=false
+
+$PYTHON -c "import rich" 2>/dev/null && HAS_RICH=true
+$PYTHON -c "import InquirerPy" 2>/dev/null && HAS_INQUIRER=true
+
+if [[ "$HAS_RICH" == "true" && "$HAS_INQUIRER" == "true" ]]; then
+  echo -e "  ${GRN}✓${NC} Rich + InquirerPy disponibles"
+  echo -e "  ${DIM}Lanzando TUI moderno...${NC}"
+  echo ""
+  exec $PYTHON "$SCRIPT_DIR/setup.py"
+fi
+
+# ── Intentar instalar deps del TUI ────────────────────────────────────────
+echo -e "  ${YLW}⚠${NC} Faltan dependencias del TUI (rich, InquirerPy)"
+echo ""
+echo -e "  ¿Instalar ahora? ${DIM}(pip install rich InquirerPy)${NC}"
+echo ""
+read -r -p "  [S/n] > " respuesta
+respuesta="${respuesta:-s}"
+
+if [[ "${respuesta,,}" == "s" || "${respuesta,,}" == "si" || "${respuesta,,}" == "y" ]]; then
+  echo ""
+  echo -e "  ${DIM}Instalando...${NC}"
+
+  if $PYTHON -m pip install --break-system-packages -q rich InquirerPy 2>/dev/null; then
+    echo -e "  ${GRN}✓${NC} Dependencias instaladas"
+    echo -e "  ${DIM}Lanzando TUI...${NC}"
+    echo ""
+    exec $PYTHON "$SCRIPT_DIR/setup.py"
+  else
+    # Intentar sin --break-system-packages (Python más viejo)
+    if $PYTHON -m pip install -q rich InquirerPy 2>/dev/null; then
+      echo -e "  ${GRN}✓${NC} Dependencias instaladas"
+      echo -e "  ${DIM}Lanzando TUI...${NC}"
+      echo ""
+      exec $PYTHON "$SCRIPT_DIR/setup.py"
+    else
+      echo -e "  ${RED}✗${NC} No se pudieron instalar las dependencias"
+      echo -e "  ${DIM}Continuando con instalador bash...${NC}"
+      echo ""
+    fi
+  fi
+else
+  echo ""
+  echo -e "  ${DIM}OK — usando instalador bash${NC}"
+  echo ""
+fi
+
+# ── Fallback: bash ─────────────────────────────────────────────────────────
+exec "$SCRIPT_DIR/install.sh"

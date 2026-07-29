@@ -1,152 +1,285 @@
 #!/usr/bin/env bash
-# install.sh — Configura nas-dotfiles (Opción B: todo dentro del repo)
+# install.sh — Instalador bash interactivo (fallback sin Python)
 #
-# NO crea symlinks de shell/ ni docker/cli/ hacia el sistema.
-# Solo configura ~/.bashrc con NAS_DOTFILES + source del init.sh.
-# El CLI 'svc' se expone como alias (definido en shell/init.sh).
+# Se ejecuta directamente o como fallback de ./setup cuando no hay Python.
+# Hace lo mismo que setup.py pero con interfaz bash básica.
 set -e
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-
-# Ruta destino: /nas-dotfiles (independiente del usuario)
 INSTALL_DIR="/nas-dotfiles"
 
+# ── Colores ────────────────────────────────────────────────────────────────
+RED='\033[0;31m'
+GRN='\033[0;32m'
+BLU='\033[0;34m'
+CYN='\033[0;36m'
+YLW='\033[1;33m'
+DIM='\033[0;37m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+# ── Header ─────────────────────────────────────────────────────────────────
 echo ""
-echo "  nas-dotfiles installer (v2 — sin symlinks)"
-echo "  ────────────────────────────────────────────"
-echo ""
-echo "  Repo origen: $REPO_DIR"
-echo "  Destino:     $INSTALL_DIR"
+echo -e "${CYN}  ╭──────────────────────────────────────────────╮${NC}"
+echo -e "${CYN}  │${NC}     🖥️  ${BLU}nas-dotfiles — Instalación${NC}           ${CYN}│${NC}"
+echo -e "${CYN}  │${NC}     ${DIM}Modo: bash interactivo${NC}                   ${CYN}│${NC}"
+echo -e "${CYN}  ╰──────────────────────────────────────────────╯${NC}"
 echo ""
 
-# ── [0/4] Copiar/mover a /nas-dotfiles si no está ahí ─────────────────────
+# ── [1/7] Detectar sistema ─────────────────────────────────────────────────
+echo -e "  ${BOLD}[1/7] Detectando sistema${NC}"
+echo ""
+
+_detect() {
+  local label="$1" cmd="$2" fallback="$3"
+  local result
+  result=$(eval "$cmd" 2>/dev/null) || result="$fallback"
+  printf "    %-12s %s\n" "$label" "$result"
+  echo "$result"
+}
+
+SYS_USER=$(whoami)
+SYS_HOST=$(hostname 2>/dev/null || echo "nas")
+SYS_OS=$(grep PRETTY_NAME /etc/os-release 2>/dev/null | cut -d'"' -f2 || echo "Linux")
+SYS_DOCKER=$(docker --version 2>/dev/null | cut -d',' -f1 | sed 's/Docker version /v/' || echo "")
+SYS_BASH=$(bash --version 2>/dev/null | head -1 | grep -oP 'version \K[0-9.]+' || echo "?")
+SYS_TZ=$(timedatectl show -p Timezone --value 2>/dev/null || cat /etc/timezone 2>/dev/null || echo "UTC")
+
+echo -e "    ${DIM}OS${NC}          $SYS_OS"
+echo -e "    ${DIM}Usuario${NC}     $SYS_USER"
+echo -e "    ${DIM}Host${NC}        $SYS_HOST"
+if [[ -n "$SYS_DOCKER" ]]; then
+  echo -e "    ${DIM}Docker${NC}      ${GRN}$SYS_DOCKER ✓${NC}"
+else
+  echo -e "    ${DIM}Docker${NC}      ${RED}no instalado ✗${NC}"
+fi
+echo -e "    ${DIM}Bash${NC}        $SYS_BASH"
+echo -e "    ${DIM}Timezone${NC}    $SYS_TZ"
+echo ""
+
+# ── [2/7] Preguntar configuración ─────────────────────────────────────────
+echo -e "  ${BOLD}[2/7] Configuración${NC}"
+echo ""
+
+# Docker base
+read -r -p "    Ruta datos Docker [/docker]: " INPUT_DOCKER
+DOCKER_BASE="${INPUT_DOCKER:-/docker}"
+
+# Timezone
+read -r -p "    Timezone [$SYS_TZ]: " INPUT_TZ
+TIMEZONE="${INPUT_TZ:-$SYS_TZ}"
+
+# Provider
+echo ""
+echo -e "    ${DIM}Providers disponibles:${NC}"
+echo -e "      ${GRN}1)${NC} Gemini  — barato, solo API key (recomendado)"
+echo -e "      ${BLU}2)${NC} Bedrock — Claude, mejor razonamiento, requiere AWS"
+echo -e "      ${DIM}3)${NC} Ollama  — local, gratis, sin internet"
+echo -e "      ${DIM}4)${NC} Saltar  — configurar después"
+echo ""
+read -r -p "    Provider [1]: " INPUT_PROVIDER
+case "${INPUT_PROVIDER:-1}" in
+  1) PROVIDER="gemini" ;;
+  2) PROVIDER="bedrock" ;;
+  3) PROVIDER="ollama" ;;
+  *) PROVIDER="skip" ;;
+esac
+
+# API key según provider
+API_KEY=""
+AWS_REGION=""
+OLLAMA_HOST=""
+
+if [[ "$PROVIDER" == "gemini" ]]; then
+  echo ""
+  echo -e "    ${DIM}Obtener en: https://aistudio.google.com/apikey${NC}"
+  read -r -s -p "    GOOGLE_API_KEY: " API_KEY
+  echo ""
+elif [[ "$PROVIDER" == "bedrock" ]]; then
+  read -r -p "    AWS Region [us-east-1]: " INPUT_REGION
+  AWS_REGION="${INPUT_REGION:-us-east-1}"
+elif [[ "$PROVIDER" == "ollama" ]]; then
+  read -r -p "    Ollama host [http://localhost:11434]: " INPUT_OLLAMA
+  OLLAMA_HOST="${INPUT_OLLAMA:-http://localhost:11434}"
+fi
+
+# Root
+echo ""
+read -r -p "    ¿Configurar para root también? [S/n]: " INPUT_ROOT
+SETUP_ROOT="${INPUT_ROOT:-s}"
+
+# Python deps
+INSTALL_PY_DEPS="n"
+if command -v python3 &>/dev/null || command -v python &>/dev/null; then
+  read -r -p "    ¿Instalar dependencias Python del agente? [S/n]: " INPUT_PY
+  INSTALL_PY_DEPS="${INPUT_PY:-s}"
+fi
+
+# ── [3/7] Resumen ──────────────────────────────────────────────────────────
+echo ""
+echo -e "  ${BOLD}[3/7] Resumen${NC}"
+echo ""
+echo -e "    ┌────────────────────────────────────────────┐"
+echo -e "    │ Proyecto:     $INSTALL_DIR"
+echo -e "    │ Docker datos: $DOCKER_BASE"
+echo -e "    │ Timezone:     $TIMEZONE"
+echo -e "    │ Provider:     $PROVIDER"
+[[ -n "$API_KEY" ]] && echo -e "    │ API Key:      ••••••••••"
+echo -e "    │ Root:         ${SETUP_ROOT,,}"
+echo -e "    │ Python deps:  ${INSTALL_PY_DEPS,,}"
+echo -e "    └────────────────────────────────────────────┘"
+echo ""
+
+read -r -p "    ¿Proceder con la instalación? [S/n]: " CONFIRM
+if [[ "${CONFIRM,,}" == "n" || "${CONFIRM,,}" == "no" ]]; then
+  echo -e "\n  ${DIM}Cancelado. Nada se modificó.${NC}\n"
+  exit 0
+fi
+
+# ── [4/7] Copiar a /nas-dotfiles ───────────────────────────────────────────
+echo ""
+echo -e "  ${BOLD}[4/7] Instalando en $INSTALL_DIR${NC}"
+
 if [[ "$REPO_DIR" != "$INSTALL_DIR" ]]; then
-  echo "  [0/4] Instalando en $INSTALL_DIR"
   if [[ -d "$INSTALL_DIR" ]]; then
-    echo "  ~ $INSTALL_DIR ya existe — actualizando..."
     rsync -a --delete "$REPO_DIR/" "$INSTALL_DIR/"
+    echo -e "    ${GRN}✓${NC} Actualizado $INSTALL_DIR"
   else
     sudo cp -a "$REPO_DIR" "$INSTALL_DIR"
+    echo -e "    ${GRN}✓${NC} Copiado a $INSTALL_DIR"
   fi
-  # Permisos: aadm es dueño, todos pueden leer/ejecutar
-  sudo chown -R "$(whoami):$(whoami)" "$INSTALL_DIR"
-  sudo chmod -R 755 "$INSTALL_DIR"
-  echo "  + Copiado a $INSTALL_DIR (dueño: $(whoami))"
-  echo ""
+  sudo chown -R "$SYS_USER:$SYS_USER" "$INSTALL_DIR"
 else
-  echo "  [0/4] Ya está en $INSTALL_DIR — OK"
-  echo ""
+  echo -e "    ${DIM}~ Ya está en $INSTALL_DIR${NC}"
 fi
 
-# ── [1/4] Configurar ~/.bashrc ─────────────────────────────────────────────
-echo "  [1/4] Configurando ~/.bashrc"
+# ── [5/7] Configurar ~/.bashrc ─────────────────────────────────────────────
+echo -e "  ${BOLD}[5/7] Configurando .bashrc${NC}"
 
-BASHRC="$HOME/.bashrc"
+MARKER="# nas-dotfiles shell framework"
 EXPORT_LINE='export NAS_DOTFILES="/nas-dotfiles"'
 SOURCE_LINE='source "$NAS_DOTFILES/shell/init.sh"'
-MARKER="# nas-dotfiles shell framework"
 
-# Backup de seguridad antes de modificar
-if [[ -f "$BASHRC" ]]; then
-  cp "$BASHRC" "$BASHRC.bak.$(date +%Y%m%d%H%M%S)"
-  echo "  ~ Backup creado: $BASHRC.bak.*"
-fi
+_configure_bashrc() {
+  local bashrc="$1"
+  local label="$2"
 
-# Limpiar cualquier config antigua (source ~/shell/init.sh, etc.)
-if grep -qF "source ~/shell/init.sh" "$BASHRC" 2>/dev/null; then
-  echo "  ~ Eliminando referencia antigua: source ~/shell/init.sh"
-  sed -i '/source ~\/shell\/init\.sh/d' "$BASHRC"
-fi
-if grep -qF "source /home/aadm/shell/init.sh" "$BASHRC" 2>/dev/null; then
-  echo "  ~ Eliminando referencia antigua: source /home/aadm/shell/init.sh"
-  sed -i '\|source /home/aadm/shell/init\.sh|d' "$BASHRC"
-fi
+  if [[ ! -f "$bashrc" ]]; then
+    touch "$bashrc" 2>/dev/null || sudo touch "$bashrc"
+  fi
 
-# Verificar si ya está configurado correctamente
-if grep -qF "$EXPORT_LINE" "$BASHRC" 2>/dev/null && grep -qF "$SOURCE_LINE" "$BASHRC" 2>/dev/null; then
-  echo "  ~ ~/.bashrc ya configurado correctamente"
-else
-  # Limpiar bloque anterior si existe parcialmente
-  sed -i "/$MARKER/d" "$BASHRC" 2>/dev/null || true
-  sed -i "\|export NAS_DOTFILES=|d" "$BASHRC" 2>/dev/null || true
-  sed -i '\|source "\$NAS_DOTFILES/shell/init.sh"|d' "$BASHRC" 2>/dev/null || true
+  # Ya configurado?
+  if grep -qF "$EXPORT_LINE" "$bashrc" 2>/dev/null && grep -qF "$SOURCE_LINE" "$bashrc" 2>/dev/null; then
+    echo -e "    ${DIM}~ $label ya configurado${NC}"
+    return
+  fi
 
-  # Agregar bloque nuevo
+  # Backup
+  cp "$bashrc" "$bashrc.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || \
+    sudo cp "$bashrc" "$bashrc.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
+
+  # Limpiar versiones anteriores
+  sed -i "/$MARKER/d" "$bashrc" 2>/dev/null || sudo sed -i "/$MARKER/d" "$bashrc"
+  sed -i '\|export NAS_DOTFILES=|d' "$bashrc" 2>/dev/null || sudo sed -i '\|export NAS_DOTFILES=|d' "$bashrc"
+  sed -i '\|source "\$NAS_DOTFILES/shell/init.sh"|d' "$bashrc" 2>/dev/null || sudo sed -i '\|source "\$NAS_DOTFILES/shell/init.sh"|d' "$bashrc"
+  # Limpiar formato antiguo
+  sed -i '/source ~\/shell\/init\.sh/d' "$bashrc" 2>/dev/null || true
+  sed -i '\|source /home/aadm/shell/init\.sh|d' "$bashrc" 2>/dev/null || true
+
+  # Agregar
   {
     echo ""
     echo "$MARKER"
     echo "$EXPORT_LINE"
     echo "$SOURCE_LINE"
-  } >> "$BASHRC"
-  echo "  + Agregado a $BASHRC:"
-  echo "      $EXPORT_LINE"
-  echo "      $SOURCE_LINE"
-fi
+  } >> "$bashrc" 2>/dev/null || {
+    echo -e "\n$MARKER\n$EXPORT_LINE\n$SOURCE_LINE" | sudo tee -a "$bashrc" >/dev/null
+  }
 
-# ── [2/4] Configurar /root/.bashrc (si somos root o tenemos sudo) ──────────
-echo "  [2/4] Configurando /root/.bashrc"
-
-ROOT_BASHRC="/root/.bashrc"
-if [[ "$EUID" -eq 0 ]]; then
-  # Somos root
-  if ! grep -qF "$EXPORT_LINE" "$ROOT_BASHRC" 2>/dev/null; then
-    cp "$ROOT_BASHRC" "$ROOT_BASHRC.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
-    {
-      echo ""
-      echo "$MARKER"
-      echo "$EXPORT_LINE"
-      echo "$SOURCE_LINE"
-    } >> "$ROOT_BASHRC"
-    echo "  + Agregado a /root/.bashrc"
-  else
-    echo "  ~ /root/.bashrc ya configurado"
-  fi
-elif sudo -n true 2>/dev/null; then
-  # Tenemos sudo sin password
-  if ! sudo grep -qF "$EXPORT_LINE" "$ROOT_BASHRC" 2>/dev/null; then
-    sudo cp "$ROOT_BASHRC" "$ROOT_BASHRC.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
-    echo -e "\n$MARKER\n$EXPORT_LINE\n$SOURCE_LINE" | sudo tee -a "$ROOT_BASHRC" >/dev/null
-    echo "  + Agregado a /root/.bashrc"
-  else
-    echo "  ~ /root/.bashrc ya configurado"
-  fi
-else
-  echo "  ~ Sin acceso a /root/.bashrc (ejecutar como root o con sudo)"
-  echo "    Agregar manualmente a /root/.bashrc:"
-  echo "      $EXPORT_LINE"
-  echo "      $SOURCE_LINE"
-fi
-
-# ── [3/4] Permisos de ejecución ────────────────────────────────────────────
-echo "  [3/4] Verificando permisos"
-chmod +x "$INSTALL_DIR/docker/cli/svc.sh"
-echo "  + docker/cli/svc.sh → ejecutable"
-
-# ── [4/4] Limpiar symlinks antiguos (si existen) ───────────────────────────
-echo "  [4/4] Limpiando symlinks antiguos (si existen)"
-
-_remove_old_symlink() {
-  local target="$1"
-  if [[ -L "$target" ]]; then
-    rm -f "$target"
-    echo "  - Eliminado symlink antiguo: $target"
-  fi
+  echo -e "    ${GRN}✓${NC} $label configurado"
 }
 
-_remove_old_symlink "/home/aadm/shell"
-_remove_old_symlink "$HOME/shell"
-_remove_old_symlink "/docker/cli"
-_remove_old_symlink "/usr/local/bin/svc"
+_configure_bashrc "$HOME/.bashrc" "~/.bashrc"
+
+if [[ "${SETUP_ROOT,,}" == "s" || "${SETUP_ROOT,,}" == "si" || "${SETUP_ROOT,,}" == "y" ]]; then
+  if [[ "$EUID" -eq 0 ]]; then
+    _configure_bashrc "/root/.bashrc" "/root/.bashrc"
+  elif sudo -n true 2>/dev/null; then
+    _configure_bashrc "/root/.bashrc" "/root/.bashrc"
+  else
+    echo -e "    ${YLW}⚠${NC} Sin acceso a /root/.bashrc — agregar manualmente"
+  fi
+fi
+
+# ── [6/7] Variables de entorno ─────────────────────────────────────────────
+echo -e "  ${BOLD}[6/7] Guardando configuración del agente${NC}"
+
+ENV_FILE="$INSTALL_DIR/.env.agent"
+{
+  echo "# Configuración del agente nas-dotfiles"
+  echo "# Generado por install.sh — $(date '+%Y-%m-%d %H:%M')"
+  echo ""
+  if [[ "$PROVIDER" != "skip" ]]; then
+    echo "NAS_AGENT_MODEL=$PROVIDER"
+  else
+    echo "# NAS_AGENT_MODEL=gemini"
+  fi
+  [[ -n "$API_KEY" ]] && echo "GOOGLE_API_KEY=$API_KEY"
+  [[ -n "$AWS_REGION" ]] && echo "AWS_REGION=$AWS_REGION"
+  [[ -n "$OLLAMA_HOST" ]] && echo "OLLAMA_HOST=$OLLAMA_HOST"
+  echo ""
+  echo "DOCKER_BASE=$DOCKER_BASE"
+  echo "TZ=$TIMEZONE"
+  echo ""
+  echo "# Modos de seguridad (descomentar para activar)"
+  echo "# NAS_AGENT_READONLY=1"
+  echo "# NAS_AGENT_DRYRUN=1"
+} > "$ENV_FILE"
+chmod 600 "$ENV_FILE"
+echo -e "    ${GRN}✓${NC} .env.agent creado (permisos 600)"
+
+# ── [7/7] Dependencias + permisos ──────────────────────────────────────────
+echo -e "  ${BOLD}[7/7] Finalizando${NC}"
+
+# Permisos
+chmod +x "$INSTALL_DIR/docker/cli/svc.sh" 2>/dev/null || true
+chmod +x "$INSTALL_DIR/setup.py" 2>/dev/null || true
+chmod +x "$INSTALL_DIR/setup" 2>/dev/null || true
+chmod +x "$INSTALL_DIR/uninstall.sh" 2>/dev/null || true
+echo -e "    ${GRN}✓${NC} Permisos de ejecución verificados"
+
+# Limpiar symlinks antiguos
+for old_link in "/home/$SYS_USER/shell" "$HOME/shell" "/docker/cli" "/usr/local/bin/svc"; do
+  if [[ -L "$old_link" ]]; then
+    rm -f "$old_link" 2>/dev/null || sudo rm -f "$old_link" 2>/dev/null || true
+    echo -e "    ${DIM}~ Eliminado symlink antiguo: $old_link${NC}"
+  fi
+done
+
+# Python deps
+if [[ "${INSTALL_PY_DEPS,,}" == "s" || "${INSTALL_PY_DEPS,,}" == "si" || "${INSTALL_PY_DEPS,,}" == "y" ]]; then
+  echo -e "    ${DIM}Instalando dependencias Python...${NC}"
+  PYTHON=$(command -v python3 || command -v python)
+  if [[ -n "$PYTHON" ]]; then
+    $PYTHON -m pip install --break-system-packages -q -r "$INSTALL_DIR/requirements.txt" 2>/dev/null || \
+      $PYTHON -m pip install -q -r "$INSTALL_DIR/requirements.txt" 2>/dev/null || \
+      echo -e "    ${YLW}⚠${NC} No se pudieron instalar deps Python"
+  fi
+  echo -e "    ${GRN}✓${NC} Dependencias Python instaladas"
+fi
 
 # ── Resultado ──────────────────────────────────────────────────────────────
 echo ""
-echo "  ────────────────────────────────────────────"
-echo "  ✅ Instalación completa."
-echo ""
-echo "  Ruta del proyecto: $INSTALL_DIR"
-echo "  Funciona para: $(whoami) + root"
-echo ""
-echo "  Ejecuta:  source ~/.bashrc"
-echo ""
-echo "  Para desinstalar:  $INSTALL_DIR/uninstall.sh"
+echo -e "  ${CYN}╭──────────────────────────────────────────────╮${NC}"
+echo -e "  ${CYN}│${NC}  ${GRN}✅ Instalación completa${NC}                     ${CYN}│${NC}"
+echo -e "  ${CYN}│${NC}                                              ${CYN}│${NC}"
+echo -e "  ${CYN}│${NC}  Proyecto:  ${BOLD}$INSTALL_DIR${NC}                    ${CYN}│${NC}"
+echo -e "  ${CYN}│${NC}  Provider:  $PROVIDER                           ${CYN}│${NC}"
+echo -e "  ${CYN}│${NC}  Usuarios:  ${SYS_USER}$([ "${SETUP_ROOT,,}" == "s" ] && echo " + root")                         ${CYN}│${NC}"
+echo -e "  ${CYN}│${NC}                                              ${CYN}│${NC}"
+echo -e "  ${CYN}│${NC}  ${DIM}Ejecuta:${NC}                                   ${CYN}│${NC}"
+echo -e "  ${CYN}│${NC}    ${CYN}source ~/.bashrc${NC}                         ${CYN}│${NC}"
+echo -e "  ${CYN}│${NC}    ${CYN}svc doctor${NC}                               ${CYN}│${NC}"
+echo -e "  ${CYN}│${NC}    ${CYN}python -m agent.nas_agent \"hola\"${NC}         ${CYN}│${NC}"
+echo -e "  ${CYN}╰──────────────────────────────────────────────╯${NC}"
 echo ""
