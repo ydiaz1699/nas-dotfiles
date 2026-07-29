@@ -12,9 +12,13 @@ Borrar el proyecto = `./uninstall.sh && sudo rm -rf /nas-dotfiles/`
 
 ```
 nas-dotfiles/
-├── install.sh              # Configurar ~/.bashrc (sin symlinks)
+├── setup                   # Entry point universal (auto-detecta modo)
+├── install.sh              # Bash interactivo (fallback sin Python)
 ├── uninstall.sh            # Revertir instalación completamente
 ├── requirements.txt        # Dependencias Python del agente
+├── ui/
+│   ├── setup.py            # TUI moderno (Rich + InquirerPy)
+│   └── requirements-setup.txt  # Deps del TUI
 ├── shell/
 │   ├── init.sh             # Loader principal (sourced por ~/.bashrc)
 │   └── lib/
@@ -34,7 +38,7 @@ nas-dotfiles/
 │           ├── docker.sh     # update-all
 │           ├── health.sh     # Dashboard de salud
 │           ├── backup.sh     # Backup/restore de volúmenes
-│           ├── extras.sh     # port-map, size, net, env, create, open, watch
+│           ├── extras.sh     # port-map, size, net, env, create, watch, doctor, diff
 │           ├── menu.sh       # TUI interactivo con fzf
 │           └── help.sh       # Ayuda
 └── agent/                    # Agente Python (Strands Agents SDK)
@@ -50,11 +54,16 @@ nas-dotfiles/
 sudo git clone git@github.com:ydiaz1699/nas-dotfiles.git /nas-dotfiles
 cd /nas-dotfiles
 sudo chown -R $(whoami):$(whoami) /nas-dotfiles
-./install.sh
+./setup
 source ~/.bashrc
 ```
 
-El instalador configura automáticamente tanto `~/.bashrc` como `/root/.bashrc`:
+El instalador (`./setup`) auto-detecta qué hay disponible:
+- **Con Python + Rich + InquirerPy** → TUI moderno con paneles y menús (`ui/setup.py`)
+- **Con Python sin deps** → ofrece instalarlas, si no puede → bash
+- **Sin Python** → bash interactivo con colores (`install.sh`)
+
+Ambos modos configuran automáticamente `~/.bashrc` y `/root/.bashrc`:
 ```bash
 # nas-dotfiles shell framework
 export NAS_DOTFILES="/nas-dotfiles"
@@ -63,6 +72,14 @@ source "$NAS_DOTFILES/shell/init.sh"
 
 **No se crean symlinks.** El comando `svc` se define como alias dentro de `init.sh`.
 Funciona para tu usuario y para root.
+
+### Modos de instalación
+
+| Modo | Cuándo se usa | Interfaz |
+|------|---------------|----------|
+| TUI moderno | Python + Rich + InquirerPy disponibles | Paneles, menús interactivos, progreso |
+| Bash interactivo | Sin Python o sin deps del TUI | Colores, preguntas, feedback visual |
+| Directo | Ya sabés qué querés | `./install.sh` sin preguntas (editar vars al inicio) |
 
 ### Ruta fija
 
