@@ -46,7 +46,7 @@ alias svc="$NAS_DOTFILES/docker/cli/svc.sh"
 
 # ── Alias del agente (ejecutable desde cualquier ruta) ─────────────────────
 agent() {
-  (cd "$NAS_DOTFILES" && python3 -m agent.nas_agent "$*")
+  (cd "$NAS_DOTFILES" && python3 -m agent.nas_agent "$@")
 }
 
 # ── Cargar módulos en orden ────────────────────────────────────────────────

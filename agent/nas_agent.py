@@ -23,15 +23,24 @@ Uso:
     # Con Ollama local
     NAS_AGENT_MODEL=ollama python -m agent.nas_agent "..."
 
+    # Gestión de sesión (memoria entre invocaciones)
+    python -m agent.nas_agent --new "crear servicio X"   # Nueva sesión limpia
+    python -m agent.nas_agent --status                   # Ver info de sesión actual
+    python -m agent.nas_agent --clear                    # Borrar sesión y empezar limpio
+
 Requisitos:
     pip install 'strands-agents[gemini]' strands-agents-tools python-frontmatter pyyaml
 """
 
+import json
 import os
+import shutil
 import sys
+import time
 from pathlib import Path
 
 from strands import Agent
+from strands.session.file_session_manager import FileSessionManager
 
 from agent.tools import ALL_TOOLS
 
@@ -67,6 +76,89 @@ _load_env_agent()
 BASE_DIR = Path(__file__).resolve().parent
 CATALOG_DIR = BASE_DIR / "catalog"
 RULES_FILE = CATALOG_DIR / "_rules.md"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Gestión de sesión — Persistencia de conversación entre invocaciones
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Directorio donde se guardan las sesiones del agente
+SESSIONS_DIR = Path(os.environ.get(
+    "NAS_AGENT_SESSIONS_DIR",
+    str(Path.home() / ".nas-agent" / "sessions")
+))
+
+# Timeout de sesión: si pasan más de N minutos sin actividad, se auto-resetea
+SESSION_TIMEOUT_MIN = int(os.environ.get("NAS_AGENT_SESSION_TIMEOUT", "30"))
+
+# ID de sesión por defecto (se usa una sesión fija para mantener contexto)
+DEFAULT_SESSION_ID = "nas-agent-main"
+
+
+def _get_session_metadata_path() -> Path:
+    """Ruta al archivo de metadatos de la sesión actual."""
+    return SESSIONS_DIR / "session_metadata.json"
+
+
+def _read_session_metadata() -> dict:
+    """Lee los metadatos de la sesión actual."""
+    meta_path = _get_session_metadata_path()
+    if meta_path.exists():
+        try:
+            return json.loads(meta_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            pass
+    return {}
+
+
+def _write_session_metadata(meta: dict) -> None:
+    """Guarda metadatos de la sesión."""
+    meta_path = _get_session_metadata_path()
+    meta_path.parent.mkdir(parents=True, exist_ok=True)
+    meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+
+
+def _session_is_expired(meta: dict) -> bool:
+    """Verifica si la sesión ha expirado por timeout."""
+    last_active = meta.get("last_active", 0)
+    if last_active == 0:
+        return False
+    elapsed_min = (time.time() - last_active) / 60
+    return elapsed_min > SESSION_TIMEOUT_MIN
+
+
+def _clear_session() -> None:
+    """Elimina todos los datos de sesión para empezar limpio."""
+    if SESSIONS_DIR.exists():
+        shutil.rmtree(SESSIONS_DIR)
+    SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _get_session_manager(force_new: bool = False) -> FileSessionManager:
+    """Obtiene o crea el session manager.
+
+    Args:
+        force_new: Si True, borra la sesión existente y crea una nueva.
+
+    Returns:
+        FileSessionManager configurado para persistir conversaciones.
+    """
+    meta = _read_session_metadata()
+
+    # Auto-reset si la sesión expiró o si se pide nueva
+    if force_new or _session_is_expired(meta):
+        _clear_session()
+        meta = {}
+
+    # Actualizar timestamp de actividad
+    meta["last_active"] = time.time()
+    meta["session_id"] = DEFAULT_SESSION_ID
+    meta["turn_count"] = meta.get("turn_count", 0) + 1
+    _write_session_metadata(meta)
+
+    return FileSessionManager(
+        session_id=DEFAULT_SESSION_ID,
+        storage_dir=str(SESSIONS_DIR),
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -105,6 +197,17 @@ Servicio pedido → buscar en catálogo → si no existe, buscar en internet →
 verificar puertos disponibles → verificar disco → crear compose →
 validar contra reglas → ofrecer levantar
 ```
+
+# CONTEXTO DE CONVERSACIÓN
+
+Esta conversación tiene MEMORIA PERSISTENTE entre invocaciones.
+- RECUERDAS todo lo dicho anteriormente en esta sesión.
+- Si el usuario dice "sí", "hazlo", "reiniciar", etc. SIN especificar qué servicio,
+  SIEMPRE revisa los mensajes anteriores para identificar el contexto.
+- Si el usuario respondió "sí reiniciar" y antes hablaban de tasmoadmin con un 502,
+  entonces el usuario quiere reiniciar tasmoadmin. NO preguntes de nuevo.
+- Trata los mensajes cortos como continuación natural de la conversación anterior.
+- Solo pide aclaración si genuinamente no hay contexto previo relevante.
 
 # MISIÓN
 
@@ -302,8 +405,12 @@ def get_model():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def create_nas_agent() -> Agent:
+def create_nas_agent(session_manager=None) -> Agent:
     """Crea y retorna el agente NAS configurado.
+
+    Args:
+        session_manager: FileSessionManager para persistir conversación.
+                         Si None, el agente no tendrá memoria entre invocaciones.
 
     Modos especiales (via env vars):
     - NAS_AGENT_READONLY=1: Bloquea tools destructivas a nivel de ejecución
@@ -345,12 +452,17 @@ PARA EJECUTAR:
 REPITO: NO llames ninguna herramienta. Solo muestra el plan.
 """
 
-    agent = Agent(
+    agent_kwargs = dict(
         model=model,
         tools=ALL_TOOLS,
         system_prompt=system_prompt,
         callback_handler=None,  # Desactivar output de Strands — nosotros renderizamos con Rich
     )
+
+    if session_manager is not None:
+        agent_kwargs["session_manager"] = session_manager
+
+    agent = Agent(**agent_kwargs)
 
     return agent
 
@@ -375,6 +487,48 @@ def main():
         console = None
         use_rich = False
 
+    # ── Parsear flags de sesión ────────────────────────────────────────────
+    args = sys.argv[1:]
+    force_new_session = False
+
+    # Flag: --new → nueva sesión limpia
+    if "--new" in args:
+        force_new_session = True
+        args.remove("--new")
+
+    # Flag: --clear → borrar sesión y salir
+    if "--clear" in args:
+        _clear_session()
+        if use_rich:
+            console.print("  [green]✓[/green] Sesión borrada. Próxima consulta empezará limpia.")
+        else:
+            print("✓ Sesión borrada. Próxima consulta empezará limpia.")
+        sys.exit(0)
+
+    # Flag: --status → mostrar info de sesión y salir
+    if "--status" in args:
+        meta = _read_session_metadata()
+        if not meta:
+            msg = "No hay sesión activa."
+        else:
+            last = meta.get("last_active", 0)
+            elapsed = (time.time() - last) / 60 if last else 0
+            turns = meta.get("turn_count", 0)
+            expired = _session_is_expired(meta)
+            status = "⚠️  Expirada" if expired else "✅ Activa"
+            msg = (
+                f"Sesión: {meta.get('session_id', '?')}\n"
+                f"Estado: {status}\n"
+                f"Turnos: {turns}\n"
+                f"Última actividad: hace {elapsed:.1f} min\n"
+                f"Timeout: {SESSION_TIMEOUT_MIN} min"
+            )
+        if use_rich:
+            console.print(Panel(msg, title="[cyan]📋 Sesión[/cyan]", border_style="cyan", padding=(0, 2)))
+        else:
+            print(msg)
+        sys.exit(0)
+
     # ── Header ─────────────────────────────────────────────────────────────
     if use_rich:
         console.print()
@@ -390,8 +544,8 @@ def main():
         print("=" * 50)
 
     # ── Obtener query ──────────────────────────────────────────────────────
-    if len(sys.argv) > 1:
-        query = " ".join(sys.argv[1:])
+    if args:
+        query = " ".join(args)
         if use_rich:
             console.print(f"\n  [dim]📝 Query:[/dim] [bold]{query}[/bold]\n")
         else:
@@ -412,14 +566,15 @@ def main():
             print("  Cancelado.")
             sys.exit(0)
 
-    # ── Inicializar agente ─────────────────────────────────────────────────
+    # ── Inicializar sesión + agente ────────────────────────────────────────
     if use_rich:
         console.print("  [dim]⚡ Inicializando...[/dim]", end="")
     else:
         print("⚡ Inicializando agente...")
 
     try:
-        agent = create_nas_agent()
+        session_manager = _get_session_manager(force_new=force_new_session)
+        agent = create_nas_agent(session_manager=session_manager)
     except Exception as e:
         if use_rich:
             console.print(f"\n\n  [red]❌ Error al inicializar:[/red] {e}")
@@ -445,6 +600,12 @@ def main():
         print("")
 
     # ── Indicadores de modo ────────────────────────────────────────────────
+    if force_new_session:
+        if use_rich:
+            console.print("  [cyan]🆕 Nueva sesión iniciada[/cyan]")
+        else:
+            print("🆕 Nueva sesión iniciada")
+
     if os.environ.get("NAS_AGENT_DRYRUN", "0").strip() in ("1", "true", "yes"):
         if use_rich:
             console.print("  [yellow]🔒 MODO DRY-RUN: Solo mostrará el plan[/yellow]")
