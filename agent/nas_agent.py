@@ -371,7 +371,7 @@ def main():
     # ── Header ─────────────────────────────────────────────────────────────
     if use_rich:
         console.print()
-        console.print(Panel(
+        console.print(Panel.fit(
             "[dim]Administrador inteligente de NAS[/dim]",
             title="[bold cyan]🖥️  NAS Agent[/bold cyan]",
             border_style="cyan",
@@ -491,7 +491,7 @@ def main():
         if response_text:
             try:
                 md = Markdown(response_text)
-                console.print(Panel(
+                console.print(Panel.fit(
                     md,
                     title="[bold green]Resultado[/bold green]",
                     border_style="green",
@@ -499,8 +499,7 @@ def main():
                     box=box.ROUNDED,
                 ))
             except Exception:
-                # Fallback si Markdown falla
-                console.print(Panel(
+                console.print(Panel.fit(
                     response_text,
                     title="Resultado",
                     border_style="green",
