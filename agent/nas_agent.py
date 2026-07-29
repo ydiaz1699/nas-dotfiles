@@ -237,7 +237,7 @@ def get_model():
     if proveedor == "gemini":
         from strands.models.gemini import GeminiModel
 
-        model_id = model_id_override or "gemini-2.5-flash"
+        model_id = model_id_override or "gemini-3.1-flash-lite"
 
         # API key: se lee de GOOGLE_API_KEY automáticamente si no se pasa
         api_key = os.environ.get("GOOGLE_API_KEY")
