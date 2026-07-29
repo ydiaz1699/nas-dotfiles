@@ -456,25 +456,12 @@ def main():
     # ── Mostrar respuesta con Rich ─────────────────────────────────────────
     if use_rich and result:
         console.print()
-        # Obtener el texto de la respuesta
-        response_text = ""
-        if hasattr(result, "message") and result.message:
-            if isinstance(result.message, dict):
-                content = result.message.get("content", [])
-                for block in content:
-                    if isinstance(block, dict) and block.get("type") == "text":
-                        response_text += block.get("text", "")
-            elif isinstance(result.message, str):
-                response_text = result.message
-        elif hasattr(result, "text"):
-            response_text = result.text
-        else:
-            response_text = str(result)
+        # AgentResult.__str__() concatena text blocks del message
+        response_text = str(result).strip()
 
-        if response_text.strip():
-            # Renderizar como Markdown dentro de un panel
+        if response_text:
             try:
-                md = Markdown(response_text.strip())
+                md = Markdown(response_text)
                 console.print(Panel(
                     md,
                     title="[bold green]Respuesta[/bold green]",
@@ -485,7 +472,7 @@ def main():
             except Exception:
                 # Fallback si Markdown falla
                 console.print(Panel(
-                    response_text.strip(),
+                    response_text,
                     title="Respuesta",
                     border_style="green",
                     padding=(1, 2),
