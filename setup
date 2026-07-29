@@ -85,6 +85,16 @@ if [[ "${respuesta,,}" == "s" || "${respuesta,,}" == "si" || "${respuesta,,}" ==
       echo ""
       exec $PYTHON "$SCRIPT_DIR/ui/setup.py"
     else
+      # Último recurso: venv temporal
+      if $PYTHON -m venv /tmp/nas-setup-venv 2>/dev/null; then
+        /tmp/nas-setup-venv/bin/pip install -q rich InquirerPy 2>/dev/null
+        if /tmp/nas-setup-venv/bin/python -c "import rich" 2>/dev/null; then
+          echo -e "  ${GRN}✓${NC} Dependencias instaladas (venv temporal)"
+          echo -e "  ${DIM}Lanzando TUI...${NC}"
+          echo ""
+          exec /tmp/nas-setup-venv/bin/python "$SCRIPT_DIR/ui/setup.py"
+        fi
+      fi
       echo -e "  ${RED}✗${NC} No se pudieron instalar las dependencias"
       echo -e "  ${DIM}Continuando con instalador bash...${NC}"
       echo ""

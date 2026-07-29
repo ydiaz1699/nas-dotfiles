@@ -93,8 +93,14 @@ OLLAMA_HOST=""
 if [[ "$PROVIDER" == "gemini" ]]; then
   echo ""
   echo -e "    ${DIM}Obtener en: https://aistudio.google.com/apikey${NC}"
+  echo -e "    ${DIM}(pegar y presionar Enter — no se muestra por seguridad)${NC}"
   read -r -s -p "    GOOGLE_API_KEY: " API_KEY
   echo ""
+  if [[ -n "$API_KEY" ]]; then
+    echo -e "    ${GRN}✓${NC} Key recibida (${#API_KEY} caracteres)"
+  else
+    echo -e "    ${YLW}⚠${NC} Key vacía — configurar después en /nas-dotfiles/.env.agent"
+  fi
 elif [[ "$PROVIDER" == "bedrock" ]]; then
   read -r -p "    AWS Region [us-east-1]: " INPUT_REGION
   AWS_REGION="${INPUT_REGION:-us-east-1}"
@@ -261,11 +267,25 @@ if [[ "${INSTALL_PY_DEPS,,}" == "s" || "${INSTALL_PY_DEPS,,}" == "si" || "${INST
   echo -e "    ${DIM}Instalando dependencias Python...${NC}"
   PYTHON=$(command -v python3 || command -v python)
   if [[ -n "$PYTHON" ]]; then
-    $PYTHON -m pip install --break-system-packages -q -r "$INSTALL_DIR/requirements.txt" 2>/dev/null || \
-      $PYTHON -m pip install -q -r "$INSTALL_DIR/requirements.txt" 2>/dev/null || \
-      echo -e "    ${YLW}⚠${NC} No se pudieron instalar deps Python"
+    # Intentar con --break-system-packages (Python 3.12+)
+    if $PYTHON -m pip install --break-system-packages -q -r "$INSTALL_DIR/requirements.txt" 2>/dev/null; then
+      echo -e "    ${GRN}✓${NC} Dependencias Python instaladas"
+    # Intentar sin el flag (Python más viejo)
+    elif $PYTHON -m pip install -q -r "$INSTALL_DIR/requirements.txt" 2>/dev/null; then
+      echo -e "    ${GRN}✓${NC} Dependencias Python instaladas"
+    # Último recurso: venv
+    elif $PYTHON -m venv "$INSTALL_DIR/.venv" 2>/dev/null; then
+      "$INSTALL_DIR/.venv/bin/pip" install -q -r "$INSTALL_DIR/requirements.txt" 2>/dev/null
+      echo -e "    ${GRN}✓${NC} Deps instaladas en venv ($INSTALL_DIR/.venv)"
+      echo -e "    ${DIM}   Para usar el agente: source $INSTALL_DIR/.venv/bin/activate${NC}"
+    else
+      echo -e "    ${RED}✗${NC} No se pudieron instalar deps Python"
+      echo -e "    ${DIM}   Intentar manualmente:${NC}"
+      echo -e "    ${DIM}   python3 -m pip install --break-system-packages -r $INSTALL_DIR/requirements.txt${NC}"
+    fi
+  else
+    echo -e "    ${YLW}⚠${NC} Python no encontrado — salteando deps"
   fi
-  echo -e "    ${GRN}✓${NC} Dependencias Python instaladas"
 fi
 
 # ── Resultado ──────────────────────────────────────────────────────────────
