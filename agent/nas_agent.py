@@ -371,9 +371,9 @@ def main():
     # ── Header ─────────────────────────────────────────────────────────────
     if use_rich:
         console.print()
-        console.print(Panel.fit(
-            "[bold cyan]🖥️  NAS Agent[/bold cyan]\n"
+        console.print(Panel(
             "[dim]Administrador inteligente de NAS[/dim]",
+            title="[bold cyan]🖥️  NAS Agent[/bold cyan]",
             border_style="cyan",
             padding=(0, 2),
         ))
@@ -493,7 +493,7 @@ def main():
                 md = Markdown(response_text)
                 console.print(Panel(
                     md,
-                    title="[bold green]Respuesta[/bold green]",
+                    title="[bold green]Resultado[/bold green]",
                     border_style="green",
                     padding=(1, 2),
                     box=box.ROUNDED,
@@ -502,7 +502,7 @@ def main():
                 # Fallback si Markdown falla
                 console.print(Panel(
                     response_text,
-                    title="Respuesta",
+                    title="Resultado",
                     border_style="green",
                     padding=(1, 2),
                 ))
