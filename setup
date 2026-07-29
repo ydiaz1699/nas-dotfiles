@@ -57,7 +57,7 @@ if [[ "$HAS_RICH" == "true" && "$HAS_INQUIRER" == "true" ]]; then
   echo -e "  ${GRN}✓${NC} Rich + InquirerPy disponibles"
   echo -e "  ${DIM}Lanzando TUI moderno...${NC}"
   echo ""
-  exec $PYTHON "$SCRIPT_DIR/setup.py"
+  exec $PYTHON "$SCRIPT_DIR/ui/setup.py"
 fi
 
 # ── Intentar instalar deps del TUI ────────────────────────────────────────
@@ -76,14 +76,14 @@ if [[ "${respuesta,,}" == "s" || "${respuesta,,}" == "si" || "${respuesta,,}" ==
     echo -e "  ${GRN}✓${NC} Dependencias instaladas"
     echo -e "  ${DIM}Lanzando TUI...${NC}"
     echo ""
-    exec $PYTHON "$SCRIPT_DIR/setup.py"
+    exec $PYTHON "$SCRIPT_DIR/ui/setup.py"
   else
     # Intentar sin --break-system-packages (Python más viejo)
     if $PYTHON -m pip install -q rich InquirerPy 2>/dev/null; then
       echo -e "  ${GRN}✓${NC} Dependencias instaladas"
       echo -e "  ${DIM}Lanzando TUI...${NC}"
       echo ""
-      exec $PYTHON "$SCRIPT_DIR/setup.py"
+      exec $PYTHON "$SCRIPT_DIR/ui/setup.py"
     else
       echo -e "  ${RED}✗${NC} No se pudieron instalar las dependencias"
       echo -e "  ${DIM}Continuando con instalador bash...${NC}"
