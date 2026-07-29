@@ -174,13 +174,28 @@ export NAS_AGENT_MODEL=ollama
 # export NAS_AGENT_MODEL_ID=llama3.1
 ```
 
-### Comparación de proveedores
+### Modelos Gemini disponibles (julio 2026)
 
-| Provider | Modelo | Costo/1M tokens | Setup | Razonamiento |
-|----------|--------|:---------------:|-------|:------------:|
-| **Gemini** (default) | gemini-2.5-flash | ~$0.15 | Solo API key | Bueno |
-| **Bedrock** | Claude Sonnet 4 | ~$3.00 | AWS credentials | Excelente + thinking |
-| **Ollama** | llama3.1 | Gratis | Ollama local | Básico |
+| Modelo | ID para `.env.agent` | RPD (free) | Recomendación |
+|--------|---------------------|:----------:|---------------|
+| Gemini 3.1 Flash Lite | `gemini-3.1-flash-lite` | 500 | **Recomendado** — máxima cuota gratis |
+| Gemini 3.5 Flash Lite | `gemini-3.5-flash-lite` | 500 | Alta cuota, más nuevo |
+| Gemini 3.5 Flash | `gemini-3.5-flash` | 20 | Más capaz, menos cuota |
+| Gemini 3.1 Pro | `gemini-3.1-pro` | — | Razonamiento complejo |
+| Gemini 2.5 Flash | `gemini-2.5-flash` | 20 | Anterior gen |
+| Gemini 2.5 Pro | `gemini-2.5-pro` | — | Anterior gen (pro) |
+| Gemini 2.0 Flash | `gemini-2.0-flash` | — | Legacy |
+| Gemini 2.0 Flash Lite | `gemini-2.0-flash-lite` | — | Legacy lite |
+
+Para cambiar modelo, editar `/nas-dotfiles/.env.agent`:
+```bash
+NAS_AGENT_MODEL_ID=gemini-3.1-flash-lite
+```
+
+O temporalmente:
+```bash
+NAS_AGENT_MODEL_ID=gemini-3.5-flash agent diagnostica nextcloud
+```
 
 ### Ejecutar el agente
 
@@ -237,3 +252,13 @@ export NAS_DOTFILES="/nueva/ruta"
 ## Licencia
 
 MIT
+
+
+### Comparación de proveedores
+
+| Provider | Modelo recomendado | Costo/1M tokens | RPD (free) | Setup |
+|----------|-------------------|:---------------:|:----------:|-------|
+| **Gemini** (default) | gemini-3.1-flash-lite | ~$0.08 | 500 | Solo API key |
+| **Gemini** (mejor) | gemini-3.5-flash | ~$0.15 | 20 | Solo API key |
+| **Bedrock** | Claude Sonnet 4 | ~$3.00 | — | AWS credentials |
+| **Ollama** | llama3.1 / gemma3:4b | Gratis | ∞ | Ollama local |
