@@ -1,0 +1,4 @@
+# Dependencias del TUI de setup (solo para primera instalación)
+# Instalar con: pip install -r requirements-setup.txt
+rich>=13.0.0
+InquirerPy>=0.3.4
