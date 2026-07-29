@@ -451,7 +451,36 @@ def main():
     # ── Ejecutar agente ────────────────────────────────────────────────────
     if use_rich:
         console.print()
-    result = agent(query)
+
+    try:
+        result = agent(query)
+    except Exception as e:
+        error_msg = str(e)
+        if "429" in error_msg or "Too Many Requests" in error_msg or "quota" in error_msg.lower():
+            if use_rich:
+                console.print(Panel(
+                    "[yellow]⚠️  Límite de requests alcanzado (quota del tier gratuito).[/yellow]\n\n"
+                    "Opciones:\n"
+                    "  • Esperar unos minutos e intentar de nuevo\n"
+                    "  • Usar otro modelo: [cyan]NAS_AGENT_MODEL_ID=gemini-2.0-flash agent ...[/cyan]\n"
+                    "  • Activar billing en https://aistudio.google.com (2000 RPM)\n"
+                    "  • Usar Ollama local: [cyan]NAS_AGENT_MODEL=ollama agent ...[/cyan]",
+                    title="[yellow]Rate Limit[/yellow]",
+                    border_style="yellow",
+                    padding=(1, 2),
+                ))
+            else:
+                print("\n  ⚠️  Límite de requests alcanzado (quota del tier gratuito).")
+                print("  Esperar unos minutos o usar: NAS_AGENT_MODEL_ID=gemini-2.0-flash")
+                print("  O usar Ollama local: NAS_AGENT_MODEL=ollama")
+        else:
+            if use_rich:
+                console.print(f"\n  [red]❌ Error:[/red] {error_msg[:200]}")
+            else:
+                print(f"\n❌ Error: {error_msg[:200]}")
+        if use_rich:
+            console.print("\n  [dim]✅ Tarea completada.[/dim]\n")
+        return None
 
     # ── Mostrar respuesta con Rich ─────────────────────────────────────────
     if use_rich and result:
