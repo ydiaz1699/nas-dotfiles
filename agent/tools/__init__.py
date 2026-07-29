@@ -4,12 +4,10 @@ Herramientas (tools) del nas-agent.
 Cada módulo expone funciones con @tool que el agente invoca
 autónomamente para administrar el NAS.
 
-Auditoría: Todas las tools se wrappean con el decorador `audited()`
-que registra cada invocación en el audit log (JSON Lines).
-Deshabilitar con: export NAS_AGENT_AUDIT=0
+Nota: Las tools se pasan directamente al agente (sin wrapper).
+La auditoría se integra via plugin/hooks del agente, no por decorador,
+porque wrappear funciones @tool rompe su registro en Strands SDK.
 """
-
-from agent.tools._audit import audited
 
 from agent.tools.discovery_tools import (
     list_services,
@@ -48,8 +46,8 @@ from agent.tools.diagnostic_tools import (
     troubleshoot,
 )
 
-# Lista de tools sin auditoría (referencia interna)
-_RAW_TOOLS = [
+# Lista de tools para el agente — SIN wrapper (Strands necesita @tool puro)
+ALL_TOOLS = [
     # Descubrimiento
     list_services,
     scan_compose,
@@ -80,6 +78,3 @@ _RAW_TOOLS = [
     port_conflicts,
     troubleshoot,
 ]
-
-# Lista completa de tools para el agente — CON auditoría
-ALL_TOOLS = [audited(t) for t in _RAW_TOOLS]

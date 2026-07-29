@@ -36,6 +36,31 @@ from strands import Agent
 from agent.tools import ALL_TOOLS
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Cargar variables de .env.agent (API keys, config del agente)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _load_env_agent():
+    """Carga variables de entorno desde .env.agent si existe."""
+    env_file = Path(__file__).resolve().parent.parent / ".env.agent"
+    if not env_file.exists():
+        return
+
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        # Saltar comentarios y líneas vacías
+        if not line or line.startswith("#"):
+            continue
+        if "=" in line:
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip()
+            # No sobreescribir si ya está definida en el entorno
+            if key and key not in os.environ:
+                os.environ[key] = value
+
+_load_env_agent()
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Configuración de rutas
 # ─────────────────────────────────────────────────────────────────────────────
 
