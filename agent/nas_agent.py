@@ -354,34 +354,68 @@ REPITO: NO llames ninguna herramienta. Solo muestra el plan.
 
 def main():
     """Punto de entrada principal del agente NAS."""
-    print("🖥️  nas-agent — Administrador inteligente de NAS")
-    print("=" * 50)
+    # Intentar usar Rich para output bonito
+    try:
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.markdown import Markdown
+        from rich.text import Text
+        from rich import box
+        console = Console()
+        use_rich = True
+    except ImportError:
+        console = None
+        use_rich = False
 
-    # Obtener query del usuario
+    # ── Header ─────────────────────────────────────────────────────────────
+    if use_rich:
+        console.print()
+        console.print(Panel.fit(
+            "[bold cyan]🖥️  NAS Agent[/bold cyan]\n"
+            "[dim]Administrador inteligente de NAS[/dim]",
+            border_style="cyan",
+            padding=(0, 2),
+        ))
+    else:
+        print("🖥️  nas-agent — Administrador inteligente de NAS")
+        print("=" * 50)
+
+    # ── Obtener query ──────────────────────────────────────────────────────
     if len(sys.argv) > 1:
         query = " ".join(sys.argv[1:])
-        print(f"\n📝 Query: {query}\n")
+        if use_rich:
+            console.print(f"\n  [dim]📝 Query:[/dim] [bold]{query}[/bold]\n")
+        else:
+            print(f"\n📝 Query: {query}\n")
     else:
-        print("\n¿Qué necesitas?")
-        print("  Ejemplos:")
-        print("  - ¿Qué servicios están corriendo?")
-        print("  - Quiero instalar Vaultwarden")
-        print("  - El nextcloud está lento, diagnostica")
-        print("  - ¿Hay conflictos de puertos?")
-        print("  - Hazme backup de grafana")
-        print()
-        query = input("🖥️ > ")
+        if use_rich:
+            console.print("\n  [dim]¿Qué necesitas?[/dim]")
+            console.print("  Ejemplos: servicios, diagnosticar, instalar, backup\n")
+        else:
+            print("\n¿Qué necesitas?")
+            print("  Ejemplos:")
+            print("  - ¿Qué servicios están corriendo?")
+            print("  - Quiero instalar Vaultwarden")
+            print("  - El nextcloud está lento, diagnostica")
+            print()
+        query = input("  🖥️ > ")
         if not query.strip():
-            print("❌ No se proporcionó ninguna query.")
+            print("  Cancelado.")
             sys.exit(0)
 
-    # Crear y ejecutar el agente
-    print("⚡ Inicializando agente...")
+    # ── Inicializar agente ─────────────────────────────────────────────────
+    if use_rich:
+        console.print("  [dim]⚡ Inicializando...[/dim]", end="")
+    else:
+        print("⚡ Inicializando agente...")
+
     try:
         agent = create_nas_agent()
     except Exception as e:
-        print(f"\n❌ Error al inicializar: {e}")
-        print("\nVerifica:")
+        if use_rich:
+            console.print(f"\n\n  [red]❌ Error al inicializar:[/red] {e}")
+        else:
+            print(f"\n❌ Error al inicializar: {e}")
         proveedor = os.environ.get("NAS_AGENT_MODEL", "gemini").lower()
         if proveedor == "gemini":
             print("  - GOOGLE_API_KEY definida (obtener en https://aistudio.google.com/apikey)")
@@ -396,30 +430,75 @@ def main():
         print("  Cambiar con: export NAS_AGENT_MODEL=gemini|bedrock|ollama")
         sys.exit(1)
 
-    print("🚀 Procesando...\n")
+    if use_rich:
+        console.print(" [green]✓[/green]")
+    else:
+        print("")
 
-    # Indicadores de modo
+    # ── Indicadores de modo ────────────────────────────────────────────────
     if os.environ.get("NAS_AGENT_DRYRUN", "0").strip() in ("1", "true", "yes"):
-        print("🔒 MODO DRY-RUN: Solo mostrará el plan, sin ejecutar nada.")
-        print("")
-    if os.environ.get("NAS_AGENT_READONLY", "0").strip() in ("1", "true", "yes"):
-        print("🔒 MODO READ-ONLY: Acciones destructivas bloqueadas.")
-        print("")
-
-    print("-" * 50)
-    result = agent(query)
-    print("-" * 50)
-
-    # Mostrar resumen de auditoría si hubo actividad
-    from agent.tools._audit import get_session_summary, _is_audit_enabled
-    if _is_audit_enabled():
-        summary = get_session_summary(last_n=20)
-        if summary and "vacío" not in summary:
-            print(f"\n📋 Resumen de sesión:\n{summary}")
+        if use_rich:
+            console.print("  [yellow]🔒 MODO DRY-RUN: Solo mostrará el plan[/yellow]")
         else:
-            print("\n📋 Sin acciones registradas en esta sesión.")
+            print("🔒 MODO DRY-RUN: Solo mostrará el plan, sin ejecutar nada.")
+    if os.environ.get("NAS_AGENT_READONLY", "0").strip() in ("1", "true", "yes"):
+        if use_rich:
+            console.print("  [yellow]🔒 MODO READ-ONLY: Acciones destructivas bloqueadas[/yellow]")
+        else:
+            print("🔒 MODO READ-ONLY: Acciones destructivas bloqueadas.")
 
-    print("\n✅ Tarea completada.")
+    # ── Ejecutar agente ────────────────────────────────────────────────────
+    if use_rich:
+        console.print()
+    result = agent(query)
+
+    # ── Mostrar respuesta con Rich ─────────────────────────────────────────
+    if use_rich and result:
+        console.print()
+        # Obtener el texto de la respuesta
+        response_text = ""
+        if hasattr(result, "message") and result.message:
+            if isinstance(result.message, dict):
+                content = result.message.get("content", [])
+                for block in content:
+                    if isinstance(block, dict) and block.get("type") == "text":
+                        response_text += block.get("text", "")
+            elif isinstance(result.message, str):
+                response_text = result.message
+        elif hasattr(result, "text"):
+            response_text = result.text
+        else:
+            response_text = str(result)
+
+        if response_text.strip():
+            # Renderizar como Markdown dentro de un panel
+            try:
+                md = Markdown(response_text.strip())
+                console.print(Panel(
+                    md,
+                    title="[bold green]Respuesta[/bold green]",
+                    border_style="green",
+                    padding=(1, 2),
+                    box=box.ROUNDED,
+                ))
+            except Exception:
+                # Fallback si Markdown falla
+                console.print(Panel(
+                    response_text.strip(),
+                    title="Respuesta",
+                    border_style="green",
+                    padding=(1, 2),
+                ))
+    elif not use_rich:
+        print("-" * 50)
+
+    # ── Resumen de sesión ──────────────────────────────────────────────────
+    if use_rich:
+        console.print()
+        console.print("  [dim]✅ Tarea completada.[/dim]")
+        console.print()
+    else:
+        print("\n✅ Tarea completada.")
 
     return result
 

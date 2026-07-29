@@ -8,3 +8,6 @@ strands-agents-tools>=0.1.0
 # Parsing de frontmatter YAML (catálogo)
 python-frontmatter>=1.0.0
 PyYAML>=6.0
+
+# Output formateado (paneles, tablas, colores, markdown)
+rich>=13.0.0
