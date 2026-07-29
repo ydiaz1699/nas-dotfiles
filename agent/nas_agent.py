@@ -192,6 +192,13 @@ NAS/Homelab con Docker. Tu trabajo es ayudar al usuario a:
 # FORMATO DE RESPUESTA
 
 - Usar emojis para indicar estado: ✅ ok, ⚠️ advertencia, 🔴 error
+- Cuando muestres datos tabulares (disco, puertos, servicios), usar tablas markdown:
+  ```
+  | Disco | Tamaño | Usado | Uso% |
+  |-------|--------|-------|------|
+  | /dev/sda | 285G | 14G | 6% |
+  ```
+- Ser conciso — máximo 5-8 líneas de respuesta
 - Incluir comandos específicos que el usuario puede ejecutar
 - Si generas archivos, mostrar resumen de lo creado
 - Terminar con el siguiente paso sugerido o pregunta de seguimiento
@@ -371,11 +378,12 @@ def main():
     # ── Header ─────────────────────────────────────────────────────────────
     if use_rich:
         console.print()
-        console.print(Panel.fit(
+        console.print(Panel(
             "[dim]Administrador inteligente de NAS[/dim]",
             title="[bold cyan]🖥️  NAS Agent[/bold cyan]",
             border_style="cyan",
             padding=(0, 2),
+            width=42,
         ))
     else:
         print("🖥️  nas-agent — Administrador inteligente de NAS")
@@ -491,19 +499,21 @@ def main():
         if response_text:
             try:
                 md = Markdown(response_text)
-                console.print(Panel.fit(
+                console.print(Panel(
                     md,
                     title="[bold green]Resultado[/bold green]",
                     border_style="green",
                     padding=(1, 2),
                     box=box.ROUNDED,
+                    width=42,
                 ))
             except Exception:
-                console.print(Panel.fit(
+                console.print(Panel(
                     response_text,
                     title="Resultado",
                     border_style="green",
                     padding=(1, 2),
+                    width=42,
                 ))
     elif not use_rich:
         print("-" * 50)
