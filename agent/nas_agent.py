@@ -342,6 +342,7 @@ REPITO: NO llames ninguna herramienta. Solo muestra el plan.
         model=model,
         tools=ALL_TOOLS,
         system_prompt=system_prompt,
+        printer=False,  # Desactivar output de Strands — nosotros renderizamos con Rich
     )
 
     return agent
