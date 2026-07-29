@@ -204,25 +204,51 @@ _configure_bashrc() {
     touch "$bashrc" 2>/dev/null || sudo touch "$bashrc"
   fi
 
-  # Ya configurado?
-  if grep -qF "$EXPORT_LINE" "$bashrc" 2>/dev/null && grep -qF "$SOURCE_LINE" "$bashrc" 2>/dev/null; then
-    echo -e "    ${DIM}~ $label ya configurado${NC}"
-    return
-  fi
-
-  # Backup
+  # Backup antes de tocar
   cp "$bashrc" "$bashrc.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || \
     sudo cp "$bashrc" "$bashrc.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
 
-  # Limpiar versiones anteriores
-  sed -i "/$MARKER/d" "$bashrc" 2>/dev/null || sudo sed -i "/$MARKER/d" "$bashrc"
-  sed -i '\|export NAS_DOTFILES=|d' "$bashrc" 2>/dev/null || sudo sed -i '\|export NAS_DOTFILES=|d' "$bashrc"
-  sed -i '\|source "\$NAS_DOTFILES/shell/init.sh"|d' "$bashrc" 2>/dev/null || sudo sed -i '\|source "\$NAS_DOTFILES/shell/init.sh"|d' "$bashrc"
-  # Limpiar formato antiguo
-  sed -i '/source ~\/shell\/init\.sh/d' "$bashrc" 2>/dev/null || true
-  sed -i '\|source /home/aadm/shell/init\.sh|d' "$bashrc" 2>/dev/null || true
+  # Limpiar TODO lo del viejo shell framework (path_add, SHELL_INIT_LOADED, etc.)
+  # Estas líneas ya no son necesarias — init.sh las define internamente
+  local patterns_to_remove=(
+    'source ~/shell/init.sh'
+    'source /home/aadm/shell/init.sh'
+    'source "\$NAS_DOTFILES/shell/init.sh"'
+    'export NAS_DOTFILES='
+    '# nas-dotfiles shell framework'
+    '# ── NAS shell'
+    'SHELL_INIT_LOADED'
+    "alias svc='/docker/cli/svc.sh'"
+    'alias svc="/docker/cli/svc.sh"'
+    'path_add()'
+    'path_add "'
+    'case ":$PATH:"'
+    '*":$1:"*)'
+    '*) PATH="$1:$PATH"'
+  )
 
-  # Agregar
+  for pattern in "${patterns_to_remove[@]}"; do
+    sed -i "\|${pattern}|d" "$bashrc" 2>/dev/null || \
+      sudo sed -i "\|${pattern}|d" "$bashrc" 2>/dev/null || true
+  done
+
+  # Limpiar bloque path_add completo (función de 4 líneas)
+  # y la llave de cierre huérfana que queda
+  sed -i '/^path_add/d' "$bashrc" 2>/dev/null || true
+  sed -i '/^  esac$/d' "$bashrc" 2>/dev/null || true
+  sed -i '/^}$/d' "$bashrc" 2>/dev/null || true
+  sed -i '/^export -f path_add$/d' "$bashrc" 2>/dev/null || true
+
+  # Limpiar líneas vacías múltiples consecutivas (dejar máx 2)
+  sed -i '/^$/N;/^\n$/d' "$bashrc" 2>/dev/null || true
+
+  # Verificar si ya tiene las líneas nuevas correctas
+  if grep -qF "$EXPORT_LINE" "$bashrc" 2>/dev/null && grep -qF "$SOURCE_LINE" "$bashrc" 2>/dev/null; then
+    echo -e "    ${GRN}✓${NC} $label configurado (limpiado + actualizado)"
+    return
+  fi
+
+  # Agregar las 2 líneas nuevas al final
   {
     echo ""
     echo "$MARKER"
@@ -232,7 +258,7 @@ _configure_bashrc() {
     echo -e "\n$MARKER\n$EXPORT_LINE\n$SOURCE_LINE" | sudo tee -a "$bashrc" >/dev/null
   }
 
-  echo -e "    ${GRN}✓${NC} $label configurado"
+  echo -e "    ${GRN}✓${NC} $label configurado (limpiado + actualizado)"
 }
 
 _configure_bashrc "$HOME/.bashrc" "~/.bashrc"
