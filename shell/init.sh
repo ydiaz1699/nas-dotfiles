@@ -4,8 +4,9 @@
 #
 # Requiere: export NAS_DOTFILES="$HOME/nas-dotfiles" en ~/.bashrc ANTES de este source
 
-[[ -n "$_SHELL_INIT_LOADED" ]] && return
+[[ -n "$_SHELL_INIT_LOADED" && -z "$_SHELL_RELOAD" ]] && return
 _SHELL_INIT_LOADED=1
+unset _SHELL_RELOAD
 
 # ── Validar NAS_DOTFILES ──────────────────────────────────────────────────
 if [[ -z "$NAS_DOTFILES" ]]; then

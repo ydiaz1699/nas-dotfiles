@@ -17,7 +17,11 @@ alias lsd='eza -lD'
 alias cls='clear'
 alias h='history'
 alias ports='ss -tulnp'
-alias reload='source ~/.bashrc && echo "  ✓ bashrc recargado"'
+reload() {
+  _SHELL_RELOAD=1
+  source ~/.bashrc
+  echo "  ✓ bashrc recargado"
+}
 alias myip='curl -s https://ifconfig.me && echo'
 
 # ── Docker ────────────────────────────────────────────────────────────────
