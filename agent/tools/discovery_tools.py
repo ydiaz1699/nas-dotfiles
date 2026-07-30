@@ -9,7 +9,7 @@ import yaml
 from pathlib import Path
 from strands.tools import tool
 
-from agent.tools._result import ToolResult, Timer
+from agent.core._result import ToolResult, Timer
 from agent.tools._shell import (
     DOCKER_BASE,
     safe_run,
