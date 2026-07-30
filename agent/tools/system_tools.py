@@ -221,3 +221,150 @@ def network_info() -> str:
         f"{nets_detail or '  (ninguna red custom)'}\n\n"
         f"Usa scan_ports() para ver puertos en detalle."
     )
+
+
+
+@tool
+def list_files(path: str, max_depth: int = 1) -> str:
+    """Lista archivos y directorios en una ruta del NAS.
+
+    Permite explorar el sistema de archivos del NAS: scripts,
+    configuraciones, volúmenes de servicios, etc.
+
+    Rutas permitidas: /docker, /home/aadm, /nas-dotfiles, /tmp, /var/log
+    Rutas bloqueadas: /etc/shadow, /proc, /sys, /dev (por seguridad)
+
+    Args:
+        path: Ruta a listar. Ejemplos: /home/aadm/scripts, /docker/emqx/data
+        max_depth: Profundidad máxima de recursión (default: 1, máximo: 3)
+    """
+    from pathlib import Path as P
+    import re
+
+    # Sanitizar path
+    path = path.strip()
+    if not path or not path.startswith("/"):
+        return "ERROR: La ruta debe ser absoluta (empezar con /)"
+
+    # Resolver path real (sin symlinks ni ..)
+    try:
+        resolved = P(path).resolve()
+    except Exception:
+        return f"ERROR: Ruta inválida: {path}"
+
+    resolved_str = str(resolved)
+
+    # Rutas permitidas
+    allowed_prefixes = [
+        "/docker",
+        "/home/aadm",
+        "/nas-dotfiles",
+        "/tmp",
+        "/var/log",
+        "/opt",
+    ]
+
+    # Verificar que está dentro de una ruta permitida
+    if not any(resolved_str.startswith(prefix) for prefix in allowed_prefixes):
+        return (
+            f"ERROR: Ruta '{path}' no permitida.\n"
+            f"Rutas accesibles: {', '.join(allowed_prefixes)}"
+        )
+
+    # Bloquear rutas sensibles explícitamente
+    blocked = ["/etc/shadow", "/proc", "/sys", "/dev"]
+    if any(resolved_str.startswith(b) for b in blocked):
+        return f"ERROR: Ruta bloqueada por seguridad: {path}"
+
+    # Limitar profundidad
+    max_depth = min(max(max_depth, 1), 3)
+
+    # Ejecutar find
+    output = safe_run(
+        ["find", resolved_str,
+         "-maxdepth", str(max_depth),
+         "-not", "-path", "*/.*",
+         "-not", "-path", "*/__pycache__/*"],
+        timeout=10,
+    )
+
+    if not output or "ERROR" in output:
+        if not P(resolved_str).exists():
+            return f"ERROR: La ruta no existe: {path}"
+        return f"ERROR: No se pudo listar: {path}"
+
+    # Formato legible
+    lines = output.strip().splitlines()
+    if len(lines) > 100:
+        lines = lines[:100]
+        lines.append(f"... (truncado, {len(output.splitlines())} total)")
+
+    return (
+        f"=== {path} ===\n\n"
+        f"Archivos: {len(lines) - 1}\n\n"
+        + "\n".join(f"  {l.replace(resolved_str, '.')}" for l in lines)
+    )
+
+
+@tool
+def read_file_content(path: str, lines: int = 50) -> str:
+    """Lee el contenido de un archivo de texto del NAS.
+
+    Útil para inspeccionar scripts, configuraciones, logs, etc.
+    Limitado a archivos de texto dentro de rutas permitidas.
+
+    Args:
+        path: Ruta absoluta al archivo. Ej: /home/aadm/scripts/stop-all.sh
+        lines: Número máximo de líneas a leer (default: 50, máximo: 200)
+    """
+    from pathlib import Path as P
+
+    path = path.strip()
+    if not path or not path.startswith("/"):
+        return "ERROR: La ruta debe ser absoluta (empezar con /)"
+
+    try:
+        resolved = P(path).resolve()
+    except Exception:
+        return f"ERROR: Ruta inválida: {path}"
+
+    resolved_str = str(resolved)
+
+    # Rutas permitidas
+    allowed_prefixes = [
+        "/docker",
+        "/home/aadm",
+        "/nas-dotfiles",
+        "/tmp",
+        "/var/log",
+        "/opt",
+    ]
+
+    if not any(resolved_str.startswith(prefix) for prefix in allowed_prefixes):
+        return (
+            f"ERROR: Ruta '{path}' no permitida.\n"
+            f"Rutas accesibles: {', '.join(allowed_prefixes)}"
+        )
+
+    if not resolved.exists():
+        return f"ERROR: Archivo no existe: {path}"
+
+    if not resolved.is_file():
+        return f"ERROR: '{path}' no es un archivo (es un directorio). Usa list_files()."
+
+    # Limitar tamaño (no leer binarios enormes)
+    size = resolved.stat().st_size
+    if size > 512 * 1024:  # 512KB máximo
+        return f"ERROR: Archivo demasiado grande ({size // 1024} KB). Máximo: 512 KB."
+
+    lines = min(max(lines, 1), 200)
+
+    output = safe_run(
+        ["head", "-n", str(lines), resolved_str],
+        timeout=10,
+    )
+
+    if not output:
+        return f"(archivo vacío): {path}"
+
+    return f"=== {path} ===\n\n{output}"

@@ -20,6 +20,8 @@ from agent.tools.system_tools import (
     disk_usage,
     memory_info,
     network_info,
+    list_files,
+    read_file_content,
 )
 from agent.tools.docker_tools import (
     service_start,
@@ -59,6 +61,8 @@ ALL_TOOLS = [
     disk_usage,
     memory_info,
     network_info,
+    list_files,
+    read_file_content,
     # Docker
     service_start,
     service_stop,

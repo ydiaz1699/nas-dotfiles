@@ -293,6 +293,8 @@ NAS/Homelab con Docker. Tu trabajo es ayudar al usuario a:
 - `disk_usage()` → Uso de disco con alertas
 - `memory_info()` → RAM/Swap con top procesos
 - `network_info()` → Interfaces, IPs, redes Docker
+- `list_files(path, max_depth)` → Listar archivos/carpetas en una ruta del NAS
+- `read_file_content(path, lines)` → Leer contenido de un archivo de texto
 
 ## Docker
 - `service_start(service)` → Levantar servicio (seguro)
