@@ -1,7 +1,7 @@
 ---
 id: "_compose_base"
 type: "meta"
-version: "1.0"
+version: "1.1"
 description: "Template base de compose para todos los servicios del NAS"
 ---
 
@@ -15,7 +15,7 @@ estos bloques base.
 
 ```
 /docker/<servicio>/
-├── compose.yml
+├── compose.yml (o docker-compose.yml)  ← ambos nombres son válidos
 ├── .env                    ← permisos 600
 └── data/
     └── ...                 ← datos persistentes del servicio
@@ -28,23 +28,19 @@ Cada compose DEBE incluir estos anchors al inicio y referenciarlos en el servici
 ```yaml
 x-common-env: &common-env
   TZ: ${TZ}
-
 x-healthcheck-defaults: &healthcheck-defaults
   interval: 30s
   timeout: 10s
   retries: 5
   start_period: 40s
-
 x-security-defaults: &security-defaults
   security_opt:
     - no-new-privileges:true
-
 x-logging-defaults: &logging-defaults
   driver: json-file
   options:
     max-size: "10m"
     max-file: "3"
-
 x-resource-defaults: &resource-defaults
   deploy:
     resources:
@@ -63,20 +59,15 @@ services:
     container_name: nombre
     restart: unless-stopped
     <<: [*security-defaults, *resource-defaults]
-
     environment:
       <<: *common-env
       # Variables específicas del servicio...
-
     healthcheck:
       <<: *healthcheck-defaults
       test: ["CMD", "..."]
-
     logging: *logging-defaults
-
     volumes:
       - ./data:/path/interno
-
     ports:
       - "${PUERTO_EXTERNO}:puerto_interno"
 ```
@@ -128,12 +119,32 @@ x-resource-defaults: &resource-defaults
 
 ### Servicios con dashboard admin
 
-Dashboard SIEMPRE bind a localhost:
+**Regla por defecto: bind a localhost.**
 
 ```yaml
 ports:
   - "127.0.0.1:${PORT_DASHBOARD}:puerto_interno"
 ```
+
+**Excepción documentada:** si el dashboard necesita accederse desde la LAN
+(ej. panel de administración de uso frecuente, como el de EMQX), se puede
+exponer sin bind a localhost — pero esta decisión:
+
+1. Debe ser explícita, no accidental (en `create_service()`: pasar
+   `is_dashboard=True, expose_lan=True`)
+2. Debe documentarse en la ficha de catálogo del servicio (`notes:`) y en
+   su `README.md`, indicando por qué se optó por LAN en vez de localhost
+3. Idealmente va detrás de reverse proxy con auth si se expone más allá
+   de la LAN local (fuera del NAS)
+
+```yaml
+# Excepción: dashboard expuesto en LAN, documentado en notes/README
+ports:
+  - "${PORT_DASHBOARD}:puerto_interno"
+```
+
+`validate_compose()` advierte (no bloquea) cuando detecta un puerto de
+dashboard sin bind a `127.0.0.1`, para forzar la revisión de esta decisión.
 
 ## .env base
 
@@ -181,6 +192,8 @@ Cuando el agente genera un compose:
 4. SIEMPRE incluir `*logging-defaults`
 5. SIEMPRE poner variables sensibles en `.env`, nunca inline
 6. Ajustar `memory` en `*resource-defaults` según el servicio
-7. Validar con `svc config <servicio>` antes de levantar
-8. El merge de anchors `<<: [*a, *b]` funciona en YAML puro pero
+7. Dashboards: bind a localhost por defecto; exponer en LAN solo con
+   decisión explícita y documentada (ver sección "Servicios con dashboard admin")
+8. Validar con `svc config <servicio>` (o `docker compose config`) antes de levantar
+9. El merge de anchors `<<: [*a, *b]` funciona en YAML puro pero
    validar porque Docker Compose puede ser más estricto

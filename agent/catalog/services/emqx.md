@@ -21,24 +21,24 @@ env_optional:
   - EMQX_ALLOW_ANONYMOUS=false
   - EMQX_PORT_MQTT=1883
   - EMQX_PORT_MQTTS=8883
-  - EMQX_PORT_WS=7083
-  - EMQX_PORT_WSS=7084
+  - EMQX_PORT_WS=8083
+  - EMQX_PORT_WSS=8084
   - EMQX_PORT_DASHBOARD=18083
-healthcheck: '["CMD", "emqx", "ping"]'
+healthcheck: '["CMD", "emqx", "ctl", "status"]'
 backup_critical: true
 backup_paths:
   - "./data/data"
 protected: false
 docs_url: "https://docs.emqx.com/en/emqx/latest/"
-notes: "Requiere ulimits nofile alto (1048576). Dashboard en puerto 18083 (solo localhost)."
+notes: "Requiere ulimits nofile alto (1048576). Dashboard en puerto 18083, expuesto en LAN (no restringido a localhost pese a la regla general de _compose_base.md); ver justificación en README del servicio."
 networks:
   - iot_net
   - db_net
 ports:
   mqtt: 1883
   mqtts: 8883
-  ws: 7083
-  wss: 7084
+  ws: 8083
+  wss: 8084
   dashboard: 18083
 resources:
   memory_limit: "1g"
@@ -97,9 +97,9 @@ environment:
 |--------|-----------|-------------|
 | 1883   | MQTT      | MQTT sin TLS |
 | 8883   | MQTTS     | MQTT con TLS |
-| 7083   | WS        | WebSocket |
-| 7084   | WSS       | WebSocket seguro |
-| 18083  | HTTP      | Dashboard (solo localhost) |
+| 8083   | WS        | WebSocket MQTT |
+| 8084   | WSS       | WebSocket seguro MQTT |
+| 18083  | HTTP      | Dashboard (expuesto en LAN) |
 
 ## Redes
 
@@ -116,8 +116,8 @@ EMQX_DASHBOARD_PASSWORD=__pega_aqui__
 EMQX_ALLOW_ANONYMOUS=false
 EMQX_PORT_MQTT=1883
 EMQX_PORT_MQTTS=8883
-EMQX_PORT_WS=7083
-EMQX_PORT_WSS=7084
+EMQX_PORT_WS=8083
+EMQX_PORT_WSS=8084
 EMQX_PORT_DASHBOARD=18083
 ```
 
@@ -138,11 +138,14 @@ chmod 600 "$dkco/emqx/.env"
 - `EMQX_NODE_COOKIE`: Token secreto para clustering (hex 64 chars)
 - `EMQX_DASHBOARD_PASSWORD`: Password del panel admin
 - `EMQX_ALLOW_ANONYMOUS`: SIEMPRE false en producción
-- Dashboard solo accesible desde localhost (127.0.0.1:18083)
+- Dashboard expuesto en LAN (sin bind a localhost) para acceso frecuente
+  desde otros equipos en la red local
 
 ## Notas
 
 - Requiere ulimits nofile alto (1048576) para manejar miles de conexiones MQTT
+- Dashboard NO está restringido a localhost (excepción documentada a la regla
+  general de _compose_base.md) porque se accede frecuentemente desde la LAN
 - Pendiente: confirmar si el NAS corre Swarm (afecta si `deploy:` hace algo real)
 - Pendiente: archivo `emqx.conf` montado en vez de env vars para config avanzada
 - Pendiente: reverse proxy/TLS para exposición a internet

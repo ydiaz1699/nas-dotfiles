@@ -1,7 +1,7 @@
 ---
 id: "_rules"
 type: "meta"
-version: "1.1"
+version: "1.2"
 # ── Archivos del catálogo ──────────────────────────────────────────────────
 catalog:
   compose_base: "_compose_base.md"    # Template base de compose (anchors, estructura)
@@ -39,32 +39,49 @@ Cada servicio en /docker/ DEBE tener:
 
 ```
 /docker/<nombre>/
-├── docker-compose.yml    ← SIEMPRE este nombre (nunca compose.yml)
-├── .env                  ← SIEMPRE (aunque esté vacío)
+├── compose.yml (o docker-compose.yml)   ← ambos nombres son válidos;
+│                                            find_compose() y validate_compose()
+│                                            deben reconocer los dos
+├── .env                  ← SIEMPRE (aunque esté vacío), permisos 600
 └── README.md             ← Mínimo: qué es, puerto, datos críticos
 ```
 
-## Formato del docker-compose.yml
+## Formato del compose
 
 1. SIEMPRE consultar `_compose_base.md` para la estructura estándar de anchors
 2. SIEMPRE usar `services:` como top-level (nunca `version:` — deprecated)
 3. SIEMPRE incluir `container_name:` explícito (= nombre del directorio)
-4. SIEMPRE `restart: unless-stopped`
-5. SIEMPRE incluir los anchors base: `x-security-defaults`, `x-healthcheck-defaults`,
+4. El archivo puede llamarse `compose.yml` o `docker-compose.yml` — ambos
+   son válidos y deben ser reconocidos por las herramientas del agente
+5. SIEMPRE `restart: unless-stopped`
+6. SIEMPRE incluir los anchors base: `x-security-defaults`, `x-healthcheck-defaults`,
    `x-logging-defaults`, `x-resource-defaults` (ver `_compose_base.md`)
-6. SIEMPRE aplicar `<<: [*security-defaults, *resource-defaults]` al servicio
-7. SIEMPRE healthcheck si el servicio expone HTTP/API
-8. NUNCA asignar puertos reservados (22, 53, 80, 443) como puerto externo
-9. Puertos externos: usar rango 8100-8999 (verificar disponibilidad antes)
-10. Volúmenes: preferir bind mounts en `./data/` sobre volumes nombrados
-11. Variables sensibles → SIEMPRE en .env, NUNCA inline en el compose
-12. SIEMPRE incluir `TZ=${TZ:-America/La_Paz}` en environment via `*common-env`
+7. SIEMPRE aplicar `<<: [*security-defaults, *resource-defaults]` al servicio
+8. SIEMPRE healthcheck si el servicio expone HTTP/API o protocolo con CLI de status
+9. NUNCA asignar puertos reservados (22, 53, 80, 443) como puerto externo
+10. Puertos externos: usar rango 8100-8999 (verificar disponibilidad antes)
+11. Volúmenes: preferir bind mounts en `./data/` sobre volumes nombrados
+12. Variables sensibles → SIEMPRE en .env, NUNCA inline en el compose
+13. SIEMPRE incluir `TZ=${TZ:-America/La_Paz}` en environment via `*common-env`
 
 ## Red y Proxy
 
 - Si `reverse_proxy.enabled: false` → NO agregar configuración de red externa
 - Si `reverse_proxy.enabled: true` → servicios web van a la red `proxy`
 - Servicios internos (bases de datos, redis) NUNCA se exponen a la red proxy
+
+## Dashboards y paneles admin
+
+- Por defecto, todo dashboard/panel admin se bindea a `127.0.0.1:<puerto>`
+  (no accesible fuera del NAS)
+- Si un servicio requiere acceso desde LAN (ej. panel de uso frecuente),
+  esto debe:
+  1. Indicarse explícitamente al crear el servicio (parámetro `is_dashboard`
+     + flag de exposición LAN)
+  2. Documentarse en la ficha del catálogo (`notes:`) con la justificación
+  3. Idealmente ir detrás de reverse proxy con auth si se expone más allá
+     de la LAN local
+- Ver `_compose_base.md` para el detalle de implementación
 
 ## Seguridad
 
@@ -136,7 +153,7 @@ El agente DEBE pedir confirmación antes de:
 - `down` / `kill` / `rm` de cualquier servicio
 - `restore` de un backup (sobreescribe datos)
 - `prune` de imágenes/volúmenes
-- Modificar un docker-compose.yml existente
+- Modificar un compose existente
 - Eliminar archivos de backup
 
 El agente PUEDE ejecutar sin confirmación:
