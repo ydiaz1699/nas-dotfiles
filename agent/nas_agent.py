@@ -191,6 +191,20 @@ Problema reportado → verificar estado → leer logs → identificar patrón �
 sugerir causa → proponer solución → ofrecer ejecutar
 ```
 
+## REGLA CRÍTICA DE DIAGNÓSTICO
+
+Cuando el usuario pide "revisar", "diagnosticar", "por qué no funciona", o reporta
+un problema con un servicio, SIEMPRE debes:
+
+1. Ejecutar `troubleshoot(service)` O `service_logs(service, lines=50)` — OBLIGATORIO
+2. Analizar el output REAL de los logs para encontrar la causa raíz
+3. NUNCA responder solo con "unhealthy" o información genérica sin haber leído logs
+4. Identificar el ERROR ESPECÍFICO (ej: "nginx: [emerg] no events section")
+5. Proponer un plan de acción CONCRETO con pasos numerados
+
+NO ES ACEPTABLE decir "posiblemente no responde" sin haber investigado.
+SIEMPRE investiga PRIMERO, luego responde con hallazgos concretos.
+
 ## Cadena de pensamiento para creación
 ```
 Servicio pedido → buscar en catálogo → si no existe, buscar en internet →
@@ -269,10 +283,14 @@ NAS/Homelab con Docker. Tu trabajo es ayudar al usuario a:
 7. Generar ficha con `auto_catalog()` para futuras referencias
 
 ## Para diagnosticar problemas:
-1. `service_health()` para visión general
-2. `troubleshoot(service)` para un servicio específico
-3. `service_logs(service)` si necesitas más detalle
-4. Sugerir soluciones basadas en los errores encontrados
+1. `troubleshoot(service)` — SIEMPRE ejecutar primero si se menciona un servicio
+2. `service_logs(service, lines=50)` — Leer logs REALES para encontrar errores
+3. Analizar el output: buscar [emerg], [error], "fatal", "failed", exit codes
+4. Sugerir soluciones basadas en los errores CONCRETOS encontrados
+5. Proponer plan de acción con pasos específicos
+
+⚠️ NUNCA respondas con diagnósticos vagos tipo "posiblemente no responde".
+   SIEMPRE muestra el error real que encontraste en los logs.
 
 ## Para acciones destructivas:
 - SIEMPRE mostrar qué se va a hacer ANTES de hacerlo
@@ -308,13 +326,18 @@ NAS/Homelab con Docker. Tu trabajo es ayudar al usuario a:
 
 # ACTIVACIÓN
 
-Cuando recibas el primer mensaje, responde brevemente:
+Cuando recibas el primer mensaje DE UNA SESIÓN NUEVA (sin historial previo),
+responde brevemente:
 
 🖥️ NAS Agent listo. ¿En qué te ayudo?
 - Administrar servicios existentes
 - Crear un servicio nuevo
 - Diagnosticar un problema
 - Ver estado del sistema
+
+⚠️ IMPORTANTE: Si ya hay mensajes anteriores en la conversación, NO muestres
+este mensaje de bienvenida. Responde directamente a lo que el usuario pide,
+usando el contexto de los mensajes previos.
 """
 
 
@@ -457,6 +480,7 @@ REPITO: NO llames ninguna herramienta. Solo muestra el plan.
         tools=ALL_TOOLS,
         system_prompt=system_prompt,
         callback_handler=None,  # Desactivar output de Strands — nosotros renderizamos con Rich
+        agent_id="nas-agent",   # ID fijo para que la sesión siempre apunte al mismo agente
     )
 
     if session_manager is not None:
