@@ -1,13 +1,18 @@
 ---
 id: "_rules"
 type: "meta"
-version: "1.0"
+version: "1.1"
+# ── Archivos del catálogo ──────────────────────────────────────────────────
+catalog:
+  compose_base: "_compose_base.md"    # Template base de compose (anchors, estructura)
+  template: "_template.md"            # Template de ficha de servicio
+  services_dir: "services/"           # Fichas individuales por servicio
 # ── Configuración del NAS ──────────────────────────────────────────────────
 nas:
   docker_base: "/docker"
   user: "aadm"
   home: "/home/aadm"
-  timezone: "America/New_York"
+  timezone: "America/La_Paz"
 # ── Reverse Proxy ──────────────────────────────────────────────────────────
 reverse_proxy:
   enabled: false
@@ -41,15 +46,19 @@ Cada servicio en /docker/ DEBE tener:
 
 ## Formato del docker-compose.yml
 
-1. SIEMPRE usar `services:` como top-level (nunca `version:` — deprecated)
-2. SIEMPRE incluir `container_name:` explícito (= nombre del directorio)
-3. SIEMPRE `restart: unless-stopped`
-4. SIEMPRE healthcheck si el servicio expone HTTP/API
-5. NUNCA asignar puertos reservados (22, 53, 80, 443) como puerto externo
-6. Puertos externos: usar rango 8100-8999 (verificar disponibilidad antes)
-7. Volúmenes: preferir bind mounts en `./data/` sobre volumes nombrados
-8. Variables sensibles → SIEMPRE en .env, NUNCA inline en el compose
-9. SIEMPRE incluir `TZ=${TZ:-America/New_York}` en environment
+1. SIEMPRE consultar `_compose_base.md` para la estructura estándar de anchors
+2. SIEMPRE usar `services:` como top-level (nunca `version:` — deprecated)
+3. SIEMPRE incluir `container_name:` explícito (= nombre del directorio)
+4. SIEMPRE `restart: unless-stopped`
+5. SIEMPRE incluir los anchors base: `x-security-defaults`, `x-healthcheck-defaults`,
+   `x-logging-defaults`, `x-resource-defaults` (ver `_compose_base.md`)
+6. SIEMPRE aplicar `<<: [*security-defaults, *resource-defaults]` al servicio
+7. SIEMPRE healthcheck si el servicio expone HTTP/API
+8. NUNCA asignar puertos reservados (22, 53, 80, 443) como puerto externo
+9. Puertos externos: usar rango 8100-8999 (verificar disponibilidad antes)
+10. Volúmenes: preferir bind mounts en `./data/` sobre volumes nombrados
+11. Variables sensibles → SIEMPRE en .env, NUNCA inline en el compose
+12. SIEMPRE incluir `TZ=${TZ:-America/La_Paz}` en environment via `*common-env`
 
 ## Red y Proxy
 
