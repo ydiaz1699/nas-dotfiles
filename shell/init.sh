@@ -37,7 +37,7 @@ path_add "$HOME/.cargo/bin"
 export PATH
 
 # ── Variables base ─────────────────────────────────────────────────────────
-export aadm="$HOME"
+export aadm="/home/aadm"
 export dkco=/docker
 export DOCKER_BASE=/docker
 
