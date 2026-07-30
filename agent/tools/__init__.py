@@ -13,6 +13,7 @@ from agent.tools.discovery_tools import (
     list_services,
     scan_compose,
     auto_catalog,
+    bulk_discover,
 )
 from agent.tools.system_tools import (
     scan_ports,
@@ -52,6 +53,7 @@ ALL_TOOLS = [
     list_services,
     scan_compose,
     auto_catalog,
+    bulk_discover,
     # Sistema
     scan_ports,
     disk_usage,

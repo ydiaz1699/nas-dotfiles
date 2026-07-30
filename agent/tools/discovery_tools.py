@@ -9,6 +9,7 @@ import yaml
 from pathlib import Path
 from strands.tools import tool
 
+from agent.tools._result import ToolResult, Timer
 from agent.tools._shell import (
     DOCKER_BASE,
     safe_run,
@@ -324,3 +325,108 @@ notes: "Ficha generada automáticamente — revisar y completar"
         f"  Categoría: {category}\n\n"
         f"⚠️  Revisa y completa la ficha manualmente (descripción, docs_url, notas)."
     )
+
+
+
+@tool
+def bulk_discover() -> str:
+    """Descubre todos los servicios en /docker/ y genera fichas de catálogo
+    para los que no tienen una. También regenera catalog.json.
+
+    Escanea /docker/, identifica servicios con compose, compara contra
+    fichas existentes en agent/catalog/services/, y genera fichas nuevas
+    para los servicios que faltan. Al final actualiza el índice catalog.json.
+
+    No requiere argumentos.
+    """
+    from agent.catalog._index import write_index, build_index
+
+    if not DOCKER_BASE.exists():
+        return str(ToolResult.error(
+            f"ERROR: No se encontró {DOCKER_BASE}",
+            tool_name="bulk_discover",
+        ))
+
+    # Encontrar servicios con compose
+    servicios_docker = []
+    for d in sorted(DOCKER_BASE.iterdir()):
+        if not d.is_dir() or d.name.startswith(".") or d.name in ("cli", "backups", "lost+found"):
+            continue
+        try:
+            validate_service_name(d.name)
+        except InvalidServiceName:
+            continue
+        if find_compose(d.name):
+            servicios_docker.append(d.name)
+
+    if not servicios_docker:
+        return str(ToolResult.warn(
+            "No se encontraron servicios Docker en /docker/",
+            tool_name="bulk_discover",
+        ))
+
+    # Comparar contra fichas existentes
+    fichas_existentes = set()
+    if CATALOG_DIR.exists():
+        for f in CATALOG_DIR.glob("*.md"):
+            if not f.name.startswith(".") and not f.name.startswith("_"):
+                fichas_existentes.add(f.stem)
+
+    sin_ficha = [s for s in servicios_docker if s not in fichas_existentes]
+    con_ficha = [s for s in servicios_docker if s in fichas_existentes]
+
+    # Generar fichas faltantes
+    generadas = []
+    errores = []
+
+    with Timer() as t:
+        for svc in sin_ficha:
+            try:
+                # Reutilizar la lógica de auto_catalog internamente
+                result = auto_catalog(svc)
+                if "✅" in result:
+                    generadas.append(svc)
+                else:
+                    errores.append(f"{svc}: {result[:80]}")
+            except Exception as e:
+                errores.append(f"{svc}: {e}")
+
+        # Regenerar índice
+        index = build_index()
+        write_index(index)
+
+    # Construir respuesta
+    msg_parts = [
+        f"=== BULK DISCOVER ===\n",
+        f"Servicios en /docker/: {len(servicios_docker)}",
+        f"Con ficha existente: {len(con_ficha)}",
+        f"Fichas generadas: {len(generadas)}",
+    ]
+
+    if generadas:
+        msg_parts.append(f"\n✅ Nuevas fichas:")
+        for g in generadas:
+            msg_parts.append(f"  • {g}")
+
+    if errores:
+        msg_parts.append(f"\n❌ Errores:")
+        for e in errores:
+            msg_parts.append(f"  • {e}")
+
+    msg_parts.append(f"\n📋 catalog.json actualizado ({index['services_count']} servicios)")
+    msg_parts.append(f"\n⚠️  Las fichas generadas son esqueletos — revisar y completar.")
+
+    return str(ToolResult.ok(
+        "\n".join(msg_parts),
+        data={
+            "total_services": len(servicios_docker),
+            "existing_fichas": len(con_ficha),
+            "generated": generadas,
+            "errors": errores,
+            "index_count": index["services_count"],
+        },
+        suggestions=["Revisar fichas en agent/catalog/services/",
+                     "validate_compose('<servicio>') para cada uno"],
+        tool_name="bulk_discover",
+        elapsed_ms=t.elapsed_ms,
+    ))

@@ -1,0 +1,80 @@
+{
+  "version": "1.0",
+  "services_count": 1,
+  "services": {
+    "emqx": {
+      "id": "emqx",
+      "name": "EMQX",
+      "description": "Broker MQTT distribuido y de alto rendimiento para IoT",
+      "image": "emqx/emqx:5.8.3",
+      "category": "domótica",
+      "port_internal": 1883,
+      "port_default": 1883,
+      "protocol": "mqtt",
+      "needs_proxy": false,
+      "needs_db": false,
+      "db_type": "",
+      "volumes": [
+        "./data/data:/opt/emqx/data",
+        "./data/log:/opt/emqx/log"
+      ],
+      "env_required": [
+        "EMQX_NODE_COOKIE",
+        "EMQX_DASHBOARD_USER",
+        "EMQX_DASHBOARD_PASSWORD"
+      ],
+      "env_optional": [
+        "EMQX_ALLOW_ANONYMOUS=false",
+        "EMQX_PORT_MQTT=1883",
+        "EMQX_PORT_MQTTS=8883",
+        "EMQX_PORT_WS=8083",
+        "EMQX_PORT_WSS=8084",
+        "EMQX_PORT_DASHBOARD=18083"
+      ],
+      "healthcheck": "[\"CMD\", \"emqx\", \"ctl\", \"status\"]",
+      "backup_critical": true,
+      "backup_paths": [
+        "./data/data"
+      ],
+      "protected": false,
+      "docs_url": "https://docs.emqx.com/en/emqx/latest/",
+      "notes": "Requiere ulimits nofile alto (1048576). Dashboard en puerto 18083, expuesto en LAN (no restringido a localhost pese a la regla general de _compose_base.md); ver justificación en README del servicio.",
+      "networks": [
+        "iot_net",
+        "db_net"
+      ],
+      "ports": {
+        "mqtt": 1883,
+        "mqtts": 8883,
+        "ws": 8083,
+        "wss": 8084,
+        "dashboard": 18083
+      },
+      "resources": {
+        "memory_limit": "1g",
+        "memory_reservation": "256m"
+      },
+      "security_extra": {
+        "ulimits": {
+          "nofile": {
+            "soft": 1048576,
+            "hard": 1048576
+          }
+        }
+      }
+    }
+  },
+  "by_category": {
+    "domótica": [
+      "emqx"
+    ]
+  },
+  "by_network": {
+    "iot_net": [
+      "emqx"
+    ],
+    "db_net": [
+      "emqx"
+    ]
+  }
+}
