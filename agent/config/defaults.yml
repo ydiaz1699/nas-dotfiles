@@ -1,0 +1,59 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# agent/config/defaults.yml — Configuración del agente NAS
+# ─────────────────────────────────────────────────────────────────────────────
+# Valores por defecto. Sobreescribir con .env.agent o variables de entorno.
+
+# ── Plugins ────────────────────────────────────────────────────────────────
+plugins:
+  enabled:
+    - docker
+    - backup
+    - network
+  # Plugins desactivados (descargados pero no registrados):
+  disabled: []
+
+# ── Event Bus ──────────────────────────────────────────────────────────────
+events:
+  # Tamaño del historial de eventos
+  history_size: 100
+
+# ── MQTT ───────────────────────────────────────────────────────────────────
+mqtt:
+  enabled: false          # Activar con NAS_MQTT_ENABLED=true
+  host: localhost
+  port: 1883
+  username: ""
+  password: ""
+  client_id: "nas-agent"
+  topics:
+    - "nas-agent/#"                    # Comandos directos al agente
+    - "homeassistant/+/status"         # Estado de HA
+    - "docker/events/#"                # Eventos Docker (si se configura)
+
+# ── Scheduler ──────────────────────────────────────────────────────────────
+scheduler:
+  enabled: true
+  tick_interval_seconds: 30     # Cada cuánto verifica tareas pendientes
+
+  # Tareas globales (adicional a las de plugins):
+  tasks:
+    - name: "catalog-reindex"
+      interval_minutes: 120          # Regenerar catálogo cada 2h
+      enabled: false                 # Activar manualmente
+
+# ── Cache ──────────────────────────────────────────────────────────────────
+cache:
+  ttl_seconds: 300              # TTL por defecto (5 min)
+  persist: false                # Persistir a disco
+  persist_path: "~/.nas-agent/cache.json"
+
+# ── Session ────────────────────────────────────────────────────────────────
+session:
+  timeout_minutes: 30           # Auto-reset tras inactividad
+  storage_dir: "~/.nas-agent/sessions"
+
+# ── Logging ────────────────────────────────────────────────────────────────
+logging:
+  level: "INFO"                 # DEBUG | INFO | WARNING | ERROR
+  file: ""                      # Si vacío, solo stdout
+  format: "%(asctime)s [%(name)s] %(levelname)s: %(message)s"
