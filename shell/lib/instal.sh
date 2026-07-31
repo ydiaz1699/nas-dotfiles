@@ -83,13 +83,13 @@ instal() {
 
   # Log: verificar cuales quedaron realmente instalados
   if [[ $exit_code -eq 0 ]]; then
-    local logdir="${aadm:-$HOME}/instal"
+    local logdir="${NAS_DOTFILES:-/nas-dotfiles}/logs"
     mkdir -p "$logdir"
     for pkg in "${pkgs_to_install[@]}"; do
       if dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
         # Evitar duplicados en el log
-        if ! grep -qF "install -y $pkg" "$logdir/manual.txt" 2>/dev/null; then
-          echo "$(_apt_cmd) install -y $pkg" >> "$logdir/manual.txt"
+        if ! grep -qF "install -y $pkg" "$logdir/packages.txt" 2>/dev/null; then
+          echo "$(_apt_cmd) install -y $pkg" >> "$logdir/packages.txt"
         fi
       fi
     done
