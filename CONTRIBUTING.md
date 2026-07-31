@@ -94,16 +94,20 @@ def mi_tool(service_name: str) -> str:
 
 ### Paso 2 — Exportar en `__init__.py`
 
-Importar la tool y agregarla a `_RAW_TOOLS`. Se audita y expone automáticamente vía `ALL_TOOLS = [audited(t) for t in _RAW_TOOLS]`.
+Importar la tool y agregarla a `ALL_TOOLS`:
 
 ```python
 from agent.tools.mi_modulo import mi_tool
 
-_RAW_TOOLS = [
+ALL_TOOLS = [
     ...,
     mi_tool,
 ]
 ```
+
+> **Nota:** Las tools se pasan directamente al agente sin wrapper.
+> La auditoría se integra vía plugin/hooks, no por decorador,
+> porque wrappear funciones `@tool` rompe su registro en Strands SDK.
 
 ### Paso 3 — Si es destructiva
 
@@ -133,7 +137,161 @@ Mencionar en `SYSTEM_PROMPT` dentro de `agent/nas_agent.py`, en la sección de h
 
 ---
 
-## 3. Módulos de seguridad (`agent/tools/_shell.py`)
+## 3. Nuevo plugin
+
+Los plugins extienden el agente con tools, eventos y tareas periódicas.
+
+### Paso 1 — Crear el archivo
+
+En `agent/plugins/mi_plugin.py`:
+
+```python
+from agent.plugins.base import BasePlugin, PluginMeta, ScheduleConfig, EventHandler
+
+class MiPlugin(BasePlugin):
+    meta = PluginMeta(
+        name="mi-plugin",
+        version="1.0.0",
+        description="Qué hace este plugin",
+    )
+
+    def setup(self):
+        """Registrar tools, eventos y tareas."""
+        # Tool que el agente puede invocar
+        self.register_tool(mi_tool_function)
+
+        # Reaccionar a eventos del bus
+        self.register_event(EventHandler(
+            event_type="docker.unhealthy",
+            handler=self._on_unhealthy,
+            description="Reacciona cuando un contenedor está unhealthy",
+        ))
+
+        # Tarea periódica
+        self.register_schedule(ScheduleConfig(
+            name="mi-check",
+            handler=self._check_periodico,
+            interval_minutes=10,
+            run_on_start=False,
+        ))
+
+    def teardown(self):
+        """Limpieza al descargar (opcional)."""
+        pass
+
+    def _on_unhealthy(self, event):
+        service = event.data.get("service", "?")
+        # ... lógica de reacción
+
+    def _check_periodico(self):
+        # ... lógica que corre cada 10 min
+        pass
+```
+
+### Paso 2 — Registrar en config
+
+Agregar el nombre del plugin en `agent/config/defaults.yml`:
+
+```yaml
+plugins:
+  enabled:
+    - docker
+    - backup
+    - network
+    - mi-plugin    # ← nuevo
+```
+
+### Paso 3 — Documentar
+
+Agregar una fila en la tabla de plugins de `agent/README.md`.
+
+### Anatomía de un plugin
+
+| Componente | Método | Descripción |
+|------------|--------|-------------|
+| Tools | `register_tool(fn)` | Funciones @tool que el LLM puede invocar |
+| Eventos | `register_event(EventHandler)` | Callbacks para eventos del bus |
+| Tareas | `register_schedule(ScheduleConfig)` | Jobs periódicos (cron-like) |
+| Metadata | `meta = PluginMeta(...)` | Nombre, versión, dependencias |
+
+---
+
+## 4. Nuevo evento en el bus
+
+### Emitir un evento
+
+```python
+from agent.events.bus import EventBus
+
+bus = EventBus()
+bus.emit(
+    "docker.unhealthy",
+    data={"service": "emqx", "reason": "OOM"},
+    source="docker_plugin",
+)
+```
+
+### Suscribirse a eventos
+
+```python
+# Exacto
+bus.on("docker.unhealthy", my_handler)
+
+# Wildcard (cualquier docker.*)
+bus.on("docker.*", my_wildcard_handler)
+
+# Global (todos los eventos)
+bus.on("*", audit_handler)
+```
+
+### Convenciones de nombres de eventos
+
+| Prefijo | Origen | Ejemplo |
+|---------|--------|---------|
+| `agent.command.*` | MQTT (nas-agent/command/X) | `agent.command.backup` |
+| `docker.*` | Docker plugin | `docker.unhealthy`, `docker.restart` |
+| `schedule.*` | Scheduler | `schedule.run`, `schedule.error` |
+| `mqtt.*` | MQTT listener | `mqtt.connected`, `mqtt.message` |
+| `ha.*` | Home Assistant via MQTT | `ha.status` |
+| `system.*` | System checks | `system.disk_warning` |
+
+---
+
+## 5. MQTT → Agente (eventos externos)
+
+### Agregar un nuevo topic MQTT
+
+1. Agregar el topic en `agent/config/defaults.yml`:
+```yaml
+mqtt:
+  topics:
+    - "nas-agent/#"
+    - "homeassistant/+/status"
+    - "mi-servicio/events/#"     # ← nuevo
+```
+
+2. Si necesitas mapeo custom de topic → event_type, agregar un mapper:
+```python
+def mi_mapper(topic: str, payload: dict) -> str | None:
+    if topic.startswith("mi-servicio/"):
+        return f"mi-servicio.{topic.split('/')[-1]}"
+    return None
+
+mqtt_listener.add_mapper(mi_mapper)
+```
+
+### Mapper por defecto
+
+| Topic MQTT | Event type |
+|------------|-----------|
+| `nas-agent/command/X` | `agent.command.X` |
+| `homeassistant/+/status` | `ha.status` |
+| `docker/events/X` | `docker.X` |
+| Cualquier otro | `mqtt.message` |
+
+---
+
+## 6. Módulos de seguridad (`agent/tools/_shell.py`)
 
 ### safe_run()
 - Ejecuta comandos con `shell=False` (lista de args)
@@ -158,9 +316,8 @@ Mencionar en `SYSTEM_PROMPT` dentro de `agent/nas_agent.py`, en la sección de h
 
 ---
 
-## 4. Auditoría (`agent/tools/_audit.py`)
+## 7. Auditoría (`agent/tools/_audit.py`)
 
-- `audited(func)`: decorador que wrappea tools con logging automático
 - `log_tool_call()`: registra en JSON Lines (timestamp, tool, args, resultado, duración)
 - `get_session_summary()`: lee las últimas N entradas del log
 - `_sanitize_args()`: oculta valores sensibles (password, token, secret)
@@ -174,12 +331,12 @@ Mencionar en `SYSTEM_PROMPT` dentro de `agent/nas_agent.py`, en la sección de h
 
 ---
 
-## 5. Variables de entorno del agente
+## 8. Variables de entorno del agente
 
 | Variable | Default | Descripción |
 |----------|---------|-------------|
 | `NAS_AGENT_MODEL` | `gemini` | Provider: `gemini`, `bedrock`, `ollama` |
-| `NAS_AGENT_MODEL_ID` | (auto) | Override del modelo |
+| `NAS_AGENT_MODEL_ID` | `gemini-3.1-flash-lite` | Override del modelo |
 | `GOOGLE_API_KEY` | — | API key para Gemini |
 | `AWS_REGION` | `us-east-1` | Región para Bedrock |
 | `NAS_AGENT_THINKING_BUDGET` | `10000` | Tokens de razonamiento (solo Bedrock) |
@@ -188,32 +345,62 @@ Mencionar en `SYSTEM_PROMPT` dentro de `agent/nas_agent.py`, en la sección de h
 | `NAS_AGENT_DRYRUN` | `0` | No ejecutar nada (dual: prompt + hard guard) |
 | `NAS_AGENT_AUDIT` | `1` | Habilitar audit log |
 | `NAS_AGENT_AUDIT_LOG` | `/docker/backups/agent_audit.log` | Ruta del audit log |
+| `NAS_AGENT_SESSION_TIMEOUT` | `30` | Minutos antes de auto-reset de sesión |
+| `NAS_MQTT_HOST` | `localhost` | Host broker MQTT |
+| `NAS_MQTT_PORT` | `1883` | Puerto broker MQTT |
+| `NAS_MQTT_USER` | — | Usuario MQTT (opcional) |
+| `NAS_MQTT_PASS` | — | Password MQTT (opcional) |
+| `NAS_MQTT_TOPICS` | `nas-agent/#` | Topics separados por `;` |
 
 ---
 
-## 6. Estructura del proyecto
+## 9. Estructura del proyecto
 
 ```
 nas-dotfiles/
 ├── agent/
-│   ├── nas_agent.py          # Entry point + system prompt + get_model()
-│   ├── catalog/
-│   │   ├── _rules.md         # Reglas de formato compose
-│   │   ├── _template.md      # Template de ficha de servicio
-│   │   └── services/         # Fichas .md de servicios catalogados
-│   └── tools/
-│       ├── __init__.py       # Exports ALL_TOOLS (con auditoría)
-│       ├── _shell.py         # safe_run, validación, readonly, dryrun
-│       ├── _audit.py         # Sistema de auditoría
-│       ├── docker_tools.py   # start, stop, restart, update, logs
-│       ├── discovery_tools.py # list_services, scan_compose, auto_catalog
-│       ├── system_tools.py   # scan_ports, disk_usage, memory_info, network_info
-│       ├── compose_tools.py  # create_service, validate_compose, read_compose
-│       ├── backup_tools.py   # backup, restore, list_backups
-│       ├── diagnostic_tools.py # health, port_conflicts, troubleshoot
-│       └── search_tools.py   # search_service_info (web fallback)
+│   ├── nas_agent.py          # Entry point + system prompt + sesión + Rich UI
+│   ├── config/
+│   │   └── defaults.yml      # Configuración centralizada
+│   ├── core/                 # Lógica de negocio (managers)
+│   │   ├── _result.py
+│   │   ├── service_manager.py
+│   │   ├── compose_manager.py
+│   │   └── backup_manager.py
+│   ├── tools/                # Thin wrappers (@tool → core)
+│   │   ├── __init__.py       # Exporta ALL_TOOLS (23 tools)
+│   │   ├── _shell.py         # safe_run, validación, readonly, dryrun
+│   │   ├── _audit.py         # Sistema de auditoría
+│   │   ├── _result.py        # ToolResult helpers
+│   │   ├── docker_tools.py
+│   │   ├── discovery_tools.py
+│   │   ├── system_tools.py
+│   │   ├── compose_tools.py
+│   │   ├── backup_tools.py
+│   │   ├── diagnostic_tools.py
+│   │   └── search_tools.py
+│   ├── plugins/              # Sistema de plugins dinámicos
+│   │   ├── base.py           # BasePlugin + PluginMeta + dataclasses
+│   │   ├── loader.py         # Auto-discovery + load/unload
+│   │   ├── docker_plugin.py  # Health check cada 5 min
+│   │   ├── backup_plugin.py  # Backup diario
+│   │   └── network_plugin.py # Escaneo puertos cada 15 min
+│   ├── events/               # Event bus pub/sub
+│   │   ├── bus.py            # EventBus (exact/wildcard/global)
+│   │   └── mqtt_listener.py  # MQTT → EventBus pipeline
+│   ├── scheduler/            # Tareas periódicas (cron-like)
+│   │   └── runner.py         # Threaded task runner
+│   ├── cache/                # Cache KV con TTL
+│   │   └── store.py          # Thread-safe + persistencia
+│   └── catalog/              # Catálogo de servicios (portable)
+│       ├── _rules.md
+│       ├── _compose_base.md
+│       ├── _template.md
+│       ├── _index.py
+│       ├── catalog.json
+│       └── services/
 ├── docker/cli/
-│   ├── svc.sh               # Entry point del CLI (BASH_SOURCE auto-detect)
+│   ├── svc.sh               # Entry point del CLI
 │   └── lib/
 │       ├── discovery.sh      # svc_list, svc_compose_file
 │       ├── docker.sh         # svc_update_all
@@ -224,17 +411,38 @@ nas-dotfiles/
 │       └── help.sh           # _svc_ayuda
 ├── shell/
 │   ├── init.sh              # Loader (sourced por ~/.bashrc)
+│   ├── scripts/             # Scripts standalone
+│   │   ├── start-all.sh
+│   │   ├── stop-all.sh
+│   │   ├── restart-all.sh
+│   │   └── install_docker.sh
 │   └── lib/
-│       ├── docker.sh         # Autocompletado de svc
-│       └── ...              # aliases, nav, system, etc.
-├── install.sh               # Configura ~/.bashrc (sin symlinks)
+│       ├── aliases.sh
+│       ├── nav.sh
+│       ├── docker.sh        # Autocompletado de svc
+│       ├── system.sh
+│       ├── instal.sh
+│       ├── prompt.sh
+│       ├── git.sh
+│       └── completions.sh
+├── tests/                   # Tests (pytest)
+│   ├── conftest.py
+│   ├── test_result.py
+│   ├── test_validation.py
+│   ├── test_compose_generation.py
+│   └── test_phase3.py
+├── ui/                      # Instalador TUI (Rich + InquirerPy)
+│   ├── setup.py
+│   └── requirements-setup.txt
+├── install.sh               # Configura ~/.bashrc
 ├── uninstall.sh             # Revierte instalación
+├── pyproject.toml           # Config: ruff, pytest, mypy
 └── requirements.txt         # Deps Python del agente
 ```
 
 ---
 
-## 7. Convenciones
+## 10. Convenciones
 
 - **Idioma**: Código en inglés, UI/mensajes en español
 - **Nombres de servicio**: solo `[a-z0-9._-]`, máx 64 chars
@@ -243,3 +451,6 @@ nas-dotfiles/
 - **Secrets**: nunca inline en compose, siempre en `.env` + referencia `${VAR}`
 - **Commits**: convención conventional commits (`feat:`, `fix:`, `security:`, `docs:`)
 - **Ramas**: push directo a `main` (repo personal), o PR para cambios grandes
+- **Python**: >=3.9, formato con ruff, type hints en todas las funciones públicas
+- **Plugins**: un archivo por plugin, hereda `BasePlugin`, define `meta` y `setup()`
+- **Eventos**: nombres con punto como separador (`dominio.accion`)

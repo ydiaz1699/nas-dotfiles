@@ -6,16 +6,24 @@ administra servicios Docker en tu NAS con lenguaje natural.
 ## Requisitos
 
 ```bash
-pip install strands-agents strands-agents-tools python-frontmatter pyyaml
+pip install -r requirements.txt
 ```
 
 ### Proveedor de modelo
 
-**Amazon Bedrock (default — más inteligente):**
+**Google Gemini (default — rápido y barato):**
+```bash
+export NAS_AGENT_MODEL=gemini
+export GOOGLE_API_KEY=tu-api-key     # https://aistudio.google.com/apikey
+# Modelo: gemini-3.1-flash-lite (override con NAS_AGENT_MODEL_ID)
+```
+
+**Amazon Bedrock (Claude — mejor tool-use):**
 ```bash
 export NAS_AGENT_MODEL=bedrock
 export AWS_REGION=us-east-1
 export AWS_PROFILE=default
+# Modelo: Claude Sonnet 4 con extended thinking
 ```
 
 **Ollama (local, gratis, privado):**
@@ -40,6 +48,19 @@ python -m agent.nas_agent "Quiero instalar Vaultwarden"
 python -m agent.nas_agent "Diagnostica nextcloud"
 python -m agent.nas_agent "¿Hay conflictos de puertos?"
 python -m agent.nas_agent "Hazme backup de grafana"
+
+# Gestión de sesión
+python -m agent.nas_agent --new "crear servicio X"   # Nueva sesión limpia
+python -m agent.nas_agent --status                   # Ver sesión actual
+python -m agent.nas_agent --clear                    # Borrar sesión
+```
+
+### Alias (desde terminal):
+
+```bash
+agent "revisar emqx"          # Equivale a python -m agent.nas_agent
+agent --status                 # Info de sesión
+agent --new "instalar X"       # Forzar nueva sesión
 ```
 
 ### Importar en tu código:
@@ -56,36 +77,67 @@ result = agent("¿Qué servicios están corriendo?")
 ```
 agent/
 ├── __init__.py
-├── nas_agent.py             ← Agente principal (entry point)
-├── README.md                ← Este archivo
-├── catalog/
-│   ├── _rules.md            ← Reglas del NAS (SIEMPRE se aplican)
-│   ├── _template.md         ← Template para fichas nuevas
-│   └── services/            ← Fichas de servicios (auto + manuales)
-│       └── .gitkeep
-└── tools/
-    ├── __init__.py           ← Exporta ALL_TOOLS (20 herramientas)
-    ├── discovery_tools.py    ← list_services, scan_compose, auto_catalog
-    ├── system_tools.py       ← scan_ports, disk_usage, memory_info, network_info
-    ├── docker_tools.py       ← service_start/stop/restart/update/logs
-    ├── compose_tools.py      ← create_service, validate_compose, read_compose
-    ├── backup_tools.py       ← backup_service, restore_service, list_backups
-    ├── search_tools.py       ← search_service_info (web fallback)
-    └── diagnostic_tools.py   ← service_health, port_conflicts, troubleshoot
+├── nas_agent.py                ← Entry point + system prompt + sesión + Rich UI
+├── README.md                   ← Este archivo
+├── config/
+│   └── defaults.yml            ← Configuración centralizada (plugins, MQTT, cache, etc.)
+├── core/                       ← Lógica de negocio (managers)
+│   ├── _result.py              ← ToolResult dataclass
+│   ├── service_manager.py      ← start/stop/restart/update/logs
+│   ├── compose_manager.py      ← create/validate/read
+│   └── backup_manager.py       ← backup/restore/list
+├── tools/                      ← Thin wrappers (@tool → core managers)
+│   ├── __init__.py             ← Exporta ALL_TOOLS (23 herramientas)
+│   ├── _shell.py               ← safe_run, validate, readonly, dryrun
+│   ├── _audit.py               ← Audit log JSON Lines
+│   ├── _result.py              ← ToolResult helpers
+│   ├── discovery_tools.py      ← list_services, scan_compose, auto_catalog, bulk_discover, export_service
+│   ├── system_tools.py         ← scan_ports, disk_usage, memory_info, network_info, list_files, read_file_content
+│   ├── docker_tools.py         ← service_start/stop/restart/update/logs
+│   ├── compose_tools.py        ← create_service, validate_compose, read_compose
+│   ├── backup_tools.py         ← backup_service, restore_service, list_backups
+│   ├── search_tools.py         ← search_service_info (web fallback)
+│   └── diagnostic_tools.py     ← service_health, port_conflicts, troubleshoot
+├── plugins/                    ← Sistema de plugins dinámicos
+│   ├── base.py                 ← BasePlugin + PluginMeta + ScheduleConfig + EventHandler
+│   ├── loader.py               ← Auto-discovery + load/unload
+│   ├── docker_plugin.py        ← Health check cada 5 min
+│   ├── backup_plugin.py        ← Backup diario automático
+│   └── network_plugin.py       ← Escaneo puertos cada 15 min
+├── events/                     ← Event bus pub/sub
+│   ├── bus.py                  ← EventBus (exact/wildcard/global, thread-safe)
+│   └── mqtt_listener.py        ← MQTT → EventBus pipeline
+├── scheduler/                  ← Tareas periódicas
+│   └── runner.py               ← Threaded task runner (cron-like)
+├── cache/                      ← Cache KV con TTL
+│   └── store.py                ← Thread-safe + persistencia a disco
+└── catalog/                    ← Catálogo de servicios (portable)
+    ├── _rules.md               ← Reglas de generación
+    ├── _compose_base.md        ← Template base (anchors YAML)
+    ├── _template.md            ← Template de fichas
+    ├── _index.py               ← Generador de catalog.json
+    ├── catalog.json            ← Índice auto-generado
+    └── services/               ← Servicios exportados
+        └── emqx/
+            └── ficha.md        ← Metadata + docs
 ```
 
 
-## Herramientas (20 tools)
+## Herramientas (23 tools)
 
 | Herramienta | Qué hace | Segura |
 |-------------|----------|--------|
 | `list_services()` | Lista servicios con estado | ✅ |
 | `scan_compose(svc)` | Analiza compose de un servicio | ✅ |
 | `auto_catalog(svc)` | Genera ficha de catálogo | ✅ |
+| `bulk_discover()` | Descubrir y catalogar todos los servicios | ✅ |
+| `export_service(svc)` | Exportar config real al catálogo | ✅ |
 | `scan_ports()` | Puertos en uso + libres | ✅ |
 | `disk_usage()` | Uso de disco con alertas | ✅ |
 | `memory_info()` | RAM/Swap + top procesos | ✅ |
 | `network_info()` | IPs, interfaces, redes Docker | ✅ |
+| `list_files(path)` | Listar archivos en ruta del NAS | ✅ |
+| `read_file_content(path)` | Leer archivo de texto | ✅ |
 | `service_start(svc)` | Levantar servicio | ✅ |
 | `service_stop(svc, confirm)` | Detener servicio | ⚠️ |
 | `service_restart(svc)` | Reiniciar servicio | ✅ |
@@ -103,6 +155,130 @@ agent/
 | `troubleshoot(svc)` | Diagnóstico completo | ✅ |
 
 ⚠️ = Requiere `confirm="si"` para ejecutarse
+
+
+## Sesión persistente
+
+El agente recuerda el contexto entre invocaciones. Usa `FileSessionManager` de Strands SDK.
+
+```bash
+agent "revisar tasmoadmin"        # Diagnostica con troubleshoot + logs
+agent "si reiniciar"              # Recuerda el contexto → reinicia tasmoadmin
+agent --status                    # Ver sesión actual (turnos, última actividad)
+agent --new "instalar X"          # Forzar sesión nueva
+agent --clear                     # Borrar memoria completamente
+```
+
+Auto-reset tras 30 min de inactividad (configurable con `NAS_AGENT_SESSION_TIMEOUT`).
+
+
+## Interfaz Rich
+
+El agente usa la librería [Rich](https://github.com/Textualize/rich) para output formateado:
+
+- **Header**: Panel cyan con título y subtítulo
+- **Query**: Texto destacado con colores por categoría
+- **Resultado**: Panel verde con Markdown renderizado
+- **Errores**: Paneles amarillos/rojos según severidad
+- **Modos**: Indicadores coloridos para dry-run/read-only
+
+Si Rich no está instalado, degrada a texto plano automáticamente.
+
+
+## Sistema de Plugins
+
+Plugins se cargan dinámicamente y registran tools, eventos y tareas periódicas.
+
+```python
+class DockerPlugin(BasePlugin):
+    meta = PluginMeta(name="docker", description="Control Docker")
+
+    def setup(self):
+        self.register_tool(service_restart)
+        self.register_schedule(ScheduleConfig(
+            name="health-check",
+            handler=self.check_health,
+            interval_minutes=5,
+        ))
+        self.register_event(EventHandler(
+            event_type="docker.unhealthy",
+            handler=self.on_unhealthy,
+        ))
+```
+
+Plugins incluidos:
+| Plugin | Función |
+|--------|---------|
+| `docker_plugin` | Health check cada 5 min |
+| `backup_plugin` | Backup diario automático |
+| `network_plugin` | Escaneo de puertos cada 15 min |
+
+
+## Event Bus + MQTT
+
+El bus interno soporta pub/sub con matching exacto, wildcard (`prefix.*`) y global (`*`).
+
+```python
+bus = EventBus()
+bus.on("docker.unhealthy", my_handler)   # Exacto
+bus.on("docker.*", wildcard_handler)     # Wildcard
+bus.on("*", audit_all_events)            # Global
+bus.emit("docker.unhealthy", {"service": "emqx"})
+```
+
+### MQTT → Agente
+
+Home Assistant, Node-RED o cualquier servicio puede disparar acciones via MQTT:
+
+```bash
+# Trigger backup via MQTT
+mosquitto_pub -t "nas-agent/command/backup" -m '{"service":"emqx"}'
+```
+
+Pipeline:
+```
+MQTT topic (nas-agent/command/backup)
+       ↓
+MQTTListener (traduce topic → event_type)
+       ↓
+EventBus.emit("agent.command.backup", {service: "emqx"})
+       ↓
+BackupPlugin._on_backup_command()
+       ↓
+BackupManager.backup("emqx")
+```
+
+
+## Scheduler
+
+Tareas periódicas estilo cron, ejecutadas en hilos separados:
+
+```python
+scheduler = Scheduler(event_bus=bus)
+scheduler.add(ScheduleConfig(
+    name="health-check",
+    handler=check_all_services,
+    interval_minutes=5,
+    run_on_start=True,
+))
+scheduler.start()
+```
+
+Emite eventos al bus: `schedule.run`, `schedule.complete`, `schedule.error`.
+
+
+## Cache
+
+Cache key-value en memoria con TTL, thread-safe:
+
+```python
+cache = Cache(ttl_seconds=300, persist_path=Path("~/.nas-agent/cache.json"))
+cache.set("ports.used", [1883, 8083])
+cache.get("ports.used")       # Lista o None si expiró
+cache.invalidate("ports.used")
+cache.stats                   # {"hits": 42, "misses": 3, "hit_rate": "93%"}
+```
+
 
 ## Catálogo: local + web search
 
@@ -127,18 +303,29 @@ agent/
 ### Agregar fichas manualmente:
 
 ```bash
-cp agent/catalog/_template.md agent/catalog/services/mi-servicio.md
-nano agent/catalog/services/mi-servicio.md
+cp agent/catalog/_template.md agent/catalog/services/mi-servicio/ficha.md
+nano agent/catalog/services/mi-servicio/ficha.md
 ```
+
 
 ## Variables de entorno
 
 | Variable | Default | Descripción |
 |----------|---------|-------------|
-| `NAS_AGENT_MODEL` | `bedrock` | Proveedor: bedrock, ollama |
-| `NAS_AGENT_MODEL_ID` | (auto) | Override del model ID |
+| `NAS_AGENT_MODEL` | `gemini` | Proveedor: gemini, bedrock, ollama |
+| `NAS_AGENT_MODEL_ID` | `gemini-3.1-flash-lite` | Override del model ID |
+| `GOOGLE_API_KEY` | — | API key para Gemini |
 | `AWS_REGION` | `us-east-1` | Región para Bedrock |
+| `NAS_AGENT_THINKING_BUDGET` | `10000` | Tokens de razonamiento (Bedrock) |
 | `OLLAMA_HOST` | `http://localhost:11434` | Host de Ollama |
+| `NAS_AGENT_READONLY` | `0` | Bloquear acciones destructivas |
+| `NAS_AGENT_DRYRUN` | `0` | No ejecutar nada (dual: prompt + hard) |
+| `NAS_AGENT_AUDIT` | `1` | Habilitar audit log |
+| `NAS_AGENT_AUDIT_LOG` | `/docker/backups/agent_audit.log` | Ruta del audit log |
+| `NAS_AGENT_SESSION_TIMEOUT` | `30` | Minutos de inactividad antes de auto-reset |
+| `NAS_MQTT_HOST` | `localhost` | Host del broker MQTT |
+| `NAS_MQTT_PORT` | `1883` | Puerto del broker MQTT |
+| `NAS_MQTT_TOPICS` | `nas-agent/#` | Topics MQTT (separados por `;`) |
 
 ## Seguridad
 
@@ -147,3 +334,5 @@ nano agent/catalog/services/mi-servicio.md
 - Credenciales NUNCA se muestran en claro en respuestas
 - Los composes generados ponen credenciales en .env (no inline)
 - Puertos reservados (22, 53, 80, 443) nunca se asignan
+- Audit log registra todas las invocaciones de tools
+- Modo read-only/dry-run para entornos sensibles

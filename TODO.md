@@ -1,7 +1,7 @@
 # TODO — nas-dotfiles
 
 Roadmap de features pendientes, priorizadas por impacto/esfuerzo.
-Actualizado: 2026-07-28
+Actualizado: 2026-07-31
 
 ---
 
@@ -25,13 +25,12 @@ Actualizado: 2026-07-28
 
 | # | Feature | Descripción | Esfuerzo | Estado |
 |---|---------|-------------|:--------:|:------:|
-| 1 | Modo REPL (conversacional) | Loop de input que mantiene sesión abierta con contexto entre preguntas | 30 min | ⬜ |
-| 2 | Catálogo pre-cargado | Al arrancar, leer fichas de `catalog/services/` e inyectar en contexto del agente | 25 min | ⬜ |
+| 1 | Modo REPL (loop conversacional) | Loop de input que mantiene sesión abierta sin re-invocar el agente por cada pregunta | 30 min | ⬜ |
+| 2 | Catálogo pre-cargado en contexto | Al arrancar, inyectar fichas de `catalog/services/` en el contexto del agente | 25 min | ⬜ |
 | 3 | Tool `compare_catalog` | Comparar config actual de un servicio contra su ficha del catálogo, detectar drift | 20 min | ⬜ |
 | 4 | Resumen post-sesión legible | Al terminar, mostrar informe humanizado de lo que hizo el agente (no JSON crudo) | 15 min | ⬜ |
 | 5 | Auto-heal sugerido | Cuando troubleshoot detecta error conocido (OOM, port conflict), sugerir fix concreto con args listos | 40 min | ⬜ |
 | 6 | Modo "explica antes" per-tool | Permitir marcar tools individuales que requieran explicación antes de ejecutar | 30 min | ⬜ |
-| 7 | Memoria entre sesiones | Guardar historial/contexto en archivo para retomar conversación después | 40 min | ⬜ |
 
 ---
 
@@ -78,8 +77,8 @@ Actualizado: 2026-07-28
 
 ## Completadas ✅
 
-| Feature | Fecha | Commit |
-|---------|-------|--------|
+| Feature | Fecha | Commit/PR |
+|---------|-------|-----------|
 | Migración Option B (sin symlinks) | 2026-07-28 | refactor/option-b |
 | Google Gemini como provider default | 2026-07-28 | feat(agent) |
 | Instrucciones de razonamiento en prompt | 2026-07-28 | feat(agent) |
@@ -96,3 +95,16 @@ Actualizado: 2026-07-28
 | Fix: create_service() sanitización YAML | 2026-07-28 | fix |
 | Fix: validate_compose() usa validated_service_path | 2026-07-28 | fix |
 | CONTRIBUTING.md | 2026-07-28 | docs |
+| Sistema de plugins dinámicos (base + loader) | 2026-07-28 | feat: phase 3 |
+| Plugins: docker, backup, network | 2026-07-28 | feat: phase 3 |
+| Event bus pub/sub (exact/wildcard/global) | 2026-07-28 | feat: phase 3 |
+| MQTT listener (paho-mqtt → EventBus) | 2026-07-28 | feat: phase 3 |
+| Scheduler de tareas periódicas (threaded) | 2026-07-28 | feat: phase 3 |
+| Cache KV con TTL + persistencia | 2026-07-28 | feat: phase 3 |
+| Config centralizada (defaults.yml) | 2026-07-28 | feat: phase 3 |
+| Sesión persistente (FileSessionManager) | 2026-07-28 | feat: phase 3 |
+| Rich UI (panels, colores, Markdown) | 2026-07-28 | feat: phase 3 |
+| Tools: bulk_discover, export_service | 2026-07-28 | feat: phase 3 |
+| Tools: list_files, read_file_content | 2026-07-28 | feat: phase 3 |
+| UI más colorida + panels anchos (60 chars) | 2026-07-31 | ui/colorful-wider-panels (PR #6) |
+| Actualización completa de documentación | 2026-07-31 | docs: full update |
