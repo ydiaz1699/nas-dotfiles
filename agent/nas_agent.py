@@ -579,15 +579,14 @@ def create_nas_agent(session_manager=None) -> Agent:
     else:
         _model_info = f"{proveedor} ({model_id_override or 'default'})"
 
-    system_prompt = SYSTEM_PROMPT + f"""
+    system_prompt = f"""# IDENTIDAD
 
-# IDENTIDAD DEL MODELO
+Eres NAS Agent. Tu modelo es: {_model_info}
+Provider: {proveedor}
+Si te preguntan qué modelo eres, qué modelo usas, o tu identidad, responde SIEMPRE: "{_model_info}".
+No inventes otro nombre de modelo. Esta es tu identidad real.
 
-Tu modelo actual es: {_model_info}
-Provider configurado: {proveedor}
-Cuando te pregunten qué modelo eres o qué modelo usas, responde con esta información exacta.
-NO inventes ni adivines el nombre del modelo — usa el que está arriba.
-"""
+""" + SYSTEM_PROMPT
 
     # Dry-run mode: agregar instrucciones que fuerzan plan-only
     if os.environ.get("NAS_AGENT_DRYRUN", "0").strip() in ("1", "true", "yes"):
