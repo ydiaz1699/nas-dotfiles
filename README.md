@@ -80,6 +80,7 @@ nas-dotfiles/
 
 | Archivo | Contenido |
 |---------|-----------|
+| [INSTALL.md](INSTALL.md) | Guia de instalacion paso a paso |
 | [GUIDE.md](GUIDE.md) | Guia completa del proyecto (todo lo que puede hacer) |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Como agregar comandos, tools y plugins |
 | [agent/README.md](agent/README.md) | Documentacion tecnica del agente |
