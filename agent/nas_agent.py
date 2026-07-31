@@ -670,7 +670,7 @@ def main():
                 f"Timeout: {SESSION_TIMEOUT_MIN} min"
             )
         if use_rich:
-            console.print(Panel(msg, title="[cyan]📋 Sesión[/cyan]", border_style="cyan", padding=(0, 2)))
+            console.print(Panel(msg, title="[bold cyan]📋 Sesión[/bold cyan]", border_style="bright_cyan", padding=(0, 2), width=60))
         else:
             print(msg)
         sys.exit(0)
@@ -679,27 +679,29 @@ def main():
     if use_rich:
         console.print()
         console.print(Panel(
-            "[dim]Administrador inteligente de NAS[/dim]",
+            "[bold white]Administrador inteligente de NAS[/bold white]\n"
+            "[dim cyan]docker · backup · diagnóstico · catálogo[/dim cyan]",
             title="[bold cyan]🖥️  NAS Agent[/bold cyan]",
-            border_style="cyan",
+            subtitle="[dim magenta]v1.0[/dim magenta]",
+            border_style="bright_cyan",
             padding=(0, 2),
-            width=42,
+            width=60,
         ))
     else:
         print("🖥️  nas-agent — Administrador inteligente de NAS")
-        print("=" * 50)
+        print("=" * 60)
 
     # ── Obtener query ──────────────────────────────────────────────────────
     if args:
         query = " ".join(args)
         if use_rich:
-            console.print(f"\n  [dim]📝 Query:[/dim] [bold]{query}[/bold]\n")
+            console.print(f"\n  [dim white]📝 Query:[/dim white] [bold bright_white]{query}[/bold bright_white]\n")
         else:
             print(f"\n📝 Query: {query}\n")
     else:
         if use_rich:
-            console.print("\n  [dim]¿Qué necesitas?[/dim]")
-            console.print("  Ejemplos: servicios, diagnosticar, instalar, backup\n")
+            console.print("\n  [bright_white]¿Qué necesitas?[/bright_white]")
+            console.print("  [dim]Ejemplos:[/dim] [cyan]servicios[/cyan], [yellow]diagnosticar[/yellow], [green]instalar[/green], [magenta]backup[/magenta]\n")
         else:
             print("\n¿Qué necesitas?")
             print("  Ejemplos:")
@@ -714,7 +716,7 @@ def main():
 
     # ── Inicializar sesión + agente ────────────────────────────────────────
     if use_rich:
-        console.print("  [dim]⚡ Inicializando...[/dim]", end="")
+        console.print("  [bright_yellow]⚡ Inicializando...[/bright_yellow]", end="")
     else:
         print("⚡ Inicializando agente...")
 
@@ -741,25 +743,25 @@ def main():
         sys.exit(1)
 
     if use_rich:
-        console.print(" [green]✓[/green]")
+        console.print(" [bold green]✓[/bold green]")
     else:
         print("")
 
     # ── Indicadores de modo ────────────────────────────────────────────────
     if force_new_session:
         if use_rich:
-            console.print("  [cyan]🆕 Nueva sesión iniciada[/cyan]")
+            console.print("  [bold bright_cyan]🆕 Nueva sesión iniciada[/bold bright_cyan]")
         else:
             print("🆕 Nueva sesión iniciada")
 
     if os.environ.get("NAS_AGENT_DRYRUN", "0").strip() in ("1", "true", "yes"):
         if use_rich:
-            console.print("  [yellow]🔒 MODO DRY-RUN: Solo mostrará el plan[/yellow]")
+            console.print("  [bold yellow]🔒 MODO DRY-RUN:[/bold yellow] [yellow]Solo mostrará el plan[/yellow]")
         else:
             print("🔒 MODO DRY-RUN: Solo mostrará el plan, sin ejecutar nada.")
     if os.environ.get("NAS_AGENT_READONLY", "0").strip() in ("1", "true", "yes"):
         if use_rich:
-            console.print("  [yellow]🔒 MODO READ-ONLY: Acciones destructivas bloqueadas[/yellow]")
+            console.print("  [bold yellow]🔒 MODO READ-ONLY:[/bold yellow] [yellow]Acciones destructivas bloqueadas[/yellow]")
         else:
             print("🔒 MODO READ-ONLY: Acciones destructivas bloqueadas.")
 
@@ -774,15 +776,16 @@ def main():
         if "429" in error_msg or "Too Many Requests" in error_msg or "quota" in error_msg.lower():
             if use_rich:
                 console.print(Panel(
-                    "[yellow]⚠️  Límite de requests alcanzado (quota del tier gratuito).[/yellow]\n\n"
+                    "[bold yellow]⚠️  Límite de requests alcanzado (quota del tier gratuito).[/bold yellow]\n\n"
                     "Opciones:\n"
-                    "  • Esperar unos minutos e intentar de nuevo\n"
-                    "  • Usar otro modelo: [cyan]NAS_AGENT_MODEL_ID=gemini-2.0-flash agent ...[/cyan]\n"
-                    "  • Activar billing en https://aistudio.google.com (2000 RPM)\n"
-                    "  • Usar Ollama local: [cyan]NAS_AGENT_MODEL=ollama agent ...[/cyan]",
-                    title="[yellow]Rate Limit[/yellow]",
+                    "  [green]•[/green] Esperar unos minutos e intentar de nuevo\n"
+                    "  [green]•[/green] Usar otro modelo: [cyan]NAS_AGENT_MODEL_ID=gemini-2.0-flash agent ...[/cyan]\n"
+                    "  [green]•[/green] Activar billing en [blue]https://aistudio.google.com[/blue] (2000 RPM)\n"
+                    "  [green]•[/green] Usar Ollama local: [cyan]NAS_AGENT_MODEL=ollama agent ...[/cyan]",
+                    title="[bold yellow]⚠️  Rate Limit[/bold yellow]",
                     border_style="yellow",
                     padding=(1, 2),
+                    width=60,
                 ))
             else:
                 print("\n  ⚠️  Límite de requests alcanzado (quota del tier gratuito).")
@@ -790,11 +793,11 @@ def main():
                 print("  O usar Ollama local: NAS_AGENT_MODEL=ollama")
         else:
             if use_rich:
-                console.print(f"\n  [red]❌ Error:[/red] {error_msg[:200]}")
+                console.print(f"\n  [bold red]❌ Error:[/bold red] [red]{error_msg[:200]}[/red]")
             else:
                 print(f"\n❌ Error: {error_msg[:200]}")
         if use_rich:
-            console.print("\n  [dim]✅ Tarea completada.[/dim]\n")
+            console.print("\n  [dim green]✅ Tarea completada.[/dim green]\n")
         return None
 
     # ── Mostrar respuesta con Rich ─────────────────────────────────────────
@@ -808,27 +811,28 @@ def main():
                 md = Markdown(response_text)
                 console.print(Panel(
                     md,
-                    title="[bold green]Resultado[/bold green]",
-                    border_style="green",
+                    title="[bold green]✅ Resultado[/bold green]",
+                    border_style="bright_green",
                     padding=(1, 2),
                     box=box.ROUNDED,
-                    width=42,
+                    width=60,
                 ))
             except Exception:
                 console.print(Panel(
                     response_text,
-                    title="Resultado",
+                    title="[bold green]Resultado[/bold green]",
                     border_style="green",
                     padding=(1, 2),
-                    width=42,
+                    width=60,
                 ))
     elif not use_rich:
-        print("-" * 50)
+        print("-" * 60)
 
     # ── Resumen de sesión ──────────────────────────────────────────────────
     if use_rich:
         console.print()
-        console.print("  [dim]✅ Tarea completada.[/dim]")
+        console.print("  [dim green]───────────────────────────────────────────────────[/dim green]")
+        console.print("  [bold green]✅[/bold green] [bright_white]Tarea completada.[/bright_white]")
         console.print()
     else:
         print("\n✅ Tarea completada.")
