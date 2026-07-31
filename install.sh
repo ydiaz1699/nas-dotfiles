@@ -91,6 +91,28 @@ echo ""
 echo -e "  ${BOLD}[2/7] Configuración${NC}"
 echo ""
 
+# Navegación personalizada
+echo -e "    ${DIM}Configura el atajo de navegación a tu home.${NC}"
+echo -e "    ${DIM}Ejemplo: comando 'adm' → variable \$aadm → /home/aadm${NC}"
+echo ""
+
+DEFAULT_NAV_HOME="/home/$SYS_USER"
+DEFAULT_NAV_VAR="${SYS_USER:0:4}"
+DEFAULT_NAV_CMD="${SYS_USER:0:3}"
+
+read -r -p "    Ruta de home [$DEFAULT_NAV_HOME]: " INPUT_NAV_HOME
+NAV_HOME="${INPUT_NAV_HOME:-$DEFAULT_NAV_HOME}"
+
+read -r -p "    Variable \$[$DEFAULT_NAV_VAR]: " INPUT_NAV_VAR
+NAV_VAR="${INPUT_NAV_VAR:-$DEFAULT_NAV_VAR}"
+
+read -r -p "    Comando [$DEFAULT_NAV_CMD]: " INPUT_NAV_CMD
+NAV_CMD="${INPUT_NAV_CMD:-$DEFAULT_NAV_CMD}"
+
+echo ""
+echo -e "    ${GRN}→${NC} ${BOLD}${NAV_CMD}${NC} llevará a ${CYN}${NAV_HOME}${NC} (variable: \$${NAV_VAR})"
+echo ""
+
 # Docker base
 read -r -p "    Ruta datos Docker [/docker]: " INPUT_DOCKER
 DOCKER_BASE="${INPUT_DOCKER:-/docker}"
@@ -157,6 +179,7 @@ echo -e "  ${BOLD}[3/7] Resumen${NC}"
 echo ""
 echo -e "    ┌────────────────────────────────────────────┐"
 echo -e "    │ Proyecto:     $INSTALL_DIR"
+echo -e "    │ Navegación:   ${NAV_CMD} → \$${NAV_VAR} → ${NAV_HOME}"
 echo -e "    │ Docker datos: $DOCKER_BASE"
 echo -e "    │ Timezone:     $TIMEZONE"
 echo -e "    │ Provider:     $PROVIDER"
@@ -191,6 +214,22 @@ fi
 
 # ── [5/7] Configurar ~/.bashrc ─────────────────────────────────────────────
 echo -e "  ${BOLD}[5/7] Configurando .bashrc${NC}"
+
+# Generar .config/user.conf
+mkdir -p "$INSTALL_DIR/.config"
+cat > "$INSTALL_DIR/.config/user.conf" << EOF
+# .config/user.conf — Configuración personalizada del usuario
+# Generado por install.sh — $(date '+%Y-%m-%d %H:%M')
+#
+# NAV_HOME: Ruta del directorio home (para navegación rápida)
+# NAV_VAR:  Nombre de la variable exportada (ej: \$aadm, \$nilo)
+# NAV_CMD:  Nombre del comando de navegación (ej: adm, nil)
+
+NAV_HOME="$NAV_HOME"
+NAV_VAR="$NAV_VAR"
+NAV_CMD="$NAV_CMD"
+EOF
+echo -e "    ${GRN}✓${NC} .config/user.conf generado"
 
 MARKER="# nas-dotfiles shell framework"
 EXPORT_LINE='export NAS_DOTFILES="/nas-dotfiles"'

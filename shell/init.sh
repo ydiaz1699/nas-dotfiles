@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shell/init.sh — Loader único del shell framework
-# Sourced por ~/.bashrc (tanto aadm como root)
+# Sourced por ~/.bashrc (tanto usuario como root)
 #
 # Requiere: export NAS_DOTFILES="$HOME/nas-dotfiles" en ~/.bashrc ANTES de este source
 
@@ -22,6 +22,19 @@ fi
 
 SHELL_DIR="$NAS_DOTFILES/shell"
 
+# ── Cargar configuración del usuario ──────────────────────────────────────
+# Generada por setup.py o install.sh en la primera instalación
+_NAS_USER_CONF="$NAS_DOTFILES/.config/user.conf"
+if [[ -f "$_NAS_USER_CONF" ]]; then
+  # shellcheck disable=SC1090
+  source "$_NAS_USER_CONF"
+fi
+
+# Valores por defecto si no hay config (compatibilidad)
+: "${NAV_HOME:=$HOME}"
+: "${NAV_VAR:=adm}"
+: "${NAV_CMD:=adm}"
+
 # ── path_add disponible antes de los módulos ──────────────────────────────
 path_add() {
   case ":$PATH:" in
@@ -38,9 +51,10 @@ path_add "$HOME/.cargo/bin"
 export PATH
 
 # ── Variables base ─────────────────────────────────────────────────────────
-export aadm="/home/aadm"
+# Variable de navegación del usuario (configurable)
+export "$NAV_VAR=$NAV_HOME"
 export dkco=/docker
-export DOCKER_BASE=/docker
+export DOCKER_BASE="${DOCKER_BASE:-/docker}"
 
 # ── Alias de svc (evita symlink en /usr/local/bin) ─────────────────────────
 alias svc="$NAS_DOTFILES/docker/cli/svc.sh"

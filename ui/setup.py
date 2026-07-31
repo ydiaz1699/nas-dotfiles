@@ -179,9 +179,45 @@ def ask_configuration(info: dict) -> dict:
     """Wizard interactivo de configuración."""
     config = {}
 
+    # ── Navegación personalizada ───────────────────────────────────────────
+    console.print(
+        "\n  [dim]Configura el atajo de navegación a tu home.[/dim]"
+        "\n  [dim]Ejemplo: comando 'adm' → variable $aadm → /home/aadm[/dim]\n"
+    )
+
+    user_home = str(Path.home())
+    username = info["user"]
+
+    config["nav_home"] = inquirer.text(
+        message="Ruta de home:",
+        default=user_home,
+        validate=lambda x: Path(x).is_absolute() or "Debe ser ruta absoluta",
+    ).execute()
+
+    # Sugerir variable basada en el usuario (primeras 3-4 letras)
+    default_var = username[:4] if len(username) >= 4 else username
+    config["nav_var"] = inquirer.text(
+        message=f"Variable (${default_var}):",
+        default=default_var,
+        validate=lambda x: x.isidentifier() or "Solo letras, números y _",
+    ).execute()
+
+    # Sugerir comando = primeras 3 letras del var
+    default_cmd = config["nav_var"][:3]
+    config["nav_cmd"] = inquirer.text(
+        message=f"Comando ({default_cmd}):",
+        default=default_cmd,
+        validate=lambda x: x.isidentifier() or "Solo letras, números y _",
+    ).execute()
+
+    console.print(
+        f"\n  [green]→[/green] [bold]{config['nav_cmd']}[/bold] llevará a "
+        f"[cyan]{config['nav_home']}[/cyan] (variable: ${config['nav_var']})\n"
+    )
+
     # Docker base
     config["docker_base"] = inquirer.text(
-        message="Ruta de datos Docker:",
+        message="Ruta datos Docker:",
         default=DOCKER_BASE_DEFAULT,
         validate=lambda x: Path(x).is_absolute() or "Debe ser ruta absoluta",
     ).execute()
@@ -261,6 +297,7 @@ def show_summary(config: dict, info: dict):
     table.add_column("Valor")
 
     table.add_row("Ruta del proyecto", str(INSTALL_DIR))
+    table.add_row("Navegación", f"{config['nav_cmd']} → ${config['nav_var']} → {config['nav_home']}")
     table.add_row("Datos Docker", config["docker_base"])
     table.add_row("Timezone", config["timezone"])
     table.add_row("Provider IA", config["provider"])
@@ -279,6 +316,7 @@ def execute_installation(config: dict, info: dict):
     steps = []
 
     steps.append(("Copiando a /nas-dotfiles/", _step_copy))
+    steps.append(("Generando configuración de navegación", _step_user_conf))
     steps.append(("Configurando ~/.bashrc", _step_bashrc_user))
     if config["setup_root"]:
         steps.append(("Configurando /root/.bashrc", _step_bashrc_root))
@@ -342,6 +380,28 @@ def _step_copy(config: dict, info: dict):
 def _step_bashrc_user(config: dict, info: dict):
     """Configura ~/.bashrc del usuario."""
     _configure_bashrc(Path.home() / ".bashrc", config)
+
+
+def _step_user_conf(config: dict, info: dict):
+    """Genera .config/user.conf con la configuración de navegación."""
+    conf_dir = INSTALL_DIR / ".config"
+    conf_dir.mkdir(parents=True, exist_ok=True)
+    conf_file = conf_dir / "user.conf"
+
+    lines = [
+        "# .config/user.conf — Configuración personalizada del usuario",
+        f"# Generado por setup.py — {time.strftime('%Y-%m-%d %H:%M')}",
+        "#",
+        "# NAV_HOME: Ruta del directorio home (para navegación rápida)",
+        "# NAV_VAR:  Nombre de la variable exportada (ej: $aadm, $nilo)",
+        "# NAV_CMD:  Nombre del comando de navegación (ej: adm, nil)",
+        "",
+        f'NAV_HOME="{config["nav_home"]}"',
+        f'NAV_VAR="{config["nav_var"]}"',
+        f'NAV_CMD="{config["nav_cmd"]}"',
+    ]
+
+    conf_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _step_bashrc_root(config: dict, info: dict):

@@ -77,12 +77,16 @@ _nav_fzf() {
   [[ -n "$target" ]] && cd -- "$target"
 }
 
-# ── adm — /home/aadm ──────────────────────────────────────────────────────
-adm()  { _nav "$aadm" "$@"; }
-admf() { _nav_fzf "$aadm" "adm>"; }
+# ── Navegación home del usuario (configurable via .config/user.conf) ───────
+# NAV_CMD / NAV_VAR / NAV_HOME se definen en init.sh desde user.conf
+# Defaults: adm / aadm / $HOME
 
-_adm_completions() { _nav_complete "$aadm"; }
-complete -F _adm_completions adm
+# Crear la función dinámicamente con el nombre configurado
+eval "${NAV_CMD:-adm}() { _nav \"\${${NAV_VAR:-adm}}\" \"\$@\"; }"
+eval "${NAV_CMD:-adm}f() { _nav_fzf \"\${${NAV_VAR:-adm}}\" \"${NAV_CMD:-adm}>\"; }"
+
+eval "_${NAV_CMD:-adm}_completions() { _nav_complete \"\${${NAV_VAR:-adm}}\"; }"
+eval "complete -F _${NAV_CMD:-adm}_completions ${NAV_CMD:-adm}"
 
 # ── dk — /docker ──────────────────────────────────────────────────────────
 dk()  { _nav "$dkco" "$@"; }
