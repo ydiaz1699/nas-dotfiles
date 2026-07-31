@@ -563,7 +563,31 @@ def create_nas_agent(session_manager=None) -> Agent:
     """
     model = get_model()
 
-    system_prompt = SYSTEM_PROMPT
+    # Inyectar info del modelo real en el system prompt
+    proveedor = os.environ.get("NAS_AGENT_MODEL", "gemini").lower()
+    model_id_override = os.environ.get("NAS_AGENT_MODEL_ID")
+
+    if proveedor == "gemini":
+        _model_id = model_id_override or "gemini-3.1-flash-lite"
+        _model_info = f"Google Gemini ({_model_id})"
+    elif proveedor == "bedrock":
+        _model_id = model_id_override or "us.anthropic.claude-sonnet-4-20250514-v1:0"
+        _model_info = f"Amazon Bedrock Claude ({_model_id})"
+    elif proveedor == "ollama":
+        _model_id = model_id_override or "llama3.1"
+        _model_info = f"Ollama local ({_model_id})"
+    else:
+        _model_info = f"{proveedor} ({model_id_override or 'default'})"
+
+    system_prompt = SYSTEM_PROMPT + f"""
+
+# IDENTIDAD DEL MODELO
+
+Tu modelo actual es: {_model_info}
+Provider configurado: {proveedor}
+Cuando te pregunten qué modelo eres o qué modelo usas, responde con esta información exacta.
+NO inventes ni adivines el nombre del modelo — usa el que está arriba.
+"""
 
     # Dry-run mode: agregar instrucciones que fuerzan plan-only
     if os.environ.get("NAS_AGENT_DRYRUN", "0").strip() in ("1", "true", "yes"):
