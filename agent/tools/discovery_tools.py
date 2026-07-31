@@ -311,8 +311,9 @@ notes: "Ficha generada automáticamente — revisar y completar"
 """
 
     # Guardar ficha
-    catalog_file = CATALOG_DIR / f"{service_name}.md"
-    catalog_file.parent.mkdir(parents=True, exist_ok=True)
+    catalog_svc_dir = CATALOG_DIR / service_name
+    catalog_svc_dir.mkdir(parents=True, exist_ok=True)
+    catalog_file = catalog_svc_dir / "ficha.md"
     catalog_file.write_text(ficha, encoding="utf-8")
 
     return (
@@ -429,4 +430,121 @@ def bulk_discover() -> str:
                      "validate_compose('<servicio>') para cada uno"],
         tool_name="bulk_discover",
         elapsed_ms=t.elapsed_ms,
+    ))
+
+
+
+@tool
+def export_service(service_name: str) -> str:
+    """Exporta la configuración real de un servicio al catálogo de nas-dotfiles.
+
+    Copia compose.yml y .env (sanitizado) desde /docker/<servicio>/ al catálogo
+    en agent/catalog/services/<servicio>/ para que sea portable y versionable.
+
+    Los secretos en .env se reemplazan por placeholders (__pega_aqui__).
+    Si ya existe una ficha.md, se mantiene. Si no, se genera una básica.
+
+    Esto permite:
+    - Reinstalar el NAS y recrear servicios desde el catálogo
+    - Versionar la configuración real en git
+    - Que el agente sepa exactamente cómo está configurado cada servicio
+
+    Args:
+        service_name: Nombre del servicio a exportar.
+                      Ejemplo: vaultwarden, emqx, homeassistant
+    """
+    import re as _re
+
+    try:
+        validate_service_name(service_name)
+    except InvalidServiceName as e:
+        return str(ToolResult.error(f"ERROR: {e}", tool_name="export_service"))
+
+    compose_path = find_compose(service_name)
+    if not compose_path:
+        return str(ToolResult.error(
+            f"ERROR: Servicio '{service_name}' no encontrado en {DOCKER_BASE}",
+            tool_name="export_service",
+        ))
+
+    svc_docker_dir = compose_path.parent
+    catalog_svc_dir = CATALOG_DIR / service_name
+    catalog_svc_dir.mkdir(parents=True, exist_ok=True)
+
+    exported = []
+
+    # 1. Copiar compose.yml
+    compose_content = compose_path.read_text(encoding="utf-8")
+    (catalog_svc_dir / "compose.yml").write_text(compose_content, encoding="utf-8")
+    exported.append("compose.yml")
+
+    # 2. Copiar .env sanitizado (reemplazar secretos por placeholders)
+    env_path = svc_docker_dir / ".env"
+    if env_path.exists():
+        env_content = env_path.read_text(encoding="utf-8")
+        # Sanitizar: reemplazar valores de variables sensibles
+        sensitive_patterns = [
+            "password", "secret", "token", "cookie", "key", "pass",
+        ]
+        sanitized_lines = []
+        for line in env_content.splitlines():
+            if "=" in line and not line.strip().startswith("#"):
+                key, _, value = line.partition("=")
+                key_lower = key.strip().lower()
+                if any(pat in key_lower for pat in sensitive_patterns) and value.strip():
+                    sanitized_lines.append(f"{key.strip()}=__pega_aqui__")
+                else:
+                    sanitized_lines.append(line)
+            else:
+                sanitized_lines.append(line)
+        (catalog_svc_dir / ".env.example").write_text(
+            "\n".join(sanitized_lines) + "\n", encoding="utf-8"
+        )
+        exported.append(".env.example (secretos sanitizados)")
+    else:
+        exported.append("(.env no encontrado)")
+
+    # 3. Copiar README.md si existe
+    readme_path = svc_docker_dir / "README.md"
+    if readme_path.exists():
+        readme_content = readme_path.read_text(encoding="utf-8")
+        (catalog_svc_dir / "README.md").write_text(readme_content, encoding="utf-8")
+        exported.append("README.md")
+
+    # 4. Generar ficha.md si no existe
+    ficha_path = catalog_svc_dir / "ficha.md"
+    if not ficha_path.exists():
+        # Generar ficha básica con auto_catalog
+        auto_catalog(service_name)
+        # auto_catalog now writes to catalog_svc_dir/ficha.md directly
+        if ficha_path.exists():
+            exported.append("ficha.md (generada)")
+        else:
+            exported.append("ficha.md (no se pudo generar)")
+    else:
+        exported.append("ficha.md (ya existía)")
+
+    # 5. Regenerar catalog.json
+    try:
+        from agent.catalog._index import write_index
+        write_index()
+    except Exception:
+        pass
+
+    return str(ToolResult.ok(
+        f"✅ Servicio '{service_name}' exportado al catálogo\n\n"
+        f"Ubicación: agent/catalog/services/{service_name}/\n"
+        f"Archivos:\n" + "\n".join(f"  • {f}" for f in exported) + "\n\n"
+        f"Para versionar: git add agent/catalog/services/{service_name}/\n"
+        f"En una reinstalación, el agente puede recrear el servicio desde estos archivos.",
+        data={
+            "service": service_name,
+            "catalog_path": str(catalog_svc_dir),
+            "exported_files": exported,
+        },
+        suggestions=[
+            f"validate_compose('{service_name}')",
+            f"git add agent/catalog/services/{service_name}/",
+        ],
+        tool_name="export_service",
     ))

@@ -100,10 +100,17 @@ def build_index() -> Dict[str, Any]:
             "by_network": {},
         }
 
+    # Buscar fichas en dos formatos:
+    # 1. services/<name>.md (archivo plano)
+    # 2. services/<name>/ficha.md (directorio con compose exportado)
+    ficha_files = []
     for md_file in sorted(SERVICES_DIR.glob("*.md")):
-        if md_file.name.startswith(".") or md_file.name.startswith("_"):
-            continue
+        if not md_file.name.startswith(".") and not md_file.name.startswith("_"):
+            ficha_files.append(md_file)
+    for ficha_file in sorted(SERVICES_DIR.glob("*/ficha.md")):
+        ficha_files.append(ficha_file)
 
+    for md_file in ficha_files:
         meta = _parse_frontmatter(md_file)
         if not meta or "id" not in meta:
             continue

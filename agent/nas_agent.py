@@ -328,6 +328,8 @@ NAS/Homelab con Docker. Tu trabajo es ayudar al usuario a:
 - `list_services()` → Ver todos los servicios Docker con estado
 - `scan_compose(service)` → Analizar compose de un servicio
 - `auto_catalog(service)` → Generar ficha de catálogo automática
+- `bulk_discover()` → Descubrir y catalogar todos los servicios
+- `export_service(service)` → Exportar config real (compose + .env) al catálogo para portabilidad
 
 ## Sistema
 - `scan_ports()` → Puertos en uso + próximos disponibles
