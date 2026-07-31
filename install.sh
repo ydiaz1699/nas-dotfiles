@@ -92,25 +92,34 @@ echo -e "  ${BOLD}[2/7] Configuración${NC}"
 echo ""
 
 # Navegación personalizada
-echo -e "    ${DIM}Configura el atajo de navegación a tu home.${NC}"
-echo -e "    ${DIM}Ejemplo: comando 'adm' → variable \$aadm → /home/aadm${NC}"
+echo -e "    ${BOLD}Navegación rápida${NC}"
+echo -e "    ${DIM}Configura un atajo para ir a tu carpeta personal.${NC}"
+echo -e "    ${DIM}Ejemplo: escribes 'adm' → vas a /home/aadm${NC}"
 echo ""
 
-DEFAULT_NAV_HOME="/home/$SYS_USER"
-DEFAULT_NAV_VAR="${SYS_USER:0:4}"
-DEFAULT_NAV_CMD="${SYS_USER:0:3}"
+if [[ "$SYS_USER" == "root" ]]; then
+  DEFAULT_NAV_HOME="/root"
+  DEFAULT_NAV_VAR="adm"
+  DEFAULT_NAV_CMD="adm"
+else
+  DEFAULT_NAV_HOME="/home/$SYS_USER"
+  DEFAULT_NAV_VAR="${SYS_USER:0:4}"
+  DEFAULT_NAV_CMD="${SYS_USER:0:3}"
+fi
 
-read -r -p "    Ruta de home [$DEFAULT_NAV_HOME]: " INPUT_NAV_HOME
+read -r -p "    Carpeta destino [$DEFAULT_NAV_HOME]: " INPUT_NAV_HOME
 NAV_HOME="${INPUT_NAV_HOME:-$DEFAULT_NAV_HOME}"
 
-read -r -p "    Variable \$[$DEFAULT_NAV_VAR]: " INPUT_NAV_VAR
+echo -e "    ${DIM}Nombre de la variable (sin \$, solo letras):${NC}"
+read -r -p "    Variable [$DEFAULT_NAV_VAR]: " INPUT_NAV_VAR
 NAV_VAR="${INPUT_NAV_VAR:-$DEFAULT_NAV_VAR}"
 
+echo -e "    ${DIM}Comando que escribes para navegar:${NC}"
 read -r -p "    Comando [$DEFAULT_NAV_CMD]: " INPUT_NAV_CMD
 NAV_CMD="${INPUT_NAV_CMD:-$DEFAULT_NAV_CMD}"
 
 echo ""
-echo -e "    ${GRN}→${NC} ${BOLD}${NAV_CMD}${NC} llevará a ${CYN}${NAV_HOME}${NC} (variable: \$${NAV_VAR})"
+echo -e "    ${GRN}✓${NC} Escribes ${BOLD}${NAV_CMD}${NC} → vas a ${CYN}${NAV_HOME}${NC} (variable: \$${NAV_VAR})"
 echo ""
 
 # Docker base

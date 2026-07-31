@@ -180,39 +180,53 @@ def ask_configuration(info: dict) -> dict:
     config = {}
 
     # ── Navegación personalizada ───────────────────────────────────────────
-    console.print(
-        "\n  [dim]Configura el atajo de navegación a tu home.[/dim]"
-        "\n  [dim]Ejemplo: comando 'adm' → variable $aadm → /home/aadm[/dim]\n"
-    )
-
     user_home = str(Path.home())
     username = info["user"]
 
+    # Defaults inteligentes
+    if username == "root":
+        default_home = "/root"
+        default_var = "adm"
+        default_cmd = "adm"
+    else:
+        default_home = user_home
+        default_var = username[:4] if len(username) >= 4 else username
+        default_cmd = username[:3] if len(username) >= 3 else username
+
+    console.print(
+        "\n  [bold]Navegación rápida[/bold]"
+        "\n  [dim]Configura un atajo para ir a tu carpeta personal.[/dim]"
+        "\n  [dim]Ejemplo: escribes[/dim] [cyan]adm[/cyan] [dim]→ vas a[/dim] [cyan]/home/aadm[/cyan]"
+        "\n  [dim](la variable $aadm también queda disponible en scripts)[/dim]\n"
+    )
+
     config["nav_home"] = inquirer.text(
-        message="Ruta de home:",
-        default=user_home,
+        message="¿A qué carpeta quieres navegar rápido?",
+        default=default_home,
+        long_instruction="Ruta absoluta (tu home o carpeta de trabajo)",
         validate=lambda x: Path(x).is_absolute() or "Debe ser ruta absoluta",
     ).execute()
 
-    # Sugerir variable basada en el usuario (primeras 3-4 letras)
-    default_var = username[:4] if len(username) >= 4 else username
     config["nav_var"] = inquirer.text(
-        message=f"Variable (${default_var}):",
+        message="Nombre de la variable (sin $):",
         default=default_var,
-        validate=lambda x: x.isidentifier() or "Solo letras, números y _",
+        long_instruction=f"Se exporta como ${default_var}=\"{config['nav_home']}\" — solo letras/números",
+        validate=lambda x: x.isidentifier() and "/" not in x or "Solo letras, números y _ (sin / ni espacios)",
     ).execute()
 
-    # Sugerir comando = primeras 3 letras del var
-    default_cmd = config["nav_var"][:3]
+    # Re-calcular default del comando basado en la variable elegida
+    default_cmd_recalc = config["nav_var"][:3] if len(config["nav_var"]) >= 3 else config["nav_var"]
     config["nav_cmd"] = inquirer.text(
-        message=f"Comando ({default_cmd}):",
-        default=default_cmd,
-        validate=lambda x: x.isidentifier() or "Solo letras, números y _",
+        message="Nombre del comando:",
+        default=default_cmd_recalc,
+        long_instruction=f"Escribes '{default_cmd_recalc}' en la terminal → cd {config['nav_home']}",
+        validate=lambda x: x.isidentifier() and "/" not in x or "Solo letras, números y _ (sin / ni espacios)",
     ).execute()
 
     console.print(
-        f"\n  [green]→[/green] [bold]{config['nav_cmd']}[/bold] llevará a "
-        f"[cyan]{config['nav_home']}[/cyan] (variable: ${config['nav_var']})\n"
+        f"\n  [green]✓[/green] Escribes [bold cyan]{config['nav_cmd']}[/bold cyan]"
+        f" → vas a [cyan]{config['nav_home']}[/cyan]"
+        f"  (variable: [dim]${config['nav_var']}[/dim])\n"
     )
 
     # Docker base
