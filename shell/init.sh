@@ -33,7 +33,7 @@ path_add() {
 export -f path_add
 
 # ── PATH base ─────────────────────────────────────────────────────────────
-path_add "$HOME/scripts"
+path_add "$NAS_DOTFILES/shell/scripts"
 path_add "$HOME/.cargo/bin"
 export PATH
 
