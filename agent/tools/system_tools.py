@@ -367,4 +367,25 @@ def read_file_content(path: str, lines: int = 50) -> str:
     if not output:
         return f"(archivo vacío): {path}"
 
+    # Seguridad: sanitizar archivos .env para no enviar secretos al LLM
+    if resolved.name == ".env" or resolved.name.endswith(".env"):
+        sensitive_patterns = [
+            "password", "secret", "token", "cookie", "key", "pass",
+            "user", "username", "login", "credential", "auth",
+            "api_key", "apikey", "private",
+        ]
+        safe_exceptions = ["allow_anonymous", "allow_user"]
+        sanitized_lines = []
+        for line in output.splitlines():
+            if "=" in line and not line.strip().startswith("#"):
+                key, _, value = line.partition("=")
+                key_lower = key.strip().lower()
+                if any(pat in key_lower for pat in sensitive_patterns) and value.strip():
+                    if not any(exc in key_lower for exc in safe_exceptions):
+                        sanitized_lines.append(f"{key.strip()}=***REDACTED***")
+                        continue
+            sanitized_lines.append(line)
+        output = "\n".join(sanitized_lines)
+        return f"=== {path} (credenciales ocultas) ===\n\n{output}"
+
     return f"=== {path} ===\n\n{output}"

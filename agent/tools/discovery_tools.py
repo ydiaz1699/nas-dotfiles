@@ -143,8 +143,12 @@ def scan_compose(service_name: str) -> str:
         if env:
             if isinstance(env, list):
                 env_safe = [
-                    e.split("=")[0] + "=***" if any(
-                        x in e.lower() for x in ["password", "token", "secret"]
+                    e.split("=")[0] + "=***REDACTED***" if any(
+                        x in e.lower() for x in [
+                            "password", "token", "secret", "cookie", "key",
+                            "pass", "user", "login", "credential", "auth",
+                            "api_key", "apikey", "private",
+                        ]
                     ) else e
                     for e in env
                 ]
@@ -485,6 +489,12 @@ def export_service(service_name: str) -> str:
         # Sanitizar: reemplazar valores de variables sensibles
         sensitive_patterns = [
             "password", "secret", "token", "cookie", "key", "pass",
+            "user", "username", "login", "credential", "auth",
+            "api_key", "apikey", "private",
+        ]
+        # Excepciones: variables que contienen "user" pero son configs no-sensibles
+        safe_exceptions = [
+            "allow_anonymous", "allow_user",
         ]
         sanitized_lines = []
         for line in env_content.splitlines():
@@ -492,7 +502,11 @@ def export_service(service_name: str) -> str:
                 key, _, value = line.partition("=")
                 key_lower = key.strip().lower()
                 if any(pat in key_lower for pat in sensitive_patterns) and value.strip():
-                    sanitized_lines.append(f"{key.strip()}=__pega_aqui__")
+                    # Verificar excepciones (configs que contienen "user" pero no son sensibles)
+                    if not any(exc in key_lower for exc in safe_exceptions):
+                        sanitized_lines.append(f"{key.strip()}=__pega_aqui__")
+                    else:
+                        sanitized_lines.append(line)
                 else:
                     sanitized_lines.append(line)
             else:
