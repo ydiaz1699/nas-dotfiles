@@ -42,7 +42,7 @@ except ImportError:
 # Constantes
 # ─────────────────────────────────────────────────────────────────────────────
 
-REPO_DIR = Path(__file__).resolve().parent
+REPO_DIR = Path(__file__).resolve().parent.parent  # ui/ → proyecto raíz
 INSTALL_DIR = Path("/nas-dotfiles")
 DOCKER_BASE_DEFAULT = "/docker"
 
@@ -374,11 +374,8 @@ def _step_copy(config: dict, info: dict):
         return  # Ya está en la ubicación correcta
 
     if INSTALL_DIR.exists():
-        # Actualizar
-        subprocess.run(
-            ["rsync", "-a", "--delete", f"{REPO_DIR}/", f"{INSTALL_DIR}/"],
-            check=True, capture_output=True,
-        )
+        # Actualizar: copiar encima (sin rsync que puede no estar)
+        shutil.copytree(REPO_DIR, INSTALL_DIR, dirs_exist_ok=True)
     else:
         # Copiar
         shutil.copytree(REPO_DIR, INSTALL_DIR)
