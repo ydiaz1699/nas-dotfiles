@@ -547,6 +547,8 @@ agent "revisar tasmoadmin"
 agent "instalar vaultwarden"
 agent "exportar todos los servicios al catalogo"
 agent "que tengo en /home/aadm/scripts"
+agent --model                    # cambiar modelo interactivamente
+agent --model gemini-2.5-flash   # cambio directo
 ```
 
 ## Proveedores de IA
@@ -585,9 +587,33 @@ agent "si reiniciar"            # Sabe que te refieres a tasmoadmin
 agent --status                  # Ver sesion actual
 agent --new "instalar X"        # Forzar sesion nueva
 agent --clear                   # Borrar memoria
+agent --model                   # Cambiar modelo (menu interactivo)
+agent --model gemini-2.5-flash  # Cambio directo
 ```
 
 Auto-reset tras 30 min de inactividad.
+
+## Arquitectura del prompt
+
+El system prompt NO es monolitico. Se ensambla dinamicamente segun la query:
+
+```
+agent "revisar emqx"
+        |
+Python _classify_query() → tipo: diagnostico
+        |
+_assemble_prompt() ensambla:
+  THINKING_PROMPT (razonar)
+  + BLOCK_IDENTIDAD
+  + BLOCK_REGLAS_CORE
+  + BLOCK_HERRAMIENTAS
+  + BLOCK_DIAGNOSTICO   ← solo se carga para diagnostico
+  + BLOCK_FORMATO
+```
+
+El modelo recibe SOLO los bloques relevantes para la tarea = menos tokens desperdiciados, mejor razonamiento.
+
+Bloques disponibles: identidad, reglas_core, seguridad, herramientas, formato, contexto_nas, diagnostico, creacion, backup, admin.
 
 ## Interfaz Rich
 

@@ -12,7 +12,7 @@ Framework completo para administrar un servidor Linux/NAS con Docker. Convierte 
 |------------|----------|----------|
 | **Shell** (`shell/`) | Aliases, prompt, navegacion, dashboard | Bash |
 | **CLI** (`docker/cli/`) | Administracion de servicios Docker (`svc`) | Bash |
-| **Agente** (`agent/`) | Administracion con lenguaje natural | Python |
+| **Agente** (`agent/`) | Administracion con lenguaje natural + thinking dinámico | Python |
 
 ## Instalacion
 
@@ -49,6 +49,7 @@ agent "diagnostica homeassistant"
 agent "instalar vaultwarden"
 agent "exportar emqx al catalogo"
 agent --status
+agent --model                        # cambiar modelo
 ```
 
 ## Estructura

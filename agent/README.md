@@ -61,6 +61,8 @@ python -m agent.nas_agent --clear                    # Borrar sesión
 agent "revisar emqx"          # Equivale a python -m agent.nas_agent
 agent --status                 # Info de sesión
 agent --new "instalar X"       # Forzar nueva sesión
+agent --model                  # Cambiar modelo (menú interactivo)
+agent --model gemini-2.5-flash # Cambio directo
 ```
 
 ### Importar en tu código:
@@ -167,6 +169,8 @@ agent "si reiniciar"              # Recuerda el contexto → reinicia tasmoadmin
 agent --status                    # Ver sesión actual (turnos, última actividad)
 agent --new "instalar X"          # Forzar sesión nueva
 agent --clear                     # Borrar memoria completamente
+agent --model                     # Cambiar modelo interactivamente
+agent --model gemini-2.5-flash    # Cambio directo (se guarda en .env.agent)
 ```
 
 Auto-reset tras 30 min de inactividad (configurable con `NAS_AGENT_SESSION_TIMEOUT`).
@@ -183,6 +187,80 @@ El agente usa la librería [Rich](https://github.com/Textualize/rich) para outpu
 - **Modos**: Indicadores coloridos para dry-run/read-only
 
 Si Rich no está instalado, degrada a texto plano automáticamente.
+
+
+## Arquitectura del Prompt: Thinking + Bloques Dinámicos
+
+El system prompt NO es monolítico. Se ensambla dinámicamente por query:
+
+```
+agent "revisar emqx"
+        │
+        ▼
+┌─ Python: _classify_query("revisar emqx") ────────────┐
+│  Detecta keywords → tipo: diagnóstico                  │
+│  Selecciona: [identidad, reglas_core, herramientas,   │
+│               diagnostico, formato]                    │
+└────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─ _assemble_prompt(bloques) ───────────────────────────┐
+│  THINKING_PROMPT (razonar antes de actuar)             │
+│  + BLOCK_IDENTIDAD (modelo, provider)                  │
+│  + BLOCK_REGLAS_CORE (actuar sin preguntar)            │
+│  + BLOCK_HERRAMIENTAS (23 tools)                       │
+│  + BLOCK_DIAGNOSTICO (cadena, patrones error)          │
+│  + BLOCK_FORMATO (español, conciso)                    │
+└────────────────────────────────────────────────────────┘
+```
+
+### Bloques disponibles (10):
+
+| Bloque | Contenido |
+|--------|-----------|
+| `identidad` | Modelo, provider, nombre |
+| `reglas_core` | Actuar sin preguntar, mapeo acción→tool |
+| `seguridad` | Puertos reservados, credenciales, modos |
+| `herramientas` | Lista de 23 tools con descripción |
+| `formato` | Español, conciso, emojis, markdown |
+| `contexto_nas` | Memoria sesión, comandos del usuario |
+| `diagnostico` | Cadena diagnóstica, patrones de error |
+| `creacion` | Flujo creación, deps, puertos 8100-8999 |
+| `backup` | Backup/restore, confirmación |
+| `admin` | Acciones seguras vs destructivas |
+
+### Qué recibe cada tipo de query:
+
+| Query | Bloques |
+|-------|---------|
+| "revisar emqx" | identidad + reglas + tools + **diagnostico** + formato |
+| "instalar X" | identidad + reglas + tools + seguridad + **creacion** + formato |
+| "backup plex" | identidad + reglas + tools + **backup** + formato |
+| "reiniciar Y" | identidad + reglas + tools + **admin** + formato |
+| "qué modelo eres" | **identidad** (solo) |
+| "hola" | identidad + reglas + contexto_nas + formato |
+
+
+## Cambio de modelo
+
+Cambiar el modelo del agente desde la terminal:
+
+```bash
+# Menú interactivo con 7 opciones
+agent --model
+
+# Cambio directo (se guarda automáticamente en .env.agent)
+agent --model gemini-2.5-flash
+```
+
+Modelos disponibles en el menú:
+1. Gemini 2.5 Flash (mejor razonamiento)
+2. Gemini 3.5 Flash Lite (más requests/día)
+3. Gemini 3.5 Flash (balance)
+4. Gemini 3.1 Flash Lite (default actual)
+5. Gemini 3.6 Flash (más nuevo)
+6. Claude Sonnet 4 (Bedrock)
+7. Ollama llama3.1 (local, gratis)
 
 
 ## Sistema de Plugins
