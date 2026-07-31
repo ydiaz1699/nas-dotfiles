@@ -1,13 +1,18 @@
 # nas-dotfiles: dependencias del agente
 # Instalar con: pip install -r requirements.txt
 
-# Strands Agents SDK con soporte Gemini
+# ── Core: Strands Agents SDK con soporte Gemini ───────────────────────────
 strands-agents[gemini]>=1.0.0
 strands-agents-tools>=0.1.0
 
-# Parsing de frontmatter YAML (catálogo)
+# ── Parsing de frontmatter YAML (catálogo) ────────────────────────────────
 python-frontmatter>=1.0.0
 PyYAML>=6.0
 
-# Output formateado (paneles, tablas, colores, markdown)
+# ── Output formateado (paneles, tablas, colores, markdown) ────────────────
 rich>=13.0.0
+
+# ── MQTT (opcional — para integración con EMQX/Home Assistant) ────────────
+# Activar con NAS_MQTT_ENABLED=true en config
+# Si no se instala, el agente funciona sin MQTT (graceful degradation)
+paho-mqtt>=1.6.0

@@ -42,20 +42,32 @@ nas-dotfiles/
 │   └── cli/
 │       ├── svc.sh          # CLI principal de servicios Docker
 │       └── lib/            # Modulos del CLI
+│           ├── discovery.sh    # svc_list, svc_compose_file
+│           ├── health.sh       # svc_health, svc_lista
+│           ├── backup.sh       # svc_backup, svc_restore
+│           ├── docker.sh       # svc_update_all
+│           ├── extras.sh       # port-map, size, net, env, create, watch, doctor, diff
+│           ├── menu.sh         # TUI interactivo con fzf
+│           └── help.sh         # _svc_ayuda
 ├── agent/                  # Agente Python (Strands Agents SDK)
-│   ├── nas_agent.py        # Entry point (sesion persistente)
+│   ├── nas_agent.py        # Entry point (sesion persistente + Rich UI)
+│   ├── config/
+│   │   └── defaults.yml    # Configuracion centralizada
 │   ├── core/               # Logica de negocio (managers)
 │   │   ├── _result.py      # ToolResult dataclass
 │   │   ├── service_manager.py  # start/stop/restart/update/logs
 │   │   ├── compose_manager.py  # create/validate/read
 │   │   └── backup_manager.py   # backup/restore/list
 │   ├── tools/              # Thin wrappers (@tool -> core)
+│   │   ├── __init__.py     # Exporta ALL_TOOLS (23 herramientas)
+│   │   ├── _shell.py       # safe_run, validacion, readonly, dryrun
+│   │   ├── _audit.py       # Sistema de auditoria
 │   │   ├── docker_tools.py
+│   │   ├── discovery_tools.py  # + export_service, bulk_discover
+│   │   ├── system_tools.py     # + list_files, read_file_content
 │   │   ├── compose_tools.py
 │   │   ├── backup_tools.py
-│   │   ├── discovery_tools.py  # + export_service, bulk_discover
 │   │   ├── diagnostic_tools.py
-│   │   ├── system_tools.py     # + list_files, read_file_content
 │   │   └── search_tools.py
 │   ├── plugins/            # Sistema de plugins dinamicos
 │   │   ├── base.py         # BasePlugin + PluginMeta
@@ -70,20 +82,16 @@ nas-dotfiles/
 │   │   └── runner.py       # Threaded task runner
 │   ├── cache/              # Cache KV con TTL
 │   │   └── store.py        # Thread-safe + persistencia
-│   ├── catalog/            # Catalogo de servicios (portable)
-│   │   ├── _rules.md       # Reglas de generacion
-│   │   ├── _compose_base.md   # Template base (anchors YAML)
-│   │   ├── _template.md    # Template de fichas
-│   │   ├── _index.py       # Generador de catalog.json
-│   │   ├── catalog.json    # Indice auto-generado
-│   │   └── services/       # Servicios exportados
-│   │       └── emqx/
-│   │           ├── ficha.md       # Metadata + docs
-│   │           ├── compose.yml    # Config real exportada
-│   │           └── .env.example   # .env sin secretos
-│   └── config/
-│       └── defaults.yml    # Configuracion centralizada
-└── tests/                  # 62 tests
+│   └── catalog/            # Catalogo de servicios (portable)
+│       ├── _rules.md       # Reglas de generacion
+│       ├── _compose_base.md   # Template base (anchors YAML)
+│       ├── _template.md    # Template de fichas
+│       ├── _index.py       # Generador de catalog.json
+│       ├── catalog.json    # Indice auto-generado
+│       └── services/       # Servicios exportados
+│           └── emqx/
+│               └── ficha.md    # Metadata + docs
+└── tests/
     ├── conftest.py
     ├── test_result.py
     ├── test_validation.py
@@ -95,7 +103,7 @@ nas-dotfiles/
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                         NAS Agent                             │
+│                     NAS Agent  (Rich UI)                      │
 ├──────────────────────────────────────────────────────────────┤
 │  @tool (Strands SDK)  ->  Core Manager  ->  safe_run()       │
 │       thin wrapper         logica real       ejecucion segura │
@@ -123,6 +131,14 @@ BackupManager.backup("emqx")
 ```
 
 ## Funciones principales
+
+### Interfaz Rich
+
+El agente usa la libreria [Rich](https://github.com/Textualize/rich) para output formateado:
+- Panels con bordes coloreados (cyan header, verde resultado, amarillo errores)
+- Markdown renderizado en la respuesta
+- Colores por categoria en ejemplos interactivos
+- Degrada a texto plano si Rich no esta instalado
 
 ### Sesion persistente
 
@@ -162,9 +178,8 @@ Resultado:
 ```
 agent/catalog/services/emqx/
 ├── ficha.md         # Metadata (imagen, puertos, vars, redes)
-├── compose.yml      # Config REAL copiada de /docker/emqx/
-├── .env.example     # .env con secretos reemplazados por __pega_aqui__
-└── README.md        # Documentacion
+├── compose.yml      # Config REAL copiada de /docker/emqx/ (si se exporta)
+└── .env.example     # .env con secretos reemplazados por __pega_aqui__
 ```
 
 Para versionar y subir a GitHub:
@@ -274,13 +289,14 @@ restart          # reiniciar NAS (detiene servicios primero)
 ### Docker CLI (svc)
 
 ```bash
-svc lista              # ver servicios con estado
+svc lista              # ver servicios con estado (puntos verde/rojo)
 svc up nextcloud       # levantar servicio
 svc logs grafana       # ver logs
 svc health             # dashboard de salud
 svc update emqx        # pull + recrear
 svc update-all         # actualizar todos
 svc backup plex        # backup de volumenes
+svc doctor             # chequeo de 6 puntos
 svc menu               # TUI interactivo (fzf)
 ```
 
@@ -301,11 +317,12 @@ agent "que tengo en /home/aadm/scripts"
 | Variable | Default | Descripcion |
 |----------|---------|-------------|
 | `NAS_AGENT_MODEL` | `gemini` | Provider: `gemini`, `bedrock`, `ollama` |
-| `NAS_AGENT_MODEL_ID` | (auto) | Override del modelo |
+| `NAS_AGENT_MODEL_ID` | `gemini-3.1-flash-lite` | Override del modelo |
 | `GOOGLE_API_KEY` | — | API key de Google AI Studio |
 | `NAS_AGENT_SESSION_TIMEOUT` | `30` | Minutos de inactividad para reset |
 | `NAS_AGENT_DRYRUN` | `0` | `1` = solo mostrar plan sin ejecutar |
 | `NAS_AGENT_READONLY` | `0` | `1` = bloquear acciones destructivas |
+| `NAS_AGENT_AUDIT` | `1` | `0` = deshabilitar audit log |
 
 ### MQTT / Eventos
 
@@ -323,7 +340,7 @@ agent "que tengo en /home/aadm/scripts"
 - `readonly_guard()` — Modo read-only bloquea acciones destructivas
 - `DRYRUN` — Muestra plan completo sin ejecutar
 - Credenciales auto-sanitizadas (nunca llegan al LLM ni a git)
-- Auditoria de todas las herramientas ejecutadas
+- Auditoria de todas las herramientas ejecutadas (JSON Lines)
 
 ## Requisitos
 
@@ -335,7 +352,7 @@ agent "que tengo en /home/aadm/scripts"
 
 ```bash
 pip install -r requirements.txt    # Agente
-pip install pytest                 # Tests (62 passing)
+pip install pytest                 # Tests
 ```
 
 ## Proveedores de IA

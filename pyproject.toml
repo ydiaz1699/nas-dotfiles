@@ -1,6 +1,6 @@
 [project]
 name = "nas-dotfiles"
-version = "0.1.0"
+version = "1.0.0"
 description = "Agente inteligente para administración de NAS/Homelab con Docker"
 requires-python = ">=3.9"
 
