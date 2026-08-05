@@ -56,8 +56,16 @@ export "$NAV_VAR=$NAV_HOME"
 export dkco=/docker
 export DOCKER_BASE="${DOCKER_BASE:-/docker}"
 
-# ── Alias de svc (evita symlink en /usr/local/bin) ─────────────────────────
-alias svc="$NAS_DOTFILES/docker/cli/svc.sh"
+# ── CLI svc: dual bash/python ──────────────────────────────────────────────
+# NAS_CLI=python → usa Python CLI (Rich + InquirerPy)
+# NAS_CLI=bash   → usa Bash CLI (sin dependencias, default)
+svc() {
+    if [[ "${NAS_CLI:-bash}" == "python" ]]; then
+        (cd "$NAS_DOTFILES" && python3 -m docker.svc_py "$@")
+    else
+        "$NAS_DOTFILES/docker/cli/svc.sh" "$@"
+    fi
+}
 
 # ── Alias del agente (ejecutable desde cualquier ruta) ─────────────────────
 agent() {
