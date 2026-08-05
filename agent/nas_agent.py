@@ -296,6 +296,13 @@ BLOCK_HERRAMIENTAS = """
 - service_health() → Dashboard de salud
 - port_conflicts() → Detectar conflictos
 - troubleshoot(service) → Diagnóstico completo
+
+## Memoria Persistente
+- remember(fact, category) → Guardar hecho/lección
+- recall(query) → Buscar en memoria (USAR ANTES de resolver)
+- learn_skill(name, procedure, trigger) → Crear skill reutilizable
+- update_user_model(key, value) → Actualizar perfil del usuario
+- memory_stats() → Estado de la memoria
 """
 
 BLOCK_FORMATO = """
@@ -393,6 +400,35 @@ BLOCK_BACKUP = """
 - Explicar qué se va a sobreescribir antes de pedir confirmación
 """
 
+BLOCK_MEMORIA = """
+# MEMORIA PERSISTENTE
+
+Tienes memoria entre sesiones. Úsala activamente:
+
+## Antes de actuar en un problema:
+- recall("descripción del problema") → busca si ya lo resolviste antes
+- Si encuentra un SKILL → aplicar directamente (no re-investigar)
+
+## Después de resolver algo complejo o nuevo:
+- remember("lección concisa", category="leccion|patron|entorno")
+- Si fueron >3 pasos → learn_skill(nombre, procedimiento, trigger)
+
+## Cuando observes preferencias del usuario:
+- update_user_model("clave", "valor observado")
+
+## NO guardar:
+- Cosas triviales ("el usuario dijo hola")
+- Info duplicada (ya existe en MEMORY.md)
+- Datos sensibles (passwords, tokens, IPs privadas)
+
+## Herramientas de memoria:
+- remember(fact, category) → guardar hecho/lección
+- recall(query) → buscar en memoria
+- learn_skill(name, procedure, trigger) → crear procedimiento reutilizable
+- update_user_model(key, value) → actualizar perfil del usuario
+- memory_stats() → ver estado de la memoria
+"""
+
 BLOCK_ADMIN = """
 # CONTEXTO CARGADO: ADMINISTRACIÓN
 
@@ -433,7 +469,7 @@ def _classify_query(query: str) -> list:
         "no funciona", "unhealthy", "arreglar", "lento", "crash",
         "502", "503", "timeout", "log", "por qué", "qué pasa",
     ]):
-        blocks.extend(["reglas_core", "herramientas", "diagnostico", "formato"])
+        blocks.extend(["reglas_core", "herramientas", "memoria", "diagnostico", "formato"])
         return blocks
 
     # Creación
@@ -473,8 +509,16 @@ def _classify_query(query: str) -> list:
     ]):
         return blocks  # Solo identidad
 
+    # Memoria
+    if any(w in q for w in [
+        "recuerda", "recordar", "memoria", "aprendiste", "skill",
+        "olvida", "qué sabes",
+    ]):
+        blocks.extend(["reglas_core", "memoria", "formato"])
+        return blocks
+
     # General / conversación
-    blocks.extend(["reglas_core", "contexto_nas", "formato"])
+    blocks.extend(["reglas_core", "contexto_nas", "memoria", "formato"])
     return blocks
 
 
@@ -491,6 +535,7 @@ def _assemble_prompt(blocks: list, model_info: str, provider: str) -> str:
         "creacion": BLOCK_CREACION,
         "backup": BLOCK_BACKUP,
         "admin": BLOCK_ADMIN,
+        "memoria": BLOCK_MEMORIA,
     }
 
     parts = [THINKING_PROMPT]
@@ -616,7 +661,7 @@ def create_nas_agent(session_manager=None, query: str = "") -> Agent:
         _model_info = f"{proveedor} ({model_id_override or 'default'})"
 
     # ── Clasificar query y ensamblar bloques ───────────────────────────────
-    blocks = _classify_query(query) if query else ["identidad", "reglas_core", "contexto_nas", "formato"]
+    blocks = _classify_query(query) if query else ["identidad", "reglas_core", "memoria", "contexto_nas", "formato"]
     system_prompt = _assemble_prompt(blocks, _model_info, proveedor)
 
     # Dry-run mode

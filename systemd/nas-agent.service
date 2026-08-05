@@ -1,0 +1,58 @@
+# /etc/systemd/system/nas-agent.service
+# Daemon del NAS Agent — mantiene scheduler + plugins corriendo 24/7
+#
+# Instalación:
+#   sudo cp /nas-dotfiles/systemd/nas-agent.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now nas-agent
+#
+# Comandos útiles:
+#   sudo systemctl status nas-agent     # Ver estado
+#   sudo systemctl restart nas-agent    # Reiniciar
+#   journalctl -u nas-agent -f          # Ver logs en vivo
+#   journalctl -u nas-agent --since "1 hour ago"  # Logs recientes
+
+[Unit]
+Description=NAS Agent Daemon (scheduler + plugins)
+Documentation=https://github.com/ydiaz1699/nas-dotfiles
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/nas-dotfiles
+
+# Entry point del daemon
+ExecStart=/usr/bin/python3 -m agent.daemon
+
+# Restart automático ante fallos
+Restart=on-failure
+RestartSec=10
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+# Variables de entorno (API keys, config)
+EnvironmentFile=-/nas-dotfiles/.env.agent
+
+# Variables base
+Environment=NAS_AGENT_MODEL=gemini
+Environment=NAS_AGENT_AUDIT=1
+Environment=NAS_AGENT_LOG_LEVEL=INFO
+Environment=PYTHONUNBUFFERED=1
+
+# Seguridad — mínimos privilegios posibles
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/docker /nas-dotfiles/agent/memory /tmp
+ReadOnlyPaths=/nas-dotfiles
+
+# Limitar recursos (evitar que un bug consuma todo)
+MemoryMax=512M
+CPUQuota=50%
+
+# Timeout de stop (dar tiempo al graceful shutdown)
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

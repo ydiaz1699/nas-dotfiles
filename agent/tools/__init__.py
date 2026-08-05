@@ -49,6 +49,13 @@ from agent.tools.diagnostic_tools import (
     port_conflicts,
     troubleshoot,
 )
+from agent.tools.memory_tools import (
+    remember,
+    recall,
+    learn_skill,
+    update_user_model,
+    memory_stats,
+)
 
 # Lista de tools para el agente — SIN wrapper (Strands necesita @tool puro)
 ALL_TOOLS = [
@@ -85,4 +92,10 @@ ALL_TOOLS = [
     service_health,
     port_conflicts,
     troubleshoot,
+    # Memoria persistente (Learning Loop)
+    remember,
+    recall,
+    learn_skill,
+    update_user_model,
+    memory_stats,
 ]

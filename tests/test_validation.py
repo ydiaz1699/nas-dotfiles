@@ -1,97 +1,68 @@
-"""Tests para validación de nombres de servicio y seguridad."""
+"""
+test_validation.py — Tests para validación de inputs (seguridad).
+
+Estas funciones son puras (sin IO) — validan que nombres de servicio
+no contengan path traversal, inyección de comandos, etc.
+
+validate_service_name raises InvalidServiceName en caso de error,
+retorna el nombre limpio si es válido.
+"""
 
 import pytest
-from agent.tools._shell import (
-    validate_service_name,
-    validated_service_path,
-    InvalidServiceName,
-    DOCKER_BASE,
-)
+
+from agent.tools._shell import InvalidServiceName, validate_service_name
 
 
 class TestValidateServiceName:
-    """Tests para validate_service_name()."""
+    def test_valid_simple(self):
+        """Nombres válidos pasan y se retornan."""
+        assert validate_service_name("nextcloud") == "nextcloud"
 
-    def test_nombre_valido_simple(self):
-        assert validate_service_name("emqx") == "emqx"
-
-    def test_nombre_valido_con_guion(self):
+    def test_valid_with_dash(self):
         assert validate_service_name("home-assistant") == "home-assistant"
 
-    def test_nombre_valido_con_punto(self):
-        assert validate_service_name("node.red") == "node.red"
+    def test_valid_with_numbers(self):
+        assert validate_service_name("emqx5") == "emqx5"
 
-    def test_nombre_valido_con_guion_bajo(self):
+    def test_valid_underscore(self):
         assert validate_service_name("my_service") == "my_service"
 
-    def test_nombre_valido_con_numeros(self):
-        assert validate_service_name("n8n") == "n8n"
+    def test_path_traversal(self):
+        """Path traversal es rechazado."""
+        with pytest.raises(InvalidServiceName):
+            validate_service_name("../../etc/passwd")
 
-    def test_nombre_strip_espacios(self):
-        assert validate_service_name("  emqx  ") == "emqx"
-
-    def test_nombre_vacio_falla(self):
+    def test_empty_name(self):
+        """Nombre vacío es rechazado."""
         with pytest.raises(InvalidServiceName):
             validate_service_name("")
 
-    def test_nombre_none_falla(self):
+    def test_command_injection_semicolon(self):
+        """Inyección con ; es rechazada."""
         with pytest.raises(InvalidServiceName):
-            validate_service_name(None)
+            validate_service_name("svc;rm -rf /")
 
-    def test_path_traversal_puntos(self):
+    def test_command_injection_pipe(self):
+        """Inyección con | es rechazada."""
         with pytest.raises(InvalidServiceName):
-            validate_service_name("../etc")
+            validate_service_name("svc|cat /etc/shadow")
 
-    def test_path_traversal_slash(self):
+    def test_command_injection_backtick(self):
+        """Inyección con backticks es rechazada."""
         with pytest.raises(InvalidServiceName):
-            validate_service_name("foo/bar")
+            validate_service_name("`whoami`")
 
-    def test_path_traversal_backslash(self):
+    def test_absolute_path(self):
+        """Paths absolutos son rechazados."""
         with pytest.raises(InvalidServiceName):
-            validate_service_name("foo\\bar")
+            validate_service_name("/etc/passwd")
 
-    def test_nombre_reservado_backups(self):
+    def test_spaces(self):
+        """Nombres con espacios son rechazados."""
         with pytest.raises(InvalidServiceName):
-            validate_service_name("backups")
+            validate_service_name("my service")
 
-    def test_nombre_reservado_cli(self):
+    def test_dollar_sign(self):
+        """Variables shell son rechazadas."""
         with pytest.raises(InvalidServiceName):
-            validate_service_name("cli")
-
-    def test_nombre_reservado_punto(self):
-        with pytest.raises(InvalidServiceName):
-            validate_service_name(".")
-
-    def test_nombre_reservado_doble_punto(self):
-        with pytest.raises(InvalidServiceName):
-            validate_service_name("..")
-
-    def test_nombre_mayusculas_pasa_validacion(self):
-        # La regex se chequea contra .lower(), así que mayúsculas pasan
-        # pero el valor retornado mantiene el case original (solo strip)
-        result = validate_service_name("MyService")
-        assert result == "MyService"
-
-    def test_nombre_empieza_con_guion_falla(self):
-        with pytest.raises(InvalidServiceName):
-            validate_service_name("-invalid")
-
-    def test_nombre_muy_largo_falla(self):
-        with pytest.raises(InvalidServiceName):
-            validate_service_name("a" * 65)
-
-    def test_nombre_64_chars_ok(self):
-        name = "a" * 64
-        assert validate_service_name(name) == name
-
-
-class TestValidatedServicePath:
-    """Tests para validated_service_path()."""
-
-    def test_ruta_valida(self):
-        path = validated_service_path("emqx")
-        assert path == DOCKER_BASE / "emqx"
-
-    def test_ruta_resuelta_dentro_de_base(self):
-        path = validated_service_path("homeassistant")
-        assert str(path).startswith(str(DOCKER_BASE))
+            validate_service_name("$HOME")

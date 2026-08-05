@@ -1,1 +1,4 @@
 __pycache__/
+
+# Memory: session data es runtime (las plantillas .md SÍ se versionan)
+agent/memory/sessions/*.md
