@@ -1,7 +1,7 @@
 # TODO — nas-dotfiles
 
 Roadmap de features pendientes, priorizadas por impacto/esfuerzo.
-Actualizado: 2026-07-31
+Actualizado: 2026-08-05
 
 ---
 
@@ -14,10 +14,10 @@ Actualizado: 2026-07-31
 | 3 | `svc logs --grep <patrón>` | Buscar texto en logs de todos los servicios a la vez | 15 min | ⬜ |
 | 4 | Verificación post-backup | `tar -tzf` automático después de crear backup, antes de confirmar éxito | 10 min | ⬜ |
 | 5 | `svc lock <servicio>` | Marcar servicio como protegido en runtime (doble confirmación para stop/down/restore) | 25 min | ⬜ |
-| 6 | `svc events` | Stream de eventos Docker filtrado por servicios del NAS (wrapper de `docker events`) | 20 min | ⬜ |
-| 7 | `svc cron` | Helper para agendar backups/updates automáticos vía crontab | 20 min | ⬜ |
-| 8 | Healthcheck HTTP genérico | Si un servicio no define healthcheck en compose, `svc doctor` intenta curl al puerto expuesto | 15 min | ⬜ |
-| 9 | Historial de `svc doctor` | Guardar cada corrida con timestamp en log para ver tendencia de disco/memoria | 15 min | ⬜ |
+| 6 | `svc cron` | Helper para agendar backups/updates automáticos vía crontab | 20 min | ⬜ |
+| 7 | Healthcheck HTTP genérico | Si un servicio no define healthcheck en compose, `svc doctor` intenta curl al puerto expuesto | 15 min | ⬜ |
+| 8 | Historial de `svc doctor` | Guardar cada corrida con timestamp en log para ver tendencia de disco/memoria | 15 min | ⬜ |
+| 9 | Textual dashboard (`svc dashboard`) | TUI con paneles divididos: servicios, logs, CPU/RAM en vivo | Alto | ⬜ |
 
 ---
 
@@ -25,12 +25,11 @@ Actualizado: 2026-07-31
 
 | # | Feature | Descripción | Esfuerzo | Estado |
 |---|---------|-------------|:--------:|:------:|
-| 1 | Modo REPL (loop conversacional) | Loop de input que mantiene sesión abierta sin re-invocar el agente por cada pregunta | 30 min | ⬜ |
-| 2 | Catálogo pre-cargado en contexto | Al arrancar, inyectar fichas de `catalog/services/` en el contexto del agente | 25 min | ⬜ |
-| 3 | Tool `compare_catalog` | Comparar config actual de un servicio contra su ficha del catálogo, detectar drift | 20 min | ⬜ |
-| 4 | Resumen post-sesión legible | Al terminar, mostrar informe humanizado de lo que hizo el agente (no JSON crudo) | 15 min | ⬜ |
-| 5 | Auto-heal sugerido | Cuando troubleshoot detecta error conocido (OOM, port conflict), sugerir fix concreto con args listos | 40 min | ⬜ |
-| 6 | Modo "explica antes" per-tool | Permitir marcar tools individuales que requieran explicación antes de ejecutar | 30 min | ⬜ |
+| 1 | Catálogo pre-cargado en contexto | Al arrancar, inyectar fichas de `catalog/services/` en el contexto del agente | 25 min | ⬜ |
+| 2 | Tool `compare_catalog` | Comparar config actual de un servicio contra su ficha del catálogo, detectar drift | 20 min | ⬜ |
+| 3 | Resumen post-sesión legible | Al terminar, mostrar informe humanizado de lo que hizo el agente (no JSON crudo) | 15 min | ⬜ |
+| 4 | Auto-heal sugerido | Cuando troubleshoot detecta error conocido (OOM, port conflict), sugerir fix concreto con args listos | 40 min | ⬜ |
+| 5 | psutil para doctor/watch | Reemplazar subprocess (free/df) por psutil — más datos, más limpio | 30 min | ⬜ |
 
 ---
 
@@ -50,7 +49,6 @@ Actualizado: 2026-07-31
 |---|---------|-------------|:--------:|:------:|
 | 1 | Exportar métricas a Prometheus | `svc doctor` → textfile que Grafana levanta via node_exporter | 40 min | ⬜ |
 | 2 | Notificaciones Telegram/ntfy | Alertar cuando un servicio cae, backup falla, o agente hace algo destructivo | 45 min | ⬜ |
-| 3 | Dashboard web read-only | Página HTML estática con health + port-map para ver desde el celular | Alto | ⬜ |
 
 ---
 
@@ -59,8 +57,7 @@ Actualizado: 2026-07-31
 | # | Feature | Descripción | Esfuerzo | Estado |
 |---|---------|-------------|:--------:|:------:|
 | 1 | Backup remoto (rclone/S3) | Subir backups a almacenamiento externo con rotación separada | Alto | ⬜ |
-| 2 | Backup incremental (rsync) | `rsync --link-dest` para servicios con volúmenes grandes (>10GB) | Medio | ⬜ |
-| 3 | `svc snapshot` / `svc rollback` | Guardar solo compose+.env (liviano) antes de cambios, para revertir config rápido | 25 min | ⬜ |
+| 2 | `svc snapshot` / `svc rollback` | Guardar solo compose+.env (liviano) antes de cambios, para revertir config rápido | 25 min | ⬜ |
 
 ---
 
@@ -72,10 +69,26 @@ Actualizado: 2026-07-31
 | Caché de búsquedas web | Las búsquedas rara vez se repiten exacto, bajo ROI |
 | Backup incremental | Solo vale si hay servicios >10GB; tar funciona para la mayoría |
 | Exportar a Prometheus | Solo si ya hay Grafana+Prometheus corriendo |
+| Modo "explica antes" per-tool | El agente ya tiene reglas claras de cuándo confirmar |
 
 ---
 
 ## Completadas ✅
+
+| Feature | Fecha | Commit/PR |
+|---------|-------|-----------|
+| Sistema de memoria (Learning Loop) — remember/recall/learn_skill | 2026-08-05 | PR #8 |
+| Daemon systemd (agent/daemon.py + nas-agent.service) | 2026-08-05 | PR #8 |
+| Suite de tests (75 tests: memory, classify, validation, daemon, tool_result) | 2026-08-05 | PR #8 |
+| Python CLI dual (svc_py/ — Typer + Rich + InquirerPy) | 2026-08-05 | PR #9 |
+| Selector NAS_CLI=bash/python en shell/init.sh | 2026-08-05 | PR #9 |
+| Docker SDK nativo en Python CLI | 2026-08-05 | feat/python-cli |
+| Rich traceback para errores bonitos | 2026-08-05 | feat/python-cli |
+| Menu con fuzzy search + multi-select + preview | 2026-08-05 | feat/python-cli |
+| `svc recreate` (up --force-recreate sin pull) | 2026-08-05 | main |
+| `pipins` — pip installer (mirrors instal para Python) | 2026-08-05 | main |
+| REPL mode → `agent chat` (loop conversacional) | 2026-08-05 | main |
+| Agente conoce CLI del usuario (menciona svc en respuestas) | 2026-08-05 | main |
 
 | Feature | Fecha | Commit/PR |
 |---------|-------|-----------|

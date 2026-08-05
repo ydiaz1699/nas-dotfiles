@@ -346,11 +346,14 @@ mqtt_listener.add_mapper(mi_mapper)
 | `NAS_AGENT_AUDIT` | `1` | Habilitar audit log |
 | `NAS_AGENT_AUDIT_LOG` | `/docker/backups/agent_audit.log` | Ruta del audit log |
 | `NAS_AGENT_SESSION_TIMEOUT` | `30` | Minutos antes de auto-reset de sesión |
+| `NAS_AGENT_MEMORY_DIR` | `agent/memory` | Directorio de memoria persistente |
 | `NAS_MQTT_HOST` | `localhost` | Host broker MQTT |
 | `NAS_MQTT_PORT` | `1883` | Puerto broker MQTT |
 | `NAS_MQTT_USER` | — | Usuario MQTT (opcional) |
 | `NAS_MQTT_PASS` | — | Password MQTT (opcional) |
 | `NAS_MQTT_TOPICS` | `nas-agent/#` | Topics separados por `;` |
+| `NAS_CLI` | `bash` | CLI dual: `bash` o `python` |
+| `NAS_AGENT_LOG_LEVEL` | `INFO` | Log level del daemon (DEBUG/INFO/WARNING/ERROR) |
 
 ---
 
@@ -359,85 +362,101 @@ mqtt_listener.add_mapper(mi_mapper)
 ```
 nas-dotfiles/
 ├── agent/
-│   ├── nas_agent.py          # Entry point + system prompt + sesión + Rich UI
+│   ├── nas_agent.py          # Entry point + system prompt + sesión + Rich UI + REPL
+│   ├── daemon.py             # Daemon systemd (scheduler + plugins 24/7)
 │   ├── config/
 │   │   └── defaults.yml      # Configuración centralizada
 │   ├── core/                 # Lógica de negocio (managers)
 │   │   ├── _result.py
+│   │   ├── memory.py         # MemoryManager (Learning Loop)
 │   │   ├── service_manager.py
 │   │   ├── compose_manager.py
 │   │   └── backup_manager.py
 │   ├── tools/                # Thin wrappers (@tool → core)
-│   │   ├── __init__.py       # Exporta ALL_TOOLS (23 tools)
+│   │   ├── __init__.py       # Exporta ALL_TOOLS (28 tools)
 │   │   ├── _shell.py         # safe_run, validación, readonly, dryrun
 │   │   ├── _audit.py         # Sistema de auditoría
-│   │   ├── _result.py        # ToolResult helpers
 │   │   ├── docker_tools.py
 │   │   ├── discovery_tools.py
 │   │   ├── system_tools.py
 │   │   ├── compose_tools.py
 │   │   ├── backup_tools.py
 │   │   ├── diagnostic_tools.py
-│   │   └── search_tools.py
+│   │   ├── search_tools.py
+│   │   └── memory_tools.py   # remember, recall, learn_skill, update_user_model, memory_stats
 │   ├── plugins/              # Sistema de plugins dinámicos
 │   │   ├── base.py           # BasePlugin + PluginMeta + dataclasses
 │   │   ├── loader.py         # Auto-discovery + load/unload
-│   │   ├── docker_plugin.py  # Health check cada 5 min
-│   │   ├── backup_plugin.py  # Backup diario
-│   │   └── network_plugin.py # Escaneo puertos cada 15 min
+│   │   ├── docker_plugin.py
+│   │   ├── backup_plugin.py
+│   │   ├── network_plugin.py
+│   │   └── memory_plugin.py  # Learning Loop (capas B + C)
+│   ├── memory/               # Datos persistentes de memoria
+│   │   ├── MEMORY.md         # Hechos, lecciones, patrones
+│   │   ├── USER.md           # Perfil del usuario
+│   │   ├── SKILLS.md         # Procedimientos reutilizables
+│   │   └── sessions/         # Historial resumido
 │   ├── events/               # Event bus pub/sub
-│   │   ├── bus.py            # EventBus (exact/wildcard/global)
-│   │   └── mqtt_listener.py  # MQTT → EventBus pipeline
-│   ├── scheduler/            # Tareas periódicas (cron-like)
-│   │   └── runner.py         # Threaded task runner
-│   ├── cache/                # Cache KV con TTL
-│   │   └── store.py          # Thread-safe + persistencia
-│   └── catalog/              # Catálogo de servicios (portable)
-│       ├── _rules.md
-│       ├── _compose_base.md
-│       ├── _template.md
-│       ├── _index.py
-│       ├── catalog.json
+│   │   ├── bus.py
+│   │   └── mqtt_listener.py
+│   ├── scheduler/
+│   │   └── runner.py
+│   ├── cache/
+│   │   └── store.py
+│   └── catalog/
 │       └── services/
+├── svc_py/                   # Python CLI (alternativa a svc.sh)
+│   ├── __main__.py           # Entry point: python -m svc_py
+│   ├── app.py                # Typer app (30+ comandos)
+│   ├── config.py             # DOCKER_BASE, BACKUP_DIR, etc.
+│   ├── ui.py                 # Rich helpers
+│   ├── commands/
+│   │   ├── health.py         # health, doctor, watch (Rich Live)
+│   │   ├── docker.py         # update-all (InquirerPy checkboxes)
+│   │   ├── backup.py         # backup (progress), restore (selector)
+│   │   ├── info.py           # port-map, size, net, depends, env, open
+│   │   ├── compose.py        # create (wizard), diff (syntax)
+│   │   └── menu.py           # Menú interactivo + multi-select
+│   └── core/
+│       ├── discovery.py      # svc_list, svc_compose_file
+│       └── docker.py         # Docker SDK + subprocess fallback
 ├── docker/cli/
-│   ├── svc.sh               # Entry point del CLI
+│   ├── svc.sh               # Entry point del CLI bash
 │   └── lib/
-│       ├── discovery.sh      # svc_list, svc_compose_file
-│       ├── docker.sh         # svc_update_all
-│       ├── health.sh         # svc_health, svc_lista
-│       ├── backup.sh         # svc_backup, svc_restore
-│       ├── extras.sh         # port-map, size, net, env, create, watch, doctor, diff
-│       ├── menu.sh           # TUI interactivo con fzf
-│       └── help.sh           # _svc_ayuda
+│       ├── discovery.sh
+│       ├── docker.sh
+│       ├── health.sh
+│       ├── backup.sh
+│       ├── extras.sh
+│       ├── menu.sh
+│       └── help.sh
 ├── shell/
-│   ├── init.sh              # Loader (sourced por ~/.bashrc)
-│   ├── scripts/             # Scripts standalone
-│   │   ├── start-all.sh
-│   │   ├── stop-all.sh
-│   │   ├── restart-all.sh
-│   │   └── install_docker.sh
+│   ├── init.sh              # Loader + selector dual svc() + agent()
 │   └── lib/
 │       ├── aliases.sh
 │       ├── nav.sh
-│       ├── docker.sh        # Autocompletado de svc
+│       ├── docker.sh
 │       ├── system.sh
-│       ├── instal.sh
+│       ├── instal.sh        # APT installer
+│       ├── pipins.sh        # pip installer
 │       ├── prompt.sh
 │       ├── git.sh
 │       └── completions.sh
-├── tests/                   # Tests (pytest)
-│   ├── conftest.py
+├── systemd/
+│   ├── nas-agent.service    # Unit file del daemon
+│   └── README.md
+├── tests/                   # Tests (pytest, 75+)
+│   ├── conftest.py          # Mocks de Strands SDK + fixtures
+│   ├── test_memory.py       # 24 tests (MemoryManager)
+│   ├── test_classify.py     # 21 tests (clasificación queries)
+│   ├── test_validation.py   # 12 tests (seguridad inputs)
+│   ├── test_daemon.py       # 4 tests (Scheduler)
+│   ├── test_tool_result.py  # 10 tests (ToolResult)
 │   ├── test_result.py
-│   ├── test_validation.py
 │   ├── test_compose_generation.py
 │   └── test_phase3.py
-├── ui/                      # Instalador TUI (Rich + InquirerPy)
-│   ├── setup.py
-│   └── requirements-setup.txt
-├── install.sh               # Configura ~/.bashrc
-├── uninstall.sh             # Revierte instalación
-├── pyproject.toml           # Config: ruff, pytest, mypy
-└── requirements.txt         # Deps Python del agente
+├── pyproject.toml
+└── requirements.txt
 ```
 
 ---

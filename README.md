@@ -11,8 +11,10 @@ Framework completo para administrar un servidor Linux/NAS con Docker. Convierte 
 | Componente | Que hace | Lenguaje |
 |------------|----------|----------|
 | **Shell** (`shell/`) | Aliases, prompt, navegacion, dashboard | Bash |
-| **CLI** (`docker/cli/`) | Administracion de servicios Docker (`svc`) | Bash |
-| **Agente** (`agent/`) | Administracion con lenguaje natural + thinking dinámico | Python |
+| **CLI Bash** (`docker/cli/`) | Administracion de servicios Docker (`svc`) | Bash |
+| **CLI Python** (`svc_py/`) | CLI alternativa con Rich + InquirerPy (`svc`) | Python |
+| **Agente** (`agent/`) | Administracion con lenguaje natural + memoria + plugins | Python |
+| **Daemon** (`agent/daemon.py`) | Scheduler + plugins corriendo 24/7 (systemd) | Python |
 
 ## Instalacion
 
@@ -31,36 +33,51 @@ source ~/.bashrc
 adm                              # cd /home/aadm
 dk emqx                          # cd /docker/emqx
 nas                              # dashboard del NAS
-instal htop                      # instalar paquete
+instal htop                      # instalar paquete APT
+pipins rich typer                # instalar paquete pip
 
-# Docker CLI
+# Docker CLI (bash — default)
 svc lista                        # ver servicios con estado
 svc up emqx                      # levantar servicio
 svc logs emqx                    # ver logs
 svc health                       # dashboard de salud
-svc update emqx                  # actualizar imagen
+svc update emqx                  # pull + recrear
+svc recreate emqx                # recrear sin pull
 svc backup emqx                  # backup de volumenes
 svc doctor                       # chequeo de 6 puntos
 svc menu                         # TUI interactivo (fzf)
+svc update-all                   # actualizar todos
+
+# Docker CLI (python — NAS_CLI=python)
+NAS_CLI=python svc menu          # menu con InquirerPy + fuzzy search
+NAS_CLI=python svc health        # Rich tables con colores
+NAS_CLI=python svc update-all    # multi-select con checkboxes
 
 # Agente IA
 agent "que servicios estan caidos"
 agent "diagnostica homeassistant"
 agent "instalar vaultwarden"
-agent "exportar emqx al catalogo"
-agent --status
+agent chat                           # modo conversacional (REPL)
 agent --model                        # cambiar modelo
+agent --status                       # info de sesion
 ```
 
 ## Estructura
 
 ```
 nas-dotfiles/
-├── shell/              Personaliza Bash (aliases, prompt, navegacion)
-├── docker/cli/         CLI de Docker (comando svc)
-├── agent/              Agente IA (23 tools, plugins, MQTT, scheduler)
-├── tests/              Tests (pytest)
-├── logs/               Historial de paquetes
+├── shell/              Personaliza Bash (aliases, prompt, navegacion, pipins)
+├── docker/cli/         CLI Bash de Docker (comando svc)
+├── svc_py/             CLI Python de Docker (Rich + InquirerPy + Typer)
+├── agent/              Agente IA (28 tools, memoria, plugins, MQTT, scheduler)
+│   ├── core/           Managers + MemoryManager
+│   ├── tools/          Tools (@tool) incluyendo memoria
+│   ├── plugins/        Plugins (docker, backup, network, memory)
+│   ├── memory/         Datos persistentes (MEMORY.md, USER.md, SKILLS.md)
+│   └── daemon.py       Entry point del daemon (systemd)
+├── systemd/            Unit file para nas-agent.service
+├── tests/              Tests (pytest, 75+ tests)
+├── logs/               Historial de paquetes (APT + pip)
 └── ui/                 Instalador TUI
 ```
 
@@ -76,6 +93,7 @@ nas-dotfiles/
 
 - Debian/Ubuntu · Bash 4.2+ · Docker + Compose v2 · Python 3.9+ · `eza`
 - Opcional: `fzf`, `bat`, `paho-mqtt`, `lm-sensors`
+- Python CLI: `pipins typer rich InquirerPy pyyaml docker`
 
 ## Documentacion
 
