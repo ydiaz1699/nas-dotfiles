@@ -14,16 +14,16 @@ from rich.live import Live
 from rich.panel import Panel
 from rich.table import Table
 
-from docker.svc_py.config import DOCKER_BASE, WATCH_INTERVAL
-from docker.svc_py.core.discovery import svc_compose_file, svc_list
-from docker.svc_py.core.docker import (
+from svc_py.config import DOCKER_BASE, WATCH_INTERVAL
+from svc_py.core.discovery import svc_compose_file, svc_list
+from svc_py.core.docker import (
     compose_output,
     container_inspect,
     docker_run,
     get_container_ids,
     is_service_running,
 )
-from docker.svc_py.ui import (
+from svc_py.ui import (
     console,
     error,
     health_colored,

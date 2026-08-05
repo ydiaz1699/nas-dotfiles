@@ -5,7 +5,7 @@ Replicación completa de svc.sh con UI mejorada via Rich + InquirerPy.
 Ambos CLIs (bash y python) coexisten — el usuario elige cuál usar.
 
 Uso:
-    python -m docker.svc_py <comando> [servicio] [args]
+    python -m svc_py <comando> [servicio] [args]
 
     # O via el alias svc (si NAS_CLI=python):
     svc health

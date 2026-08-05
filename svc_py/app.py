@@ -13,15 +13,15 @@ from typing import List, Optional
 import typer
 from rich.panel import Panel
 
-from docker.svc_py.commands import health as health_mod
-from docker.svc_py.commands import docker as docker_mod
-from docker.svc_py.commands import backup as backup_mod
-from docker.svc_py.commands import info as info_mod
-from docker.svc_py.commands import compose as compose_mod
-from docker.svc_py.commands import menu as menu_mod
-from docker.svc_py.core.discovery import service_exists, svc_compose_file, svc_list
-from docker.svc_py.core.docker import compose_passthrough, compose_run
-from docker.svc_py.ui import confirm_action, console, error
+from svc_py.commands import health as health_mod
+from svc_py.commands import docker as docker_mod
+from svc_py.commands import backup as backup_mod
+from svc_py.commands import info as info_mod
+from svc_py.commands import compose as compose_mod
+from svc_py.commands import menu as menu_mod
+from svc_py.core.discovery import service_exists, svc_compose_file, svc_list
+from svc_py.core.docker import compose_passthrough, compose_run
+from svc_py.ui import confirm_action, console, error
 
 app = typer.Typer(
     name="svc",
@@ -66,8 +66,8 @@ app.command("menu")(menu_mod.menu)
 @app.command("lista")
 def lista():
     """Lista servicios con estado (activo/detenido)."""
-    from docker.svc_py.core.docker import is_service_running
-    from docker.svc_py.ui import service_table, status_dot
+    from svc_py.core.docker import is_service_running
+    from svc_py.ui import service_table, status_dot
 
     services = svc_list()
     if not services:

@@ -13,10 +13,10 @@ import typer
 from rich.syntax import Syntax
 from rich.tree import Tree
 
-from docker.svc_py.config import DOCKER_BASE
-from docker.svc_py.core.discovery import svc_compose_file, svc_list
-from docker.svc_py.core.docker import compose_output, compose_passthrough, docker_run
-from docker.svc_py.ui import console, error, info, service_table, success, warn
+from svc_py.config import DOCKER_BASE
+from svc_py.core.discovery import svc_compose_file, svc_list
+from svc_py.core.docker import compose_output, compose_passthrough, docker_run
+from svc_py.ui import console, error, info, service_table, success, warn
 
 app = typer.Typer()
 

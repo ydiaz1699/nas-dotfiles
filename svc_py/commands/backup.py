@@ -12,10 +12,10 @@ from typing import List
 import typer
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 
-from docker.svc_py.config import BACKUP_DIR, BACKUP_KEEP
-from docker.svc_py.core.discovery import svc_compose_file
-from docker.svc_py.core.docker import compose_output, compose_run, docker_run
-from docker.svc_py.ui import console, error, info, success, warn
+from svc_py.config import BACKUP_DIR, BACKUP_KEEP
+from svc_py.core.discovery import svc_compose_file
+from svc_py.core.docker import compose_output, compose_run, docker_run
+from svc_py.ui import console, error, info, success, warn
 
 app = typer.Typer()
 

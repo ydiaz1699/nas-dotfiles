@@ -9,9 +9,9 @@ from typing import List
 import typer
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 
-from docker.svc_py.core.discovery import svc_compose_file, svc_list
-from docker.svc_py.core.docker import compose_output, compose_run, is_service_running
-from docker.svc_py.ui import console, error, success, warn
+from svc_py.core.discovery import svc_compose_file, svc_list
+from svc_py.core.docker import compose_output, compose_run, is_service_running
+from svc_py.ui import console, error, success, warn
 
 app = typer.Typer()
 

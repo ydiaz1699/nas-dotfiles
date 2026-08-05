@@ -61,7 +61,7 @@ export DOCKER_BASE="${DOCKER_BASE:-/docker}"
 # NAS_CLI=bash   → usa Bash CLI (sin dependencias, default)
 svc() {
     if [[ "${NAS_CLI:-bash}" == "python" ]]; then
-        (cd "$NAS_DOTFILES" && python3 -m docker.svc_py "$@")
+        (cd "$NAS_DOTFILES" && python3 -m svc_py "$@")
     else
         "$NAS_DOTFILES/docker/cli/svc.sh" "$@"
     fi

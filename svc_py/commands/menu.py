@@ -16,8 +16,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich import box
 
-from docker.svc_py.core.discovery import svc_compose_file, svc_list
-from docker.svc_py.core.docker import (
+from svc_py.core.discovery import svc_compose_file, svc_list
+from svc_py.core.docker import (
     compose_output,
     compose_passthrough,
     compose_run,
@@ -27,7 +27,7 @@ from docker.svc_py.core.docker import (
     is_service_running,
     sdk_available,
 )
-from docker.svc_py.ui import console, error, success, warn
+from svc_py.ui import console, error, success, warn
 
 app = typer.Typer()
 
@@ -222,11 +222,11 @@ def menu():
             success(f"{service} actualizado")
 
         elif action == "backup":
-            from docker.svc_py.commands.backup import backup
+            from svc_py.commands.backup import backup
             backup(service)
 
         elif action == "restore":
-            from docker.svc_py.commands.backup import restore
+            from svc_py.commands.backup import restore
             restore(service, archive=None)
 
         elif action == "logs":
@@ -236,15 +236,15 @@ def menu():
             compose_passthrough(cf, ["stats"])
 
         elif action == "depends":
-            from docker.svc_py.commands import info as info_mod
+            from svc_py.commands import info as info_mod
             info_mod.depends(service)
 
         elif action == "env":
-            from docker.svc_py.commands import info as info_mod
+            from svc_py.commands import info as info_mod
             info_mod.env_cmd(service, edit=False)
 
         elif action == "open":
-            from docker.svc_py.commands import info as info_mod
+            from svc_py.commands import info as info_mod
             info_mod.open_cmd(service)
 
         elif action == "config":

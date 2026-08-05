@@ -7,7 +7,7 @@ Equivale a docker/cli/lib/discovery.sh pero en Python.
 from pathlib import Path
 from typing import List, Optional
 
-from docker.svc_py.config import COMPOSE_FILENAMES, DOCKER_BASE
+from svc_py.config import COMPOSE_FILENAMES, DOCKER_BASE
 
 
 def svc_list() -> List[str]:

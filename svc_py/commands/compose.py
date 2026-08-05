@@ -11,10 +11,10 @@ from pathlib import Path
 import typer
 from rich.syntax import Syntax
 
-from docker.svc_py.config import DOCKER_BASE
-from docker.svc_py.core.discovery import svc_compose_file
-from docker.svc_py.core.docker import compose_output
-from docker.svc_py.ui import console, error, info, success, warn
+from svc_py.config import DOCKER_BASE
+from svc_py.core.discovery import svc_compose_file
+from svc_py.core.docker import compose_output
+from svc_py.ui import console, error, info, success, warn
 
 app = typer.Typer()
 
