@@ -79,6 +79,12 @@ pipins() {
   local flags=()
   $upgrade && flags+=(--upgrade)
 
+  # PEP 668: Debian/Python 3.12+ bloquea pip global.
+  # En un NAS personal es seguro usar --break-system-packages.
+  if $pip_cmd install --dry-run --break-system-packages pip >/dev/null 2>&1; then
+    flags+=(--break-system-packages)
+  fi
+
   echo ""
   echo "  Instalando: ${pkgs_to_install[*]}"
   echo ""
