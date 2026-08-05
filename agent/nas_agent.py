@@ -325,12 +325,52 @@ BLOCK_CONTEXTO_NAS = """
 - Mensajes cortos = continuación natural de conversación previa
 - Solo pedir aclaración si NO hay contexto previo relevante
 
-## Comandos del USUARIO (NO son tus tools):
-- instal <pkg> → APT del sistema. "instal git" = paquete apt, NO Docker Gitea
-- svc <cmd> <svc> → CLI Docker del usuario
-- bat, nas, off, restart, adm, dk → comandos shell del usuario
+## CLI del usuario — comandos que YA tiene disponibles:
+El usuario tiene un CLI propio (`svc`) para administrar servicios Docker.
+Cuando pregunte sobre comandos Docker, MENCIONARLE SUS COMANDOS:
 
-REGLA: Si dice "instal X" → "Ejecuta `instal X` en tu terminal — es APT, no Docker."
+### Comandos del CLI `svc` (usa bash o python según NAS_CLI):
+- `svc up <servicio>` → docker compose up -d
+- `svc down <servicio>` → docker compose down
+- `svc start <servicio>` → iniciar detenido
+- `svc stop <servicio>` → detener
+- `svc restart <servicio>` → reiniciar
+- `svc update <servicio>` → pull imagen + recrear
+- `svc recreate <servicio>` → recrear sin pull (compose up -d --force-recreate)
+- `svc update-all` → actualizar todos (con multi-select en Python CLI)
+- `svc logs <servicio>` → ver logs en vivo
+- `svc health` → dashboard de salud de todos los servicios
+- `svc doctor` → chequeo completo del NAS (disco, RAM, Docker, puertos)
+- `svc watch` → monitoreo en vivo
+- `svc menu` → menú interactivo (fzf en bash, InquirerPy en python)
+- `svc backup <servicio>` → backup de volúmenes
+- `svc restore <servicio>` → restaurar backup
+- `svc port-map` → mapa de puertos
+- `svc net` → mapa de redes Docker
+- `svc size` → disco por servicio
+- `svc create <nombre>` → scaffolding de nuevo servicio
+- `svc diff <servicio>` → comparar compose vs resuelto
+- `svc env <servicio>` → ver variables de entorno
+- `svc open <servicio>` → mostrar URL
+
+### Agente (este programa):
+- `agent "pregunta"` → consulta puntual
+- `agent chat` → modo conversacional (REPL)
+- `agent --new "pregunta"` → nueva sesión limpia
+- `agent --model` → cambiar modelo
+- `agent --status` → info de sesión
+- `agent --clear` → borrar sesión
+
+### Otros comandos shell del usuario (NO son tus tools):
+- `instal <pkg>` → APT del sistema. "instal git" = paquete apt, NO Docker
+- `pipins <pkg>` → pip install (Python packages)
+- `bat`, `nas`, `off`, `restart`, `adm`, `dk` → comandos shell del usuario
+
+## Regla de respuesta sobre comandos:
+- Si preguntan "qué hace X" o "cómo hago Y" → EXPLICAR + MENCIONAR el comando svc equivalente
+- Si preguntan sobre docker compose → explicar Y decir "en tu NAS: `svc <acción> <servicio>`"
+- NUNCA decir solo "yo me encargo" — SIEMPRE dar el comando CLI también
+- El usuario puede ejecutar cosas SIN el agente usando `svc`
 
 ## Activación (primera sesión)
 Si no hay historial previo: 🖥️ NAS Agent listo. ¿En qué te ayudo?
@@ -1060,9 +1100,12 @@ def main():
             print(msg)
         sys.exit(0)
 
-    # Flag: --repl → modo conversacional (loop)
-    if "--repl" in args:
-        args.remove("--repl")
+    # Flag: --repl / chat → modo conversacional (loop)
+    if "--repl" in args or (args and args[0] == "chat"):
+        if "--repl" in args:
+            args.remove("--repl")
+        elif args[0] == "chat":
+            args.pop(0)
         _repl_mode(use_rich, console, force_new_session)
         sys.exit(0)
 
