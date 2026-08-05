@@ -79,6 +79,7 @@ for _mod in \
   docker \
   system \
   instal \
+  pipins \
   git \
   completions \
   prompt
