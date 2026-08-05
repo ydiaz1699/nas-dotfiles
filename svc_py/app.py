@@ -140,6 +140,15 @@ def update(service: str):
     console.print(f"  [green]✓[/green] {service} actualizado\n")
 
 
+@app.command("recreate")
+def recreate(service: str):
+    """Recrear contenedores SIN pull (usa imagen local)."""
+    cf = _get_compose_or_exit(service)
+    confirm_action("Recreando", service)
+    compose_run(cf, ["up", "-d", "--force-recreate", "--remove-orphans"], capture=False, check=False)
+    console.print(f"  [green]✓[/green] {service} recreado (sin pull)\n")
+
+
 @app.command("logs")
 def logs(service: str, lines: int = typer.Option(200, "--tail", "-n", help="Lineas")):
     """Ver logs en vivo."""
