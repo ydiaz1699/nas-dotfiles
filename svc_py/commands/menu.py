@@ -167,14 +167,16 @@ def _multi_select_flow(inquirer) -> None:
         choices.append({
             "name": f" {dot} {svc}",
             "value": svc,
-            "enabled": running,  # Pre-seleccionar los activos
+            "enabled": False,  # Todos deseleccionados por defecto
         })
 
     selected = inquirer.checkbox(
-        message="Selecciona servicios (Space=toggle, Ctrl+A=todos, Enter=siguiente):",
+        message="Selecciona servicios:",
         choices=choices,
         pointer="❯",
         cycle=True,
+        instruction="(Space=toggle, Ctrl+A=todos, Enter=confirmar)",
+        keybindings={"toggle-all": [{"key": "c-a"}]},
     ).execute()
 
     if not selected:
