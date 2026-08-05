@@ -98,7 +98,6 @@ def menu():
     """Menú TUI interactivo avanzado — búsqueda fuzzy, preview, acciones agrupadas."""
     try:
         from InquirerPy import inquirer
-        from InquirerPy.separator import Separator
     except ImportError:
         error("InquirerPy no instalado.")
         console.print("  [dim]pip install InquirerPy[/dim]\n")
@@ -132,7 +131,6 @@ def menu():
                 "name": f" {dot} {svc:<22} {status}",
                 "value": svc,
             })
-        svc_choices.append(Separator("─" * 40))
         svc_choices.append({"name": " ← Salir", "value": None})
 
         service = inquirer.fuzzy(
@@ -163,15 +161,14 @@ def menu():
         action_choices = []
         for item in ACTION_GROUPS:
             if item[1] is None:
-                # Es separador
-                action_choices.append(Separator(f"  {item[0]}"))
+                # Skip separators for fuzzy (not supported)
+                continue
             else:
                 cmd, desc, color = item
                 action_choices.append({
-                    "name": f" {cmd:<12} {desc}",
+                    "name": f" {cmd:<12} → {desc}",
                     "value": cmd,
                 })
-        action_choices.append(Separator("─" * 40))
         action_choices.append({"name": " ← Volver", "value": None})
 
         action = inquirer.fuzzy(
