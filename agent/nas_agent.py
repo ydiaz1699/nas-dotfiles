@@ -810,6 +810,190 @@ def _persist_model(env_file: Path, provider: str, model_id: str) -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# REPL Mode — Loop conversacional
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def _repl_mode(use_rich: bool, console, force_new_session: bool) -> None:
+    """Modo REPL: loop interactivo que mantiene el agente vivo entre preguntas.
+
+    Beneficios vs modo single-shot:
+    - Modelo se carga UNA vez (no cada pregunta)
+    - Contexto inmediato entre preguntas (misma instancia)
+    - Conversación fluida tipo chat
+
+    Comandos especiales del REPL:
+    - exit / quit / salir → terminar
+    - clear → borrar sesión y empezar limpio
+    - status → info de sesión
+    - model → cambiar modelo
+    """
+    # ── Header ─────────────────────────────────────────────────────────────
+    if use_rich:
+        from rich.panel import Panel
+        from rich.markdown import Markdown
+        from rich import box
+        console.print()
+        console.print(Panel(
+            "[bold white]NAS Agent — Modo REPL[/bold white]\n"
+            "[dim cyan]Conversación continua · exit para salir · clear para resetear[/dim cyan]",
+            title="[bold cyan]🖥️  NAS Agent REPL[/bold cyan]",
+            subtitle="[dim magenta]v1.0[/dim magenta]",
+            border_style="bright_cyan",
+            padding=(0, 2),
+            width=60,
+        ))
+        console.print()
+    else:
+        print("\n🖥️  NAS Agent — Modo REPL")
+        print("  Conversación continua. exit para salir, clear para resetear.")
+        print("=" * 60)
+        print()
+
+    # ── Inicializar agente UNA vez ─────────────────────────────────────────
+    if use_rich:
+        console.print("  [bright_yellow]⚡ Inicializando agente...[/bright_yellow]", end="")
+    else:
+        print("⚡ Inicializando agente...")
+
+    try:
+        session_manager = _get_session_manager(force_new=force_new_session)
+        # Crear agente con prompt genérico (cubre todos los bloques)
+        agent = create_nas_agent(session_manager=session_manager, query="")
+    except Exception as e:
+        if use_rich:
+            console.print(f"\n  [red]❌ Error al inicializar:[/red] {e}")
+        else:
+            print(f"\n❌ Error al inicializar: {e}")
+        return
+
+    if use_rich:
+        console.print(" [bold green]✓[/bold green]\n")
+    else:
+        print("✓ Listo.\n")
+
+    # Indicadores de modo
+    if os.environ.get("NAS_AGENT_DRYRUN", "0").strip() in ("1", "true", "yes"):
+        if use_rich:
+            console.print("  [bold yellow]🔒 MODO DRY-RUN activo[/bold yellow]\n")
+        else:
+            print("🔒 MODO DRY-RUN activo\n")
+
+    turn = 0
+
+    # ── Loop principal ─────────────────────────────────────────────────────
+    while True:
+        try:
+            # Prompt de input
+            if use_rich:
+                query = input("  🖥️ > ")
+            else:
+                query = input("🖥️ > ")
+        except (EOFError, KeyboardInterrupt):
+            # Ctrl+C o Ctrl+D → salir limpio
+            if use_rich:
+                console.print("\n\n  [dim]Sesión terminada.[/dim]\n")
+            else:
+                print("\n\nSesión terminada.")
+            break
+
+        query = query.strip()
+
+        # ── Comandos especiales del REPL ───────────────────────────────────
+        if not query:
+            continue
+
+        if query.lower() in ("exit", "quit", "salir", "q"):
+            if use_rich:
+                console.print("\n  [dim green]👋 Hasta luego.[/dim green]\n")
+            else:
+                print("\n👋 Hasta luego.")
+            break
+
+        if query.lower() == "clear":
+            _clear_session()
+            session_manager = _get_session_manager(force_new=True)
+            agent = create_nas_agent(session_manager=session_manager, query="")
+            turn = 0
+            if use_rich:
+                console.print("  [green]✓[/green] Sesión borrada. Contexto limpio.\n")
+            else:
+                print("✓ Sesión borrada. Contexto limpio.\n")
+            continue
+
+        if query.lower() == "status":
+            meta = _read_session_metadata()
+            turns_total = meta.get("turn_count", 0)
+            if use_rich:
+                console.print(f"  [cyan]Turnos esta sesión:[/cyan] {turn}")
+                console.print(f"  [cyan]Turnos totales:[/cyan] {turns_total}\n")
+            else:
+                print(f"  Turnos: {turn} (total: {turns_total})\n")
+            continue
+
+        if query.lower() == "help":
+            if use_rich:
+                console.print("  [bold]Comandos REPL:[/bold]")
+                console.print("    [cyan]exit[/cyan]   — salir")
+                console.print("    [cyan]clear[/cyan]  — borrar sesión y resetear")
+                console.print("    [cyan]status[/cyan] — info de sesión")
+                console.print("    [cyan]help[/cyan]   — este mensaje")
+                console.print("    [dim]Cualquier otra cosa → pregunta al agente[/dim]\n")
+            else:
+                print("  exit   — salir")
+                print("  clear  — borrar sesión")
+                print("  status — info de sesión")
+                print("  help   — este mensaje\n")
+            continue
+
+        # ── Ejecutar query ─────────────────────────────────────────────────
+        turn += 1
+
+        try:
+            result = agent(query)
+        except Exception as e:
+            error_msg = str(e)
+            if "429" in error_msg or "Too Many Requests" in error_msg or "quota" in error_msg.lower():
+                if use_rich:
+                    console.print("\n  [yellow]⚠️  Rate limit — espera unos segundos e intenta de nuevo.[/yellow]\n")
+                else:
+                    print("\n  ⚠️  Rate limit — espera e intenta de nuevo.\n")
+            else:
+                if use_rich:
+                    console.print(f"\n  [red]❌ Error:[/red] {error_msg[:150]}\n")
+                else:
+                    print(f"\n❌ Error: {error_msg[:150]}\n")
+            continue
+
+        # ── Mostrar respuesta ──────────────────────────────────────────────
+        if use_rich and result:
+            from rich.markdown import Markdown
+            from rich import box
+            console.print()
+            response_text = str(result).strip()
+            if response_text:
+                try:
+                    md = Markdown(response_text)
+                    console.print(Panel(
+                        md,
+                        border_style="bright_green",
+                        padding=(1, 2),
+                        box=box.ROUNDED,
+                        width=60,
+                    ))
+                except Exception:
+                    console.print(f"  {response_text}")
+            console.print()
+        elif result:
+            print(f"\n{str(result).strip()}\n")
+        else:
+            if use_rich:
+                console.print("  [dim](sin respuesta)[/dim]\n")
+            else:
+                print("  (sin respuesta)\n")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Punto de entrada
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -874,6 +1058,12 @@ def main():
             console.print(Panel(msg, title="[bold cyan]📋 Sesión[/bold cyan]", border_style="bright_cyan", padding=(0, 2), width=60))
         else:
             print(msg)
+        sys.exit(0)
+
+    # Flag: --repl → modo conversacional (loop)
+    if "--repl" in args:
+        args.remove("--repl")
+        _repl_mode(use_rich, console, force_new_session)
         sys.exit(0)
 
     # ── Header ─────────────────────────────────────────────────────────────
