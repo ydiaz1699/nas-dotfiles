@@ -72,28 +72,84 @@ svc <TAB>          # todos los comandos
 svc up <TAB>       # servicios detectados
 ```
 
-## Plantilla compose.yml
+## Plantilla compose.yml (con anchors obligatorios)
+
+Todo compose nuevo DEBE incluir los anchors base del catálogo
+(definidos en `agent/catalog/_compose_base.md`):
 
 ```yaml
+# ── Anchors base (obligatorios) ────────────────────────────────
+x-common-env: &common-env
+  TZ: America/La_Paz
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 5
+  start_period: 40s
+
+x-security-defaults: &security-defaults
+  no-new-privileges: true
+
+x-logging-defaults: &logging-defaults
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-resource-defaults: &resource-defaults
+  limits:
+    memory: 512m
+  reservations:
+    memory: 128m
+
+# ── Servicio ───────────────────────────────────────────────────
 services:
   <nombre>:
     image: <imagen>:<tag>
     container_name: <nombre>
     restart: unless-stopped
+    security_opt:
+      - <<: *security-defaults
+    deploy:
+      resources:
+        <<: *resource-defaults
+    logging:
+      <<: *logging-defaults
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:XXXX/health"]
     environment:
-      - TZ=America/La_Paz
+      <<: *common-env
     volumes:
       - ./data:/data
       - ./config:/config
     ports:
       - "XXXX:XXXX"
     networks:
-      - <nombre>_net
+      - iot_net       # elegir según tipo de servicio
 
+# ── Redes (externas compartidas) ──────────────────────────────
 networks:
-  <nombre>_net:
-    driver: bridge
+  iot_net:
+    external: true
 ```
+
+## Redes compartidas — convención
+
+El NAS usa redes externas compartidas (NO bridge por servicio):
+
+| Red | Uso |
+|-----|-----|
+| `iot_net` | IoT: MQTT, ESPHome, Home Assistant, Node-RED |
+| `db_net` | Acceso interno a bases de datos |
+| `proxy` | Servicios expuestos via reverse proxy (si habilitado) |
+
+Reglas:
+- Servicios IoT → `iot_net`
+- Bases de datos internas → `db_net`, NUNCA en `proxy`
+- Si `reverse_proxy.enabled: false` → no agregar red `proxy`
+- Crear red si no existe: `docker network create <nombre>`
 
 ## Plantilla con secretos
 
@@ -105,7 +161,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      - TZ=America/La_Paz
+      <<: *common-env
 ```
 
 `.env` (solo secretos reales):

@@ -11,13 +11,13 @@
 
 1. Función decorada con `@tool` en `agent/tools/<módulo>.py`
 2. Usar `safe_run()` de `agent/tools/_shell.py` (nunca subprocess)
-3. Exportar en `agent/tools/__init__.py` → lista `_RAW_TOOLS`
+3. Exportar en `agent/tools/__init__.py` → lista `ALL_TOOLS`
 4. Si destructiva: agregar a `_DESTRUCTIVE_TOOLS` en `_shell.py`
 5. Documentar en bloques del system prompt en `nas_agent.py`
 
 Ejemplo:
 ```python
-from strands import tool
+from strands.tools import tool
 from agent.tools._shell import safe_run, validate_service_name
 
 @tool
@@ -32,24 +32,36 @@ def mi_tool(service: str) -> str:
 
 1. Crear clase en `agent/plugins/<nombre>_plugin.py`
 2. Heredar de `BasePlugin`
-3. Implementar `setup()`:
+3. Definir `meta = PluginMeta(name="...", description="...")`
+4. Implementar `setup()`:
    - `self.register_tool(func)` — tool adicional
-   - `self.register_event("evento.*", handler)` — listener
-   - `self.register_schedule(interval_sec, func)` — tarea periódica
-4. Se auto-descubre por `loader.py` al arrancar daemon
+   - `self.register_event(EventHandler(...))` — listener
+   - `self.register_schedule(ScheduleConfig(...))` — tarea periódica
+5. Se auto-descubre por `loader.py` al arrancar daemon
 
 Ejemplo:
 ```python
-from agent.plugins.base import BasePlugin
+from agent.plugins.base import BasePlugin, PluginMeta, ScheduleConfig, EventHandler
 
 class MiPlugin(BasePlugin):
-    name = "mi_plugin"
+    meta = PluginMeta(name="mi_plugin", description="Descripción corta")
 
     def setup(self):
-        self.register_schedule(3600, self._hourly_check)
+        self.register_schedule(ScheduleConfig(
+            name="hourly-check",
+            handler=self._hourly_check,
+            interval_minutes=60,
+        ))
+        self.register_event(EventHandler(
+            event_type="docker.unhealthy",
+            handler=self._on_unhealthy,
+            description="Reaccionar a contenedor unhealthy",
+        ))
 
     def _hourly_check(self):
-        # lógica aquí
+        pass
+
+    def _on_unhealthy(self, event: dict):
         pass
 ```
 
