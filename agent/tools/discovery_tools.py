@@ -335,12 +335,15 @@ notes: "Ficha generada automáticamente — revisar y completar"
 
 @tool
 def bulk_discover() -> str:
-    """Descubre todos los servicios en /docker/ y genera fichas de catálogo
-    para los que no tienen una. También regenera catalog.json.
+    """Descubre todos los servicios en /docker/ y exporta al catálogo.
 
-    Escanea /docker/, identifica servicios con compose, compara contra
-    fichas existentes en agent/catalog/services/, y genera fichas nuevas
-    para los servicios que faltan. Al final actualiza el índice catalog.json.
+    Escanea /docker/, identifica servicios con compose, y genera para cada uno:
+    - ficha.md (metadatos extraídos del compose)
+    - compose.yml (copia del compose real)
+    - .env.example (variables sanitizadas — secretos reemplazados por __pega_aqui__)
+
+    Servicios que ya tienen ficha se re-exportan (actualiza compose y .env).
+    Al final actualiza el índice catalog.json.
 
     No requiere argumentos.
     """
@@ -370,29 +373,20 @@ def bulk_discover() -> str:
             tool_name="bulk_discover",
         ))
 
-    # Comparar contra fichas existentes
-    fichas_existentes = set()
-    if CATALOG_DIR.exists():
-        for f in CATALOG_DIR.glob("*.md"):
-            if not f.name.startswith(".") and not f.name.startswith("_"):
-                fichas_existentes.add(f.stem)
-
-    sin_ficha = [s for s in servicios_docker if s not in fichas_existentes]
-    con_ficha = [s for s in servicios_docker if s in fichas_existentes]
-
-    # Generar fichas faltantes
+    # Exportar TODOS (genera ficha + compose + .env.example)
     generadas = []
     errores = []
 
     with Timer() as t:
-        for svc in sin_ficha:
+        for svc in servicios_docker:
             try:
-                # Reutilizar la lógica de auto_catalog internamente
-                result = auto_catalog(svc)
+                result = export_service(svc)
                 if "✅" in result:
                     generadas.append(svc)
                 else:
                     errores.append(f"{svc}: {result[:80]}")
+            except Exception as e:
+                errores.append(f"{svc}: {e}")
             except Exception as e:
                 errores.append(f"{svc}: {e}")
 
@@ -402,14 +396,13 @@ def bulk_discover() -> str:
 
     # Construir respuesta
     msg_parts = [
-        f"=== BULK DISCOVER ===\n",
+        f"=== BULK DISCOVER & EXPORT ===\n",
         f"Servicios en /docker/: {len(servicios_docker)}",
-        f"Con ficha existente: {len(con_ficha)}",
-        f"Fichas generadas: {len(generadas)}",
+        f"Exportados (ficha + compose + .env.example): {len(generadas)}",
     ]
 
     if generadas:
-        msg_parts.append(f"\n✅ Nuevas fichas:")
+        msg_parts.append(f"\n✅ Exportados:")
         for g in generadas:
             msg_parts.append(f"  • {g}")
 
@@ -425,8 +418,7 @@ def bulk_discover() -> str:
         "\n".join(msg_parts),
         data={
             "total_services": len(servicios_docker),
-            "existing_fichas": len(con_ficha),
-            "generated": generadas,
+            "exported": generadas,
             "errors": errores,
             "index_count": index["services_count"],
         },
