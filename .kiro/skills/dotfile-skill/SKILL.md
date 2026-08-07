@@ -93,6 +93,31 @@ Para referencia completa de svc, ver `references/svc.md`.
 
 ---
 
+## Cuándo usar svc vs agent
+
+| Situación | Usar |
+|-----------|------|
+| Acción puntual y clara (restart, logs, update, backup) | `svc` directo |
+| Operación batch ya conocida (update-all, backup-all) | `svc` directo |
+| Diagnóstico que requiere interpretar logs + contexto | `agent` |
+| Crear servicio nuevo (buscar config, generar compose) | `agent` |
+| Pregunta abierta ("¿qué está fallando?", "¿cómo optimizo X?") | `agent` |
+| Operación multi-paso con dependencias | `agent` |
+
+Regla simple: si sabes exactamente qué comando correr → `svc`.
+Si necesitas razonamiento, búsqueda o decisión → `agent`.
+
+---
+
+## Diagnóstico
+
+Cuando algo falla, seguir un orden de investigación estructurado.
+
+Para recetas completas (OOM, crash loop, conflicto de puerto, servicio
+lento, healthcheck, red), ver `references/diagnostic.md`.
+
+---
+
 ## Agente IA
 
 28 tools · 3 providers (Gemini default, Bedrock, Ollama) · memoria
