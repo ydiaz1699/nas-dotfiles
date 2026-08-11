@@ -1,0 +1,5 @@
+# pip_packages.txt — Paquetes Python instalados en el NAS
+# Generado manualmente o con: pip freeze >> logs/pip_packages.txt
+# Para restaurar en otra NAS: pip install -r logs/pip_packages.txt
+#
+# Formato: nombre==versión (compatible con pip install -r)
