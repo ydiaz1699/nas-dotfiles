@@ -17,8 +17,8 @@ agent/memory/sessions/*.md
 .nas-agent/
 
 # ── Logs y datos generados ─────────────────────────────────────────
-logs/packages.txt
-*.log
+# logs/packages.txt
+# *.log
 
 # ── Backups del instalador ─────────────────────────────────────────
 *.bak.*
