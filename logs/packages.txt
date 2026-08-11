@@ -18,3 +18,4 @@ apt install -y micro
 apt install -y aria2
 apt install -y eza
 apt-fast install -y unzip
+apt-fast install -y avahi-daemon
