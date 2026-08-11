@@ -3,7 +3,7 @@
 ## Arquitectura
 
 ```
-$NAS_DOTFILES/shell/
+$nas-dotfiles/shell/
 ├── init.sh              ← loader principal (sourced por ~/.bashrc)
 └── lib/
     ├── aliases.sh       ← aliases del sistema (eza, docker, archivos)
