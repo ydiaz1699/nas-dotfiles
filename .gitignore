@@ -16,9 +16,8 @@ __pycache__/
 agent/memory/sessions/*.md
 .nas-agent/
 
-# ── Logs y datos generados ─────────────────────────────────────────
-# logs/packages.txt
-# *.log
+# ── Logs (solo archivos .log dinámicos, NO listas de paquetes) ─────
+*.log
 
 # ── Backups del instalador ─────────────────────────────────────────
 *.bak.*
