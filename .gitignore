@@ -1,4 +1,27 @@
+# ── Python ─────────────────────────────────────────────────────────
 __pycache__/
+*.pyc
+.venv/
 
-# Memory: session data es runtime (las plantillas .md SÍ se versionan)
+# ── Secretos y credenciales ────────────────────────────────────────
+.env.agent
+.env
+.env.*
+!.env.example
+
+# ── Configuración personal (generada por install.sh) ───────────────
+.config/user.conf
+
+# ── Runtime del agente ─────────────────────────────────────────────
 agent/memory/sessions/*.md
+.nas-agent/
+
+# ── Logs y datos generados ─────────────────────────────────────────
+logs/packages.txt
+*.log
+
+# ── Backups del instalador ─────────────────────────────────────────
+*.bak.*
+
+# ── IDE / Herramientas locales ─────────────────────────────────────
+.kiro/
