@@ -1,0 +1,151 @@
+# Meta-prompt: Unificar diagnósticos dispersos sin perder contenido
+
+> Copia este prompt completo al inicio de la conversación con cualquier LLM
+> (Claude, ChatGPT, Gemini) cuando necesites que unifique notas desordenadas
+> en una guía de ejecución.
+
+---
+
+## El prompt (copiar desde aquí)
+
+```
+INSTRUCCIONES ESTRICTAS — LEER ANTES DE PROCESAR
+
+Voy a pegarte fragmentos de varias conversaciones sobre un mismo tema.
+Tu trabajo es unificarlos en UNA SOLA guía de ejecución. Reglas:
+
+1. NO RESUMIR. Si un fragmento tiene un comando, va ÍNTEGRO en la guía.
+   Si tiene un archivo de configuración, va COMPLETO (no "...").
+   Si tiene una decisión, va textual.
+
+2. NO INVENTAR. Solo usa información que aparece en los fragmentos.
+   Si hay un hueco (paso que falta), marcalo como "⚠️ PENDIENTE: [qué falta]".
+
+3. DETECTAR CONTRADICCIONES. Si dos fragmentos dicen cosas diferentes sobre
+   lo mismo, lista ambas opciones como "DECISIÓN PENDIENTE" con las dos
+   alternativas numeradas. No elijas por mí.
+
+4. ORDEN DE EJECUCIÓN. Los pasos deben estar en el orden en que se ejecutan
+   en la realidad (primero crear carpetas, después archivos, después arrancar).
+   No agrupes por tema — agrupa por secuencia temporal.
+
+5. FORMATO OBLIGATORIO para cada paso:
+
+   ## Paso N: [nombre corto]
+
+   ### Archivo(s) a crear/modificar
+   - Ruta exacta
+
+   ### Contenido completo
+   ```[lenguaje]
+   (código o config ÍNTEGRO — nunca parcial, nunca "...")
+   ```
+
+   ### Comando de verificación
+   ```bash
+   (comando que confirma que el paso se aplicó bien)
+   ```
+
+   ### Depende de
+   - Paso X (si aplica)
+
+6. AL INICIO de la guía, incluir una sección "DECISIONES TOMADAS" con
+   las conclusiones firmes de los fragmentos (lo que NO se debe volver
+   a discutir).
+
+7. AL FINAL, incluir "DECISIONES PENDIENTES" con lo que se contradice
+   entre fragmentos o no está resuelto.
+
+8. NUNCA decir "como se mencionó antes" ni "ver fragmento 3". La guía
+   debe ser autocontenida — alguien que no leyó los fragmentos originales
+   debe poder seguirla paso a paso.
+
+9. Si el contenido es demasiado largo para una sola respuesta, DILO
+   al principio: "La guía tiene N pasos, te la doy en M partes."
+   No cortes a mitad de un paso.
+
+10. IDIOMA: responder en el mismo idioma que los fragmentos.
+
+FORMATO DE LA GUÍA:
+
+# Guía: [título descriptivo]
+
+## Estado: borrador
+## Fecha: [hoy]
+## Resumen: [1 línea de qué se logra al completar todos los pasos]
+
+---
+
+## Decisiones tomadas
+
+1. [decisión firme extraída de los fragmentos]
+2. [otra]
+
+---
+
+## Paso 1: [nombre]
+[contenido según formato del punto 5]
+
+## Paso 2: [nombre]
+[...]
+
+---
+
+## Decisiones pendientes
+
+1. [contradicción o hueco detectado]
+   - Opción A: [qué dice un fragmento]
+   - Opción B: [qué dice otro]
+
+---
+
+Ahora te pego los fragmentos. EMPIEZA A PROCESAR SOLO CUANDO YO DIGA "FIN DE FRAGMENTOS":
+```
+
+---
+
+## Cómo usarlo
+
+1. Pega el prompt de arriba al inicio de un chat nuevo
+2. Pega todos tus fragmentos desordenados (uno tras otro, separados por `---`)
+3. Al final escribe: `FIN DE FRAGMENTOS`
+4. El LLM genera la guía unificada
+
+---
+
+## Tips para que funcione mejor
+
+- **Fragmentos largos**: si pegas >50K chars, algunos LLMs cortan. Divide en
+  2-3 mensajes y pon "CONTINUACIÓN" al inicio de cada uno. El "FIN DE FRAGMENTOS"
+  solo va al final del último.
+
+- **Si el LLM empieza a resumir**: responde inmediatamente con:
+  "STOP. Relee la regla 1: NO RESUMIR. Dame el código COMPLETO del paso N."
+
+- **Si omite un paso**: responde con:
+  "Falta el paso de [X]. Está en el fragmento que dice [cita textual de 5 palabras]."
+
+- **Para ChatGPT específicamente**: agrega al inicio del prompt:
+  "Usa respuestas largas. No te preocupes por la longitud. Prioriza completitud."
+
+- **Para Claude**: funciona bien sin modificaciones. Si aún así corta,
+  pide: "Continúa desde donde cortaste, sin repetir lo anterior."
+
+---
+
+## Variante: pedir solo el plan (sin código)
+
+Si primero quieres ver la estructura antes de generar código, cambia la
+regla 5 por:
+
+```
+5. FORMATO LIGERO (solo plan, sin código):
+
+   ## Paso N: [nombre]
+   - Archivo: [ruta]
+   - Acción: [crear | modificar | borrar]
+   - Resumen: [1 línea de qué cambia]
+   - Verificar: [comando]
+```
+
+Y cuando apruebes el plan, dile: "Ahora genera la versión completa con código."

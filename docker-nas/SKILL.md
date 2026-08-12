@@ -66,10 +66,31 @@ Entrega siempre en este orden exacto:
 
 1. Árbol Unicode de directorios
 2. `mkdir -p $dkco/<svc>/{carpetas}`
-3. `compose.yml` completo (con anchors base obligatorios)
+3. `compose.yml` completo (con anchors base obligatorios + `env_file: [../.env, .env]`)
 4. `dk <svc> && svc up <svc>`
 
-Restricciones: `compose.yml` (nombre preferido) · `.env` solo secretos ·
+### .env global (`$dkco/.env`)
+
+Variables compartidas por TODOS los servicios. Cambiar aquí = aplica a todos al reiniciar:
+
+```env
+SERVER_IP=192.168.0.200
+TZ=America/La_Paz
+```
+
+Cada servicio hereda con:
+```yaml
+env_file:
+  - ../.env      # global (SERVER_IP, TZ)
+  - .env         # secretos locales del servicio
+```
+
+El `.env` local sobreescribe al global si hay conflicto.
+Template en: `agent/catalog/.env.global.example`
+
+### Restricciones
+
+`compose.yml` (nombre preferido) · `.env` solo secretos ·
 variables triviales inline · `unless-stopped` · puertos 8100-8999 ·
 nunca 22/53/80/443 · nombres `^[a-z0-9][a-z0-9._-]{0,63}$`
 
@@ -178,6 +199,15 @@ ver `references/extend.md`.
 
 ---
 
+## Redes avanzadas (macvlan / systemd-networkd)
+
+Migración de ifupdown a systemd-networkd con shim macvlan para exponer
+contenedores con IP propia en la LAN (ej. AdGuard con IP fija y DNS:53).
+
+Para el procedimiento completo y paso a paso, ver `references/networking.md`.
+
+---
+
 ## Prompt del servidor
 
 ```
@@ -218,3 +248,4 @@ Leer cuando se necesite detalle completo de un componente:
 - `references/seguridad.md` — Mecanismos de seguridad, variables, convenciones
 - `references/diagnostic.md` — Recetas de diagnóstico paso a paso
 - `references/extend.md` — Cómo agregar comandos, tools, plugins, módulos shell
+- `references/networking.md` — Redes avanzadas: macvlan, systemd-networkd, IPs fijas en LAN
