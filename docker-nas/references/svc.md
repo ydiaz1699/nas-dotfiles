@@ -1,6 +1,6 @@
-# svc — referencia completa
+# svc — CLI Docker referencia completa
 
-## Estructura de archivos
+## Archivos
 
 ```
 $NAS_DOTFILES/docker/cli/
@@ -10,9 +10,16 @@ $NAS_DOTFILES/docker/cli/
     ├── docker.sh        ← svc_update_all()
     ├── health.sh        ← svc_health(), svc_lista()
     ├── backup.sh        ← svc_backup(), svc_restore()
-    ├── extras.sh        ← port-map, size, net, env, create, watch, doctor, open, depends
+    ├── extras.sh        ← port-map, size, net, doctor, diff, watch, create, env, open, depends
     ├── menu.sh          ← svc_menu() TUI con fzf
     └── help.sh          ← _svc_ayuda()
+```
+
+## CLI dual
+
+```bash
+NAS_CLI=bash    # default — usa docker/cli/svc.sh
+NAS_CLI=python  # alternativo — usa svc_py/ (Rich + InquirerPy)
 ```
 
 ## Detección de servicios
@@ -28,27 +35,19 @@ Orden de búsqueda:
 
 ---
 
-## Uso general
-
-```bash
-svc <comando> [<servicio>] [argumentos]
-```
-
----
-
 ## Comandos globales (sin servicio)
 
 | Comando | Acción |
 |---------|--------|
 | `svc lista` | Lista servicios con estado ●/○ |
-| `svc health` | Dashboard: health, uptime, restart count |
-| `svc update-all [-y]` | Pull + recrear todos (con confirmación) |
-| `svc port-map` | Mapa de puertos + detecta conflictos |
+| `svc health` | Dashboard: health, uptime, restart count por servicio |
+| `svc doctor` | Chequeo 6 puntos: disco, memoria, servicios, puertos reservados, restarts, Docker storage |
+| `svc update-all [-y]` | Pull + recrear todos (con confirmación, -y para skip) |
+| `svc port-map` | Mapa global de puertos + detecta conflictos |
 | `svc size` | Disco por servicio (imágenes, volúmenes, dir) |
 | `svc net` | Mapa de redes Docker con contenedores + IPs |
 | `svc watch [N]` | Monitoreo en vivo (CPU/RAM/uptime, cada N seg) |
 | `svc create <nombre>` | Scaffolding: compose + .env + README + data/ |
-| `svc doctor` | Chequeo 6 puntos: disco, RAM, servicios, puertos, restarts, Docker storage |
 | `svc diff <servicio>` | Comparar compose en disco vs config resuelta |
 | `svc menu` | TUI interactivo con preview (requiere fzf) |
 | `svc --help` | Ayuda completa |
@@ -59,12 +58,12 @@ svc <comando> [<servicio>] [argumentos]
 
 | Comando | Acción |
 |---------|--------|
-| `svc update <svc>` | Pull + recrear contenedores |
-| `svc backup <svc>` | Backup volúmenes + bind mounts a tar.gz |
-| `svc restore <svc> [f]` | Restaurar desde backup (interactivo) |
+| `svc update <svc>` | Pull + recrear contenedores (--remove-orphans) |
+| `svc backup <svc>` | Backup volúmenes nombrados + bind mounts a tar.gz |
+| `svc restore <svc> [f]` | Restaurar desde backup (selector interactivo con fzf) |
 | `svc depends <svc>` | Ver servicios definidos + depends_on |
-| `svc env <svc> [edit]` | Ver/editar variables de entorno |
-| `svc open <svc>` | Mostrar URL + QR + clipboard |
+| `svc env <svc> [edit]` | Ver/editar variables de entorno (.env + inline) |
+| `svc open <svc>` | Mostrar URL + QR + clipboard (auto-detecta puerto) |
 
 ---
 
@@ -81,6 +80,7 @@ Cualquier subcomando de `docker compose` funciona automáticamente:
 | `svc kill <svc>` | Forzar parada |
 | `svc pause/unpause <svc>` | Pausar / reanudar |
 | `svc logs <svc>` | Logs en vivo (últimas 200 líneas) |
+| `svc logs <svc> -n 50` | Últimas 50 líneas |
 | `svc ps <svc>` | Listar contenedores |
 | `svc stats <svc>` | CPU/RAM en tiempo real |
 | `svc top <svc>` | Procesos corriendo |
@@ -89,10 +89,10 @@ Cualquier subcomando de `docker compose` funciona automáticamente:
 | `svc pull <svc>` | Descargar imagen |
 | `svc images <svc>` | Listar imágenes |
 | `svc rm <svc>` | Eliminar contenedores detenidos |
-| `svc config <svc>` | Config resuelta |
-| `svc cp <svc> src dst` | Copiar archivos |
+| `svc config <svc>` | Config resuelta (variables expandidas) |
+| `svc cp <svc> src dst` | Copiar archivos al/del contenedor |
 | `svc events <svc>` | Eventos en tiempo real |
-| `svc port <svc> <p>` | Ver puerto público |
+| `svc port <svc> <p>` | Ver puerto público asignado |
 | `svc volumes <svc>` | Listar volúmenes |
 | `svc scale <svc> s=N` | Escalar réplicas |
 | `svc run <svc> <cmd>` | Comando one-off |
@@ -103,46 +103,250 @@ Cualquier subcomando de `docker compose` funciona automáticamente:
 ## Autocompletado TAB
 
 ```bash
-svc <TAB>          # todos los comandos
-svc up <TAB>       # servicios en $DOCKER_BASE/
+svc <TAB>          # todos los comandos (globales + servicio)
+svc up <TAB>       # servicios detectados en $DOCKER_BASE/
 svc logs <TAB>     # idem
+svc restart <TAB>  # idem
 ```
 
 ---
 
-## Flujos típicos
+## Plantilla compose.yml (con anchors base obligatorios)
 
-### Nuevo servicio
+Todo compose nuevo DEBE incluir los anchors base del catálogo
+(definidos en `agent/catalog/_compose_base.md`):
+
+```yaml
+# ── Anchors base (obligatorios) ────────────────────────────────
+x-common-env: &common-env
+  TZ: America/La_Paz
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 5
+  start_period: 40s
+
+x-security-defaults: &security-defaults
+  no-new-privileges: true
+
+x-logging-defaults: &logging-defaults
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-resource-defaults: &resource-defaults
+  limits:
+    memory: 512m
+  reservations:
+    memory: 128m
+
+# ── Servicio ───────────────────────────────────────────────────
+services:
+  <nombre>:
+    image: <imagen>:<tag>
+    container_name: <nombre>
+    restart: unless-stopped
+    security_opt:
+      - <<: *security-defaults
+    deploy:
+      resources:
+        <<: *resource-defaults
+    logging:
+      <<: *logging-defaults
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "curl", "-f", "http://localhost:XXXX/health"]
+    environment:
+      <<: *common-env
+    volumes:
+      - ./data:/data
+      - ./config:/config
+    ports:
+      - "XXXX:XXXX"
+    networks:
+      - iot_net       # elegir según tipo de servicio
+
+# ── Redes (externas compartidas) ──────────────────────────────
+networks:
+  iot_net:
+    external: true
+```
+
+---
+
+## Redes compartidas — convención
+
+El NAS usa redes externas compartidas (NO bridge aislada por servicio):
+
+| Red | Uso |
+|-----|-----|
+| `iot_net` | IoT: MQTT, ESPHome, Home Assistant, Node-RED |
+| `db_net` | Acceso interno a bases de datos |
+| `proxy` | Servicios expuestos via reverse proxy (si habilitado) |
+
+Reglas:
+- Servicios IoT → `iot_net`
+- Bases de datos internas → `db_net`, NUNCA en `proxy`
+- Si `reverse_proxy.enabled: false` → no agregar red `proxy`
+- Crear red si no existe: `docker network create <nombre>`
+- Comunicación entre servicios: usar `container_name` como hostname (no IP)
+
+---
+
+## Plantilla con secretos (.env)
+
+**compose.yml:**
+```yaml
+services:
+  <nombre>:
+    image: <imagen>:<tag>
+    container_name: <nombre>
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *common-env
+```
+
+**.env** (solo secretos reales):
+```env
+API_KEY=tu_clave_secreta
+DB_PASSWORD=contraseña_segura
+```
+
+---
+
+## Carpetas disponibles
+
+| Carpeta | Cuándo crearla |
+|---------|----------------|
+| `config/` | el servicio tiene archivos de configuración |
+| `data/` | el servicio persiste datos |
+| `log/` | el servicio escribe logs fuera del contenedor |
+| `.env` | hay secretos reales que no deben estar en el compose |
+
+---
+
+## Ejemplos por tipo de servicio
+
+### Simple (solo datos)
+```
+$dkco/grafana/
+├── compose.yml
+└── data/
+```
 ```bash
+mkdir -p $dkco/grafana/data
+```
+
+### Con configuración separada
+```
+$dkco/nginx/
+├── compose.yml
+├── config/
+│   └── nginx.conf
+└── data/
+```
+```bash
+mkdir -p $dkco/nginx/{config,data}
+```
+
+### Con secretos
+```
+$dkco/nextcloud/
+├── compose.yml
+├── .env
+├── config/
+└── data/
+```
+```bash
+mkdir -p $dkco/nextcloud/{config,data}
+touch $dkco/nextcloud/.env
+```
+
+### Con logs externos
+```
+$dkco/traefik/
+├── compose.yml
+├── config/
+├── data/
+└── log/
+```
+```bash
+mkdir -p $dkco/traefik/{config,data,log}
+```
+
+### Stack complejo (múltiples contenedores)
+```
+$dkco/monitoring/
+├── compose.yml
+├── grafana/
+│   ├── config/
+│   └── data/
+└── prometheus/
+    ├── config/
+    │   └── prometheus.yml
+    └── data/
+```
+```bash
+mkdir -p $dkco/monitoring/{grafana/{config,data},prometheus/{config,data}}
+```
+
+---
+
+## Flujo completo — nuevo servicio
+
+```bash
+# 1. Crear estructura
 mkdir -p $dkco/<svc>/{config,data}
+
+# 2. Crear compose (con anchors base)
 nano $dkco/<svc>/compose.yml
+
+# 3. (Opcional) .env si hay secretos
+nano $dkco/<svc>/.env
+
+# 4. Navegar y levantar
 dk <svc>
 svc up <svc>
+
+# 5. Verificar
+svc ps <svc>
 svc logs <svc>
 svc health
 ```
 
-### Actualización
+---
+
+## Backup y restauración
+
 ```bash
-svc update <svc>       # uno
-svc update-all         # todos
+# Backup (volúmenes nombrados + bind mounts → tar.gz)
+svc backup <svc>
+# → $dkco/backups/<svc>_vol_<vol>_<timestamp>.tar.gz
+# → $dkco/backups/<svc>_bind_<mount>_<timestamp>.tar.gz
+
+# Restaurar (interactivo con fzf si disponible)
+svc restore <svc>
+# Detiene servicio → restaura → ofrece reiniciar
+
+# Rotación automática: conserva últimos $BACKUP_KEEP (default: 5)
 ```
 
-### Diagnóstico
-```bash
-svc health             # estado global
-svc doctor             # chequeo 6 puntos
-svc ps <svc>           # contenedores
-svc logs <svc>         # errores
-svc stats <svc>        # recursos
-svc top <svc>          # procesos
-```
+---
 
-### Backup y restore
-```bash
-svc backup <svc>       # exportar a $dkco/backups/
-svc restore <svc>      # selector interactivo con fzf
-```
+## Convenciones de puertos
+
+| Rango | Uso |
+|-------|-----|
+| 22, 53, 80, 443 | RESERVADOS — nunca asignar |
+| 8100-8999 | Servicios nuevos del usuario |
+| 1883, 8883 | MQTT (EMQX) |
+| 1880 | Node-RED |
+| 8123 | Home Assistant |
+| 9090 | Prometheus |
+| 3000 | Grafana |
 
 ---
 
@@ -152,3 +356,5 @@ svc restore <svc>      # selector interactivo con fzf
 - `svc open` genera QR code si `qrencode` está instalado
 - `svc menu` requiere `fzf` para funcionar
 - `svc watch` corre en loop — Ctrl+C para salir
+- `svc diff` detecta variables sin resolver en el compose
+- `svc doctor` revisa puertos reservados en uso por servicios Docker
