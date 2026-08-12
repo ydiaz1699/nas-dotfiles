@@ -30,7 +30,7 @@ backup_paths:
   - "./data/data"
 protected: false
 docs_url: "https://docs.emqx.com/en/emqx/latest/"
-notes: "Requiere ulimits nofile alto (1048576). Dashboard en puerto 18083, expuesto en LAN (no restringido a localhost pese a la regla general de _compose_base.md); ver justificación en README del servicio."
+notes: "Requiere ulimits nofile alto (1048576). Dashboard en puerto 18083, expuesto en LAN (no restringido a localhost pese a la regla general de _compose_base.md); ver justificación en README del servicio. Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del .env global."
 networks:
   - iot_net
   - db_net
@@ -62,10 +62,17 @@ WebSocket, SSL/TLS, clustering y dashboard web para monitoreo de dispositivos.
 ```
 /docker/emqx/
 ├── compose.yml
-├── .env                    ← permisos 600
+├── .env                    ← secretos del servicio (permisos 600)
 └── data/
     ├── data/               ← BD interna, sesiones, reglas, usuarios
     └── log/                ← logs del broker
+```
+
+Hereda variables globales de `$dkco/.env` (SERVER_IP, TZ) via:
+```yaml
+env_file:
+  - ../.env      # global
+  - .env         # secretos locales (sobreescribe si hay conflicto)
 ```
 
 ## Setup inicial

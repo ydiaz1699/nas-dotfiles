@@ -94,3 +94,9 @@ dkf() { _nav_fzf "$dkco" "dk>"; }
 
 _dk_completions() { _nav_complete "$dkco"; }
 complete -F _dk_completions dk
+
+# ── nasfk — /nas-dotfiles (código del framework) ──────────────────────────
+nasfk()  { _nav "$NAS_DOTFILES" "$@"; }
+nasfkf() { _nav_fzf "$NAS_DOTFILES" "nasfk>"; }
+_nasfk_completions() { _nav_complete "$NAS_DOTFILES"; }
+complete -F _nasfk_completions nasfk
