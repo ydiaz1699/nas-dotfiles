@@ -20,11 +20,11 @@ NAS_AGENT_MODEL=ollama agent "query"
 
 ## Providers
 
-| Provider | Default model | Variable | Costo |
-|----------|---------------|----------|-------|
+| Provider | Modelo default | Variable requerida | Costo |
+|----------|----------------|--------------------|-------|
 | Gemini (default) | gemini-3.1-flash-lite | `GOOGLE_API_KEY` | ~$0.15/1M tokens |
-| Bedrock | Claude Sonnet 4 | `AWS_REGION` | ~$3/1M + thinking |
-| Ollama (local) | llama3.1 | `OLLAMA_HOST` | Gratis |
+| Bedrock | Claude Sonnet 4 + thinking | `AWS_REGION` | ~$3/1M + thinking |
+| Ollama (local) | llama3.1 (configurable) | `OLLAMA_HOST` | Gratis |
 
 ### Modelos disponibles (via `agent --model`)
 
@@ -33,8 +33,10 @@ NAS_AGENT_MODEL=ollama agent "query"
 3. gemini-3.5-flash (balance)
 4. gemini-3.1-flash-lite (default actual)
 5. gemini-3.6-flash (más nuevo)
-6. Claude Sonnet 4 (Bedrock)
-7. Ollama llama3.1 (local)
+6. Claude Sonnet 4 (Bedrock, con interleaved thinking)
+7. Ollama llama3.1 (local, gratis)
+
+Cambio persistente: se guarda en `.env.agent` (NAS_AGENT_MODEL + NAS_AGENT_MODEL_ID).
 
 ---
 
@@ -47,8 +49,43 @@ selecciona **bloques** relevantes:
 Query → _classify_query() → lista de bloques → _assemble_prompt()
 ```
 
+```
+Thinking Prompt → Identidad → Reglas Core → [Bloque específico] → Formato
+```
+
 Bloques disponibles: identidad, reglas_core, seguridad, herramientas,
 formato, contexto_nas, diagnostico, creacion, backup, admin, memoria.
+
+Clasificación por keywords:
+- Diagnóstico: "revisar", "error", "falla", "caído", "unhealthy", "log"
+- Creación: "instalar", "crear", "nuevo servicio", "montar", "configurar"
+- Backup: "backup", "respaldo", "restaurar", "restore"
+- Admin: "start", "stop", "restart", "update", "detener", "levantar"
+- Memoria: "recuerda", "recordar", "skill", "qué sabes"
+- General: todo lo demás → reglas_core + contexto_nas + memoria
+
+---
+
+## Reglas de ejecución del agente
+
+- **Lectura/seguras**: ejecutar SIN preguntar (logs, health, restart, update)
+- **Destructivas**: explicar + confirmar (stop, restore)
+- Nunca mostrar docker commands crudos — usar tools
+- Nunca inventar config sin buscar en catálogo o internet
+
+### Mapeo acción → herramienta
+
+| Acción | Tool |
+|--------|------|
+| Detener | `service_stop(svc, confirm="si")` |
+| Levantar | `service_start(svc)` |
+| Reiniciar | `service_restart(svc)` |
+| Actualizar | `service_update(svc)` |
+| Logs | `service_logs(svc, 50)` |
+| Diagnóstico | `troubleshoot(svc)` |
+| Compose | `read_compose(svc)` |
+| Backup | `backup_service(svc)` |
+| Restaurar | `restore_service(svc, confirm="si")` |
 
 ---
 
@@ -85,7 +122,7 @@ formato, contexto_nas, diagnostico, creacion, backup, admin, memoria.
 ### Compose
 | Tool | Acción |
 |------|--------|
-| `create_service(name, image, port, ...)` | Crear nuevo |
+| `create_service(name, image, port, ...)` | Crear servicio nuevo |
 | `validate_compose(service)` | Validar contra reglas |
 | `read_compose(service)` | Leer compose actual |
 
@@ -109,7 +146,7 @@ formato, contexto_nas, diagnostico, creacion, backup, admin, memoria.
 |------|--------|
 | `remember(fact, category)` | Guardar hecho/lección |
 | `recall(query)` | Buscar en memoria |
-| `learn_skill(name, procedure, trigger)` | Crear skill |
+| `learn_skill(name, procedure, trigger)` | Crear skill reutilizable |
 | `update_user_model(key, value)` | Actualizar perfil |
 | `memory_stats()` | Estado de la memoria |
 
@@ -128,6 +165,19 @@ Archivos en `$NAS_DOTFILES/agent/memory/`:
 
 Categorías válidas para `remember()`: `entorno`, `leccion`, `patron`, `pendiente`.
 
+### Flujo de memoria
+
+- Antes de actuar → `recall("descripción del problema")` busca si ya lo resolvió
+- Si encuentra un SKILL → aplicar directamente (no re-investigar)
+- Después de resolver algo complejo → `remember()` o `learn_skill()`
+- Observaciones sobre el usuario → `update_user_model()`
+- NO guardar: cosas triviales, info duplicada, datos sensibles
+
+### Búsqueda (recall)
+
+Orden de prioridad: SKILLS (trigger) → MEMORY (keywords) → sessions.
+Keywords de >2 chars se buscan como substring en todos los archivos.
+
 ---
 
 ## Sesiones
@@ -137,6 +187,7 @@ Categorías válidas para `remember()`: `entorno`, `leccion`, `patron`, `pendien
 - Timeout: 30 min de inactividad → auto-reset
 - `agent --new` fuerza sesión limpia
 - `agent --clear` elimina todo
+- Mensajes cortos sin contexto = continuación de sesión previa
 
 ---
 
@@ -144,20 +195,25 @@ Categorías válidas para `remember()`: `entorno`, `leccion`, `patron`, `pendien
 
 Sistema modular en `$NAS_DOTFILES/agent/plugins/`:
 
-| Plugin | Qué hace |
-|--------|----------|
-| `docker_plugin.py` | Health checks cada 5 min, eventos unhealthy |
-| `backup_plugin.py` | Programar backups automáticos |
-| `network_plugin.py` | Monitoreo de red |
-| `ha_discovery_plugin.py` | Integración Home Assistant |
-| `memory_plugin.py` | Curación de memoria (24h) |
+| Plugin | Función | Schedule |
+|--------|---------|----------|
+| `docker_plugin.py` | Health checks, eventos unhealthy | Cada 5 min |
+| `backup_plugin.py` | Auto-backup programado | Configurable |
+| `network_plugin.py` | Escaneo de puertos | Configurable |
+| `ha_discovery_plugin.py` | Integración Home Assistant | — |
+| `memory_plugin.py` | Curación de memoria | Cada 24h |
 
 Cada plugin registra: tools, event handlers, scheduled tasks.
 Config en `agent/config/defaults.yml`:
 ```yaml
 plugins:
   enabled: [docker, backup, network]
+  disabled: []
 ```
+
+Base: heredar de `BasePlugin`, implementar `setup()` con
+`register_tool()`, `register_event()`, `register_schedule()`.
+Auto-descubrimiento por `loader.py` (escanea *.py en plugins/).
 
 ---
 
@@ -174,6 +230,27 @@ journalctl -u nas-agent -f
 
 Mantiene vivos: Scheduler (tareas periódicas) + Plugin schedules.
 Heartbeat cada 60 min con stats de memoria.
+Graceful shutdown via SIGTERM/SIGINT.
+
+---
+
+## Catálogo de servicios
+
+En `$NAS_DOTFILES/agent/catalog/`:
+
+| Archivo | Contenido |
+|---------|-----------|
+| `_rules.md` | Reglas de formato (puertos, restart, naming) |
+| `_template.md` | Template para fichas nuevas |
+| `_compose_base.md` | Anchors YAML obligatorios |
+| `catalog.json` | Índice de servicios catalogados |
+| `services/<svc>/ficha.md` | Ficha individual con frontmatter YAML |
+
+Flujo de creación:
+1. `search_service_info()` busca en internet
+2. `create_service()` genera compose con anchors
+3. `validate_compose()` valida contra _rules.md
+4. `auto_catalog()` genera ficha para futuras referencias
 
 ---
 
@@ -210,3 +287,27 @@ paho-mqtt>=1.6.0  (opcional, para MQTT)
 ```
 
 Instalar: `pip install -r $NAS_DOTFILES/requirements.txt`
+
+---
+
+## Configuración (defaults.yml)
+
+```yaml
+plugins:
+  enabled: [docker, backup, network]
+mqtt:
+  enabled: false
+  host: localhost
+  port: 1883
+  topics: ["nas-agent/#", "homeassistant/+/status", "docker/events/#"]
+scheduler:
+  enabled: true
+  tick_interval_seconds: 30
+cache:
+  ttl_seconds: 300
+  persist_path: "~/.nas-agent/cache.json"
+session:
+  timeout_minutes: 30
+logging:
+  level: "INFO"
+```
