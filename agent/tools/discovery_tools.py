@@ -207,31 +207,82 @@ def auto_catalog(service_name: str) -> str:
     if not services:
         return "ERROR: No se encontraron servicios en el compose"
 
-    # Tomar el primer servicio como principal
-    main_svc_name = list(services.keys())[0]
-    main_svc = services[main_svc_name]
+    # Detectar si es stack multi-servicio
+    is_stack = len(services) > 1
 
-    # Extraer datos
-    image = main_svc.get("image", "desconocida")
-    ports = main_svc.get("ports", [])
-    volumes = main_svc.get("volumes", [])
-    networks = main_svc.get("networks", [])
-    healthcheck = main_svc.get("healthcheck", {})
-    env = main_svc.get("environment", [])
+    # Extraer datos de TODOS los servicios
+    all_services_info = []
+    main_image = ""
+    all_ports = []
+    all_volumes = []
+    all_env_list = []
+    all_networks = set()
+    main_healthcheck = {}
 
-    # Parsear puertos
-    port_internal = ""
-    port_external = ""
-    if ports:
-        port_str = str(ports[0])
+    for idx, (svc_name, svc_config) in enumerate(services.items()):
+        svc_image = svc_config.get("image", "desconocida")
+        svc_ports = svc_config.get("ports", [])
+        svc_volumes = svc_config.get("volumes", [])
+        svc_networks = svc_config.get("networks", [])
+        svc_healthcheck = svc_config.get("healthcheck", {})
+        svc_env = svc_config.get("environment", [])
+
+        # Primer servicio = principal
+        if idx == 0:
+            main_image = svc_image
+            main_healthcheck = svc_healthcheck
+
+        # Parsear puertos del servicio
+        port_internal = ""
+        port_external = ""
+        if svc_ports:
+            port_str = str(svc_ports[0])
+            if ":" in port_str:
+                parts = port_str.replace('"', '').replace("'", "").split(":")
+                if len(parts) >= 2:
+                    port_external = parts[-2].split(".")[-1] if "." in parts[-2] else parts[-2]
+                    port_internal = parts[-1].split("/")[0] if "/" in parts[-1] else parts[-1]
+
+        # Info del servicio para el frontmatter
+        svc_info = {
+            "name": svc_name,
+            "image": svc_image,
+        }
+        if port_internal:
+            svc_info["port_internal"] = int(port_internal) if port_internal.isdigit() else port_internal
+        if port_external:
+            svc_info["port_external"] = int(port_external) if port_external.isdigit() else port_external
+
+        all_services_info.append(svc_info)
+
+        # Acumular datos globales
+        all_ports.extend(svc_ports)
+        all_volumes.extend(svc_volumes)
+        if isinstance(svc_networks, list):
+            all_networks.update(svc_networks)
+        elif isinstance(svc_networks, dict):
+            all_networks.update(svc_networks.keys())
+
+        # Variables de entorno
+        if isinstance(svc_env, list):
+            all_env_list.extend([e.split("=")[0] for e in svc_env])
+        elif isinstance(svc_env, dict):
+            all_env_list.extend(svc_env.keys())
+
+    # Parsear primer puerto para campos legacy (port_internal/port_default)
+    first_port_internal = ""
+    first_port_external = ""
+    if all_ports:
+        port_str = str(all_ports[0])
         if ":" in port_str:
             parts = port_str.replace('"', '').replace("'", "").split(":")
-            port_external = parts[0]
-            port_internal = parts[1].split("/")[0] if "/" in parts[1] else parts[1]
+            if len(parts) >= 2:
+                first_port_external = parts[-2].split(".")[-1] if "." in parts[-2] else parts[-2]
+                first_port_internal = parts[-1].split("/")[0] if "/" in parts[-1] else parts[-1]
 
     # Parsear volúmenes
     vol_list = []
-    for v in volumes:
+    for v in all_volumes:
         if isinstance(v, str):
             vol_list.append(f'  - "{v}"')
         elif isinstance(v, dict):
@@ -239,16 +290,9 @@ def auto_catalog(service_name: str) -> str:
             tgt = v.get("target", "?")
             vol_list.append(f'  - "{src}:{tgt}"')
 
-    # Variables de entorno
-    env_list = []
-    if isinstance(env, list):
-        env_list = [e.split("=")[0] for e in env]
-    elif isinstance(env, dict):
-        env_list = list(env.keys())
-
-    # Determinar categoría por imagen
+    # Determinar categoría por imagen principal
     category = "otro"
-    image_lower = image.lower()
+    image_lower = main_image.lower()
     if any(x in image_lower for x in ["plex", "jellyfin", "emby", "sonarr", "radarr"]):
         category = "media"
     elif any(x in image_lower for x in ["vault", "auth", "keycloak"]):
@@ -261,41 +305,94 @@ def auto_catalog(service_name: str) -> str:
         category = "productividad"
     elif any(x in image_lower for x in ["traefik", "nginx", "caddy", "pihole"]):
         category = "red"
-    elif any(x in image_lower for x in ["home-assistant", "mosquitto"]):
+    elif any(x in image_lower for x in ["home-assistant", "mosquitto", "emqx"]):
         category = "domótica"
 
-    needs_proxy = "proxy" in str(networks).lower()
+    needs_proxy = "proxy" in str(list(all_networks)).lower()
 
-    # Generar ficha
+    # Generar aliases a partir de nombres de servicios e imágenes
+    aliases = set()
+    aliases.add(service_name)
+    for svc_info in all_services_info:
+        aliases.add(svc_info["name"])
+        # Extraer nombre base de la imagen (sin registry/tag)
+        img_name = svc_info["image"].split("/")[-1].split(":")[0]
+        aliases.add(img_name)
+    aliases.discard(service_name)  # no repetir el id
+    aliases_list = sorted(aliases)
+
+    # Healthcheck del principal
     hc_test = ""
-    if isinstance(healthcheck.get("test"), list) and len(healthcheck["test"]) > 1:
-        hc_test = healthcheck["test"][1]
+    if isinstance(main_healthcheck.get("test"), list) and len(main_healthcheck["test"]) > 1:
+        hc_test = " ".join(main_healthcheck["test"][1:])
+
+    # Generar bloque services para el frontmatter
+    services_yaml = ""
+    if is_stack:
+        services_yaml = "services:\n"
+        for svc_info in all_services_info:
+            services_yaml += f'  - name: {svc_info["name"]}\n'
+            services_yaml += f'    image: "{svc_info["image"]}"\n'
+            if "port_internal" in svc_info:
+                services_yaml += f'    port_internal: {svc_info["port_internal"]}\n'
+            if "port_external" in svc_info:
+                services_yaml += f'    port_external: {svc_info["port_external"]}\n'
+    else:
+        services_yaml = ""
+
+    # Nombre legible
+    display_name = service_name.replace('-', ' ').replace('_', ' ').title()
+    if is_stack:
+        display_name = f"Stack {display_name}"
+
+    # Descripción
+    if is_stack:
+        svc_names = [s["name"] for s in all_services_info]
+        description = f"Stack multi-servicio: {' + '.join(svc_names)}"
+    else:
+        description = "Servicio auto-catalogado desde compose existente"
+
+    # Redes
+    networks_yaml = ""
+    if all_networks:
+        networks_yaml = "networks:\n" + "".join(f"  - {n}\n" for n in sorted(all_networks))
+
+    # Construir ficha (sin f-strings anidados para compatibilidad Python 3.10+)
+    newline = "\n"
+    vol_lines = newline.join(vol_list) if vol_list else '  - "./data:/data"'
+    env_lines = newline.join(f'  - {e}' for e in all_env_list[:10]) if all_env_list else '  # (ninguna detectada)'
+    svc_names_str = ", ".join(s["name"] for s in all_services_info)
+    nets_str = ", ".join(sorted(all_networks)) if all_networks else "ninguna"
+    num_services = len(all_services_info)
+    num_volumes = len(all_volumes)
+    num_env = len(all_env_list)
 
     ficha = f"""---
 id: "{service_name}"
-name: "{service_name.replace('-', ' ').title()}"
-description: "Servicio auto-catalogado desde compose existente"
-image: "{image}"
+name: "{display_name}"
+aliases: {aliases_list}
+description: "{description}"
+image: "{main_image}"
 category: "{category}"
-port_internal: {port_internal or "0"}
-port_default: {port_external or "0"}
+port_internal: {first_port_internal or "0"}
+port_default: {first_port_external or "0"}
 protocol: "http"
 needs_proxy: {str(needs_proxy).lower()}
 needs_db: false
-volumes:
-{chr(10).join(vol_list) if vol_list else '  - "./data:/data"'}
+{services_yaml}volumes:
+{vol_lines}
 env_required:
-{chr(10).join(f'  - {e}' for e in env_list[:5]) if env_list else '  # (ninguna detectada)'}
+{env_lines}
 healthcheck: "{hc_test}"
 backup_critical: true
 backup_paths:
   - "./data"
 protected: false
 docs_url: ""
-notes: "Ficha generada automáticamente — revisar y completar"
+{networks_yaml}notes: "Ficha generada automáticamente — revisar y completar"
 ---
 
-# {service_name.replace('-', ' ').title()}
+# {display_name}
 
 ## Qué es
 
@@ -303,10 +400,12 @@ notes: "Ficha generada automáticamente — revisar y completar"
 
 ## Configuración detectada
 
-- Imagen: `{image}`
-- Puerto: {port_external}:{port_internal}
-- Volúmenes: {len(volumes)} mount(s)
-- Variables: {len(env_list)} definidas
+- Imagen principal: `{main_image}`
+- Contenedores: {num_services} ({svc_names_str})
+- Puerto principal: {first_port_external}:{first_port_internal}
+- Volúmenes: {num_volumes} mount(s)
+- Variables: {num_env} definidas
+- Redes: {nets_str}
 
 ## Notas
 
