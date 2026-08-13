@@ -433,6 +433,16 @@ def auto_catalog(service_name: str) -> str:
     if isinstance(main_healthcheck.get("test"), list) and len(main_healthcheck["test"]) > 1:
         hc_test = " ".join(main_healthcheck["test"][1:])
 
+    # Construir partes de la ficha (pre-calcular para evitar NameError en f-strings)
+    newline = "\n"
+    vol_lines = newline.join(vol_list) if vol_list else '  - "./data:/data"'
+    env_lines = newline.join(f'  - {e}' for e in all_env_list[:10]) if all_env_list else '  # (ninguna detectada)'
+    svc_names_str = ", ".join(s["name"] for s in all_services_info)
+    nets_str = ", ".join(sorted(all_networks)) if all_networks else "ninguna"
+    num_services = len(all_services_info)
+    num_volumes = len(all_volumes)
+    num_env = len(all_env_list)
+
     ficha = f"""---
 id: "{service_name}"
 name: "{display_name}"
@@ -469,7 +479,7 @@ docs_url: ""
 - Contenedores: {num_services} ({svc_names_str})
 - Puerto principal: {first_port_external}:{first_port_internal}
 - Volúmenes: {num_volumes} mount(s)
-- Variables externas (${{VAR}}): {num_env}
+- Variables: {num_env} definidas
 - Redes: {nets_str}
 
 ## Notas
