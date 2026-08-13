@@ -3,7 +3,7 @@
 ## Archivos
 
 ```
-docker/cli/
+$NAS_DOTFILES/docker/cli/
 ├── svc.sh            ← entrypoint
 └── lib/
     ├── discovery.sh  ← detección de servicios
@@ -17,14 +17,14 @@ docker/cli/
 
 ## Detección de servicios
 
-Busca en `/docker/*/` estos archivos (en orden):
+Busca en `$DOCKER_BASE/*/` estos archivos (en orden):
 `compose.yml` · `compose.yaml` · `docker-compose.yml` · `docker-compose.yaml`
 
 ## CLI dual
 
 ```bash
-NAS_CLI=bash    # default — usa docker/cli/svc.sh
-NAS_CLI=python  # alternativo — usa svc_py/ (Rich + InquirerPy)
+NAS_CLI=bash    # default — usa $NAS_DOTFILES/docker/cli/svc.sh
+NAS_CLI=python  # alternativo — usa $NAS_DOTFILES/svc_py/ (Rich + InquirerPy)
 ```
 
 ## Comandos globales (sin servicio)

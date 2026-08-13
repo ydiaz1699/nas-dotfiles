@@ -12,21 +12,25 @@ Anti-doble-carga: `$_SHELL_INIT_LOADED`. Reload: `reload` (alias).
 ```bash
 up [n]                # sube n niveles (default 1)
 
-# adm → $HOME (configurable vía .config/user.conf)
-adm                   # cd /home/aadm
-adm <dir>             # cd /home/aadm/<dir>
+# adm → $aadm (configurable vía .config/user.conf)
+adm                   # cd $aadm
+adm <dir>             # cd $aadm/<dir>
 adm <dir> <cmd>       # ejecuta cmd en contexto
 adm .. [n]            # sube n niveles
 admf                  # fuzzy finder (fzf)
 
-# dk → /docker (misma API)
-dk / dk <dir> / dk <dir> <cmd> / dk .. [n] / dkf
+# dk → $dkco (misma API)
+dk                    # cd $dkco
+dk <dir>              # cd $dkco/<dir>
+dk <dir> <cmd>        # ejecuta cmd en contexto
+dk .. [n]             # sube n niveles
+dkf                   # fuzzy finder (fzf)
 
-# nasfk → /nas-dotfiles (código del framework)
-nasfk                 # cd /nas-dotfiles
-nasfk agent           # cd /nas-dotfiles/agent
-nasfk shell ll        # cd /nas-dotfiles/shell + listar
-nasfkf                # fuzzy finder en /nas-dotfiles (fzf)
+# nasfk → $NAS_DOTFILES (código del framework)
+nasfk                 # cd $NAS_DOTFILES
+nasfk agent           # cd $NAS_DOTFILES/agent
+nasfk shell ll        # cd $NAS_DOTFILES/shell + listar
+nasfkf                # fuzzy finder en $NAS_DOTFILES (fzf)
 ```
 
 ## Alias — listado (usa eza)

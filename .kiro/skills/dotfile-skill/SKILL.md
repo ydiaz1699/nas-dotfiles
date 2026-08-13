@@ -71,9 +71,9 @@ Para plantillas y estructura de carpetas, ver `references/svc.md`.
 
 ```bash
 # Navegación
-dk <svc>             # ir a /docker/<svc>
-adm <dir>            # ir a $HOME/<dir>
-nasfk <dir>          # ir a /nas-dotfiles/<dir>
+dk <svc>             # ir a $dkco/<svc>
+adm <dir>            # ir a $aadm/<dir>
+nasfk <dir>          # ir a $NAS_DOTFILES/<dir>
 up [n]               # subir n niveles
 
 # Docker (siempre vía svc)

@@ -29,8 +29,8 @@
 
 | Variable | Default | Descripción |
 |----------|---------|-------------|
-| `NAS_DOTFILES` | `/nas-dotfiles` | Ruta fija al código |
-| `DOCKER_BASE` | `/docker` | Ruta a datos de servicios |
+| `NAS_DOTFILES` | `/nas-dotfiles` | Ruta al código (configurable) |
+| `DOCKER_BASE` | `/docker` | Ruta a datos de servicios (= `$dkco`) |
 | `NAV_HOME` | `/home/aadm` | Home del usuario |
 | `NAV_VAR` | `aadm` | Variable exportada ($aadm) |
 | `NAV_CMD` | `adm` | Comando de navegación |
@@ -48,7 +48,7 @@
 | `OLLAMA_HOST` | `http://localhost:11434` | Host Ollama |
 | `NAS_AGENT_SESSION_TIMEOUT` | `30` | Minutos antes de auto-reset |
 | `NAS_AGENT_SESSIONS_DIR` | `~/.nas-agent/sessions` | Directorio sesiones |
-| `NAS_AGENT_AUDIT_LOG` | `/docker/backups/agent_audit.log` | Ruta audit log |
+| `NAS_AGENT_AUDIT_LOG` | `$DOCKER_BASE/backups/agent_audit.log` | Ruta audit log |
 
 ## Convenciones del proyecto
 
