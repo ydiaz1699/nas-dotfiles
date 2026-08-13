@@ -311,13 +311,22 @@ _configure_bashrc() {
 
 _configure_bashrc "$HOME/.bashrc" "~/.bashrc"
 
+# Si NAV_HOME es de otro usuario (ej: corriendo como root pero NAV_HOME=/home/aadm)
+# configurar también el .bashrc de ese usuario
+NAV_USER_BASHRC="$NAV_HOME/.bashrc"
+if [[ "$NAV_USER_BASHRC" != "$HOME/.bashrc" && -d "$NAV_HOME" ]]; then
+  _configure_bashrc "$NAV_USER_BASHRC" "$NAV_USER_BASHRC"
+fi
+
 if [[ "${SETUP_ROOT,,}" == "s" || "${SETUP_ROOT,,}" == "si" || "${SETUP_ROOT,,}" == "y" ]]; then
-  if [[ "$EUID" -eq 0 ]]; then
-    _configure_bashrc "/root/.bashrc" "/root/.bashrc"
-  elif sudo -n true 2>/dev/null; then
-    _configure_bashrc "/root/.bashrc" "/root/.bashrc"
-  else
-    echo -e "    ${YLW}⚠${NC} Sin acceso a /root/.bashrc — agregar manualmente"
+  if [[ "$HOME" != "/root" ]]; then
+    if [[ "$EUID" -eq 0 ]]; then
+      _configure_bashrc "/root/.bashrc" "/root/.bashrc"
+    elif sudo -n true 2>/dev/null; then
+      _configure_bashrc "/root/.bashrc" "/root/.bashrc"
+    else
+      echo -e "    ${YLW}⚠${NC} Sin acceso a /root/.bashrc — agregar manualmente"
+    fi
   fi
 fi
 
