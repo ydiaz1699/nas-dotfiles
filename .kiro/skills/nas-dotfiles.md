@@ -45,9 +45,9 @@ source "$NAS_DOTFILES/shell/init.sh"
 
 | Comando/Función | Qué hace |
 |-----------------|----------|
-| `adm` / `adm carpeta` | Navegar al home del usuario (NAV_HOME) |
-| `dk traefik` | Navegar a la carpeta Docker del servicio (DOCKER_BASE) |
-| `nasfk` / `nasfk agent` | Navegar al código del framework (NAS_DOTFILES) |
+| `adm` / `adm carpeta` | Navegar al home del usuario (configurable en user.conf) |
+| `dk traefik` | Navegar a la carpeta Docker del servicio |
+| `nasfk` / `nasfk agent` | Navegar al código del framework |
 | `nas` | Dashboard del NAS (uptime, memoria, disco, docker, temperatura) |
 | `disk` | Uso de disco rápido |
 | `netinfo` | Interfaces + puertos en uso |

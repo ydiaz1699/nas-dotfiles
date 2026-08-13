@@ -17,10 +17,14 @@ Framework de administración para NAS Debian con Docker.
 | Campo | Valor |
 |-------|-------|
 | `$NAS_DOTFILES` | Ruta al código (default `/nas-dotfiles`, configurable) |
-| `$aadm` | Home del usuario (default `/home/aadm`, configurable) |
 | `$dkco` / `$DOCKER_BASE` | Datos de servicios Docker (default `/docker`) |
+| Variable de home | Configurable vía `NAV_VAR` en `.config/user.conf` (ej: `$aadm`, `$nilo`) |
 
 Código (`$NAS_DOTFILES`) y datos (`$dkco`) nunca se mezclan.
+
+> **Nota:** La variable de home (`$aadm`, `$nilo`, etc.) depende de lo configurado
+> en `.config/user.conf` durante la instalación. Si no hay config, el default
+> es `NAV_VAR=adm` → variable `$adm` = `$HOME`.
 
 ---
 
@@ -32,10 +36,10 @@ Estas reglas son de libertad baja: no hay alternativa válida.
 NUNCA:                              SIEMPRE:
   /docker/...                   →   $dkco/...
   /nas-dotfiles/...             →   $NAS_DOTFILES/...
-  /home/aadm/...                →   $aadm/...
+  /home/<usuario>/...           →   $<NAV_VAR>/... (según user.conf)
   /path/to/...                  →   deducir del contexto o preguntar
   cd /docker/<svc>              →   dk <svc>
-  cd /home/aadm/<dir>           →   adm <dir>
+  cd /home/<usuario>/<dir>      →   adm <dir>  (o el NAV_CMD configurado)
   cd /nas-dotfiles/<dir>        →   nasfk <dir>
   docker compose <cmd>          →   svc <cmd> <svc>
   docker restart/logs/exec      →   svc restart/logs/exec <svc>
@@ -72,12 +76,13 @@ Para plantillas y estructura de carpetas, ver `references/svc.md`.
 ```bash
 # Navegación (comandos, no cd)
 dk <svc>             # navegar a DOCKER_BASE/<svc>
-adm <dir>            # navegar a NAV_HOME/<dir>
+adm <dir>            # navegar a NAV_HOME/<dir> (home del usuario)
 nasfk <dir>          # navegar a NAS_DOTFILES/<dir>
 up [n]               # subir n niveles
 
 # Variables (para referir rutas, no para navegar)
-# $dkco = /docker    $aadm = /home/aadm    $NAS_DOTFILES = /nas-dotfiles
+# $dkco = /docker    $NAS_DOTFILES = /nas-dotfiles
+# La variable de home depende de NAV_VAR en user.conf
 
 # Docker (siempre vía svc)
 svc lista            # servicios con estado

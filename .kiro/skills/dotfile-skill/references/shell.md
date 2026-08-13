@@ -35,19 +35,23 @@ nasfkf                # fuzzy finder (fzf)
 
 ### Variables vs Comandos
 
-| Variable | Valor default | Para qué |
-|----------|---------------|----------|
-| `$aadm` | `/home/aadm` | Referir rutas en scripts/comandos (`$aadm/scripts/x.sh`) |
-| `$dkco` | `/docker` | Referir rutas de servicios (`$dkco/emqx/compose.yml`) |
-| `$NAS_DOTFILES` | `/nas-dotfiles` | Referir rutas del código (`$NAS_DOTFILES/shell/init.sh`) |
+| Variable | Para qué | Nota |
+|----------|----------|------|
+| `$dkco` | Referir rutas de servicios (`$dkco/emqx/compose.yml`) | Siempre `/docker` |
+| `$NAS_DOTFILES` | Referir rutas del código (`$NAS_DOTFILES/shell/init.sh`) | Siempre disponible |
+| `$<NAV_VAR>` | Referir rutas del home (ej: `$aadm/scripts/x.sh`) | Solo si configuraste `user.conf` |
 
-| Comando | Equivale a | Para qué |
-|---------|-----------|----------|
-| `adm` | `cd $aadm` | **Navegar** al home |
-| `dk emqx` | `cd $dkco/emqx` | **Navegar** a un servicio |
-| `nasfk agent` | `cd $NAS_DOTFILES/agent` | **Navegar** al código |
+| Comando | Para qué | Funciona siempre |
+|---------|----------|:----------------:|
+| `dk emqx` | **Navegar** a un servicio | ✅ |
+| `nasfk agent` | **Navegar** al código | ✅ |
+| `adm scripts` | **Navegar** al home del usuario | ✅ |
 
-**Regla:** Para navegar usa el comando. Para referir una ruta en otro contexto usa la variable.
+**Regla:** Para navegar usa el comando. Para referir una ruta usa la variable.
+
+> **Importante:** `$aadm` solo existe si configuraste `NAV_VAR=aadm` en `.config/user.conf`.
+> Sin user.conf, el default es `NAV_VAR=adm` → la variable se llama `$adm` y vale `$HOME`.
+> El comando `adm` funciona siempre (usa el valor configurado internamente).
 
 ## Alias — listado (usa eza)
 
