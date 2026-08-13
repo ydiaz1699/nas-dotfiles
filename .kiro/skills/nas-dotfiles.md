@@ -2,7 +2,7 @@
 
 ## Descripción
 
-`nas-dotfiles` es un framework completo para administrar un NAS (Network Attached Storage) con Debian/Ubuntu y Docker. Tiene 3 componentes: un shell framework, un CLI para Docker (`svc`), y un agente de IA con herramientas. Todo vive en `/nas-dotfiles/` (ruta fija en la raíz del sistema, independiente del usuario).
+`nas-dotfiles` es un framework completo para administrar un NAS (Network Attached Storage) con Debian/Ubuntu y Docker. Tiene 3 componentes: un shell framework, un CLI para Docker (`svc`), y un agente de IA con herramientas. Todo vive en `$NAS_DOTFILES` (por defecto `/nas-dotfiles`, configurable).
 
 ## Cuándo usar esta skill
 
@@ -17,23 +17,23 @@
 ## Arquitectura general
 
 ```
-/nas-dotfiles/          ← TODO el código (ruta fija, nunca en home de usuario)
+$NAS_DOTFILES/          ← TODO el código (ruta configurable, default /nas-dotfiles)
     ├── shell/          ← Shell framework (aliases, prompt, navegación)
     ├── docker/cli/     ← CLI bash para Docker (comando `svc`)
     └── agent/          ← Agente IA con tools (Python, Strands SDK)
 
-/docker/                ← SOLO datos de servicios Docker (no código)
+$DOCKER_BASE/           ← SOLO datos de servicios Docker (default /docker)
     ├── nextcloud/compose.yml
     ├── plex/compose.yml
     ├── backups/
     └── ...
 ```
 
-**Principio:** El código vive en `/nas-dotfiles/`. Los datos de servicios viven en `/docker/`. No se mezclan. No hay symlinks.
+**Principio:** El código vive en `$NAS_DOTFILES`. Los datos de servicios viven en `$DOCKER_BASE` (`$dkco`). No se mezclan. No hay symlinks.
 
 ---
 
-## Componente 1: Shell Framework (`/nas-dotfiles/shell/`)
+## Componente 1: Shell Framework (`$NAS_DOTFILES/shell/`)
 
 Se carga via `~/.bashrc`:
 ```bash
@@ -61,20 +61,20 @@ source "$NAS_DOTFILES/shell/init.sh"
 
 | Archivo | Contenido |
 |---------|-----------|
-| `shell/init.sh` | Loader principal, define NAS_DOTFILES, alias svc, carga módulos |
-| `shell/lib/aliases.sh` | Aliases de sistema (ls→eza, docker, archivos) |
-| `shell/lib/nav.sh` | Navegación rápida con fzf (adm, dk, nasfk, up) |
-| `shell/lib/docker.sh` | Autocompletado de `svc` |
-| `shell/lib/system.sh` | nas(), disk(), netinfo(), logs() |
-| `shell/lib/instal.sh` | Wrapper inteligente de apt-fast |
-| `shell/lib/pipins.sh` | Wrapper inteligente de pip (maneja PEP 668) |
-| `shell/lib/prompt.sh` | Prompt con docker + disco + exit code |
-| `shell/lib/git.sh` | Aliases de git |
-| `shell/lib/completions.sh` | Completions adicionales |
+| `$NAS_DOTFILES/shell/init.sh` | Loader principal, define NAS_DOTFILES, alias svc, carga módulos |
+| `$NAS_DOTFILES/shell/lib/aliases.sh` | Aliases de sistema (ls→eza, docker, archivos) |
+| `$NAS_DOTFILES/shell/lib/nav.sh` | Navegación rápida con fzf (adm, dk, nasfk, up) |
+| `$NAS_DOTFILES/shell/lib/docker.sh` | Autocompletado de `svc` |
+| `$NAS_DOTFILES/shell/lib/system.sh` | nas(), disk(), netinfo(), logs() |
+| `$NAS_DOTFILES/shell/lib/instal.sh` | Wrapper inteligente de apt-fast |
+| `$NAS_DOTFILES/shell/lib/pipins.sh` | Wrapper inteligente de pip (maneja PEP 668) |
+| `$NAS_DOTFILES/shell/lib/prompt.sh` | Prompt con docker + disco + exit code |
+| `$NAS_DOTFILES/shell/lib/git.sh` | Aliases de git |
+| `$NAS_DOTFILES/shell/lib/completions.sh` | Completions adicionales |
 
 ---
 
-## Componente 2: CLI Docker (`/nas-dotfiles/docker/cli/`)
+## Componente 2: CLI Docker (`$NAS_DOTFILES/docker/cli/`)
 
 Comando principal: `svc` (definido como alias en init.sh).
 
@@ -109,31 +109,31 @@ Comando principal: `svc` (definido como alias en init.sh).
 
 ### Detección de servicios
 
-Busca en `/docker/*/` archivos: `compose.yml`, `compose.yaml`, `docker-compose.yml`, `docker-compose.yaml`. Cada directorio con un compose file es un "servicio".
+Busca en `$DOCKER_BASE/*/` archivos: `compose.yml`, `compose.yaml`, `docker-compose.yml`, `docker-compose.yaml`. Cada directorio con un compose file es un "servicio".
 
 ### Archivos del CLI
 
 | Archivo | Contenido |
 |---------|-----------|
-| `docker/cli/svc.sh` | Entry point, auto-detecta CLI_DIR via BASH_SOURCE |
-| `docker/cli/lib/discovery.sh` | svc_list(), svc_compose_file() |
-| `docker/cli/lib/docker.sh` | svc_update_all() |
-| `docker/cli/lib/health.sh` | svc_health(), svc_lista() |
-| `docker/cli/lib/backup.sh` | svc_backup(), svc_restore() |
-| `docker/cli/lib/extras.sh` | port-map, size, net, env, create, watch, doctor, diff |
-| `docker/cli/lib/menu.sh` | TUI interactivo con fzf |
-| `docker/cli/lib/help.sh` | _svc_ayuda() |
+| `$NAS_DOTFILES/docker/cli/svc.sh` | Entry point, auto-detecta CLI_DIR via BASH_SOURCE |
+| `$NAS_DOTFILES/docker/cli/lib/discovery.sh` | svc_list(), svc_compose_file() |
+| `$NAS_DOTFILES/docker/cli/lib/docker.sh` | svc_update_all() |
+| `$NAS_DOTFILES/docker/cli/lib/health.sh` | svc_health(), svc_lista() |
+| `$NAS_DOTFILES/docker/cli/lib/backup.sh` | svc_backup(), svc_restore() |
+| `$NAS_DOTFILES/docker/cli/lib/extras.sh` | port-map, size, net, env, create, watch, doctor, diff |
+| `$NAS_DOTFILES/docker/cli/lib/menu.sh` | TUI interactivo con fzf |
+| `$NAS_DOTFILES/docker/cli/lib/help.sh` | _svc_ayuda() |
 
 ---
 
-## Componente 3: Agente IA (`/nas-dotfiles/agent/`)
+## Componente 3: Agente IA (`$NAS_DOTFILES/agent/`)
 
 Agente Python basado en Strands Agents SDK. Administra el NAS con lenguaje natural. 28 tools, memoria persistente, plugins dinámicos, daemon systemd.
 
 ### Ejecución
 
 ```bash
-cd /nas-dotfiles
+cd $NAS_DOTFILES
 python -m agent.nas_agent "¿Qué servicios están caídos?"
 python -m agent.nas_agent "Quiero instalar Vaultwarden"
 python -m agent.nas_agent "Diagnostica nextcloud"
@@ -200,7 +200,7 @@ agent --model gemini-2.5-flash  # cambio directo
 
 ### Catálogo de servicios
 
-En `agent/catalog/`:
+En `$NAS_DOTFILES/agent/catalog/`:
 - `_rules.md` — Reglas de formato (puertos, restart policy, naming)
 - `_template.md` — Template para fichas
 - `services/*.md` — Fichas individuales con frontmatter YAML
@@ -236,8 +236,8 @@ El agente incluye instrucciones de razonamiento paso a paso:
 
 | Variable | Default | Descripción |
 |----------|---------|-------------|
-| `NAS_DOTFILES` | `/nas-dotfiles` | Ruta fija al proyecto |
-| `DOCKER_BASE` | `/docker` | Ruta a datos de servicios Docker |
+| `NAS_DOTFILES` | `/nas-dotfiles` | Ruta al proyecto (configurable) |
+| `DOCKER_BASE` / `$dkco` | `/docker` | Ruta a datos de servicios Docker |
 | `NAS_AGENT_MODEL` | `gemini` | Provider del agente |
 | `NAS_AGENT_MODEL_ID` | (auto) | Override de modelo |
 | `GOOGLE_API_KEY` | — | API key Gemini |
@@ -247,14 +247,14 @@ El agente incluye instrucciones de razonamiento paso a paso:
 | `NAS_AGENT_READONLY` | `0` | Modo solo lectura |
 | `NAS_AGENT_DRYRUN` | `0` | Modo plan sin ejecutar |
 | `NAS_AGENT_AUDIT` | `1` | Habilitar audit log |
-| `NAS_AGENT_AUDIT_LOG` | `/docker/backups/agent_audit.log` | Ruta audit log |
+| `NAS_AGENT_AUDIT_LOG` | `$DOCKER_BASE/backups/agent_audit.log` | Ruta audit log |
 
 ---
 
 ## Convenciones
 
-- **Ruta del proyecto**: siempre `/nas-dotfiles/` (fija, raíz del sistema)
-- **Datos Docker**: siempre `/docker/` (no mezclar con código)
+- **Ruta del proyecto**: `$NAS_DOTFILES` (default `/nas-dotfiles`, configurable)
+- **Datos Docker**: `$DOCKER_BASE` / `$dkco` (default `/docker`, no mezclar con código)
 - **Idioma del código**: inglés
 - **Idioma de la UI/mensajes**: español
 - **Nombres de servicio**: `^[a-z0-9][a-z0-9._-]{0,63}$`
@@ -269,15 +269,15 @@ El agente incluye instrucciones de razonamiento paso a paso:
 ## Cómo agregar funcionalidad
 
 ### Nuevo comando svc (bash)
-1. Función `svc_nombre()` en `docker/cli/lib/`
+1. Función `svc_nombre()` en `$NAS_DOTFILES/docker/cli/lib/`
 2. Registrar en `svc.sh` (case statement)
-3. Agregar a autocompletado en `shell/lib/docker.sh`
-4. Documentar en `docker/cli/lib/help.sh`
+3. Agregar a autocompletado en `$NAS_DOTFILES/shell/lib/docker.sh`
+4. Documentar en `$NAS_DOTFILES/docker/cli/lib/help.sh`
 
 ### Nueva tool del agente (Python)
-1. Función `@tool` en `agent/tools/`
+1. Función `@tool` en `$NAS_DOTFILES/agent/tools/`
 2. Usar `safe_run()` de `_shell.py` (nunca subprocess directo)
-3. Exportar en `agent/tools/__init__.py` → `ALL_TOOLS`
+3. Exportar en `$NAS_DOTFILES/agent/tools/__init__.py` → `ALL_TOOLS`
 4. Si destructiva: agregar a `_DESTRUCTIVE_TOOLS` en `_shell.py`
 5. Documentar en SYSTEM_PROMPT de `nas_agent.py`
 

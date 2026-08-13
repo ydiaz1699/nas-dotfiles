@@ -16,11 +16,11 @@ Framework de administración para NAS Debian con Docker.
 
 | Campo | Valor |
 |-------|-------|
-| `$NAS_DOTFILES` | `/nas-dotfiles` (código, ruta fija) |
-| `$aadm` | `/home/aadm` (configurable) |
-| `$dkco` | `/docker` (datos de servicios) |
+| `$NAS_DOTFILES` | Ruta al código (default `/nas-dotfiles`, configurable) |
+| `$aadm` | Home del usuario (default `/home/aadm`, configurable) |
+| `$dkco` / `$DOCKER_BASE` | Datos de servicios Docker (default `/docker`) |
 
-Código (`/nas-dotfiles/`) y datos (`/docker/`) nunca se mezclan.
+Código (`$NAS_DOTFILES`) y datos (`$dkco`) nunca se mezclan.
 
 ---
 
