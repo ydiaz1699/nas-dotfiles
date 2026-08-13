@@ -56,6 +56,14 @@ export "$NAV_VAR=$NAV_HOME"
 export dkco=/docker
 export DOCKER_BASE="${DOCKER_BASE:-/docker}"
 
+# ── Cargar .env global de Docker (SERVER_IP, TZ, etc.) ────────────────────
+# Permite que Docker Compose interpole ${VAR} sin warnings
+if [[ -f "$DOCKER_BASE/.env" ]]; then
+  set -a
+  source "$DOCKER_BASE/.env"
+  set +a
+fi
+
 # ── CLI svc: dual bash/python ──────────────────────────────────────────────
 # NAS_CLI=python → usa Python CLI (Rich + InquirerPy)
 # NAS_CLI=bash   → usa Bash CLI (sin dependencias, default)
