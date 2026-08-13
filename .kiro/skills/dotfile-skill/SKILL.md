@@ -36,6 +36,7 @@ NUNCA:                              SIEMPRE:
   /path/to/...                  →   deducir del contexto o preguntar
   cd /docker/<svc>              →   dk <svc>
   cd /home/aadm/<dir>           →   adm <dir>
+  cd /nas-dotfiles/<dir>        →   nasfk <dir>
   docker compose <cmd>          →   svc <cmd> <svc>
   docker restart/logs/exec      →   svc restart/logs/exec <svc>
   apt install                   →   instal
@@ -72,11 +73,13 @@ Para plantillas y estructura de carpetas, ver `references/svc.md`.
 # Navegación
 dk <svc>             # ir a /docker/<svc>
 adm <dir>            # ir a $HOME/<dir>
+nasfk <dir>          # ir a /nas-dotfiles/<dir>
 up [n]               # subir n niveles
 
 # Docker (siempre vía svc)
 svc lista            # servicios con estado
 svc up/down/restart/logs/update <svc>
+svc recreate <svc>   # recrear sin pull (force-recreate)
 svc health           # dashboard global
 svc doctor           # chequeo 6 puntos
 svc backup <svc>     # exportar volúmenes
@@ -84,6 +87,7 @@ svc backup <svc>     # exportar volúmenes
 # Sistema
 nas                  # dashboard NAS
 instal pkg           # apt con log
+pipins pkg           # pip con log
 agent "query"        # agente IA
 agent chat           # REPL
 ```

@@ -52,6 +52,7 @@ NAS_CLI=python  # alternativo — usa svc_py/ (Rich + InquirerPy)
 | `svc restart <svc>` | reiniciar |
 | `svc start/stop/kill <svc>` | control básico |
 | `svc update <svc>` | pull + recrear |
+| `svc recreate <svc>` | recrear sin pull (force-recreate) |
 | `svc logs <svc>` | follow, tail 200 |
 | `svc ps <svc>` | contenedores |
 | `svc stats <svc>` | CPU/RAM en vivo |

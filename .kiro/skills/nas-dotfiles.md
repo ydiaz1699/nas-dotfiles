@@ -47,10 +47,12 @@ source "$NAS_DOTFILES/shell/init.sh"
 |-----------------|----------|
 | `adm` / `adm carpeta` | Navegar a $HOME o subcarpeta |
 | `dk traefik` | Navegar a /docker/traefik |
+| `nasfk` / `nasfk agent` | Navegar a /nas-dotfiles o subcarpeta |
 | `nas` | Dashboard del NAS (uptime, memoria, disco, docker, temperatura) |
 | `disk` | Uso de disco rápido |
 | `netinfo` | Interfaces + puertos en uso |
 | `instal paquete` | apt-fast con verificación previa + log |
+| `pipins paquete` | pip con verificación previa + log (maneja PEP 668) |
 | `up 3` | Subir 3 niveles de directorio |
 | `svc` | Alias al CLI Docker (ver componente 2) |
 | Prompt | Muestra: usuario@host directorio contenedores↑ disco% |
@@ -61,10 +63,11 @@ source "$NAS_DOTFILES/shell/init.sh"
 |---------|-----------|
 | `shell/init.sh` | Loader principal, define NAS_DOTFILES, alias svc, carga módulos |
 | `shell/lib/aliases.sh` | Aliases de sistema (ls→eza, docker, archivos) |
-| `shell/lib/nav.sh` | Navegación rápida con fzf (adm, dk, up) |
+| `shell/lib/nav.sh` | Navegación rápida con fzf (adm, dk, nasfk, up) |
 | `shell/lib/docker.sh` | Autocompletado de `svc` |
 | `shell/lib/system.sh` | nas(), disk(), netinfo(), logs() |
 | `shell/lib/instal.sh` | Wrapper inteligente de apt-fast |
+| `shell/lib/pipins.sh` | Wrapper inteligente de pip (maneja PEP 668) |
 | `shell/lib/prompt.sh` | Prompt con docker + disco + exit code |
 | `shell/lib/git.sh` | Aliases de git |
 | `shell/lib/completions.sh` | Completions adicionales |
@@ -97,6 +100,7 @@ Comando principal: `svc` (definido como alias en init.sh).
 | `svc up/down/restart/stop/start servicio` | Control de ciclo de vida |
 | `svc logs servicio` | Ver logs (follow, tail 200) |
 | `svc update servicio` | Pull + recrear |
+| `svc recreate servicio` | Recrear sin pull (force-recreate) |
 | `svc backup servicio` | Exportar volúmenes a tar.gz |
 | `svc diff servicio` | Comparar compose en disco vs config resuelta |
 | `svc depends servicio` | Ver servicios y dependencias |
@@ -124,7 +128,7 @@ Busca en `/docker/*/` archivos: `compose.yml`, `compose.yaml`, `docker-compose.y
 
 ## Componente 3: Agente IA (`/nas-dotfiles/agent/`)
 
-Agente Python basado en Strands Agents SDK. Administra el NAS con lenguaje natural.
+Agente Python basado en Strands Agents SDK. Administra el NAS con lenguaje natural. 28 tools, memoria persistente, plugins dinámicos, daemon systemd.
 
 ### Ejecución
 
@@ -133,6 +137,19 @@ cd /nas-dotfiles
 python -m agent.nas_agent "¿Qué servicios están caídos?"
 python -m agent.nas_agent "Quiero instalar Vaultwarden"
 python -m agent.nas_agent "Diagnostica nextcloud"
+python -m agent.nas_agent "Recuerda que emqx necesita 512MB"
+```
+
+### Alias (desde terminal):
+
+```bash
+agent "query"              # query directa
+agent chat                 # REPL interactivo
+agent --new "query"        # nueva sesión limpia
+agent --status             # info sesión
+agent --clear              # borrar sesión
+agent --model              # cambiar modelo (menú interactivo)
+agent --model gemini-2.5-flash  # cambio directo
 ```
 
 ### Providers
@@ -147,13 +164,24 @@ python -m agent.nas_agent "Diagnostica nextcloud"
 
 | Módulo | Tools |
 |--------|-------|
-| `discovery_tools.py` | list_services, scan_compose, auto_catalog |
-| `system_tools.py` | scan_ports, disk_usage, memory_info, network_info |
+| `discovery_tools.py` | list_services, scan_compose, auto_catalog, bulk_discover, export_service |
+| `system_tools.py` | scan_ports, disk_usage, memory_info, network_info, list_files, read_file_content |
 | `docker_tools.py` | service_start, service_stop, service_restart, service_update, service_logs |
 | `compose_tools.py` | create_service, validate_compose, read_compose |
 | `backup_tools.py` | backup_service, restore_service, list_backups |
 | `diagnostic_tools.py` | service_health, port_conflicts, troubleshoot |
 | `search_tools.py` | search_service_info (web fallback) |
+| `memory_tools.py` | remember, recall, learn_skill, update_user_model, memory_stats |
+
+### Plugins (agent/plugins/)
+
+| Plugin | Función |
+|--------|---------|
+| `docker_plugin` | Health checks periódicos (cada 5 min) |
+| `backup_plugin` | Auto-backup diario |
+| `network_plugin` | Escaneo de puertos (cada 15 min) |
+| `memory_plugin` | Learning Loop (curación + consolidación) |
+| `ha_discovery_plugin` | HA MQTT Discovery (auto-discovery en Home Assistant) |
 
 ### Módulos internos
 
@@ -249,7 +277,7 @@ El agente incluye instrucciones de razonamiento paso a paso:
 ### Nueva tool del agente (Python)
 1. Función `@tool` en `agent/tools/`
 2. Usar `safe_run()` de `_shell.py` (nunca subprocess directo)
-3. Exportar en `agent/tools/__init__.py` → `_RAW_TOOLS`
+3. Exportar en `agent/tools/__init__.py` → `ALL_TOOLS`
 4. Si destructiva: agregar a `_DESTRUCTIVE_TOOLS` en `_shell.py`
 5. Documentar en SYSTEM_PROMPT de `nas_agent.py`
 

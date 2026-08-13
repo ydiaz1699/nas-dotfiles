@@ -21,6 +21,12 @@ admf                  # fuzzy finder (fzf)
 
 # dk → /docker (misma API)
 dk / dk <dir> / dk <dir> <cmd> / dk .. [n] / dkf
+
+# nasfk → /nas-dotfiles (código del framework)
+nasfk                 # cd /nas-dotfiles
+nasfk agent           # cd /nas-dotfiles/agent
+nasfk shell ll        # cd /nas-dotfiles/shell + listar
+nasfkf                # fuzzy finder en /nas-dotfiles (fzf)
 ```
 
 ## Alias — listado (usa eza)
