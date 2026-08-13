@@ -357,6 +357,16 @@ def auto_catalog(service_name: str) -> str:
     if all_networks:
         networks_yaml = "networks:\n" + "".join(f"  - {n}\n" for n in sorted(all_networks))
 
+    # Construir partes de la ficha (pre-calcular para evitar NameError en f-strings)
+    newline = "\n"
+    vol_lines = newline.join(vol_list) if vol_list else '  - "./data:/data"'
+    env_lines = newline.join(f'  - {e}' for e in all_env_list[:10]) if all_env_list else '  # (ninguna detectada)'
+    svc_names_str = ", ".join(s["name"] for s in all_services_info)
+    nets_str = ", ".join(sorted(all_networks)) if all_networks else "ninguna"
+    num_services = len(all_services_info)
+    num_volumes = len(all_volumes)
+    num_env = len(all_env_list)
+
     ficha = f"""---
 id: "{service_name}"
 name: "{display_name}"
@@ -370,9 +380,9 @@ protocol: "http"
 needs_proxy: {str(needs_proxy).lower()}
 needs_db: false
 {services_yaml}volumes:
-{chr(10).join(vol_list) if vol_list else '  - "./data:/data"'}
+{vol_lines}
 env_required:
-{chr(10).join(f'  - {e}' for e in all_env_list[:10]) if all_env_list else '  # (ninguna detectada)'}
+{env_lines}
 healthcheck: "{hc_test}"
 backup_critical: true
 backup_paths:
@@ -391,11 +401,11 @@ docs_url: ""
 ## Configuración detectada
 
 - Imagen principal: `{main_image}`
-- Contenedores: {len(services)} ({', '.join(s['name'] for s in all_services_info)})
+- Contenedores: {num_services} ({svc_names_str})
 - Puerto principal: {first_port_external}:{first_port_internal}
-- Volúmenes: {len(all_volumes)} mount(s)
-- Variables: {len(all_env_list)} definidas
-- Redes: {', '.join(sorted(all_networks)) if all_networks else 'ninguna'}
+- Volúmenes: {num_volumes} mount(s)
+- Variables: {num_env} definidas
+- Redes: {nets_str}
 
 ## Notas
 
