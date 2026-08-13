@@ -5,6 +5,7 @@ Detecta servicios en /docker/, lee sus compose files y puede
 generar fichas de catálogo automáticamente.
 """
 
+import re
 import yaml
 from pathlib import Path
 from strands.tools import tool
