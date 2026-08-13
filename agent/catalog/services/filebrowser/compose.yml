@@ -1,0 +1,30 @@
+services:
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: filebrowser
+    restart: unless-stopped
+    user: "0:0"
+    env_file: .env
+    ports:
+      - "8085:80"
+    volumes:
+      - ./config:/config
+      - /NAS:/srv
+    environment:
+      - TZ=America/La_Paz
+    command: >
+      --database /config/database.db
+      --root /srv
+      --address 0.0.0.0
+      --port 80
+      --log stdout
+    labels:
+      - homepage.group=Archivos
+      - homepage.name=Filebrowser
+      - homepage.icon=filebrowser
+      - homepage.href=http://192.168.1.200:8085
+      - homepage.description=Explorador de archivos del NAS
+      - homepage.widget.type=filebrowser
+      - homepage.widget.url=http://192.168.1.200:8085
+      - homepage.widget.username=${FILEBROWSER_USER}
+      - homepage.widget.password=${FILEBROWSER_PASSWORD}
