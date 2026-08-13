@@ -70,11 +70,14 @@ Para plantillas y estructura de carpetas, ver `references/svc.md`.
 ## Comandos esenciales
 
 ```bash
-# Navegación
-dk <svc>             # ir a $dkco/<svc>
-adm <dir>            # ir a $aadm/<dir>
-nasfk <dir>          # ir a $NAS_DOTFILES/<dir>
+# Navegación (comandos, no cd)
+dk <svc>             # navegar a DOCKER_BASE/<svc>
+adm <dir>            # navegar a NAV_HOME/<dir>
+nasfk <dir>          # navegar a NAS_DOTFILES/<dir>
 up [n]               # subir n niveles
+
+# Variables (para referir rutas, no para navegar)
+# $dkco = /docker    $aadm = /home/aadm    $NAS_DOTFILES = /nas-dotfiles
 
 # Docker (siempre vía svc)
 svc lista            # servicios con estado

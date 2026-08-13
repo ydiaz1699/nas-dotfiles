@@ -12,26 +12,42 @@ Anti-doble-carga: `$_SHELL_INIT_LOADED`. Reload: `reload` (alias).
 ```bash
 up [n]                # sube n niveles (default 1)
 
-# adm → $aadm (configurable vía .config/user.conf)
-adm                   # cd $aadm
-adm <dir>             # cd $aadm/<dir>
+# adm → home del usuario (NAV_HOME, default /home/aadm)
+adm                   # cd al home configurado
+adm <dir>             # cd al home/<dir>
 adm <dir> <cmd>       # ejecuta cmd en contexto
 adm .. [n]            # sube n niveles
 admf                  # fuzzy finder (fzf)
 
-# dk → $dkco (misma API)
-dk                    # cd $dkco
-dk <dir>              # cd $dkco/<dir>
+# dk → carpeta de datos Docker (DOCKER_BASE, default /docker)
+dk                    # cd a la carpeta Docker
+dk <dir>              # cd a Docker/<dir>
 dk <dir> <cmd>        # ejecuta cmd en contexto
 dk .. [n]             # sube n niveles
 dkf                   # fuzzy finder (fzf)
 
-# nasfk → $NAS_DOTFILES (código del framework)
-nasfk                 # cd $NAS_DOTFILES
-nasfk agent           # cd $NAS_DOTFILES/agent
-nasfk shell ll        # cd $NAS_DOTFILES/shell + listar
-nasfkf                # fuzzy finder en $NAS_DOTFILES (fzf)
+# nasfk → carpeta del framework (NAS_DOTFILES, default /nas-dotfiles)
+nasfk                 # cd al código del framework
+nasfk agent           # cd al código/agent
+nasfk shell ll        # cd al código/shell + listar
+nasfkf                # fuzzy finder (fzf)
 ```
+
+### Variables vs Comandos
+
+| Variable | Valor default | Para qué |
+|----------|---------------|----------|
+| `$aadm` | `/home/aadm` | Referir rutas en scripts/comandos (`$aadm/scripts/x.sh`) |
+| `$dkco` | `/docker` | Referir rutas de servicios (`$dkco/emqx/compose.yml`) |
+| `$NAS_DOTFILES` | `/nas-dotfiles` | Referir rutas del código (`$NAS_DOTFILES/shell/init.sh`) |
+
+| Comando | Equivale a | Para qué |
+|---------|-----------|----------|
+| `adm` | `cd $aadm` | **Navegar** al home |
+| `dk emqx` | `cd $dkco/emqx` | **Navegar** a un servicio |
+| `nasfk agent` | `cd $NAS_DOTFILES/agent` | **Navegar** al código |
+
+**Regla:** Para navegar usa el comando. Para referir una ruta en otro contexto usa la variable.
 
 ## Alias — listado (usa eza)
 
