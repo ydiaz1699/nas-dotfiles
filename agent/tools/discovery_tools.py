@@ -420,12 +420,13 @@ docs_url: ""
     catalog_file.write_text(ficha, encoding="utf-8")
 
     return (
-        f"✅ Ficha creada: agent/catalog/services/{service_name}.md\n\n"
+        f"✅ Ficha creada: agent/catalog/services/{service_name}/ficha.md\n\n"
         f"Datos extraídos:\n"
-        f"  Imagen: {image}\n"
-        f"  Puerto: {port_external}:{port_internal}\n"
-        f"  Volúmenes: {len(volumes)}\n"
-        f"  Variables: {len(env_list)}\n"
+        f"  Imagen: {main_image}\n"
+        f"  Puerto: {first_port_external}:{first_port_internal}\n"
+        f"  Contenedores: {num_services} ({svc_names_str})\n"
+        f"  Volúmenes: {num_volumes}\n"
+        f"  Variables: {num_env}\n"
         f"  Categoría: {category}\n\n"
         f"⚠️  Revisa y completa la ficha manualmente (descripción, docs_url, notas)."
     )
@@ -484,8 +485,6 @@ def bulk_discover() -> str:
                     generadas.append(svc)
                 else:
                     errores.append(f"{svc}: {result[:80]}")
-            except Exception as e:
-                errores.append(f"{svc}: {e}")
             except Exception as e:
                 errores.append(f"{svc}: {e}")
 
