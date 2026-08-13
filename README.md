@@ -13,7 +13,7 @@ Framework completo para administrar un servidor Linux/NAS con Docker. Convierte 
 | **Shell** (`shell/`) | Aliases, prompt, navegacion, dashboard | Bash |
 | **CLI Bash** (`docker/cli/`) | Administracion de servicios Docker (`svc`) | Bash |
 | **CLI Python** (`svc_py/`) | CLI alternativa con Rich + InquirerPy (`svc`) | Python |
-| **Agente** (`agent/`) | Administracion con lenguaje natural + memoria + plugins | Python |
+| **Agente** (`agent/`) | Administracion con lenguaje natural + 28 tools + memoria + plugins | Python |
 | **Daemon** (`agent/daemon.py`) | Scheduler + plugins corriendo 24/7 (systemd) | Python |
 
 ## Instalacion
@@ -32,6 +32,7 @@ source ~/.bashrc
 # Shell
 adm                              # cd /home/aadm
 dk emqx                          # cd /docker/emqx
+nasfk                            # cd /nas-dotfiles (código del framework)
 nas                              # dashboard del NAS
 instal htop                      # instalar paquete APT
 pipins rich typer                # instalar paquete pip
@@ -42,7 +43,7 @@ svc up emqx                      # levantar servicio
 svc logs emqx                    # ver logs
 svc health                       # dashboard de salud
 svc update emqx                  # pull + recrear
-svc recreate emqx                # recrear sin pull
+svc recreate emqx                # recrear sin pull (force-recreate)
 svc backup emqx                  # backup de volumenes
 svc doctor                       # chequeo de 6 puntos
 svc menu                         # TUI interactivo (fzf)
@@ -57,6 +58,7 @@ NAS_CLI=python svc update-all    # multi-select con checkboxes
 agent "que servicios estan caidos"
 agent "diagnostica homeassistant"
 agent "instalar vaultwarden"
+agent "recuerda que emqx necesita 512MB"    # memoria persistente
 agent chat                           # modo conversacional (REPL)
 agent --model                        # cambiar modelo
 agent --status                       # info de sesion
@@ -66,17 +68,20 @@ agent --status                       # info de sesion
 
 ```
 nas-dotfiles/
-├── shell/              Personaliza Bash (aliases, prompt, navegacion, pipins)
+├── shell/              Personaliza Bash (aliases, prompt, navegacion, pipins, nasfk)
 ├── docker/cli/         CLI Bash de Docker (comando svc)
 ├── svc_py/             CLI Python de Docker (Rich + InquirerPy + Typer)
 ├── agent/              Agente IA (28 tools, memoria, plugins, MQTT, scheduler)
 │   ├── core/           Managers + MemoryManager
-│   ├── tools/          Tools (@tool) incluyendo memoria
-│   ├── plugins/        Plugins (docker, backup, network, memory)
+│   ├── tools/          Tools (@tool) incluyendo memoria (Learning Loop)
+│   ├── plugins/        Plugins (docker, backup, network, memory, ha_discovery)
 │   ├── memory/         Datos persistentes (MEMORY.md, USER.md, SKILLS.md)
+│   ├── catalog/        Catálogo de servicios (fichas + compose + .env.example)
 │   └── daemon.py       Entry point del daemon (systemd)
+├── docker-nas/         Skill de Kiro Web (SKILL.md + references/)
 ├── systemd/            Unit file para nas-agent.service
 ├── tests/              Tests (pytest, 75+ tests)
+├── docs/               Documentación extendida (cheatsheet, guías, troubleshooting)
 ├── logs/               Historial de paquetes (APT + pip)
 └── ui/                 Instalador TUI
 ```
@@ -104,6 +109,9 @@ nas-dotfiles/
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Como agregar comandos, tools y plugins |
 | [agent/README.md](agent/README.md) | Documentacion tecnica del agente |
 | [TODO.md](TODO.md) | Roadmap y features completadas |
+| [docs/cheatsheet.md](docs/cheatsheet.md) | Cheatsheet de operaciones manuales |
+| [docs/troubleshooting.md](docs/troubleshooting.md) | Diagnósticos resueltos y soluciones |
+| [docs/github-cli.md](docs/github-cli.md) | Instalación y autenticación de gh |
 
 ## Licencia
 

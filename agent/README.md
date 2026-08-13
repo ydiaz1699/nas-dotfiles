@@ -85,11 +85,12 @@ agent/
 │   └── defaults.yml            ← Configuración centralizada (plugins, MQTT, cache, etc.)
 ├── core/                       ← Lógica de negocio (managers)
 │   ├── _result.py              ← ToolResult dataclass
+│   ├── memory.py               ← MemoryManager (Learning Loop)
 │   ├── service_manager.py      ← start/stop/restart/update/logs
 │   ├── compose_manager.py      ← create/validate/read
 │   └── backup_manager.py       ← backup/restore/list
 ├── tools/                      ← Thin wrappers (@tool → core managers)
-│   ├── __init__.py             ← Exporta ALL_TOOLS (23 herramientas)
+│   ├── __init__.py             ← Exporta ALL_TOOLS (28 herramientas)
 │   ├── _shell.py               ← safe_run, validate, readonly, dryrun
 │   ├── _audit.py               ← Audit log JSON Lines
 │   ├── _result.py              ← ToolResult helpers
@@ -99,13 +100,16 @@ agent/
 │   ├── compose_tools.py        ← create_service, validate_compose, read_compose
 │   ├── backup_tools.py         ← backup_service, restore_service, list_backups
 │   ├── search_tools.py         ← search_service_info (web fallback)
-│   └── diagnostic_tools.py     ← service_health, port_conflicts, troubleshoot
+│   ├── diagnostic_tools.py     ← service_health, port_conflicts, troubleshoot
+│   └── memory_tools.py         ← remember, recall, learn_skill, update_user_model, memory_stats
 ├── plugins/                    ← Sistema de plugins dinámicos
 │   ├── base.py                 ← BasePlugin + PluginMeta + ScheduleConfig + EventHandler
 │   ├── loader.py               ← Auto-discovery + load/unload
 │   ├── docker_plugin.py        ← Health check cada 5 min
 │   ├── backup_plugin.py        ← Backup diario automático
-│   └── network_plugin.py       ← Escaneo puertos cada 15 min
+│   ├── network_plugin.py       ← Escaneo puertos cada 15 min
+│   ├── memory_plugin.py        ← Learning Loop (curación + consolidación)
+│   └── ha_discovery_plugin.py  ← HA MQTT Discovery (auto-discovery en Home Assistant)
 ├── events/                     ← Event bus pub/sub
 │   ├── bus.py                  ← EventBus (exact/wildcard/global, thread-safe)
 │   └── mqtt_listener.py        ← MQTT → EventBus pipeline
@@ -113,19 +117,25 @@ agent/
 │   └── runner.py               ← Threaded task runner (cron-like)
 ├── cache/                      ← Cache KV con TTL
 │   └── store.py                ← Thread-safe + persistencia a disco
+├── memory/                     ← Datos persistentes de memoria
+│   ├── MEMORY.md               ← Hechos, lecciones, patrones
+│   ├── USER.md                 ← Perfil del usuario
+│   ├── SKILLS.md               ← Procedimientos reutilizables
+│   └── sessions/               ← Historial resumido
 └── catalog/                    ← Catálogo de servicios (portable)
     ├── _rules.md               ← Reglas de generación
     ├── _compose_base.md        ← Template base (anchors YAML)
     ├── _template.md            ← Template de fichas
     ├── _index.py               ← Generador de catalog.json
+    ├── .env.global.example     ← Variables globales compartidas
     ├── catalog.json            ← Índice auto-generado
     └── services/               ← Servicios exportados
-        └── emqx/
-            └── ficha.md        ← Metadata + docs
+        ├── datasql/            ← Stack PostgreSQL + pgAdmin + Redis
+        └── emqx/              ← Broker MQTT
 ```
 
 
-## Herramientas (23 tools)
+## Herramientas (28 tools)
 
 | Herramienta | Qué hace | Segura |
 |-------------|----------|--------|
@@ -155,6 +165,11 @@ agent/
 | `service_health()` | Dashboard de salud | ✅ |
 | `port_conflicts()` | Detectar conflictos | ✅ |
 | `troubleshoot(svc)` | Diagnóstico completo | ✅ |
+| `remember(fact)` | Guardar hecho en memoria persistente | ✅ |
+| `recall(query)` | Buscar en memoria persistente | ✅ |
+| `learn_skill(name, steps)` | Guardar procedimiento reutilizable | ✅ |
+| `update_user_model(info)` | Actualizar perfil del usuario | ✅ |
+| `memory_stats()` | Estadísticas de memoria | ✅ |
 
 ⚠️ = Requiere `confirm="si"` para ejecutarse
 
@@ -290,6 +305,8 @@ Plugins incluidos:
 | `docker_plugin` | Health check cada 5 min |
 | `backup_plugin` | Backup diario automático |
 | `network_plugin` | Escaneo de puertos cada 15 min |
+| `memory_plugin` | Learning Loop (curación + consolidación 24h) |
+| `ha_discovery_plugin` | HA MQTT Discovery (auto-discovery en Home Assistant) |
 
 
 ## Event Bus + MQTT

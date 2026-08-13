@@ -1,7 +1,7 @@
 # TODO — nas-dotfiles
 
 Roadmap de features pendientes, priorizadas por impacto/esfuerzo.
-Actualizado: 2026-08-05
+Actualizado: 2026-08-13
 
 ---
 
@@ -77,6 +77,17 @@ Actualizado: 2026-08-05
 
 | Feature | Fecha | Commit/PR |
 |---------|-------|-----------|
+| Actualización completa de documentación (README, GUIDE, cheatsheet, agent, troubleshooting) | 2026-08-13 | docs: full update |
+| `nasfk` — navegación rápida a /nas-dotfiles (código del framework) | 2026-08-07 | PR #21 |
+| Mejora auto_catalog() — extracción completa de datos multi-servicio | 2026-08-07 | PR #26 |
+| Fix: auto_catalog() bugs (NameError re, variables inexistentes en return) | 2026-08-07 | PR #25 |
+| Fix: auto_catalog() ahora lee TODOS los servicios del compose | 2026-08-06 | PR #22 |
+| Fix: auto_catalog() NameError en stacks multi-servicio | 2026-08-06 | PR #24 |
+| .env global + networking.md + skill actualizada | 2026-08-06 | PR #23 |
+| Skill docker-nas unificada (fusión docker-nas + dotfile-skill) | 2026-08-04 | PR #18 |
+| Cheatsheet completo de operaciones manuales del NAS | 2026-08-03 | PR #17 |
+| Guía DataSQL (10 fases) | 2026-08-08 | docs |
+| Meta-prompt con análisis por partes + regla de orden | 2026-08-08 | docs |
 | Sistema de memoria (Learning Loop) — remember/recall/learn_skill | 2026-08-05 | PR #8 |
 | Daemon systemd (agent/daemon.py + nas-agent.service) | 2026-08-05 | PR #8 |
 | Suite de tests (75 tests: memory, classify, validation, daemon, tool_result) | 2026-08-05 | PR #8 |
