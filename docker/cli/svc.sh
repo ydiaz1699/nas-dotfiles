@@ -61,48 +61,55 @@ if [[ -z "$COMPOSE_FILE" ]]; then
   exit 1
 fi
 
-# ── Env global: si existe $DOCKER_BASE/.env, pasarlo para interpolación ────
-GLOBAL_ENV_ARGS=()
+# ── Env files para interpolación del compose.yml ──────────────────────────
+# Docker Compose necesita --env-file para interpolar ${VAR} en labels, ports, etc.
+# El .env local del servicio (env_file: .env) solo inyecta DENTRO del contenedor.
+# Orden: global primero, local después (local sobreescribe si hay conflicto).
+ENV_ARGS=()
 if [[ -f "$BASE/.env" ]]; then
-  GLOBAL_ENV_ARGS=(--env-file "$BASE/.env")
+  ENV_ARGS+=(--env-file "$BASE/.env")
+fi
+SVC_DIR=$(dirname "$COMPOSE_FILE")
+if [[ -f "$SVC_DIR/.env" ]]; then
+  ENV_ARGS+=(--env-file "$SVC_DIR/.env")
 fi
 
 case "$cmd" in
   up)
     echo -e "\033[0;32m  Levantando $servicio...\033[0m"
-    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" up -d "$@"
+    docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" up -d "$@"
     ;;
   down)
     echo -e "\033[0;31m  Bajando $servicio...\033[0m"
-    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" down "$@"
+    docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" down "$@"
     ;;
   restart)
     echo -e "\033[1;33m  Reiniciando $servicio...\033[0m"
-    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" restart "$@"
+    docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" restart "$@"
     ;;
   stop)
     echo -e "\033[1;33m  Deteniendo $servicio...\033[0m"
-    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" stop "$@"
+    docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" stop "$@"
     ;;
   start)
     echo -e "\033[0;32m  Iniciando $servicio...\033[0m"
-    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" start "$@"
+    docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" start "$@"
     ;;
   kill)
     echo -e "\033[0;31m  Forzando parada de $servicio...\033[0m"
-    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" kill "$@"
+    docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" kill "$@"
     ;;
   update)
     echo -e "\033[0;36m  Actualizando $servicio...\033[0m"
-    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" pull
-    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" up -d --remove-orphans
+    docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" pull
+    docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" up -d --remove-orphans
     echo -e "\033[0;32m  $servicio actualizado\033[0m"
     ;;
   logs)
     if [[ $# -eq 0 ]]; then
-      docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" logs -f --tail=200
+      docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" logs -f --tail=200
     else
-      docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" logs "$@"
+      docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" logs "$@"
     fi
     ;;
   backup)
@@ -122,6 +129,6 @@ case "$cmd" in
     ;;
   *)
     # Passthrough a docker compose
-    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" "$cmd" "$@"
+    docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" "$cmd" "$@"
     ;;
 esac
