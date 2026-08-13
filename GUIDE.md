@@ -61,10 +61,11 @@ nas-dotfiles/
             install_docker.sh   Instalar Docker Engine en Debian
         lib/
             aliases.sh          Aliases del sistema
-            nav.sh              Navegacion rapida
+            nav.sh              Navegacion rapida (adm, dk, nasfk)
             docker.sh           Autocompletado de svc
             system.sh           Dashboard, disk, netinfo, logs
             instal.sh           Wrapper inteligente de apt
+            pipins.sh           Wrapper inteligente de pip
             prompt.sh           Prompt con docker + disco + git
             git.sh              Aliases de git
             completions.sh      Completions adicionales
@@ -83,15 +84,19 @@ nas-dotfiles/
         config/
             defaults.yml        Configuracion centralizada
         core/                   Logica de negocio
-        tools/                  23 herramientas @tool
+        tools/                  28 herramientas @tool
         plugins/                Sistema de plugins dinamicos
         events/                 Event bus + MQTT listener
         scheduler/              Tareas periodicas
         cache/                  Cache KV con TTL
+        memory/                 Datos persistentes (MEMORY.md, USER.md, SKILLS.md)
         catalog/                Catalogo de servicios
+    svc_py/                     Python CLI (alternativa a svc.sh)
+    docker-nas/                 Skill de Kiro Web (SKILL.md + references/)
     tests/
     logs/
-        packages.txt            Historial de paquetes instalados
+        packages.txt            Historial de paquetes APT instalados
+        pip_packages.txt        Historial de paquetes pip instalados
     ui/
         setup.py                Instalador TUI (Rich + InquirerPy)
 ```
@@ -197,6 +202,14 @@ Lleva a `/docker/emqx`.
 ---
 
 ```
+nasfk
+```
+
+Lleva a `/nas-dotfiles` (codigo del framework).
+
+---
+
+```
 up 3
 ```
 
@@ -217,6 +230,14 @@ admf
 ```
 
 Igual pero en `/home/aadm`.
+
+---
+
+```
+nasfkf
+```
+
+Igual pero en `/nas-dotfiles`.
 
 ---
 
@@ -284,6 +305,35 @@ Resultado:
 ```
 
 El log viaja con el framework para saber que herramientas hay disponibles en el NAS.
+
+---
+
+# 5b. Funcion pipins()
+
+Equivalente a `instal` pero para paquetes Python (pip):
+
+```
+pipins rich typer pyyaml
+```
+
+La funcion:
+- Comprueba si ya esta instalado (via pip show)
+- Instala unicamente los faltantes
+- Maneja `PEP 668` (externally-managed-environment) con `--break-system-packages`
+- Guarda un historial en `logs/pip_packages.txt`
+
+Resultado:
+
+```
+✔ Ya instalado: rich (13.7.1)
+✔ Instalados:   typer pyyaml
+```
+
+Opciones:
+```
+pipins -u rich     # upgrade (--upgrade)
+pipins paquete     # instalar
+```
 
 ---
 
@@ -407,6 +457,7 @@ svc stop nextcloud       Detener
 svc start nextcloud      Iniciar detenido
 svc kill nextcloud       Forzar parada
 svc update nextcloud     Pull + recrear (actualizar imagen)
+svc recreate nextcloud   Recrear sin pull (force-recreate)
 svc logs nextcloud       Ver logs (follow, tail 200)
 svc backup nextcloud     Exportar volumenes a tar.gz
 svc restore nextcloud    Restaurar desde backup
@@ -559,9 +610,9 @@ agent --model gemini-2.5-flash   # cambio directo
 | **Bedrock** | Claude Sonnet 4 | ~$3/1M tokens | AWS credentials |
 | **Ollama** | llama3.1 | Gratis | Ollama local |
 
-## 23 herramientas
+## 28 herramientas
 
-El agente tiene acceso a 23 tools que ejecuta autonomamente:
+El agente tiene acceso a 28 tools que ejecuta autonomamente:
 
 **Descubrimiento:** list_services, scan_compose, auto_catalog, bulk_discover, export_service
 
@@ -576,6 +627,8 @@ El agente tiene acceso a 23 tools que ejecuta autonomamente:
 **Diagnostico:** service_health, port_conflicts, troubleshoot
 
 **Busqueda:** search_service_info (web fallback)
+
+**Memoria (Learning Loop):** remember, recall, learn_skill, update_user_model, memory_stats
 
 ## Sesion persistente
 
@@ -742,8 +795,10 @@ pip install -r requirements.txt
 # Shell
 adm              cd /home/aadm
 dk emqx          cd /docker/emqx
+nasfk            cd /nas-dotfiles (código del framework)
 nas              dashboard del NAS
 instal htop      instalar paquete (loguea automaticamente)
+pipins rich      instalar paquete pip (loguea automaticamente)
 off              apagar NAS (detiene servicios primero)
 restart          reiniciar NAS
 
@@ -753,6 +808,7 @@ svc up emqx      levantar servicio
 svc logs emqx    ver logs
 svc health       dashboard de salud
 svc update emqx  actualizar imagen
+svc recreate emqx recrear sin pull (force-recreate)
 svc backup emqx  backup de volumenes
 svc doctor       chequeo de 6 puntos
 svc menu         TUI interactivo
@@ -761,6 +817,7 @@ svc menu         TUI interactivo
 agent "que servicios estan caidos"
 agent "diagnostica homeassistant"
 agent "instalar vaultwarden"
+agent "recuerda que emqx necesita 512MB"
 agent "exportar emqx al catalogo"
 agent --status
 ```

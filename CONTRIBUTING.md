@@ -56,6 +56,7 @@ Agregar entrada en `_svc_ayuda()` dentro de `docker/cli/lib/help.sh`.
 - Usar `while read ... done < <(comando)` en vez de `comando | while read` si necesitás que contadores/variables sobrevivan al loop (bash crea subshell en pipes).
 - `DOCKER_BASE` es la carpeta de datos (`/docker`), no del código.
 - `CLI_DIR` se auto-detecta via `BASH_SOURCE` en `svc.sh`.
+- El nombre preferido para el archivo compose es `compose.yml` (no `docker-compose.yml`). La función `svc_compose_file` en `discovery.sh` busca ambos por compatibilidad.
 
 ---
 
@@ -105,7 +106,8 @@ ALL_TOOLS = [
 ]
 ```
 
-> **Nota:** Las tools se pasan directamente al agente sin wrapper.
+> **Nota:** `ALL_TOOLS` contiene las 28 herramientas del agente.
+> Las tools se pasan directamente al agente sin wrapper.
 > La auditoría se integra vía plugin/hooks, no por decorador,
 > porque wrappear funciones `@tool` rompe su registro en Strands SDK.
 
@@ -390,7 +392,8 @@ nas-dotfiles/
 │   │   ├── docker_plugin.py
 │   │   ├── backup_plugin.py
 │   │   ├── network_plugin.py
-│   │   └── memory_plugin.py  # Learning Loop (capas B + C)
+│   │   ├── memory_plugin.py  # Learning Loop (capas B + C)
+│   │   └── ha_discovery_plugin.py  # HA MQTT Discovery
 │   ├── memory/               # Datos persistentes de memoria
 │   │   ├── MEMORY.md         # Hechos, lecciones, patrones
 │   │   ├── USER.md           # Perfil del usuario

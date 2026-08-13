@@ -15,6 +15,10 @@ adm                   # ir a /home/aadm
 adm scripts           # ir a /home/aadm/scripts
 adm scripts ll        # ir + listar
 admf                  # fuzzy finder en /home/aadm (fzf)
+nasfk                 # ir a /nas-dotfiles (código del framework)
+nasfk agent           # ir a /nas-dotfiles/agent
+nasfk shell ll        # ir a /nas-dotfiles/shell + listar
+nasfkf                # fuzzy finder en /nas-dotfiles (fzf)
 up                    # subir 1 nivel
 up 3                  # subir 3 niveles
 ..                    # cd ..
@@ -116,6 +120,7 @@ svc unpause servicio         # reanudar pausado
 
 # Actualizar
 svc update emqx              # pull + recrear
+svc recreate emqx            # recrear sin pull (force-recreate)
 svc update-all               # actualizar todos (con confirmación)
 svc update-all -y            # actualizar todos sin preguntar
 
@@ -336,6 +341,7 @@ svc up <TAB>          # servicios en /docker/
 svc logs <TAB>        # servicios en /docker/
 dk <TAB>              # carpetas en /docker/
 adm <TAB>             # carpetas en /home/aadm/
+nasfk <TAB>           # carpetas en /nas-dotfiles/
 instal <TAB>          # paquetes apt (después de 2+ chars)
 logs <TAB>            # syslog, auth, kern, archivos en /var/log
 ```
@@ -368,6 +374,7 @@ complete -F _sc_completions sc
 |------------|-----|-------|
 | Ir a /docker/X | `dk X` | `cd /docker/X` |
 | Ir a /home/aadm/X | `adm X` | `cd /home/aadm/X` |
+| Ir a /nas-dotfiles/X | `nasfk X` | `cd /nas-dotfiles/X` |
 | Operar Docker | `svc <acción> <svc>` | `docker compose ...` |
 | Instalar apt | `instal pkg` | `apt install pkg` |
 | Instalar pip | `pipins pkg` | `pip install pkg` |
