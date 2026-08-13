@@ -5,6 +5,7 @@ Detecta servicios en /docker/, lee sus compose files y puede
 generar fichas de catálogo automáticamente.
 """
 
+import re
 import yaml
 from pathlib import Path
 from strands.tools import tool
@@ -207,16 +208,24 @@ def auto_catalog(service_name: str) -> str:
     if not services:
         return "ERROR: No se encontraron servicios en el compose"
 
-    # Detectar si es stack multi-servicio
+    # ── Extraer ${VAR} de TODO el YAML (no solo environment) ───────────────
+    # Esto detecta variables en command, healthcheck, labels, ports, etc.
+    var_pattern = re.compile(r'\$\{([A-Za-z_][A-Za-z0-9_]*)')
+    all_external_vars = set()
+    raw_yaml_str = content  # el YAML original como string
+    for match in var_pattern.finditer(raw_yaml_str):
+        all_external_vars.add(match.group(1))
+
+    # ── Detectar si es stack multi-servicio ────────────────────────────────
     is_stack = len(services) > 1
 
-    # Extraer datos de TODOS los servicios
+    # ── Extraer datos de TODOS los servicios ───────────────────────────────
     all_services_info = []
     main_image = ""
     all_ports = []
     all_volumes = []
-    all_env_list = []
     all_networks = set()
+    networks_external = set()
     main_healthcheck = {}
 
     for idx, (svc_name, svc_config) in enumerate(services.items()):
@@ -225,7 +234,11 @@ def auto_catalog(service_name: str) -> str:
         svc_volumes = svc_config.get("volumes", [])
         svc_networks = svc_config.get("networks", [])
         svc_healthcheck = svc_config.get("healthcheck", {})
-        svc_env = svc_config.get("environment", [])
+        svc_depends = svc_config.get("depends_on", [])
+        svc_deploy = svc_config.get("deploy", {})
+        svc_security = svc_config.get("security_opt", [])
+        svc_cap_drop = svc_config.get("cap_drop", [])
+        svc_cap_add = svc_config.get("cap_add", [])
 
         # Primer servicio = principal
         if idx == 0:
@@ -243,6 +256,16 @@ def auto_catalog(service_name: str) -> str:
                     port_external = parts[-2].split(".")[-1] if "." in parts[-2] else parts[-2]
                     port_internal = parts[-1].split("/")[0] if "/" in parts[-1] else parts[-1]
 
+        # Healthcheck de este servicio
+        hc_str = ""
+        if isinstance(svc_healthcheck.get("test"), list) and len(svc_healthcheck["test"]) > 1:
+            hc_str = " ".join(svc_healthcheck["test"][1:])
+
+        # Resource limits
+        resources = svc_deploy.get("resources", {})
+        limits = resources.get("limits", {})
+        reservations = resources.get("reservations", {})
+
         # Info del servicio para el frontmatter
         svc_info = {
             "name": svc_name,
@@ -252,6 +275,27 @@ def auto_catalog(service_name: str) -> str:
             svc_info["port_internal"] = int(port_internal) if port_internal.isdigit() else port_internal
         if port_external:
             svc_info["port_external"] = int(port_external) if port_external.isdigit() else port_external
+        if not svc_ports:
+            svc_info["exposure"] = "internal"
+        if hc_str:
+            svc_info["healthcheck"] = hc_str
+        if svc_depends:
+            if isinstance(svc_depends, list):
+                svc_info["depends_on"] = svc_depends
+            elif isinstance(svc_depends, dict):
+                svc_info["depends_on"] = list(svc_depends.keys())
+        if limits:
+            svc_info["resource_limits"] = {}
+            if limits.get("cpus"):
+                svc_info["resource_limits"]["cpus"] = limits["cpus"]
+            if limits.get("memory"):
+                svc_info["resource_limits"]["memory"] = limits["memory"]
+        if svc_security:
+            svc_info["security_opt"] = svc_security
+        if svc_cap_drop:
+            svc_info["cap_drop"] = svc_cap_drop
+        if svc_cap_add:
+            svc_info["cap_add"] = svc_cap_add
 
         all_services_info.append(svc_info)
 
@@ -263,13 +307,13 @@ def auto_catalog(service_name: str) -> str:
         elif isinstance(svc_networks, dict):
             all_networks.update(svc_networks.keys())
 
-        # Variables de entorno
-        if isinstance(svc_env, list):
-            all_env_list.extend([e.split("=")[0] for e in svc_env])
-        elif isinstance(svc_env, dict):
-            all_env_list.extend(svc_env.keys())
+    # Detectar redes externas
+    top_networks = data.get("networks", {})
+    for net_name, net_config in top_networks.items():
+        if isinstance(net_config, dict) and net_config.get("external"):
+            networks_external.add(net_name)
 
-    # Parsear primer puerto para campos legacy (port_internal/port_default)
+    # Parsear primer puerto para campos legacy
     first_port_internal = ""
     first_port_external = ""
     if all_ports:
@@ -315,18 +359,12 @@ def auto_catalog(service_name: str) -> str:
     aliases.add(service_name)
     for svc_info in all_services_info:
         aliases.add(svc_info["name"])
-        # Extraer nombre base de la imagen (sin registry/tag)
         img_name = svc_info["image"].split("/")[-1].split(":")[0]
         aliases.add(img_name)
-    aliases.discard(service_name)  # no repetir el id
+    aliases.discard(service_name)
     aliases_list = sorted(aliases)
 
-    # Healthcheck del principal
-    hc_test = ""
-    if isinstance(main_healthcheck.get("test"), list) and len(main_healthcheck["test"]) > 1:
-        hc_test = " ".join(main_healthcheck["test"][1:])
-
-    # Generar bloque services para el frontmatter
+    # ── Generar bloque services para el frontmatter ────────────────────────
     services_yaml = ""
     if is_stack:
         services_yaml = "services:\n"
@@ -337,8 +375,25 @@ def auto_catalog(service_name: str) -> str:
                 services_yaml += f'    port_internal: {svc_info["port_internal"]}\n'
             if "port_external" in svc_info:
                 services_yaml += f'    port_external: {svc_info["port_external"]}\n'
-    else:
-        services_yaml = ""
+            if svc_info.get("exposure") == "internal":
+                services_yaml += f'    exposure: internal\n'
+            if "healthcheck" in svc_info:
+                services_yaml += f'    healthcheck: "{svc_info["healthcheck"]}"\n'
+            if "depends_on" in svc_info:
+                deps = ", ".join(svc_info["depends_on"])
+                services_yaml += f'    depends_on: [{deps}]\n'
+            if "resource_limits" in svc_info:
+                rl = svc_info["resource_limits"]
+                if rl.get("cpus"):
+                    services_yaml += f'    cpus: "{rl["cpus"]}"\n'
+                if rl.get("memory"):
+                    services_yaml += f'    memory: "{rl["memory"]}"\n'
+            if "security_opt" in svc_info:
+                services_yaml += f'    security_opt: {svc_info["security_opt"]}\n'
+            if "cap_drop" in svc_info:
+                services_yaml += f'    cap_drop: {svc_info["cap_drop"]}\n'
+            if "cap_add" in svc_info:
+                services_yaml += f'    cap_add: {svc_info["cap_add"]}\n'
 
     # Nombre legible
     display_name = service_name.replace('-', ' ').replace('_', ' ').title()
@@ -352,10 +407,31 @@ def auto_catalog(service_name: str) -> str:
     else:
         description = "Servicio auto-catalogado desde compose existente"
 
-    # Redes
+    # Redes (con indicación de external)
     networks_yaml = ""
     if all_networks:
-        networks_yaml = "networks:\n" + "".join(f"  - {n}\n" for n in sorted(all_networks))
+        networks_yaml = "networks:\n"
+        for n in sorted(all_networks):
+            if n in networks_external:
+                networks_yaml += f"  - name: {n}\n    external: true\n"
+            else:
+                networks_yaml += f"  - {n}\n"
+
+    # ── Construir ficha (variables pre-calculadas) ─────────────────────────
+    newline = "\n"
+    vol_lines = newline.join(vol_list) if vol_list else '  - "./data:/data"'
+    env_sorted = sorted(all_external_vars)
+    env_lines = newline.join(f'  - {e}' for e in env_sorted) if env_sorted else '  # (ninguna detectada)'
+    svc_names_str = ", ".join(s["name"] for s in all_services_info)
+    nets_str = ", ".join(sorted(all_networks)) if all_networks else "ninguna"
+    num_services = len(all_services_info)
+    num_volumes = len(all_volumes)
+    num_env = len(env_sorted)
+
+    # Healthcheck del principal
+    hc_test = ""
+    if isinstance(main_healthcheck.get("test"), list) and len(main_healthcheck["test"]) > 1:
+        hc_test = " ".join(main_healthcheck["test"][1:])
 
     # Construir partes de la ficha (pre-calcular para evitar NameError en f-strings)
     newline = "\n"
@@ -376,7 +452,6 @@ image: "{main_image}"
 category: "{category}"
 port_internal: {first_port_internal or "0"}
 port_default: {first_port_external or "0"}
-protocol: "http"
 needs_proxy: {str(needs_proxy).lower()}
 needs_db: false
 {services_yaml}volumes:
