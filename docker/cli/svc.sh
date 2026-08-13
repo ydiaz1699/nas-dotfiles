@@ -61,42 +61,48 @@ if [[ -z "$COMPOSE_FILE" ]]; then
   exit 1
 fi
 
+# ── Env global: si existe $DOCKER_BASE/.env, pasarlo para interpolación ────
+GLOBAL_ENV_ARGS=()
+if [[ -f "$BASE/.env" ]]; then
+  GLOBAL_ENV_ARGS=(--env-file "$BASE/.env")
+fi
+
 case "$cmd" in
   up)
     echo -e "\033[0;32m  Levantando $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" up -d "$@"
+    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" up -d "$@"
     ;;
   down)
     echo -e "\033[0;31m  Bajando $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" down "$@"
+    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" down "$@"
     ;;
   restart)
     echo -e "\033[1;33m  Reiniciando $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" restart "$@"
+    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" restart "$@"
     ;;
   stop)
     echo -e "\033[1;33m  Deteniendo $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" stop "$@"
+    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" stop "$@"
     ;;
   start)
     echo -e "\033[0;32m  Iniciando $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" start "$@"
+    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" start "$@"
     ;;
   kill)
     echo -e "\033[0;31m  Forzando parada de $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" kill "$@"
+    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" kill "$@"
     ;;
   update)
     echo -e "\033[0;36m  Actualizando $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" pull
-    docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
+    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" pull
+    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" up -d --remove-orphans
     echo -e "\033[0;32m  $servicio actualizado\033[0m"
     ;;
   logs)
     if [[ $# -eq 0 ]]; then
-      docker compose -f "$COMPOSE_FILE" logs -f --tail=200
+      docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" logs -f --tail=200
     else
-      docker compose -f "$COMPOSE_FILE" logs "$@"
+      docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" logs "$@"
     fi
     ;;
   backup)
@@ -116,6 +122,6 @@ case "$cmd" in
     ;;
   *)
     # Passthrough a docker compose
-    docker compose -f "$COMPOSE_FILE" "$cmd" "$@"
+    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" "$cmd" "$@"
     ;;
 esac
