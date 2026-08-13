@@ -12,46 +12,42 @@ Anti-doble-carga: `$_SHELL_INIT_LOADED`. Reload: `reload` (alias).
 ```bash
 up [n]                # sube n niveles (default 1)
 
-# adm → home del usuario (NAV_HOME, default /home/aadm)
-adm                   # cd al home configurado
-adm <dir>             # cd al home/<dir>
+# adm → /home/aadm (configurado en .config/user.conf)
+adm                   # cd $aadm
+adm <dir>             # cd $aadm/<dir>
 adm <dir> <cmd>       # ejecuta cmd en contexto
 adm .. [n]            # sube n niveles
 admf                  # fuzzy finder (fzf)
 
-# dk → carpeta de datos Docker (DOCKER_BASE, default /docker)
-dk                    # cd a la carpeta Docker
-dk <dir>              # cd a Docker/<dir>
+# dk → /docker
+dk                    # cd $dkco
+dk <dir>              # cd $dkco/<dir>
 dk <dir> <cmd>        # ejecuta cmd en contexto
 dk .. [n]             # sube n niveles
 dkf                   # fuzzy finder (fzf)
 
-# nasfk → carpeta del framework (NAS_DOTFILES, default /nas-dotfiles)
-nasfk                 # cd al código del framework
-nasfk agent           # cd al código/agent
-nasfk shell ll        # cd al código/shell + listar
+# nasfk → /nas-dotfiles (código del framework)
+nasfk                 # cd $NAS_DOTFILES
+nasfk agent           # cd $NAS_DOTFILES/agent
+nasfk shell ll        # cd $NAS_DOTFILES/shell + listar
 nasfkf                # fuzzy finder (fzf)
 ```
 
 ### Variables vs Comandos
 
-| Variable | Para qué | Nota |
-|----------|----------|------|
-| `$dkco` | Referir rutas de servicios (`$dkco/emqx/compose.yml`) | Siempre `/docker` |
-| `$NAS_DOTFILES` | Referir rutas del código (`$NAS_DOTFILES/shell/init.sh`) | Siempre disponible |
-| `$<NAV_VAR>` | Referir rutas del home (ej: `$aadm/scripts/x.sh`) | Solo si configuraste `user.conf` |
+| Variable | Valor | Para qué |
+|----------|-------|----------|
+| `$dkco` | `/docker` | Referir rutas de servicios (`$dkco/emqx/compose.yml`) |
+| `$NAS_DOTFILES` | `/nas-dotfiles` | Referir rutas del código (`$NAS_DOTFILES/shell/init.sh`) |
+| `$aadm` | `/home/aadm` | Referir rutas del home (`$aadm/scripts/x.sh`) |
 
-| Comando | Para qué | Funciona siempre |
-|---------|----------|:----------------:|
-| `dk emqx` | **Navegar** a un servicio | ✅ |
-| `nasfk agent` | **Navegar** al código | ✅ |
-| `adm scripts` | **Navegar** al home del usuario | ✅ |
+| Comando | Equivale a | Para qué |
+|---------|-----------|----------|
+| `dk emqx` | `cd $dkco/emqx` | **Navegar** a un servicio |
+| `nasfk agent` | `cd $NAS_DOTFILES/agent` | **Navegar** al código |
+| `adm scripts` | `cd $aadm/scripts` | **Navegar** al home |
 
 **Regla:** Para navegar usa el comando. Para referir una ruta usa la variable.
-
-> **Importante:** `$aadm` solo existe si configuraste `NAV_VAR=aadm` en `.config/user.conf`.
-> Sin user.conf, el default es `NAV_VAR=adm` → la variable se llama `$adm` y vale `$HOME`.
-> El comando `adm` funciona siempre (usa el valor configurado internamente).
 
 ## Alias — listado (usa eza)
 

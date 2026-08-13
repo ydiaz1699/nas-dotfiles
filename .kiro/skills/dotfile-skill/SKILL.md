@@ -16,15 +16,14 @@ Framework de administración para NAS Debian con Docker.
 
 | Campo | Valor |
 |-------|-------|
-| `$NAS_DOTFILES` | Ruta al código (default `/nas-dotfiles`, configurable) |
-| `$dkco` / `$DOCKER_BASE` | Datos de servicios Docker (default `/docker`) |
-| Variable de home | Configurable vía `NAV_VAR` en `.config/user.conf` (ej: `$aadm`, `$nilo`) |
+| `$NAS_DOTFILES` | `/nas-dotfiles` (código del framework) |
+| `$dkco` / `$DOCKER_BASE` | `/docker` (datos de servicios) |
+| `$aadm` | `/home/aadm` (home del usuario, configurable en `user.conf`) |
 
 Código (`$NAS_DOTFILES`) y datos (`$dkco`) nunca se mezclan.
 
-> **Nota:** La variable de home (`$aadm`, `$nilo`, etc.) depende de lo configurado
-> en `.config/user.conf` durante la instalación. Si no hay config, el default
-> es `NAV_VAR=adm` → variable `$adm` = `$HOME`.
+> Los nombres `adm`/`$aadm` se configuran en `.config/user.conf` durante la instalación.
+> El comando `adm` navega a `/home/aadm` y `$aadm` refiere esa ruta en scripts.
 
 ---
 
@@ -36,10 +35,10 @@ Estas reglas son de libertad baja: no hay alternativa válida.
 NUNCA:                              SIEMPRE:
   /docker/...                   →   $dkco/...
   /nas-dotfiles/...             →   $NAS_DOTFILES/...
-  /home/<usuario>/...           →   $<NAV_VAR>/... (según user.conf)
+  /home/aadm/...                →   $aadm/...
   /path/to/...                  →   deducir del contexto o preguntar
   cd /docker/<svc>              →   dk <svc>
-  cd /home/<usuario>/<dir>      →   adm <dir>  (o el NAV_CMD configurado)
+  cd /home/aadm/<dir>           →   adm <dir>
   cd /nas-dotfiles/<dir>        →   nasfk <dir>
   docker compose <cmd>          →   svc <cmd> <svc>
   docker restart/logs/exec      →   svc restart/logs/exec <svc>
@@ -74,15 +73,14 @@ Para plantillas y estructura de carpetas, ver `references/svc.md`.
 ## Comandos esenciales
 
 ```bash
-# Navegación (comandos, no cd)
-dk <svc>             # navegar a DOCKER_BASE/<svc>
-adm <dir>            # navegar a NAV_HOME/<dir> (home del usuario)
-nasfk <dir>          # navegar a NAS_DOTFILES/<dir>
+# Navegación
+dk <svc>             # ir a $dkco/<svc>
+adm <dir>            # ir a $aadm/<dir>
+nasfk <dir>          # ir a $NAS_DOTFILES/<dir>
 up [n]               # subir n niveles
 
-# Variables (para referir rutas, no para navegar)
-# $dkco = /docker    $NAS_DOTFILES = /nas-dotfiles
-# La variable de home depende de NAV_VAR en user.conf
+# Variables para rutas
+# $dkco = /docker    $aadm = /home/aadm    $NAS_DOTFILES = /nas-dotfiles
 
 # Docker (siempre vía svc)
 svc lista            # servicios con estado
