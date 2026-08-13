@@ -133,19 +133,59 @@ Ahora te pego los fragmentos. EMPIEZA A PROCESAR SOLO CUANDO YO DIGA "FIN DE FRA
 
 ---
 
-## Variante: pedir solo el plan (sin código)
+## Variante: documentos largos (análisis por partes)
 
-Si primero quieres ver la estructura antes de generar código, cambia la
-regla 5 por:
+Si los fragmentos son muy largos (>30K chars total) y el LLM pierde
+información, usa esta variante en dos fases:
+
+### Fase 1 — Análisis individual
+
+Agrega esta instrucción ANTES de pegar fragmentos:
 
 ```
-5. FORMATO LIGERO (solo plan, sin código):
+MODO: ANÁLISIS POR PARTES
 
-   ## Paso N: [nombre]
-   - Archivo: [ruta]
-   - Acción: [crear | modificar | borrar]
-   - Resumen: [1 línea de qué cambia]
-   - Verificar: [comando]
+En vez de generar la guía final directamente:
+
+1. Analiza CADA fragmento por separado.
+2. Para cada uno, genera un RESUMEN ESTRUCTURADO con:
+   - Decisiones tomadas en este fragmento
+   - Comandos/configs concretos (textual, sin resumir)
+   - Orden de ejecución detectado
+   - Contradicciones con fragmentos anteriores
+3. Al final de todos los análisis, pregúntame: "¿Genero la guía final?"
+4. Solo entonces combina los análisis en la guía unificada.
+
+Esto evita que pierdas información por contexto largo.
+Cada análisis debe caber en una respuesta — si un fragmento es
+demasiado largo, divídelo tú en partes y analiza cada parte.
 ```
 
-Y cuando apruebes el plan, dile: "Ahora genera la versión completa con código."
+### Fase 2 — Generación final
+
+Cuando dices "sí, genera", el LLM usa sus propios análisis como
+fuente (no los fragmentos originales) y produce la guía con el
+formato estándar (pasos numerados, código completo, verificación).
+
+---
+
+## Regla de oro: orden de ejecución
+
+Las guías generadas DEBEN respetar el orden temporal real:
+
+```
+1. Crear carpetas          (mkdir -p)
+2. Crear archivos          (touch, nano, cat >)
+3. Aplicar permisos        (chmod, chown)
+4. Levantar/ejecutar       (svc up, systemctl start)
+5. Verificar               (svc ps, curl, test)
+```
+
+NUNCA:
+- chmod a una carpeta que no se creó todavía
+- Crear archivo dentro de un directorio inexistente
+- Aplicar permisos antes del mkdir
+- Levantar un servicio antes de crear su .env
+
+Si el LLM genera una guía que viola este orden, responde:
+"STOP. Reordena: primero mkdir, después el archivo, después chmod."
