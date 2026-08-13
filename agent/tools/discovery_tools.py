@@ -357,6 +357,16 @@ def auto_catalog(service_name: str) -> str:
     if all_networks:
         networks_yaml = "networks:\n" + "".join(f"  - {n}\n" for n in sorted(all_networks))
 
+    # Construir partes de la ficha (pre-calcular para evitar NameError en f-strings)
+    newline = "\n"
+    vol_lines = newline.join(vol_list) if vol_list else '  - "./data:/data"'
+    env_lines = newline.join(f'  - {e}' for e in all_env_list[:10]) if all_env_list else '  # (ninguna detectada)'
+    svc_names_str = ", ".join(s["name"] for s in all_services_info)
+    nets_str = ", ".join(sorted(all_networks)) if all_networks else "ninguna"
+    num_services = len(all_services_info)
+    num_volumes = len(all_volumes)
+    num_env = len(all_env_list)
+
     ficha = f"""---
 id: "{service_name}"
 name: "{display_name}"
@@ -370,9 +380,9 @@ protocol: "http"
 needs_proxy: {str(needs_proxy).lower()}
 needs_db: false
 {services_yaml}volumes:
-{chr(10).join(vol_list) if vol_list else '  - "./data:/data"'}
+{vol_lines}
 env_required:
-{chr(10).join(f'  - {e}' for e in all_env_list[:10]) if all_env_list else '  # (ninguna detectada)'}
+{env_lines}
 healthcheck: "{hc_test}"
 backup_critical: true
 backup_paths:
@@ -391,11 +401,11 @@ docs_url: ""
 ## Configuración detectada
 
 - Imagen principal: `{main_image}`
-- Contenedores: {len(services)} ({', '.join(s['name'] for s in all_services_info)})
+- Contenedores: {num_services} ({svc_names_str})
 - Puerto principal: {first_port_external}:{first_port_internal}
-- Volúmenes: {len(all_volumes)} mount(s)
-- Variables: {len(all_env_list)} definidas
-- Redes: {', '.join(sorted(all_networks)) if all_networks else 'ninguna'}
+- Volúmenes: {num_volumes} mount(s)
+- Variables: {num_env} definidas
+- Redes: {nets_str}
 
 ## Notas
 
@@ -410,12 +420,13 @@ docs_url: ""
     catalog_file.write_text(ficha, encoding="utf-8")
 
     return (
-        f"✅ Ficha creada: agent/catalog/services/{service_name}.md\n\n"
+        f"✅ Ficha creada: agent/catalog/services/{service_name}/ficha.md\n\n"
         f"Datos extraídos:\n"
-        f"  Imagen: {image}\n"
-        f"  Puerto: {port_external}:{port_internal}\n"
-        f"  Volúmenes: {len(volumes)}\n"
-        f"  Variables: {len(env_list)}\n"
+        f"  Imagen: {main_image}\n"
+        f"  Puerto: {first_port_external}:{first_port_internal}\n"
+        f"  Contenedores: {num_services} ({svc_names_str})\n"
+        f"  Volúmenes: {num_volumes}\n"
+        f"  Variables: {num_env}\n"
         f"  Categoría: {category}\n\n"
         f"⚠️  Revisa y completa la ficha manualmente (descripción, docs_url, notas)."
     )
@@ -474,8 +485,6 @@ def bulk_discover() -> str:
                     generadas.append(svc)
                 else:
                     errores.append(f"{svc}: {result[:80]}")
-            except Exception as e:
-                errores.append(f"{svc}: {e}")
             except Exception as e:
                 errores.append(f"{svc}: {e}")
 
