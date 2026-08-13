@@ -70,39 +70,39 @@ fi
 case "$cmd" in
   up)
     echo -e "\033[0;32m  Levantando $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" up -d "$@"
+    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" up -d "$@"
     ;;
   down)
     echo -e "\033[0;31m  Bajando $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" down "$@"
+    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" down "$@"
     ;;
   restart)
     echo -e "\033[1;33m  Reiniciando $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" restart "$@"
+    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" restart "$@"
     ;;
   stop)
     echo -e "\033[1;33m  Deteniendo $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" stop "$@"
+    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" stop "$@"
     ;;
   start)
     echo -e "\033[0;32m  Iniciando $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" start "$@"
+    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" start "$@"
     ;;
   kill)
     echo -e "\033[0;31m  Forzando parada de $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" kill "$@"
+    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" kill "$@"
     ;;
   update)
     echo -e "\033[0;36m  Actualizando $servicio...\033[0m"
-    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" pull
-    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" up -d --remove-orphans
+    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" pull
+    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" up -d --remove-orphans
     echo -e "\033[0;32m  $servicio actualizado\033[0m"
     ;;
   logs)
     if [[ $# -eq 0 ]]; then
-      docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" logs -f --tail=200
+      docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" logs -f --tail=200
     else
-      docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" logs "$@"
+      docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" logs "$@"
     fi
     ;;
   backup)
@@ -122,6 +122,6 @@ case "$cmd" in
     ;;
   *)
     # Passthrough a docker compose
-    docker compose -f "$COMPOSE_FILE" "${GLOBAL_ENV_ARGS[@]}" "$cmd" "$@"
+    docker compose "${GLOBAL_ENV_ARGS[@]}" -f "$COMPOSE_FILE" "$cmd" "$@"
     ;;
 esac
