@@ -23,7 +23,7 @@ backup_critical: true
 backup_paths:
   - "./data"
 protected: false
-docs_url: ""
+docs_url: "docs/services/datasql-guide.md"
 notes: "Ficha generada automáticamente — revisar y completar"
 ---
 
