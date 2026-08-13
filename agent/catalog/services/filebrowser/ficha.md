@@ -27,18 +27,19 @@
 
 ## Variables de entorno
 
-### Requeridas (.env)
+### Requeridas (.env local)
 
 | Variable | Descripción |
 |----------|-------------|
 | `FILEBROWSER_USER` | Usuario admin para widget de Homepage |
 | `FILEBROWSER_PASSWORD` | Contraseña admin para widget de Homepage |
 
-### Fijas (inline)
+### Globales (../.env → $dkco/.env)
 
-| Variable | Valor |
-|----------|-------|
-| `TZ` | America/La_Paz |
+| Variable | Descripción |
+|----------|-------------|
+| `SERVER_IP` | IP del NAS (para labels de Homepage) |
+| `TZ` | Timezone (America/La_Paz) |
 
 ## Redes
 
