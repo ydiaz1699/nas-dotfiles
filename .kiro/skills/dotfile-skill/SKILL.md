@@ -150,3 +150,24 @@ Para mecanismos completos y variables de entorno, ver `references/security.md`.
 
 Para agregar comandos svc, tools del agente, plugins, o módulos shell,
 ver `references/extend.md`.
+
+---
+
+## _drafts/ — bandeja de entrada
+
+Carpeta `$NAS_DOTFILES/_drafts/` es para subir fragmentos, ideas, notas,
+diagnósticos o cualquier documento que el agente debe procesar.
+
+```
+_drafts/
+├── filebrowser.md        ← fragmentos para guía de filebrowser
+├── datasql/              ← notas dispersas por tema
+├── idea-backup-remoto.md ← idea suelta
+└── ...
+```
+
+**Convención:**
+- El usuario sube lo que quiera (archivos sueltos, carpetas por tema)
+- El agente los lee, unifica en el lugar correcto del repo, y los borra
+- Es temporal — nada se queda ahí permanentemente
+- Destinos típicos: `docs/services/<svc>-guide.md`, `docs/troubleshooting.md`
