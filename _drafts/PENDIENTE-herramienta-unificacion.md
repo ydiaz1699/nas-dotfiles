@@ -23,8 +23,14 @@ unificar fragmentos dispersos en una guía coherente. Necesito ubicarla.
 ## Ruta de la herramienta (llenar cuando se encuentre/cree)
 
 ```
-RUTA: ___pendiente___
+RUTA: $NAS_DOTFILES/docs/meta-prompt-unificar.md ✅ ENCONTRADA
 ```
+
+## Estado: RESUELTO
+
+La herramienta existe y está documentada. Es un meta-prompt que se copia
+al inicio de cualquier chat LLM para que unifique fragmentos dispersos.
+Incluye variante para documentos largos (análisis por partes).
 
 ## Referencia
 
