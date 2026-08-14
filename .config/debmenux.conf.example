@@ -1,0 +1,82 @@
+# ==========================================================
+# DebMenux Integration Config
+# ==========================================================
+# Este archivo conecta DebMenux con tu repositorio de
+# configuración personal (nas-dotfiles u otro).
+#
+# DebMenux busca este archivo en este orden:
+#   1. $DEBMENUX_CONF (variable de entorno explícita)
+#   2. /etc/debmenux/debmenux.conf (system-wide)
+#   3. $HOME/.config/debmenux/debmenux.conf (por usuario)
+#
+# Instalación:
+#   cp debmenux.conf.example ~/.config/debmenux/debmenux.conf
+#   # Editar las rutas según tu setup
+#
+# Si este archivo NO existe, DebMenux funciona perfectamente
+# en modo standalone — esta integración es OPCIONAL.
+# ==========================================================
+
+# --------------------------------------------------------------------------
+# DOTFILES_DIR — Ruta al repositorio de configuración personal
+# --------------------------------------------------------------------------
+# Ruta absoluta donde está clonado tu repo de dotfiles/config.
+# DebMenux lo usa para saber dónde registrar servicios y leer config.
+#
+# Ejemplos:
+#   DOTFILES_DIR=/home/nilo/nas-dotfiles
+#   DOTFILES_DIR=/root/nas-dotfiles
+#   DOTFILES_DIR=~/nas-dotfiles
+#
+DOTFILES_DIR=~/nas-dotfiles
+
+# --------------------------------------------------------------------------
+# DOCKER_DIR — Ruta base donde viven los servicios Docker
+# --------------------------------------------------------------------------
+# Cada servicio se instala en $DOCKER_DIR/<nombre>/compose.yml
+# Equivalente a $dkco en el entorno bash de nas-dotfiles.
+#
+# Ejemplos:
+#   DOCKER_DIR=/docker
+#   DOCKER_DIR=/home/nilo/docker
+#   DOCKER_DIR=/opt/docker
+#
+DOCKER_DIR=/docker
+
+# --------------------------------------------------------------------------
+# CATALOG_DIR — Ruta donde se registran las fichas de servicios
+# --------------------------------------------------------------------------
+# Cuando DebMenux instala un servicio, genera:
+#   $CATALOG_DIR/<servicio>/ficha.md
+#   $CATALOG_DIR/<servicio>/compose.yml
+#   $CATALOG_DIR/<servicio>/.env.example
+#
+# Si no se define, usa: $DOTFILES_DIR/agent/catalog/services
+#
+# CATALOG_DIR=/docker/references/catalog
+# CATALOG_DIR=~/nas-dotfiles/agent/catalog/services
+
+# --------------------------------------------------------------------------
+# GLOBAL_ENV — Archivo .env compartido por todos los servicios
+# --------------------------------------------------------------------------
+# Variables comunes (SERVER_IP, TZ) que se cargan antes de instalar.
+# Los service scripts de DebMenux heredan estas variables.
+#
+# Si no se define, usa: $DOCKER_DIR/.env
+#
+# GLOBAL_ENV=/docker/.env
+
+# --------------------------------------------------------------------------
+# SERVER_IP — IP fija del servidor (fallback si no hay .env global)
+# --------------------------------------------------------------------------
+# Si GLOBAL_ENV no tiene SERVER_IP, usa este valor.
+# Si tampoco está definido, DebMenux auto-detecta con `ip route`.
+#
+# SERVER_IP=192.168.1.200
+
+# --------------------------------------------------------------------------
+# TZ — Timezone por defecto para contenedores
+# --------------------------------------------------------------------------
+# Si GLOBAL_ENV no tiene TZ, usa este valor.
+#
+# TZ=America/La_Paz
