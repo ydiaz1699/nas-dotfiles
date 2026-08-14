@@ -193,7 +193,36 @@ Si el LLM genera una guía que viola este orden, responde:
 
 ---
 
-## Mejoras post-uso (filebrowser, 2026-08-13)
+## Auto-mejora (feedback loop)
+
+Esta herramienta se mejora con el uso. Después de cada unificación:
+
+### El agente debe
+
+1. **Evaluar el resultado** — ¿hubo información que se perdió? ¿el usuario corrigió algo?
+2. **Agregar lecciones** — Si se detectó un patrón nuevo, agregarlo a la sección "Mejoras post-uso"
+3. **Sugerir al usuario** — Si el draft tiene problemas detectables, avisar ANTES de unificar:
+   - "Los fragmentos se contradicen en X — ¿cuál es la versión correcta?"
+   - "Falta información sobre permisos/red/backup — ¿lo agrego o lo marco como pendiente?"
+   - "Hay comandos que no usan los wrappers del framework (docker compose en vez de svc)"
+   - "La IP está hardcodeada — ¿la reemplazo por ${SERVER_IP}?"
+
+### El usuario debe
+
+1. **Corregir** — Si la guía generada tiene errores, decirlo explícitamente
+2. **Confirmar** — Si está bien, decir "OK" o "aprobado"
+3. **Enseñar** — Si hay algo que el meta-prompt no cubre, decir "agrega esta regla"
+
+### Registro de mejoras
+
+Cada mejora se agrega aquí con fecha y contexto:
+
+| Fecha | Mejora | Origen |
+|-------|--------|--------|
+| 2026-08-13 | Deduplicación agresiva (una sola versión, no alternativas) | filebrowser: 3 versiones del mismo contenido |
+| 2026-08-13 | Reemplazar IPs por `${SERVER_IP}` | filebrowser: IP hardcodeada 192.168.1.200 |
+| 2026-08-13 | Secciones estándar para guías de servicios Docker (10 secciones) | filebrowser: estructura final |
+| 2026-08-13 | Usar wrappers del framework (svc, dk, bat, instal) | filebrowser: tenía docker compose directo |
 
 Lecciones aprendidas de la primera unificación real (5790 → 304 líneas):
 

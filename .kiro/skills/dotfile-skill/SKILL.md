@@ -179,3 +179,13 @@ Al procesar drafts, seguir las reglas de `$NAS_DOTFILES/docs/meta-prompt-unifica
 - Detectar contradicciones → marcar como "DECISIÓN PENDIENTE"
 - Orden de ejecución real: mkdir → archivos → permisos → levantar
 - Guía autocontenida (no referenciar los fragmentos originales)
+
+**Antes de unificar, avisar al usuario si detectas:**
+- Fragmentos que se contradicen entre sí
+- IPs hardcodeadas (sugerir `${SERVER_IP}`)
+- Comandos sin wrappers del framework (`docker compose` → `svc`)
+- Información faltante (permisos, red, backup)
+
+**Después de unificar:**
+- Si el usuario corrige algo → agregar la lección a la sección "Registro de mejoras" del meta-prompt
+- Si se detecta un patrón nuevo → proponer agregarlo como regla
