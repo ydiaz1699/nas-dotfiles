@@ -77,6 +77,11 @@ Actualizado: 2026-08-13
 
 | Feature | Fecha | Commit/PR |
 |---------|-------|-----------|
+| Variables globales: svc pasa --env-file automático (global + local) | 2026-08-13 | main |
+| init.sh exporta $DOCKER_BASE/.env al shell (SERVER_IP, TZ disponibles) | 2026-08-13 | main |
+| install.sh configura .bashrc del usuario Y root automáticamente | 2026-08-13 | main |
+| Catálogo: filebrowser (compose + ficha + .env.example) | 2026-08-13 | main |
+| Catálogo: esphome (compose + ficha + .env.example) | 2026-08-13 | main |
 | Actualización completa de documentación (README, GUIDE, cheatsheet, agent, troubleshooting) | 2026-08-13 | docs: full update |
 | `nasfk` — navegación rápida a /nas-dotfiles (código del framework) | 2026-08-07 | PR #21 |
 | Mejora auto_catalog() — extracción completa de datos multi-servicio | 2026-08-07 | PR #26 |

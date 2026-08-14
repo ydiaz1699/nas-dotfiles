@@ -1,6 +1,6 @@
 # Cheatsheet — operaciones manuales del NAS
 
-Variables: `$aadm` = `/home/aadm` · `$dkco` = `/docker` · `$NAS_DOTFILES` = `/nas-dotfiles`
+Variables: `$dkco` = `/docker` · `$NAS_DOTFILES` = `/nas-dotfiles` · `$SERVER_IP` = tu IP (del global)
 
 ---
 
@@ -48,6 +48,26 @@ mkdir -p $aadm/proyectos/nuevo
 
 # Scaffolding automático (genera compose + .env + README + data/)
 svc create mi-servicio
+```
+
+---
+
+## 🌐 Variables globales (.env)
+
+```bash
+# El archivo $dkco/.env contiene variables compartidas por TODOS los servicios
+bat $dkco/.env
+# SERVER_IP=192.168.1.200
+# TZ=America/La_Paz
+
+# svc las pasa automáticamente a docker compose (--env-file)
+# init.sh las exporta al shell (disponibles como $SERVER_IP, $TZ)
+
+# Usar en compose.yml de cualquier servicio:
+#   homepage.href=http://${SERVER_IP}:8085
+#   TZ se hereda sin necesidad de ponerlo en environment:
+
+# Secretos locales van en $dkco/<servicio>/.env (NUNCA en el global)
 ```
 
 ---

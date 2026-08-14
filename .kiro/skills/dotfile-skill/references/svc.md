@@ -192,3 +192,19 @@ svc ps <svc>
 svc logs <svc>
 svc health
 ```
+
+## Variables globales ($dkco/.env)
+
+`svc` pasa automáticamente `--env-file $dkco/.env` a todos los comandos docker compose.
+Esto permite interpolar `${SERVER_IP}`, `${TZ}`, etc. en labels, ports, y cualquier
+parte del compose.yml sin repetir en cada servicio.
+
+```
+$dkco/.env (global):       SERVER_IP, TZ
+$dkco/<svc>/.env (local):  secretos del servicio (passwords, tokens)
+```
+
+- El global se usa para interpolación del YAML (`${SERVER_IP}` en labels)
+- El local se usa para secretos del contenedor (`env_file: .env`)
+- `init.sh` exporta el global al shell → `$SERVER_IP` disponible en terminal
+- Ambos se pasan con `--env-file` a docker compose (local sobreescribe global)

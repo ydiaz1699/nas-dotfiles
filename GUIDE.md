@@ -401,6 +401,38 @@ svc up nextcloud
 
 ---
 
+# 7b. Variables globales (.env)
+
+En vez de repetir `TZ=America/La_Paz` y la IP del servidor en cada servicio, se usa un archivo `.env` global en la raiz de Docker:
+
+```
+/docker/.env
+```
+
+Contenido:
+
+```
+SERVER_IP=192.168.1.200
+TZ=America/La_Paz
+```
+
+Este archivo se usa de dos formas:
+
+1. **Shell:** `init.sh` lo exporta automaticamente al iniciar sesion. Las variables quedan disponibles como `$SERVER_IP`, `$TZ`.
+
+2. **svc:** Pasa `--env-file /docker/.env` y `--env-file /docker/<servicio>/.env` automaticamente a `docker compose`. Esto permite interpolar `${SERVER_IP}` en labels, ports, y cualquier parte del compose.yml.
+
+En los compose.yml se usa asi:
+
+```yaml
+labels:
+  - homepage.href=http://${SERVER_IP}:8085
+```
+
+Los secretos de cada servicio van en `$dkco/<servicio>/.env` (nunca en el global).
+
+---
+
 # 8. Descubrimiento automatico
 
 No hay lista fija de servicios. Busca automaticamente:

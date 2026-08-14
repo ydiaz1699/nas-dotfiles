@@ -282,3 +282,60 @@ NAS_AGENT_LOG_LEVEL=DEBUG agent "diagnostica emqx"
 # 5. Dry-run (no ejecuta nada destructivo)
 NAS_AGENT_DRYRUN=1 agent "reiniciar emqx"
 ```
+
+
+---
+
+## WARN "variable is not set" en svc up/down
+
+**Síntoma:**
+```
+WARN[0000] The "SERVER_IP" variable is not set. Defaulting to a blank string.
+```
+
+**Causa:**
+Docker Compose interpola `${VAR}` en el compose.yml (labels, ports, etc.) buscando en:
+1. Variables del shell (prioridad más alta)
+2. `--env-file` pasado en la línea de comandos
+3. `.env` del directorio del compose
+
+Si la variable no está en el shell al momento de ejecutar, Docker da el warning aunque `--env-file` la tenga.
+
+**Solución:**
+`init.sh` exporta automáticamente las variables de `$dkco/.env` al shell. Si ves el warning, es porque no recargaste el shell después de crear `$dkco/.env`:
+
+```bash
+# Forzar recarga (el reload normal no funciona por protección anti-doble-carga)
+_SHELL_RELOAD=1 source ~/.bashrc
+
+# Verificar
+echo $SERVER_IP    # debe mostrar tu IP
+```
+
+Si no existe `$dkco/.env`, crearlo:
+```bash
+cat > $dkco/.env << 'EOF'
+SERVER_IP=192.168.1.200
+TZ=America/La_Paz
+EOF
+chmod 600 $dkco/.env
+_SHELL_RELOAD=1 source ~/.bashrc
+```
+
+---
+
+## env_file en compose NO sirve para interpolar labels
+
+**Síntoma:**
+Tienes `env_file: .env` en el compose con `FILEBROWSER_USER=admin`, pero en los labels `${FILEBROWSER_USER}` sigue dando warning.
+
+**Causa:**
+`env_file:` en el compose solo inyecta variables **dentro del contenedor**. NO sirve para interpolar el YAML (`labels:`, `ports:`, etc.).
+
+Para interpolar el YAML, Docker Compose necesita que la variable esté en:
+- El shell (exportada)
+- Un `--env-file` pasado en la línea de comandos (lo que hace `svc`)
+- Un archivo `.env` en el directorio del compose
+
+**Solución:**
+`svc` ya pasa automáticamente `--env-file $dkco/.env` (global) y `--env-file $dkco/<servicio>/.env` (local). Ambos se usan para interpolación del YAML. No necesitas hacer nada extra.

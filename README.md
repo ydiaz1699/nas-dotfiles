@@ -100,6 +100,19 @@ nas-dotfiles/
 - Opcional: `fzf`, `bat`, `paho-mqtt`, `lm-sensors`
 - Python CLI: `pipins typer rich InquirerPy pyyaml docker`
 
+## Variables globales
+
+El archivo `/docker/.env` contiene variables compartidas por todos los servicios:
+
+```env
+SERVER_IP=192.168.1.200
+TZ=America/La_Paz
+```
+
+- `svc` las pasa automáticamente a `docker compose` (interpolación en labels, ports, etc.)
+- `init.sh` las exporta al shell (`$SERVER_IP`, `$TZ` disponibles en terminal)
+- Secretos van en `$dkco/<servicio>/.env` (nunca en el global)
+
 ## Documentacion
 
 | Archivo | Contenido |
