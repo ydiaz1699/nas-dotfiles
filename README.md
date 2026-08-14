@@ -129,3 +129,38 @@ TZ=America/La_Paz
 ## Licencia
 
 MIT
+
+---
+
+## 🔗 Proyectos Relacionados
+
+| Repo | Relación | Descripción |
+|------|----------|-------------|
+| **[DebMenux](https://github.com/ydiaz1699/DebMenux-)** | 🤝 Complementario | Toolkit interactivo para instalar servicios Docker en cualquier Debian. Funciona **independiente**, pero si detecta `nas-dotfiles` registra automáticamente los servicios instalados en el catálogo. |
+
+### ¿Cómo se relacionan?
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  nas-dotfiles (este repo)                               │
+│  "Cómo está configurado MI servidor"                    │
+│  • Shell personalizado (aliases, prompt, nasfk)         │
+│  • CLI Docker (svc up/down/logs)                        │
+│  • Agente IA (lenguaje natural)                         │
+│  • Catálogo de servicios (fichas + guías)               │
+│  • Funciona SOLO en tu NAS (personal)                   │
+└───────────────────────┬─────────────────────────────────┘
+                        │ Integración OPCIONAL
+                        │ (via ~/.config/debmenux/debmenux.conf)
+┌───────────────────────▼─────────────────────────────────┐
+│  DebMenux (repo independiente)                          │
+│  "Qué servicios existen y cómo instalarlos"             │
+│  • Menú TUI interactivo (dialog)                        │
+│  • Scripts de instalación por servicio                  │
+│  • Post-install: USB automount, Docker, tuning          │
+│  • Funciona en CUALQUIER Debian (portable)              │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Cada repo funciona 100% independiente.** La integración es opcional: si ambos están instalados, `debmenu install emqx` auto-registra la ficha en `nas-dotfiles/agent/catalog/`.
+
