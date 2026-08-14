@@ -1,0 +1,21 @@
+services:
+  esphome:
+    image: ghcr.io/esphome/esphome:latest
+    container_name: esphome
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    volumes:
+      - ./config:/config:rw
+      - /etc/localtime:/etc/localtime:ro
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+    command: dashboard /config
+    labels:
+      - homepage.group=IoT
+      - homepage.name=ESPHome
+      - homepage.icon=esphome
+      - homepage.href=http://${SERVER_IP}:6052
+      - homepage.description=Gestión de dispositivos ESP32/ESP8266
+      - homepage.widget.type=esphome
+      - homepage.widget.url=http://${SERVER_IP}:6052
