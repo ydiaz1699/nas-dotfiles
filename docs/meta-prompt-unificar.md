@@ -189,3 +189,45 @@ NUNCA:
 
 Si el LLM genera una guía que viola este orden, responde:
 "STOP. Reordena: primero mkdir, después el archivo, después chmod."
+
+
+---
+
+## Mejoras post-uso (filebrowser, 2026-08-13)
+
+Lecciones aprendidas de la primera unificación real (5790 → 304 líneas):
+
+### Deduplicación agresiva
+
+Los fragmentos suelen tener 2-3 versiones del mismo contenido (de distintos LLMs).
+La guía final debe tener UNA sola versión de cada sección — la más completa/correcta.
+No mantener "alternativas" a menos que sean decisiones reales sin resolver.
+
+### Variables de entorno del proyecto
+
+Al unificar, reemplazar IPs hardcodeadas por `${SERVER_IP}` y otros valores
+por sus variables correspondientes (`$dkco`, `$NAS_DOTFILES`). La guía debe
+ser portable entre instalaciones.
+
+### Secciones estándar para guías de servicios Docker
+
+```
+1. Descripción (qué es, para qué sirve, URL de acceso)
+2. Arquitectura (diagrama de montaje/red)
+3. Estructura de directorios (árbol del stack + datos)
+4. Conceptos previos (si aplica: bind mounts, network_mode, etc.)
+5. Instalación paso a paso (en orden de ejecución)
+6. Gestión operativa (agregar/quitar bind mounts, configurar usuarios)
+7. Mantenimiento (backup, restore, update)
+8. Verificación y diagnóstico (comandos para comprobar que funciona)
+9. Problemas comunes (tabla: síntoma | causa | solución)
+10. Notas técnicas (decisiones de diseño, seguridad)
+```
+
+### Integración con el entorno
+
+Los comandos en la guía deben usar los wrappers del framework:
+- `svc up/down/logs` en vez de `docker compose up/down/logs`
+- `dk servicio` en vez de `cd /docker/servicio`
+- `bat` en vez de `cat`
+- `instal` en vez de `apt install`

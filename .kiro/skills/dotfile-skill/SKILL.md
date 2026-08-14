@@ -171,3 +171,11 @@ _drafts/
 - El agente los lee, unifica en el lugar correcto del repo, y los borra
 - Es temporal — nada se queda ahí permanentemente
 - Destinos típicos: `docs/services/<svc>-guide.md`, `docs/troubleshooting.md`
+
+**Herramienta de unificación:**
+Al procesar drafts, seguir las reglas de `$NAS_DOTFILES/docs/meta-prompt-unificar.md`:
+- NO resumir — código/configs van ÍNTEGROS
+- NO inventar — solo información de los fragmentos
+- Detectar contradicciones → marcar como "DECISIÓN PENDIENTE"
+- Orden de ejecución real: mkdir → archivos → permisos → levantar
+- Guía autocontenida (no referenciar los fragmentos originales)
