@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Auto-documentación al crear/modificar compose.yml",
+      "trigger": "PostFileSave",
+      "description": "When a compose.yml is saved, checks if catalog documentation exists and generates missing pieces (ficha, guide, .env.example). Follows the labels-first Homepage philosophy.",
+      "matcher": "compose\\.yml$",
+      "action": {
+        "type": "agent",
+        "prompt": "A compose.yml file was just saved or modified. Follow the catalog-sync pipeline:\n\n1. Read the compose.yml that was saved\n2. Identify the service name from its parent directory\n3. Check if documentation already exists for this service:\n   - agent/catalog/services/<svc>/ficha.md\n   - docs/services/<svc>-guide.md\n4. If ANY documentation is missing, generate it following these rules:\n   - ficha.md: Extract image, ports, networks, env vars, healthcheck, volumes from compose. Use the template in agent/catalog/_template.md\n   - compose.yml in catalog: Copy the saved compose.yml\n   - .env.example: Sanitize secrets (PASSWORD/TOKEN/KEY/SECRET → __pega_aqui__)\n   - Guide placeholder (docs/services/<svc>-guide.md): Only if it doesn't exist. Include service name, port, image, basic structure\n   - Homepage labels: If the compose doesn't have homepage.* labels, suggest adding them\n5. Update docker-nas/SKILL.md table if a new guide was created\n6. Notify the user what was generated\n\nIMPORTANT: Never overwrite existing documentation — only generate what's missing.\nIf everything exists already, just confirm \"Documentation up to date for <svc>\"."
+      }
+    }
+  ]
+}
