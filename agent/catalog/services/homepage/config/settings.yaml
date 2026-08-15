@@ -10,7 +10,7 @@ color: slate
 language: es
 
 layout:
-  Red & DNS:
+  Redes:
     style: row
     columns: 2
   IoT & Domótica:

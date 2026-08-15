@@ -1,14 +1,6 @@
 # Homepage — Servicios del NAS
 # Docs: https://gethomepage.dev/configs/services/
-
-- Red & DNS:
-    - AdGuard Home:
-        icon: adguard-home
-        href: http://192.168.1.200:80
-        description: Bloqueador de anuncios y DNS
-        widget:
-          type: adguard
-          url: http://192.168.1.200:80
+# Nota: AdGuard se descubre automáticamente via Docker labels en su compose.yml
 
 - IoT & Domótica:
     - EMQX:
