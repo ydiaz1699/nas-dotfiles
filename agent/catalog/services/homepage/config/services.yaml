@@ -8,24 +8,15 @@
 # ║     Homepage lo descubre automáticamente via Docker socket      ║
 # ║  2. Servicio nativo (systemd) → aquí en services.yaml          ║
 # ║     porque no tiene compose.yml donde poner labels              ║
-# ║  3. Servicio Docker sin compose en catálogo → aquí también     ║
 # ╚══════════════════════════════════════════════════════════════════╝
 #
 # Servicios con labels en su compose (NO poner aquí):
 #   - AdGuard Home  → $dkco/adguard/compose.yml (homepage.group=Redes)
+#   - EMQX          → $dkco/emqx/compose.yml (homepage.group=IoT)
 #   - ESPHome       → $dkco/esphome/compose.yml (homepage.group=IoT)
 #   - File Browser  → $dkco/filebrowser/compose.yml (homepage.group=Archivos)
 #   - pgAdmin       → $dkco/datasql/compose.yml (homepage.group=Bases de datos)
 #   - ntfy          → $dkco/ntfy/compose.yml (homepage.group=Sistema)
-
-- IoT:
-    - EMQX:
-        icon: emqx
-        href: http://192.168.1.200:18083
-        description: Broker MQTT para IoT/domótica
-        widget:
-          type: emqx
-          url: http://192.168.1.200:18083
 
 - Sistema:
     - USB Manager:
