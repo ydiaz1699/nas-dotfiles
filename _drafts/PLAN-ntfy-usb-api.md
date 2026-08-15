@@ -165,3 +165,140 @@ En `$dkco/homepage/config/services.yaml`:
 - `ntfy_send()` tiene fallback silencioso (`|| true`) — si ntfy no corre, no rompe nada
 - Topics separados por contexto: usb, docker, backups, system, nas-alerts
 - Prioridades: default (info), high (warning), urgent (critical)
+
+
+
+---
+
+## Caso de uso adicional: Alarma → Cámara → ntfy → PC/Celular
+
+### Problema
+Cuando la alarma suena, Home Assistant envía la imagen de la cámara a la TV.
+Pero si el usuario está en la PC (no viendo la TV), no se entera.
+
+### Solución
+Home Assistant captura snapshot de la cámara y lo envía via ntfy con imagen adjunta.
+ntfy lo muestra como push notification en Windows (browser) y Android (app) simultáneamente.
+
+### Flujo
+
+```
+Sensor (ESPHome/Zigbee) → detecta movimiento
+    ↓
+Home Assistant → Automation triggered
+    ↓
+    1. camera.snapshot → /config/www/snapshots/alarma_FECHA.jpg
+    2. curl con -T (attach file) → ntfy:8090/alarma
+    ↓
+ntfy (NAS :8090)
+    ├── 📱 Android: push con imagen de la cámara
+    └── 🖥️ Windows: browser push con imagen (Chrome/Edge PWA)
+```
+
+### ntfy: cómo enviar imagen adjunta
+
+```bash
+# Opción A: archivo local (snapshot guardado en disco)
+curl -H "Title: 🚨 Alarma activada" \
+     -H "Priority: urgent" \
+     -H "Tags: rotating_light,camera" \
+     -H "Filename: alarma.jpg" \
+     -H "Actions: view, Ver cámara en vivo, http://192.168.1.200:8123/lovelace/camaras" \
+     -T /config/www/snapshots/alarma.jpg \
+     http://192.168.1.200:8090/alarma
+
+# Opción B: URL externa (cámara expone endpoint de snapshot)
+curl -H "Title: 🚨 Alarma activada" \
+     -H "Priority: urgent" \
+     -H "Attach: http://192.168.1.XXX/api/camera_proxy/camera.puerta" \
+     -d "Movimiento detectado en puerta principal" \
+     http://192.168.1.200:8090/alarma
+```
+
+### Home Assistant: automation YAML
+
+```yaml
+automation:
+  - alias: "Alarma → Notificar con cámara via ntfy"
+    trigger:
+      - platform: state
+        entity_id: alarm_control_panel.alarma
+        to: "triggered"
+    action:
+      # 1. Capturar snapshot
+      - service: camera.snapshot
+        target:
+          entity_id: camera.puerta_principal
+        data:
+          filename: "/config/www/snapshots/alarma_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg"
+      # 2. Esperar a que se guarde
+      - delay:
+          seconds: 2
+      # 3. Enviar a ntfy con imagen
+      - service: shell_command.ntfy_alarma
+
+shell_command:
+  ntfy_alarma: >
+    curl -H "Title: 🚨 Alarma activada"
+    -H "Priority: urgent"
+    -H "Tags: rotating_light"
+    -H "Actions: view, Ver cámara en vivo, http://192.168.1.200:8123/lovelace/camaras"
+    -H "Filename: alarma.jpg"
+    -T /config/www/snapshots/alarma_$(date +%Y%m%d_%H%M%S).jpg
+    http://192.168.1.200:8090/alarma
+```
+
+### Alternativa: integración ntfy para Home Assistant (custom component)
+
+Repo: https://github.com/hbrennhaeuser/homeassistant_integration_ntfy
+Soporta: auth, tags, imágenes adjuntas, resize/compress, action buttons.
+
+```yaml
+# En configuration.yaml:
+notify:
+  - platform: ntfy
+    name: ntfy_nas
+    url: http://192.168.1.200:8090
+    topic: alarma
+
+# En automation:
+- service: notify.ntfy_nas
+  data:
+    title: "🚨 Alarma activada"
+    message: "Movimiento en puerta principal"
+    data:
+      priority: urgent
+      tags: rotating_light
+      image: /config/www/snapshots/alarma.jpg
+      actions:
+        - action: view
+          label: Ver cámara
+          url: http://192.168.1.200:8123/lovelace/camaras
+```
+
+### Recibir en Windows (sin app nativa)
+
+ntfy en Windows funciona via:
+1. **Browser (pestaña abierta):** `http://192.168.1.200:8090/alarma` → "Allow notifications"
+2. **PWA (mejor):** Chrome → menú ⋮ → "Instalar aplicación" → queda como app en taskbar
+3. La notificación aparece como toast de Windows con la imagen adjunta
+
+### Topic dedicado para alarmas
+
+Agregar a la tabla de topics del plan:
+
+| Topic | Quién envía | Prioridad | Ejemplo |
+|-------|-------------|-----------|---------|
+| `alarma` | Home Assistant | urgent | "🚨 Alarma: movimiento en puerta" + snapshot cámara |
+
+### Opera Smart Home (bonus, no prioritario)
+
+Opera GX Smart Home Extension conecta el browser al MQTT (EMQX).
+Caso de uso complementario (NO para notificaciones):
+- Home Assistant detecta Opera GX activo → "usuario está en PC"
+- Automation: si alarma + usuario en PC → enviar a ntfy (no a TV)
+- Automation: si alarma + usuario NO en PC → enviar a TV
+- Requiere: Opera GX instalado + extensión + EMQX como broker
+
+Esto es un bonus para DESPUÉS de tener ntfy funcionando.
+Prioridad: implementar ntfy primero, Opera Smart Home después.
