@@ -302,3 +302,162 @@ Caso de uso complementario (NO para notificaciones):
 
 Esto es un bonus para DESPUÉS de tener ntfy funcionando.
 Prioridad: implementar ntfy primero, Opera Smart Home después.
+
+
+
+---
+
+## Fase 2: Extensión Browser Smart Home (portar Opera Smart Home a Chrome/Edge/Firefox)
+
+> **Después de:** ntfy funcionando + integración con HA
+> **Repo:** nuevo (ej. `ydiaz1699/browser-smart-home`) o subcarpeta en DebMenux
+> **Referencia:** https://github.com/operasoftware/opera-smart-home/tree/main/example_extension
+
+### Qué es
+
+Extensión de navegador (manifest v3) que conecta Chrome/Edge/Firefox a tu red
+MQTT (EMQX:8083 via WebSocket) como si fuera un dispositivo IoT — igual que
+Opera GX Smart Home pero portable a cualquier browser.
+
+### Para qué sirve
+
+1. **HA sabe que estás en la PC** → enviar alarma a ntfy/PC en vez de TV
+2. **Controlar el browser desde HA** → mutear tabs, abrir URLs, cambiar tema
+3. **Automatizar con el browser** → "si cierro la última tab de trabajo, apagar luz oficina"
+
+### Entidades (portadas de Opera example_extension)
+
+| Tipo | Entidad | Topic MQTT | Dirección |
+|------|---------|-----------|-----------|
+| Sensor | Tabs abiertas | `sensor/browser_tabs` | Browser → HA |
+| Sensor | URL activa (dominio) | `sensor/browser_active_url` | Browser → HA |
+| Binary Sensor | Browser activo | `binary_sensor/browser_active` | Browser → HA |
+| Binary Sensor | En videollamada | `binary_sensor/browser_conference` | Browser → HA |
+| Switch | Mutear todas las tabs | `switch/set/browser_mute` | HA → Browser |
+| Switch | Modo oscuro | `switch/set/browser_dark_mode` | HA → Browser |
+| Command | Abrir URL | `command/browser_open_url` | HA → Browser |
+| Command | Abrir nueva tab | `command/browser_new_tab` | HA → Browser |
+| Command | Cerrar tab activa | `command/browser_close_tab` | HA → Browser |
+| Trigger | Tab cerrada | `trigger/browser_tab_closed` | Browser → HA |
+| Trigger | Download completado | `trigger/browser_download_done` | Browser → HA |
+
+### Control del navegador (lo que puede hacer HA → Browser)
+
+```yaml
+# Ejemplos de automations en Home Assistant:
+
+# Mutear browser cuando empieza reunión en otro dispositivo
+- service: mqtt.publish
+  data:
+    topic: "switch/set/browser_mute"
+    payload: "ON"
+
+# Abrir cámara en el browser cuando suena la alarma
+- service: mqtt.publish
+  data:
+    topic: "command/browser_open_url"
+    payload: "http://192.168.1.200:8123/lovelace/camaras"
+
+# Abrir nueva tab con dashboard
+- service: mqtt.publish
+  data:
+    topic: "command/browser_new_tab"
+    payload: "http://192.168.1.200:3000"
+
+# Cerrar tab activa
+- service: mqtt.publish
+  data:
+    topic: "command/browser_close_tab"
+    payload: ""
+```
+
+### Arquitectura técnica
+
+```
+Chrome/Edge/Firefox
+    │ Extensión (manifest v3)
+    │ background.js (service worker)
+    │   └── mqtt.js via WebSocket
+    │
+    ▼ ws://192.168.1.200:8083/mqtt
+    
+EMQX (tu broker MQTT existente)
+    │
+    ▼ MQTT Discovery Protocol
+    
+Home Assistant
+    │ Auto-descubre dispositivo "Browser PC"
+    │ Entidades aparecen automáticamente
+    ▼
+    Automations (alarma→browser, browser→luces, etc.)
+```
+
+### Diferencia vs Opera GX
+
+| | Opera GX | Nuestra extensión |
+|---|---|---|
+| API | `chrome.mqtt.*` (propietaria) | mqtt.js over WebSocket (estándar) |
+| Browsers | Solo Opera GX | Chrome, Edge, Firefox, Brave |
+| Puerto MQTT | 1883 (TCP directo) | 8083 (WebSocket) — tu EMQX ya lo tiene |
+| Discovery HA | ✅ | ✅ (mismo protocolo) |
+| Código base | Reutilizable (Device, Sensor, Switch, etc.) | Portado del example_extension |
+
+### Estructura del proyecto
+
+```
+browser-smart-home/
+├── manifest.json              ← manifest v3, permisos: tabs, storage, background
+├── background.js              ← service worker: mqtt.connect, Device class
+├── src/
+│   ├── device.js              ← clase Device (portada de Opera)
+│   ├── base/
+│   │   ├── sensor.js          ← clase base Sensor
+│   │   ├── binary-sensor.js   ← clase base BinarySensor
+│   │   ├── switch.js          ← clase base Switch
+│   │   ├── command.js         ← clase base Command
+│   │   └── trigger.js         ← clase base Trigger
+│   ├── entities/
+│   │   ├── tabs-sensor.js     ← número de tabs
+│   │   ├── active-sensor.js   ← browser activo/inactivo
+│   │   ├── conference-sensor.js ← detecta Zoom/Meet/Teams
+│   │   ├── mute-switch.js     ← mutear tabs
+│   │   ├── open-url-command.js ← abrir URL desde HA
+│   │   ├── new-tab-command.js  ← nueva tab desde HA
+│   │   └── tab-closed-trigger.js ← evento tab cerrada
+│   └── discovery.js           ← HA MQTT Discovery (anuncia entidades)
+├── libs/
+│   └── mqtt.min.js            ← mqtt.js (WebSocket MQTT client)
+├── popup/
+│   ├── popup.html             ← UI: estado conexión + entidades
+│   └── popup.js
+├── options/
+│   ├── options.html           ← Config: broker IP, puerto, usuario, password
+│   └── options.js
+└── icons/
+    ├── icon16.png
+    ├── icon48.png
+    └── icon128.png
+```
+
+### Casos de uso reales en tu homelab
+
+| Escenario | Cómo funciona |
+|-----------|---------------|
+| Alarma suena, estoy en PC | HA ve `browser_active=ON` → abre cámara en nueva tab + ntfy push |
+| Alarma suena, NO estoy en PC | HA ve `browser_active=OFF` → envía a TV |
+| Empiezo videollamada | `browser_conference=ON` → HA pone luces al 70%, silencia notifs TV |
+| Termino videollamada | `browser_conference=OFF` → HA restaura luces |
+| Quiero ver dashboard | HA automation o botón → `command/browser_open_url` con URL de Homepage |
+| Muchas tabs abiertas (>30) | `sensor/browser_tabs > 30` → HA envía ntfy "¿Cerrar tabs?" |
+
+### Dependencias
+
+- EMQX con WebSocket habilitado (puerto 8083) ← ya lo tienes
+- Home Assistant con MQTT Integration ← ya lo tienes
+- Browser con soporte manifest v3 (Chrome 88+, Edge 88+, Firefox 109+)
+
+### Prioridad
+
+DESPUÉS de ntfy + usb-api. No es bloqueante para las notificaciones — ntfy
+funciona independientemente. Esta extensión es un complemento para HA que
+agrega inteligencia de "dónde está el usuario" y control remoto del browser.
