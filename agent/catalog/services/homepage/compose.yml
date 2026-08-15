@@ -1,0 +1,27 @@
+# Homepage — Dashboard de servicios del NAS
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    restart: unless-stopped
+    environment:
+      - TZ=America/La_Paz
+      - HOMEPAGE_ALLOWED_HOSTS=*
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - homepage_net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  homepage_net:
+    driver: bridge

@@ -74,6 +74,61 @@ svc up ntfy
 
 ---
 
+## Primer uso (configuración inicial)
+
+Después de instalar ntfy (via `debmenu install ntfy` o manualmente), verificar que funciona:
+
+```bash
+# 1. Verificar que responde
+curl http://192.168.1.200:8090/v1/health
+# Debe devolver: {"healthy":true}
+
+# 2. Enviar mensaje de prueba
+curl -H "Title: 🎉 ntfy funciona" -H "Tags: tada" \
+     -d "Primer mensaje desde el NAS" http://192.168.1.200:8090/nas-alerts
+```
+
+### Suscribirse a topics en la Web UI
+
+1. Abrir `http://192.168.1.200:8090` en el navegador
+2. Clic en **"+ Suscribirse al tópico"** (menú izquierdo)
+3. Escribir el nombre del topic y confirmar
+4. Repetir para cada topic que quieras monitorear:
+
+| Topic | Para qué |
+|-------|----------|
+| `nas-alerts` | Alertas generales |
+| `usb` | Montaje/desmontaje USBs |
+| `docker` | Servicios Docker caídos/actualizados |
+| `system` | Alertas de disco, SSH, temperatura |
+| `backups` | Backups completados o fallidos |
+
+> **Nota:** Los topics se crean automáticamente al suscribirse o al enviar
+> el primer mensaje. No necesitan configuración previa en el servidor.
+
+### Aviso "Notificaciones no soportadas" en la Web UI
+
+Si ves un banner amarillo que dice _"Las notificaciones solo se admiten a través de HTTPS"_:
+
+- **Es normal** — es una limitación del browser (Web Push API requiere HTTPS)
+- La web UI **sigue funcionando** para ver mensajes en tiempo real (sin pop-up)
+- Para recibir push reales: usar la **app Android** (funciona con HTTP) o
+  configurar Chrome con el flag de seguridad (ver sección [Clientes → PC](#windows--linux-notificaciones-push-en-pc))
+
+### Configurar NTFY_URL global en el sistema
+
+Para que todos los scripts (`usb-automount`, `svc`, crons) puedan enviar notificaciones:
+
+```bash
+# Agregar a /etc/environment (persiste entre reboots)
+echo 'NTFY_URL=http://192.168.1.200:8090' >> /etc/environment
+
+# Aplicar en la sesión actual
+export NTFY_URL=http://192.168.1.200:8090
+```
+
+---
+
 ## Configuración del servidor
 
 Archivo: `$dkco/ntfy/config/server.yml`
@@ -162,15 +217,92 @@ curl -s http://192.168.1.200:8090/usb/sse
 > **Nota:** En LAN funciona sin internet. Si quieres recibir notificaciones
 > fuera de casa, necesitas exponer ntfy vía reverse proxy + auth.
 
-### Windows / Linux (Chrome PWA)
+### Windows / Linux (notificaciones push en PC)
 
-1. Abrir `http://192.168.1.200:8090` en Chrome/Edge
-2. Cuando pregunte "Permitir notificaciones" → **Permitir**
-3. Suscribirse a topics deseados en la web UI
-4. (Opcional) Menú Chrome → "Instalar ntfy" → se queda como app en taskbar
+> **Problema:** Las notificaciones del browser (Web Push API) solo funcionan con HTTPS.
+> En LAN con HTTP puro, Chrome/Edge/Firefox bloquean las notificaciones push.
+> Abajo las soluciones, de más fácil a más robusta.
 
-Las notificaciones aparecen como toast de Windows incluso con el browser cerrado
-(siempre que Chrome tenga permiso de background).
+#### Método 1: Chrome/Edge con flag de seguridad (rápido, recomendado)
+
+Crear un acceso directo especial que trata la URL HTTP del NAS como segura:
+
+**Windows:**
+
+1. Crear acceso directo en el escritorio con este destino:
+```
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --unsafely-treat-insecure-origin-as-secure=http://192.168.1.200:8090
+```
+
+2. Abrir `http://192.168.1.200:8090` desde ese Chrome especial
+3. Cuando pida permiso de notificaciones → **Permitir**
+4. Suscribirse a topics: `nas-alerts`, `usb`, `docker`, `system`
+5. (Opcional) Menú Chrome → "Instalar ntfy" → queda como app en la taskbar
+
+> **Nota:** El flag solo aplica a ESE acceso directo. El Chrome normal sigue sin cambios.
+
+Para **Edge** es igual cambiando la ruta al ejecutable:
+```
+"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --unsafely-treat-insecure-origin-as-secure=http://192.168.1.200:8090
+```
+
+**Linux:**
+
+```bash
+# Chrome
+google-chrome --unsafely-treat-insecure-origin-as-secure=http://192.168.1.200:8090 http://192.168.1.200:8090
+
+# Chromium
+chromium --unsafely-treat-insecure-origin-as-secure=http://192.168.1.200:8090 http://192.168.1.200:8090
+```
+
+Para hacerlo permanente, crear un `.desktop` con esa línea en `Exec=`.
+
+#### Método 2: ntfy CLI en background (Linux)
+
+Instalar el binario de ntfy y suscribirse desde terminal. Las notificaciones
+aparecen como popups de escritorio (usa `notify-send` internamente):
+
+```bash
+# Descargar binario
+curl -Lo /usr/local/bin/ntfy \
+    https://github.com/binwiederhier/ntfy/releases/latest/download/ntfy_linux_amd64
+chmod +x /usr/local/bin/ntfy
+
+# Suscribirse (corre en foreground, muestra notificaciones de escritorio)
+ntfy subscribe http://192.168.1.200:8090/nas-alerts
+
+# Suscribirse a múltiples topics en background
+ntfy subscribe http://192.168.1.200:8090/nas-alerts &
+ntfy subscribe http://192.168.1.200:8090/usb &
+ntfy subscribe http://192.168.1.200:8090/docker &
+```
+
+Para que arranque al login, agregar al autostart o crear un servicio systemd de usuario.
+
+#### Método 3: HTTPS con reverse proxy (solución definitiva)
+
+Si tienes o planeas instalar un reverse proxy (Nginx Proxy Manager, Caddy, Traefik),
+configurar un subdominio con certificado SSL:
+
+```
+https://ntfy.tudominio.local → http://ntfy:80 (contenedor Docker)
+```
+
+Con certificado válido (Let's Encrypt o autofirmado importado en el browser), las
+notificaciones push funcionan nativamente sin flags ni hacks.
+
+#### Resumen de métodos para PC
+
+| Método | OS | Esfuerzo | Notificaciones reales | Sin internet |
+|--------|-----|----------|----------------------|--------------|
+| Chrome + flag `--unsafely-treat...` | Win/Linux | Bajo (1 acceso directo) | ✅ Push nativo | ✅ |
+| ntfy CLI subscribe | Linux | Medio (binario) | ✅ notify-send | ✅ |
+| HTTPS reverse proxy | Cualquiera | Alto (una vez) | ✅ Push nativo | ✅ |
+| Web UI sin flag (solo ver) | Cualquiera | Ninguno | ❌ Sin push | ✅ |
+
+> **Recomendación:** Empezar con el flag de Chrome (Método 1). Si en el futuro
+> instalas Nginx Proxy Manager, migrar a HTTPS (Método 3) y quitar el flag.
 
 ### CLI (scripting)
 
@@ -440,6 +572,75 @@ docker run --rm -v $dkco/ntfy/config:/etc/ntfy binwiederhier/ntfy:latest serve -
 
 - Verificar que ntfy está en `homepage_net`: `docker network inspect homepage_net`
 - La URL del widget debe usar el nombre del contenedor: `http://ntfy:80/v1/stats`
+
+### USB no notifica al montar/desmontar
+
+1. Verificar que las notificaciones están habilitadas:
+```bash
+grep -E "ENABLE_NOTIFICATIONS|NTFY_URL" /etc/usb-automount.conf
+# Debe mostrar:
+#   ENABLE_NOTIFICATIONS="true"
+#   NTFY_URL="http://192.168.1.200:8090"
+```
+
+2. Si falta alguna, agregar:
+```bash
+sed -i 's/ENABLE_NOTIFICATIONS="false"/ENABLE_NOTIFICATIONS="true"/' /etc/usb-automount.conf
+grep -q "^NTFY_URL" /etc/usb-automount.conf || echo 'NTFY_URL="http://192.168.1.200:8090"' >> /etc/usb-automount.conf
+```
+
+3. Verificar que el script tiene la versión con ntfy (no la vieja con notify-send):
+```bash
+grep -c "ntfy_send\|ntfy_usb" /usr/local/bin/usb-automount.sh
+# Debe devolver > 0. Si devuelve 0, actualizar:
+cp /debmenux/templates/usb-automount/usb-automount.sh /usr/local/bin/usb-automount.sh
+chmod +x /usr/local/bin/usb-automount.sh
+```
+
+4. Verificar que estás suscrito al topic **`usb`** en la app (no solo `nas-alerts`)
+
+### Mountpoint huérfano (carpeta usb-* que no se borra)
+
+**Síntoma:** En File Browser (o `ls /NAS/USB/`) aparece una carpeta `usb-sdb1`
+pero no hay USB conectado. `rmdir` da "Dispositivo o recurso ocupado".
+
+**Causa:** El USB se desconectó sin desmontar (tirón físico). El kernel mantiene
+un "mount fantasma" aunque el dispositivo ya no existe.
+
+**Diagnóstico:**
+```bash
+# ¿Está marcado como montado? (sí = mount fantasma)
+mountpoint /NAS/USB/usb-sdb1
+
+# ¿El dispositivo existe? (no = ya se desconectó)
+lsblk | grep sdb
+
+# ¿La carpeta está vacía?
+ls /NAS/USB/usb-sdb1/
+```
+
+Si `mountpoint` dice "es un punto de montaje" pero `lsblk` no muestra el dispositivo:
+
+**Solución:**
+```bash
+# Desmontar lazy (libera el mount fantasma) + borrar carpeta
+umount -l /NAS/USB/usb-sdb1 && rmdir /NAS/USB/usb-sdb1
+
+# Verificar
+ls /NAS/USB/
+```
+
+**Prevención:**
+- El timer `usb-automount-cleanup.timer` limpia huérfanos cada hora automáticamente
+- Verificar que está activo: `systemctl status usb-automount-cleanup.timer`
+- Si no está activo: `systemctl enable --now usb-automount-cleanup.timer`
+- Siempre que sea posible, **desmontar antes de desconectar**:
+  - Desde terminal: `usb-automount.sh --status` → `curl -X POST http://IP:8091/usb/unmount/sdb1`
+  - Desde File Browser: no tocar, usar usb-api
+  - Desde el celular: enviar POST al endpoint de usb-api
+
+> **Nota:** El cleanup timer solo borra carpetas que NO están marcadas como mountpoint
+> Y están vacías. Los mounts fantasma necesitan `umount -l` manual (o reboot).
 
 ---
 
