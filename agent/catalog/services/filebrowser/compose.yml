@@ -10,7 +10,7 @@ services:
       - "8085:80"
     volumes:
       - ./config:/config
-      - /NAS:/srv
+      - /NAS:/srv:rshared
     command: >
       --database /config/database.db
       --root /srv

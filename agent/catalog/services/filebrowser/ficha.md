@@ -20,10 +20,10 @@
 
 ## Volúmenes
 
-| Host | Contenedor | Tipo |
-|------|-----------|------|
-| `./config` | `/config` | bind (configuración + DB) |
-| `/NAS` | `/srv` | bind (archivos servidos) |
+| Host | Contenedor | Tipo | Nota |
+|------|-----------|------|------|
+| `./config` | `/config` | bind | configuración + DB SQLite |
+| `/NAS` | `/srv` | bind (**:rshared**) | archivos servidos — propaga mounts USB en tiempo real |
 
 ## Variables de entorno
 
@@ -50,8 +50,10 @@ Sin red Docker personalizada (usa bridge default).
 - Corre como `root` (`user: "0:0"`) para acceso completo a `/NAS`
 - La base de datos SQLite se guarda en `/config/database.db`
 - Labels configuradas para integración con Homepage (dashboard)
-- El bind mount `/NAS:/srv` requiere que `/NAS` exista en el host
+- El bind mount `/NAS:/srv:rshared` requiere que `/NAS` exista en el host
+- **`:rshared` es OBLIGATORIO** — sin él, los mounts de USB automount que aparecen dentro de `/NAS/USB/` no son visibles para el contenedor
 - Puerto 8085 elegido para evitar conflictos con otros servicios web
+- USBs se montan en `/NAS/USB/usb-<dispositivo>` via usb-automount y aparecen en la UI automáticamente (sin recrear contenedor)
 
 ## docs_url
 

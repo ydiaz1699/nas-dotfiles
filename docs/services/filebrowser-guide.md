@@ -12,13 +12,18 @@ File Browser expone `/NAS` del host como interfaz web accesible desde cualquier 
 ```
 Host (NAS)                       Contenedor Docker     UI File Browser
 ─────────────────────────────────────────────────────────────────────
-/NAS                         →   /srv              →   / (raíz)
+/NAS (:rshared)              →   /srv              →   / (raíz)
 ├── aadm/ (bind /home/aadm)     /srv/aadm         →   /aadm/
 ├── docker/ (bind /docker)       /srv/docker       →   /docker/
+├── USB/                         /srv/USB          →   /USB/
+│   ├── usb-sdb1/ (automount)   /srv/USB/usb-sdb1 →   /USB/usb-sdb1/
+│   └── usb-sdc1/ (automount)   /srv/USB/usb-sdc1 →   /USB/usb-sdc1/
 └── [nuevos mounts]              /srv/[nombre]     →   /[nombre]/
 ```
 
-> Docker captura los mounts del host al momento de iniciar el contenedor. Si se agrega un bind mount con el contenedor ya corriendo, es necesario recrearlo (`svc down` + `svc up`).
+> **`:rshared`** permite que mounts creados dentro de `/NAS` DESPUÉS de iniciar el contenedor sean visibles inmediatamente — sin recrear el contenedor. Esto es esencial para el USB automount.
+
+> Docker captura los mounts del host al momento de iniciar el contenedor. Sin `:rshared`, mounts nuevos requieren recrear (`svc down` + `svc up`). Con `:rshared` se propagan en tiempo real.
 
 ---
 
@@ -103,7 +108,7 @@ services:
       - "8085:80"
     volumes:
       - ./config:/config
-      - /NAS:/srv
+      - /NAS:/srv:rshared
     command: >
       --database /config/database.db
       --root /srv
@@ -121,6 +126,8 @@ services:
       - homepage.widget.username=${FILEBROWSER_USER}
       - homepage.widget.password=${FILEBROWSER_PASSWORD}
 ```
+
+> ⚠️ **`:rshared` es obligatorio.** Sin él, los USBs que se montan dentro de `/NAS/USB/` después de iniciar el contenedor NO son visibles. Con `:rshared` el kernel propaga mounts nuevos al contenedor en tiempo real.
 
 ### Paso 5 — Crear .env (secretos locales)
 
@@ -190,6 +197,31 @@ Cambiar en **Settings → User Management**.
 ---
 
 ## Gestión de bind mounts
+
+### Integración con USB Automount (DebMenux)
+
+Si tienes DebMenux instalado con USB automount configurado a `MOUNT_BASE="/NAS/USB"`:
+
+1. Los USBs se montan automáticamente en `/NAS/USB/usb-sdb1`, `/NAS/USB/usb-sdc1`, etc.
+2. Gracias a `:rshared`, File Browser los muestra **inmediatamente** sin recrear el contenedor.
+3. Al desconectar el USB, desaparecen automáticamente de la UI.
+
+**Setup (una sola vez):**
+
+```bash
+# Crear directorio USB dentro de /NAS
+mkdir -p /NAS/USB
+
+# Configurar automount para montar en /NAS/USB
+nano /etc/usb-automount.conf
+# Cambiar: MOUNT_BASE="/NAS/USB"
+
+# Reiniciar File Browser con :rshared (si no lo tiene ya)
+dk filebrowser
+svc down filebrowser && svc up filebrowser
+```
+
+> No necesitas bind mount en fstab para USB — el automount se encarga. Solo asegúrate que el compose tiene `:rshared`.
 
 ### Agregar un bind mount
 
@@ -274,13 +306,15 @@ docker exec -it filebrowser ls -la /srv   # verificar desde dentro
 
 | Síntoma | Causa | Solución |
 |---------|-------|----------|
-| Carpetas vacías en la UI | Contenedor inició antes del bind mount | `svc down filebrowser && svc up filebrowser` |
+| Carpetas USB aparecen vacías | Falta `:rshared` en compose | Agregar `/NAS:/srv:rshared` y recrear |
+| Carpetas vacías en la UI | Contenedor inició antes del bind mount | Con `:rshared` ya no pasa. Sin él: `svc down && svc up` |
 | `Permission denied` en /config | Permisos incorrectos | `chmod -R 777 $dkco/filebrowser/config` → luego ajustar |
 | Contraseña no funciona | Se generó aleatoriamente | `svc logs filebrowser` para obtenerla |
 | Mount no persiste tras reboot | Falta en `/etc/fstab` | Agregar línea y `systemctl daemon-reload` |
 | Puerto 8085 no responde | Contenedor crasheó | `svc logs filebrowser` para ver el error |
 | Mounts duplicados | `mount -a` sobre mounts ya activos | `umount /NAS/aadm` (2 veces) → `mount -a` |
 | `mount --bind` error "no such file" | Punto de montaje no existe | `mkdir -p /NAS/nombre` primero |
+| USB visible pero sin contenido | Docker no propaga mounts anidados sin :rshared | Agregar `:rshared` al volume de /NAS |
 
 ### Fix rápido para permisos
 
@@ -298,7 +332,8 @@ svc up filebrowser
 ## Notas técnicas
 
 - **`user: "0:0"`** — ejecuta como root para acceso completo a `/NAS`. Necesario si los archivos tienen distintos propietarios.
-- **`/NAS:/srv`** — cualquier contenido dentro de `/NAS` se refleja en la UI. No hace falta tocar el compose para agregar carpetas nuevas.
+- **`/NAS:/srv:rshared`** — cualquier contenido dentro de `/NAS` se refleja en la UI. El flag `:rshared` propaga mounts nuevos (como USBs) al contenedor en tiempo real, sin recrear.
 - **`${SERVER_IP}`** — viene del `.env` global (`$dkco/.env`). `svc` lo pasa automáticamente.
 - **`${FILEBROWSER_USER/PASSWORD}`** — vienen del `.env` local (`$dkco/filebrowser/.env`). Se usan en los labels de Homepage.
 - **Base de datos** — SQLite en `config/database.db`. Contiene usuarios, permisos, sesiones. Hacer backup periódico.
+- **Mount propagation** — `:rshared` es equivalente a `--mount type=bind,source=/NAS,target=/srv,bind-propagation=rshared`. Requiere que el host tenga el mount como `shared` (default en systemd-based systems).
