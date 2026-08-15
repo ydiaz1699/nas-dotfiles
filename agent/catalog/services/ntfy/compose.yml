@@ -1,0 +1,47 @@
+# ntfy — Servidor de notificaciones push
+# Gestionado por DebMenux, documentado en nas-dotfiles
+services:
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    container_name: ntfy
+    restart: unless-stopped
+    command: serve
+    env_file:
+      - ../.env
+      - .env
+    ports:
+      - "8090:80"
+    volumes:
+      - ./config:/etc/ntfy
+      - ./data/cache:/var/cache/ntfy
+      - ./data/lib:/var/lib/ntfy
+      - ./data/attachments:/var/cache/ntfy/attachments
+    networks:
+      - homepage_net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      - homepage.group=Sistema
+      - homepage.name=ntfy
+      - homepage.icon=ntfy
+      - homepage.href=http://${SERVER_IP}:8090
+      - homepage.description=Notificaciones push del NAS
+
+networks:
+  homepage_net:
+    external: true

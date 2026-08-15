@@ -273,6 +273,8 @@ Orden de consulta:
 |----------|------|--------------------------|
 | **datasql** | `docs/services/datasql-guide.md` | PostgreSQL+pgAdmin+Redis, backups pg_dump, permisos, db_net, 10 fases |
 | **filebrowser** | `docs/services/filebrowser-guide.md` | Bind mounts, `:rshared` para USB, fstab, permisos, mount propagation |
+| **ntfy** | `docs/services/ntfy-guide.md` | Notificaciones push, topics, clientes Android/PWA, alarma+cámara, Homepage |
+| **usb-api** | `docs/services/ntfy-guide.md#usb-api` | API REST para USBs, systemd nativo, Homepage widget, desmontaje seguro |
 | **emqx** | `agent/catalog/services/emqx/ficha.md` | Puertos WS 8083/8084, ulimits, dashboard LAN, iot_net |
 | **esphome** | `agent/catalog/services/esphome/ficha.md` | Puerto 6052, iot_net |
 
@@ -283,6 +285,9 @@ Orden de consulta:
 - **EMQX**: requiere ulimits nofile 1048576, dashboard en LAN (excepción documentada)
 - **USB Automount**: monta en `/NAS/USB/usb-<dev>` — File Browser lo ve por mount propagation
 - **Bind mounts**: siempre usar `mount --bind` + fstab, nunca symlinks (Docker no los propaga)
+- **ntfy**: puerto 8090, stateless (cache 24h), auth abierto en LAN, attachments para snapshots de cámaras
+- **usb-api**: puerto 8091, servicio systemd NATIVO (no Docker) — necesita umount real en el host
+- **Notificaciones**: usar `ntfy_send()` de `docker/cli/lib/notifications.sh` — nunca `notify-send` (inútil en headless)
 
 ### Herramientas disponibles:
 
@@ -292,3 +297,5 @@ Orden de consulta:
 | DebMenux (toolkit) | `/debmenux` | Instalar servicios, USB automount, post-install |
 | Catálogo del agente | `agent/catalog/services/` | Fichas + compose + .env.example por servicio |
 | Troubleshooting | `docs/troubleshooting.md` | Diagnósticos resueltos y soluciones |
+| Notificaciones (lib) | `docker/cli/lib/notifications.sh` | Función ntfy_send() para scripts svc |
+| Notificaciones (plugin) | `agent/plugins/notification_plugin.py` | Plugin del agente para alertas automáticas |
