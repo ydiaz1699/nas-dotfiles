@@ -120,6 +120,63 @@ python3 python3-pip
 | Backend | systemd-networkd |
 | Config file | `/etc/systemd/network/*.network` |
 
+### Acceso remoto (SSH + mDNS)
+
+| Campo | Valor |
+|-------|-------|
+| Servicio SSH | `sshd` (OpenSSH) |
+| Puerto | 22 (default) |
+| Descubrimiento | **avahi-daemon** (mDNS/DNS-SD) |
+| Hostname mDNS | `Nas.local` |
+| Conexión | `ssh aadm@Nas.local` |
+
+**avahi-daemon** publica el hostname del NAS en la red local vía mDNS (protocolo Bonjour/Zeroconf).
+Esto permite conectarse por nombre sin necesidad de recordar la IP:
+
+```bash
+# Desde cualquier equipo en la LAN
+ssh aadm@Nas.local
+
+# Equivalente a:
+ssh aadm@192.168.0.200
+```
+
+**Requisitos en el cliente:**
+- **Linux:** Instalar `avahi-utils` o `nss-mdns` (`apt install libnss-mdns`)
+- **macOS:** Funciona nativamente (Bonjour integrado)
+- **Windows:** Funciona nativamente desde Windows 10 (mDNS integrado)
+
+**Gestión:**
+
+```bash
+# Estado del servicio
+systemctl status avahi-daemon
+
+# Reiniciar (si cambia hostname)
+systemctl restart avahi-daemon
+
+# Config
+cat /etc/avahi/avahi-daemon.conf
+
+# Ver qué publica
+avahi-browse -a     # listar servicios publicados
+avahi-resolve -n Nas.local   # resolver nombre → IP
+```
+
+**Archivo de config** (`/etc/avahi/avahi-daemon.conf`):
+```ini
+[server]
+host-name=Nas
+domain-name=local
+use-ipv4=yes
+use-ipv6=no
+
+[publish]
+publish-addresses=yes
+publish-hinfo=yes
+publish-workstation=yes
+```
+
 ---
 
 ## Redes Docker
