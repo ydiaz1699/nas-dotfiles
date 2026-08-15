@@ -249,3 +249,46 @@ Leer cuando se necesite detalle completo de un componente:
 - `references/diagnostic.md` — Recetas de diagnóstico paso a paso
 - `references/extend.md` — Cómo agregar comandos, tools, plugins, módulos shell
 - `references/networking.md` — Redes avanzadas: macvlan, systemd-networkd, IPs fijas en LAN
+
+---
+
+## ⚠️ Regla: consultar guía ANTES de modificar un servicio
+
+**OBLIGATORIO:** Antes de sugerir cambios a un servicio (compose, config, volumes,
+redes, permisos), LEER su guía operativa si existe. La guía contiene decisiones
+reales, errores ya resueltos, y configuración específica que NO puede adivinarse.
+
+Orden de consulta:
+1. `docs/services/<svc>-guide.md` — guía completa (prioridad máxima)
+2. `agent/catalog/services/<svc>/ficha.md` — metadatos y notas
+3. `agent/catalog/services/<svc>/compose.yml` — config actual
+
+**NUNCA sugerir una solución genérica si existe una guía documentada.**
+
+---
+
+## 📚 Guías de servicios disponibles
+
+| Servicio | Guía | Temas clave documentados |
+|----------|------|--------------------------|
+| **datasql** | `docs/services/datasql-guide.md` | PostgreSQL+pgAdmin+Redis, backups pg_dump, permisos, db_net, 10 fases |
+| **filebrowser** | `docs/services/filebrowser-guide.md` | Bind mounts, `:rshared` para USB, fstab, permisos, mount propagation |
+| **emqx** | `agent/catalog/services/emqx/ficha.md` | Puertos WS 8083/8084, ulimits, dashboard LAN, iot_net |
+| **esphome** | `agent/catalog/services/esphome/ficha.md` | Puerto 6052, iot_net |
+
+### Hechos críticos que NO deben adivinarse:
+
+- **File Browser**: usa `/NAS:/srv:rshared` — sin `:rshared` los USBs montados después no son visibles
+- **DataSQL**: PostgreSQL NUNCA expone puerto al host — solo via db_net
+- **EMQX**: requiere ulimits nofile 1048576, dashboard en LAN (excepción documentada)
+- **USB Automount**: monta en `/NAS/USB/usb-<dev>` — File Browser lo ve por mount propagation
+- **Bind mounts**: siempre usar `mount --bind` + fstab, nunca symlinks (Docker no los propaga)
+
+### Herramientas disponibles:
+
+| Herramienta | Ubicación | Para qué |
+|-------------|-----------|----------|
+| Meta-prompt de unificación | `docs/meta-prompt-unificar.md` | Unificar fragmentos dispersos en guía coherente |
+| DebMenux (toolkit) | `/debmenux` | Instalar servicios, USB automount, post-install |
+| Catálogo del agente | `agent/catalog/services/` | Fichas + compose + .env.example por servicio |
+| Troubleshooting | `docs/troubleshooting.md` | Diagnósticos resueltos y soluciones |
