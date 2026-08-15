@@ -189,6 +189,7 @@ Redes creadas manualmente para segmentación de servicios.
 | `db_net` | bridge | Comunicación interna entre apps y bases de datos | datasql (postgres, pgadmin, redis) |
 | `iot_net` | bridge | Servicios IoT/domótica | emqx, esphome, (home-assistant futuro) |
 | `bridge` | bridge | Default Docker (servicios sin red especial) | ntfy, filebrowser, etc. |
+| `homepage_net` | bridge | Dashboard Homepage ↔ servicios internos | homepage, ntfy |
 | `host` | host | Acceso directo al stack de red del host | (casos especiales) |
 | `none` | null | Sin red (contenedores aislados) | — |
 | `filebrowser_default` | bridge | Creada automáticamente por compose de filebrowser | filebrowser |
@@ -306,7 +307,8 @@ DOCKER_BASE=/docker
 | **esphome** | Docker | 6052 | iot_net | Firmware ESP32/ESP8266 |
 | **datasql** | Docker (multi) | 5050 (pgadmin) | db_net | PostgreSQL + pgAdmin + Redis |
 | **filebrowser** | Docker | 8085 | filebrowser_default | Explorador archivos web |
-| **ntfy** | Docker | 8090 | bridge | Notificaciones push |
+| **homepage** | Docker | 3000 | homepage_net | Dashboard de servicios |
+| **ntfy** | Docker | 8090 | bridge + homepage_net | Notificaciones push |
 | **spacedrive** | Docker | _(ver compose)_ | spacedrive_default | Gestor de archivos |
 | **usb-api** | Nativo (systemd) | 8091 | — | API REST para USBs |
 
@@ -322,6 +324,7 @@ DOCKER_BASE=/docker
 | 80 | AdGuard | TCP | Panel admin (después de setup) |
 | 1883 | EMQX | TCP | MQTT sin TLS |
 | 3000 | AdGuard | TCP | Asistente primer arranque |
+| 3000 | Homepage | TCP | Dashboard de servicios |
 | 5050 | pgAdmin | TCP | Solo vía db_net |
 | 6052 | ESPHome | TCP | Dashboard ESPHome |
 | 8083 | EMQX | TCP | WebSocket MQTT |

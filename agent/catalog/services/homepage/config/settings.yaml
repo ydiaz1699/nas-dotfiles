@@ -1,0 +1,31 @@
+# Homepage — Configuración general
+# Docs: https://gethomepage.dev/configs/settings/
+
+title: NAS Dashboard
+description: Panel de control del homelab
+
+theme: dark
+color: slate
+
+language: es
+
+layout:
+  Red & DNS:
+    style: row
+    columns: 2
+  IoT & Domótica:
+    style: row
+    columns: 2
+  Almacenamiento:
+    style: row
+    columns: 2
+  Base de Datos:
+    style: row
+    columns: 1
+  Sistema:
+    style: row
+    columns: 2
+
+providers:
+  openweathermap: openweathermapapikey
+  weatherapi: weatherapiapikey
