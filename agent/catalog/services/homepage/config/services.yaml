@@ -1,27 +1,33 @@
 # Homepage — Servicios del NAS
 # Docs: https://gethomepage.dev/configs/services/
-# Nota: AdGuard se descubre automáticamente via Docker labels en su compose.yml
+#
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  FILOSOFÍA: Labels primero, services.yaml solo si no se puede  ║
+# ╠══════════════════════════════════════════════════════════════════╣
+# ║  1. Servicio Docker → agregar labels homepage.* en su compose  ║
+# ║     Homepage lo descubre automáticamente via Docker socket      ║
+# ║  2. Servicio nativo (systemd) → aquí en services.yaml          ║
+# ║     porque no tiene compose.yml donde poner labels              ║
+# ║  3. Servicio Docker sin compose en catálogo → aquí también     ║
+# ╚══════════════════════════════════════════════════════════════════╝
+#
+# Servicios con labels en su compose (NO poner aquí):
+#   - AdGuard Home  → $dkco/adguard/compose.yml (homepage.group=Redes)
+#   - ESPHome       → $dkco/esphome/compose.yml (homepage.group=IoT)
+#   - File Browser  → $dkco/filebrowser/compose.yml (homepage.group=Archivos)
+#   - pgAdmin       → $dkco/datasql/compose.yml (homepage.group=Bases de datos)
+#   - ntfy          → $dkco/ntfy/compose.yml (homepage.group=Sistema)
 
-- IoT & Domótica:
+- IoT:
     - EMQX:
         icon: emqx
         href: http://192.168.1.200:18083
-        description: Broker MQTT para IoT
+        description: Broker MQTT para IoT/domótica
         widget:
           type: emqx
           url: http://192.168.1.200:18083
 
-    - ESPHome:
-        icon: esphome
-        href: http://192.168.1.200:6052
-        description: Firmware ESP32/ESP8266
-
-- Almacenamiento:
-    - File Browser:
-        icon: filebrowser
-        href: http://192.168.1.200:8085
-        description: Explorador de archivos web
-
+- Sistema:
     - USB Manager:
         icon: usb
         href: http://192.168.1.200:8091
@@ -34,28 +40,3 @@
             - field: count
               label: USBs montados
               format: number
-
-- Base de Datos:
-    - pgAdmin:
-        icon: pgadmin
-        href: http://192.168.1.200:5050
-        description: Administrador PostgreSQL
-
-- Sistema:
-    - ntfy:
-        icon: ntfy
-        href: http://192.168.1.200:8090
-        description: Notificaciones push
-        widget:
-          type: customapi
-          url: http://ntfy:80/v1/stats
-          refreshInterval: 30000
-          mappings:
-            - field: messages
-              label: Mensajes (24h)
-              format: number
-
-    - Homepage:
-        icon: homepage
-        href: http://192.168.1.200:3000
-        description: Este dashboard

@@ -13,13 +13,13 @@ layout:
   Redes:
     style: row
     columns: 2
-  IoT & Domótica:
+  IoT:
     style: row
     columns: 2
-  Almacenamiento:
+  Archivos:
     style: row
     columns: 2
-  Base de Datos:
+  Bases de datos:
     style: row
     columns: 1
   Sistema:
