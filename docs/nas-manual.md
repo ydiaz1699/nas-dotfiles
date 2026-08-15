@@ -27,25 +27,24 @@
 
 ## Hardware
 
-> **⚠️ COMPLETAR** con los datos reales del equipo. Ejecutar en el NAS:
-> ```bash
-> cat /proc/cpuinfo | head -20
-> free -h
-> lsblk
-> lspci | grep -i 'ethernet\|network\|sata\|usb'
-> cat /sys/class/dmi/id/product_name 2>/dev/null
-> ```
-
 | Campo | Valor |
 |-------|-------|
-| **Modelo/Marca** | _completar_ (ej: mini PC Beelink, Lenovo ThinkCentre M720q) |
-| **CPU** | _completar_ (ej: Intel Celeron N5095 @ 2.9GHz, 4 cores) |
-| **RAM** | _completar_ (ej: 8GB DDR4) |
-| **Disco sistema** | _completar_ (ej: SSD NVMe 256GB /dev/nvme0n1) |
-| **Disco datos** | _completar_ (ej: HDD 4TB /dev/sda1 → /mnt/datos) |
-| **Ethernet** | _completar_ (ej: Intel I225-V 2.5GbE) |
-| **USB** | _completar_ (ej: 4x USB 3.0, 2x USB-C) |
-| **Consumo** | _completar_ (ej: ~15W idle) |
+| **Modelo** | Dell PowerEdge T20 (tower server) |
+| **CPU** | Intel (2 cores, 800–3000 MHz, escala al 51% en idle) |
+| **RAM** | 8 GB DDR3 ECC (7.7 GiB usables) |
+| **Disco sistema** | SSD 298 GB `/dev/sda1` (ext4, montado en `/`) |
+| **Swap** | 7.9 GB `/dev/sda5` |
+| **Disco datos** | _(no hay segundo disco actualmente — todo en sda1)_ |
+| **Ethernet** | 1x Gigabit integrada (Broadcom) |
+| **USB** | 4x USB 2.0 traseros, 2x USB 3.0 frontales |
+| **Factor de forma** | Mini tower (silencioso, bajo consumo ~45W idle) |
+
+### Notas del hardware
+
+- El PowerEdge T20 soporta hasta 32 GB RAM ECC (4 slots DIMM DDR3)
+- Tiene 4 bahías SATA internas (3.5") — se puede agregar HDD de datos en el futuro
+- CPU probablemente Intel Xeon E3-1225 v3 o Pentium G3220 (verificar con `lscpu | grep "Model name"`)
+- Disco al 8% de uso — amplio espacio disponible (~275 GB libres)
 
 ---
 
@@ -53,13 +52,14 @@
 
 | Campo | Valor |
 |-------|-------|
-| **Distro** | Debian 12 (Bookworm) |
-| **Kernel** | _completar_ (`uname -r`) |
+| **Distro** | Debian 13 (Trixie) |
+| **Kernel** | 6.12.101+deb13-amd64 |
 | **Init** | systemd |
 | **Shell** | Bash 5.x + nas-dotfiles framework |
 | **Docker** | Docker Engine + Compose v2 |
 | **Python** | 3.11+ |
 | **Usuario admin** | `aadm` (uid 1000) |
+| **Hostname** | `Nas` |
 
 ### Paquetes clave instalados
 
@@ -77,9 +77,13 @@ python3 python3-pip
 
 | Punto de montaje | Dispositivo | Filesystem | Tamaño | Uso |
 |------------------|-------------|------------|--------|-----|
-| `/` | _completar_ | ext4 | _completar_ | Sistema + Docker |
-| `/NAS` | _completar_ | _completar_ | _completar_ | Datos: media, backups, compartidos |
+| `/` | `/dev/sda1` | ext4 | 290 GB | Sistema + Docker + datos (8%) |
+| `[SWAP]` | `/dev/sda5` | swap | 7.9 GB | Swap |
 | `/NAS/USB` | (dinámico) | varios | varía | USBs automontados |
+
+> **Nota:** Actualmente todo está en un solo disco SSD de 298 GB.
+> Cuando se agregue un HDD de datos, montar en `/NAS` o `/mnt/datos` y
+> actualizar esta tabla.
 
 ### Rutas importantes
 
@@ -97,22 +101,24 @@ python3 python3-pip
 
 | Interfaz | IP | Rol |
 |----------|----|-----|
-| _completar_ (ej: `eth0`, `enp1s0`) | 192.168.0.200/24 | LAN principal |
+| `eth0` (o `eno1`) | 192.168.0.200/24 | LAN principal |
 | `docker0` | 172.17.0.1/16 | Bridge Docker default |
+
+> **Verificar:** Ejecutar `ip -br addr` para confirmar nombre exacto de interfaz y IP.
 
 ### Gateway y DNS
 
 | Campo | Valor |
 |-------|-------|
-| Gateway | _completar_ (ej: 192.168.0.1) |
-| DNS | _completar_ (ej: AdGuard → 192.168.0.53 o router) |
+| Gateway | 192.168.0.1 (router) |
+| DNS | AdGuard → 192.168.0.53 (macvlan) |
 
 ### Gestión de red
 
 | Campo | Valor |
 |-------|-------|
-| Backend | _completar_ (`systemd-networkd` / `ifupdown` / `NetworkManager`) |
-| Config file | _completar_ (ej: `/etc/systemd/network/10-eth.network`) |
+| Backend | systemd-networkd |
+| Config file | `/etc/systemd/network/*.network` |
 
 ---
 
@@ -242,10 +248,12 @@ DOCKER_BASE=/docker
 | **emqx** | Docker | 1883, 8883, 8083, 8084, 18083 | iot_net | Broker MQTT IoT |
 | **esphome** | Docker | 6052 | iot_net | Firmware ESP32/ESP8266 |
 | **datasql** | Docker (multi) | 5050 (pgadmin) | db_net | PostgreSQL + pgAdmin + Redis |
-| **filebrowser** | Docker | 8085 | bridge | Explorador archivos web |
+| **filebrowser** | Docker | 8085 | filebrowser_default | Explorador archivos web |
 | **ntfy** | Docker | 8090 | bridge | Notificaciones push |
-| **spacedrive** | Docker | _completar_ | bridge | Gestor de archivos (Spacedrive) |
+| **spacedrive** | Docker | _(ver compose)_ | spacedrive_default | Gestor de archivos |
 | **usb-api** | Nativo (systemd) | 8091 | — | API REST para USBs |
+
+> **12 contenedores corriendo** según el prompt (`12↑`)
 
 ---
 
@@ -442,9 +450,8 @@ svc port-map    # Mapa de puertos (detecta conflictos)
 
 | Fecha | Cambio | Notas |
 |-------|--------|-------|
-| _completar_ | Instalación inicial | Debian 12, Docker, nas-dotfiles |
-| _completar_ | Disco datos agregado | _modelo y capacidad_ |
-| _completar_ | RAM ampliada | _de X a Y GB_ |
+| _(original)_ | Instalación inicial | Dell PowerEdge T20, Debian 13, Docker, nas-dotfiles |
+| _(pendiente)_ | Agregar HDD de datos | Hay 3 bahías SATA libres para futuro |
 
 ---
 
