@@ -573,6 +573,75 @@ docker run --rm -v $dkco/ntfy/config:/etc/ntfy binwiederhier/ntfy:latest serve -
 - Verificar que ntfy está en `homepage_net`: `docker network inspect homepage_net`
 - La URL del widget debe usar el nombre del contenedor: `http://ntfy:80/v1/stats`
 
+### USB no notifica al montar/desmontar
+
+1. Verificar que las notificaciones están habilitadas:
+```bash
+grep -E "ENABLE_NOTIFICATIONS|NTFY_URL" /etc/usb-automount.conf
+# Debe mostrar:
+#   ENABLE_NOTIFICATIONS="true"
+#   NTFY_URL="http://192.168.1.200:8090"
+```
+
+2. Si falta alguna, agregar:
+```bash
+sed -i 's/ENABLE_NOTIFICATIONS="false"/ENABLE_NOTIFICATIONS="true"/' /etc/usb-automount.conf
+grep -q "^NTFY_URL" /etc/usb-automount.conf || echo 'NTFY_URL="http://192.168.1.200:8090"' >> /etc/usb-automount.conf
+```
+
+3. Verificar que el script tiene la versión con ntfy (no la vieja con notify-send):
+```bash
+grep -c "ntfy_send\|ntfy_usb" /usr/local/bin/usb-automount.sh
+# Debe devolver > 0. Si devuelve 0, actualizar:
+cp /debmenux/templates/usb-automount/usb-automount.sh /usr/local/bin/usb-automount.sh
+chmod +x /usr/local/bin/usb-automount.sh
+```
+
+4. Verificar que estás suscrito al topic **`usb`** en la app (no solo `nas-alerts`)
+
+### Mountpoint huérfano (carpeta usb-* que no se borra)
+
+**Síntoma:** En File Browser (o `ls /NAS/USB/`) aparece una carpeta `usb-sdb1`
+pero no hay USB conectado. `rmdir` da "Dispositivo o recurso ocupado".
+
+**Causa:** El USB se desconectó sin desmontar (tirón físico). El kernel mantiene
+un "mount fantasma" aunque el dispositivo ya no existe.
+
+**Diagnóstico:**
+```bash
+# ¿Está marcado como montado? (sí = mount fantasma)
+mountpoint /NAS/USB/usb-sdb1
+
+# ¿El dispositivo existe? (no = ya se desconectó)
+lsblk | grep sdb
+
+# ¿La carpeta está vacía?
+ls /NAS/USB/usb-sdb1/
+```
+
+Si `mountpoint` dice "es un punto de montaje" pero `lsblk` no muestra el dispositivo:
+
+**Solución:**
+```bash
+# Desmontar lazy (libera el mount fantasma) + borrar carpeta
+umount -l /NAS/USB/usb-sdb1 && rmdir /NAS/USB/usb-sdb1
+
+# Verificar
+ls /NAS/USB/
+```
+
+**Prevención:**
+- El timer `usb-automount-cleanup.timer` limpia huérfanos cada hora automáticamente
+- Verificar que está activo: `systemctl status usb-automount-cleanup.timer`
+- Si no está activo: `systemctl enable --now usb-automount-cleanup.timer`
+- Siempre que sea posible, **desmontar antes de desconectar**:
+  - Desde terminal: `usb-automount.sh --status` → `curl -X POST http://IP:8091/usb/unmount/sdb1`
+  - Desde File Browser: no tocar, usar usb-api
+  - Desde el celular: enviar POST al endpoint de usb-api
+
+> **Nota:** El cleanup timer solo borra carpetas que NO están marcadas como mountpoint
+> Y están vacías. Los mounts fantasma necesitan `umount -l` manual (o reboot).
+
 ---
 
 ## USB API
