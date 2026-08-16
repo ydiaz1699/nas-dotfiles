@@ -11,13 +11,21 @@
 name: nas-homelab
 version: "2.0"
 trigger: >
-  Activar cuando el usuario mencione: NAS, homelab, servidor, contenedor,
-  Docker, compose, svc, dk, adm, nasfk, gpl, instal, agente, plugin,
-  servicio, backup, USB, ntfy, Homepage, red, puerto, o cualquier
-  comando/alias del entorno bash personalizado.
+  Activar cuando el usuario mencione CUALQUIERA de estos contextos
+  (aunque no diga "NAS" explícitamente):
+  - Servicios: Docker, contenedor, compose, imagen, puerto, red, volumen
+  - Comandos: dk, adm, nasfk, svc, instal, pipins, gpl, gs, nas, bat
+  - Servicios específicos: emqx, ntfy, adguard, filebrowser, esphome,
+    homepage, datasql, pgadmin, redis, usb-api, spacedrive
+  - Infra: homelab, servidor, backup, cron, systemd, USB, mount
+  - IoT: MQTT, broker, ESP32, Home Assistant, alarma, sensor
+  - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS
+  - Notificaciones: ntfy, push, alerta, topic
+  - Operaciones: actualizar, reiniciar, logs, health, doctor
+  - Almacenamiento: disco, NAS, USB, automount, /NAS/USB
+  - Output pegado con prompt "root@Nas" o "aadm@Nas"
 scope: encoded-preferences
-  # Este skill NO caduca con modelos nuevos — son procesos únicos del usuario.
-  # Contiene: aliases, rutas, redes, convenciones, servicios reales.
+  # NO caduca con modelos nuevos — son procesos únicos del usuario.
 ```
 
 **Regla:** Si el usuario habla del NAS, SIEMPRE cargar esta skill antes de responder.

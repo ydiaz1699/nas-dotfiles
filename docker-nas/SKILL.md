@@ -1,15 +1,26 @@
 ---
 name: docker-nas
 description: >
-  Skill para NAS/Homelab Debian con Docker, administrado por tres capas:
-  (1) Shell personalizado (aliases, navegación, prompt con eza/fzf),
-  (2) CLI Docker `svc` (bash o Python), y (3) Agente IA Python (Strands SDK,
-  28 tools, 3 providers, memoria persistente, plugins, daemon systemd).
-  Activar cuando el usuario mencione: NAS, homelab, contenedor, servicio,
-  compose, dk, adm, svc, agent, plugin, Docker, o cualquier comando del
-  entorno bash personalizado del servidor.
-  IMPORTANTE: Leer SIEMPRE references/nas-context.md para conocer aliases,
-  servicios activos, puertos, redes y reglas antes de sugerir comandos.
+  Skill para administrar un NAS Dell PowerEdge T20 con Debian 13 + Docker.
+  Tres capas: Shell personalizado (aliases, navegación), CLI Docker (svc),
+  y Agente IA Python (28 tools, plugins, MQTT).
+
+  ACTIVAR esta skill cuando el usuario mencione CUALQUIERA de estos contextos
+  (aunque no diga "NAS" explícitamente):
+  - Servicios: Docker, contenedor, compose, imagen, puerto, red, volumen
+  - Comandos del entorno: dk, adm, nasfk, svc, instal, pipins, gpl, gs, nas
+  - Servicios específicos: emqx, ntfy, adguard, filebrowser, esphome, homepage,
+    datasql, pgadmin, redis, usb-api, spacedrive, vaultwarden
+  - Infraestructura: homelab, servidor, backup, cron, systemd, USB, mount
+  - IoT/domótica: MQTT, broker, ESP32, Home Assistant, alarma, sensor
+  - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS, proxy
+  - Notificaciones: ntfy, push, alerta, topic, notificación
+  - Operaciones: actualizar, reiniciar, logs, health, doctor, port-map
+  - Almacenamiento: disco, NAS, USB, automount, filebrowser, /NAS/USB
+  - El usuario pega output de terminal con prompt "root@Nas" o "aadm@Nas"
+
+  ANTES de responder: cargar references/nas-context.md para conocer aliases,
+  servicios, puertos, redes y reglas. NUNCA improvisar rutas ni comandos.
 ---
 
 # docker-nas skill
