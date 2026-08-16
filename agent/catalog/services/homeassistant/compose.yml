@@ -11,6 +11,9 @@ services:
       - 200.73.96.146
       - 8.8.8.8
     privileged: true
+    env_file:
+      - ../.env
+      - .env
     environment:
       - TZ=America/La_Paz
     volumes:
@@ -27,10 +30,10 @@ services:
       - homepage.group=IoT
       - homepage.name=Home Assistant
       - homepage.icon=home-assistant
-      - homepage.href=http://192.168.1.200:8123
+      - homepage.href=http://${SERVER_IP}:8123
       - homepage.description=Automatización del hogar
       - homepage.widget.type=homeassistant
-      - homepage.widget.url=http://192.168.1.200:8123
+      - homepage.widget.url=http://${SERVER_IP}:8123
       - homepage.widget.key=${HOMEASSISTANT_TOKEN}
     deploy:
       resources:
