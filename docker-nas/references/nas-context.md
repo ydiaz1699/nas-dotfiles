@@ -1,172 +1,198 @@
-# NAS Context — Hechos Operativos para LLMs
+# NAS Skill — Contexto Operativo
 
-> **Auto-generado por `svc catalog-sync`.** No editar manualmente.
+> **Auto-generado por `svc catalog-sync`.** No editar secciones marcadas [AUTO].  
 > Última actualización: 2026-08-15
 
 ---
 
-## Hardware
+## 1. Metadata & Trigger
+
+```yaml
+name: nas-homelab
+version: "2.0"
+trigger: >
+  Activar cuando el usuario mencione: NAS, homelab, servidor, contenedor,
+  Docker, compose, svc, dk, adm, nasfk, gpl, instal, agente, plugin,
+  servicio, backup, USB, ntfy, Homepage, red, puerto, o cualquier
+  comando/alias del entorno bash personalizado.
+scope: encoded-preferences
+  # Este skill NO caduca con modelos nuevos — son procesos únicos del usuario.
+  # Contiene: aliases, rutas, redes, convenciones, servicios reales.
+```
+
+**Regla:** Si el usuario habla del NAS, SIEMPRE cargar esta skill antes de responder.
+
+---
+
+## 2. Entorno (lo justo para no improvisar)
+
+### Máquina
 
 | Campo | Valor |
 |-------|-------|
 | Equipo | Dell PowerEdge T20 |
-| CPU | Intel 2 cores @ 3 GHz |
-| RAM | 8 GB DDR3 ECC |
-| Disco | SSD 298 GB ext4 (8% usado) |
-| OS | Debian 13 Trixie, kernel 6.12 |
-| Hostname | `Nas` |
 | IP | 192.168.1.200 |
+| Hostname | `Nas` (accesible via `ssh aadm@Nas.local`) |
+| OS | Debian 13, kernel 6.12 |
+| CPU/RAM | 2 cores @ 3GHz / 8 GB ECC |
+| Disco | SSD 298 GB ext4 (8%) |
 
----
+### Variables de entorno
 
-## Rutas (NUNCA hardcodear, usar variables)
-
-| Variable | Ruta | Comando rápido |
-|----------|------|----------------|
+| Variable | Valor | Atajo |
+|----------|-------|-------|
 | `$NAS_DOTFILES` | `/nas-dotfiles` | `nasfk` |
-| `$dkco` | `/docker` | `dk` (sin args) |
+| `$dkco` | `/docker` | `dk` |
 | `$aadm` | `/home/aadm` | `adm` |
+| `$NTFY_URL` | `http://192.168.1.200:8090` | — |
 
 ---
 
-## Aliases obligatorios (NUNCA usar el comando largo)
+## 3. Encoded Preferences (NUNCA/SIEMPRE)
 
-| Alias | Equivale a | Contexto |
-|-------|-----------|----------|
-| `dk <svc>` | `cd /docker/<svc>` | Navegar a servicio |
-| `adm` | `cd /home/aadm` | Ir a home |
-| `nasfk` | `cd /nas-dotfiles` | Ir al código |
-| `svc <cmd> <svc>` | `docker compose ...` | Operar Docker |
-| `instal <pkg>` | `apt install` | Paquetes APT |
-| `pipins <pkg>` | `pip install` | Paquetes Python |
-| `gpl` | `git pull` | Pull |
-| `gs` | `git status` | Status |
-| `ga` | `git add` | Stage |
-| `gc "msg"` | `git commit -m` | Commit |
-| `gp` | `git push` | Push |
-| `git-quick "msg"` | `add -A && commit && push` | Todo en uno |
-| `nas` | Dashboard del servidor | Monitor |
-| `disk` | Uso de disco | Info |
-| `bat <file>` | `batcat` con colores | Ver archivo |
-
----
-
-## Servicios activos
-
-| Servicio | Puerto | Red | Tipo | Homepage |
-|----------|--------|-----|------|----------|
-| adguard | 53,80 (IP: 192.168.1.201) | adguard_macvlan_NET | Docker | ✅ labels |
-| emqx | 1883,18083 | iot_net, db_net | Docker | ✅ labels |
-| esphome | 6052 | host | Docker | ✅ labels |
-| datasql | 5050 (pgadmin) | db_net | Docker | ✅ labels |
-| filebrowser | 8085 | filebrowser_default | Docker | ✅ labels |
-| homepage | 3000 | homepage_net | Docker | — |
-| ntfy | 8090 | homepage_net | Docker | ✅ labels |
-| usb-api | 8091 | — | systemd nativo | services.yaml |
-
----
-
-## Redes Docker
-
-| Red | Driver | Uso |
-|-----|--------|-----|
-| `adguard_macvlan_NET` | macvlan | AdGuard con IP propia (DNS:53) |
-| `db_net` | bridge | PostgreSQL ↔ pgAdmin ↔ apps (interno) |
-| `iot_net` | bridge | EMQX ↔ ESPHome ↔ HA (IoT) |
-| `homepage_net` | bridge | Homepage ↔ ntfy (widgets internos) |
-
-**Reglas:** DBs nunca exponen puerto al host. IoT va a iot_net. Homepage labels > services.yaml.
-
----
-
-## Notificaciones (ntfy)
-
-| Campo | Valor |
-|-------|-------|
-| URL | `http://192.168.1.200:8090` |
-| Función | `ntfy_send "topic" "título" "mensaje" "prioridad" "tags"` |
-| Librería | `docker/cli/lib/notifications.sh` |
-| Topics | `usb`, `docker`, `backups`, `system`, `alarma`, `nas-alerts` |
-
----
-
-## USB Automount
-
-| Campo | Valor |
-|-------|-------|
-| Mount base | `/NAS/USB/` |
-| Formato | `/NAS/USB/<LABEL>` (con label) o `/NAS/USB/usb-<dev>` (sin label) |
-| Script | `/usr/local/bin/usb-automount.sh` |
-| Notifica | ntfy topic `usb` |
-| API | `http://192.168.1.200:8091/usb/list` |
-
----
-
-## Acceso remoto
-
-| Método | Comando |
-|--------|---------|
-| SSH por nombre | `ssh aadm@Nas.local` (avahi-daemon/mDNS) |
-| SSH por IP | `ssh aadm@192.168.1.200` |
-
----
-
-## Pipeline auto-docs (`svc catalog-sync`)
-
-Al crear/modificar un compose.yml se genera automáticamente:
-- `agent/catalog/services/<svc>/ficha.md` (metadatos)
-- `agent/catalog/services/<svc>/compose.yml` (copia)
-- `agent/catalog/services/<svc>/.env.example` (sanitizado)
-- `docs/services/<svc>-guide.md` (placeholder)
-- Script DebMenux si no existe
-- Notificación ntfy
-
----
-
-## Dónde buscar más info
-
-| Necesitas | Consultar |
-|-----------|-----------|
-| Guía completa de un servicio | `docs/services/<svc>-guide.md` |
-| Metadatos/puertos/redes | `agent/catalog/services/<svc>/ficha.md` |
-| Compose real | `agent/catalog/services/<svc>/compose.yml` |
-| Variables de entorno | `agent/catalog/services/<svc>/.env.example` |
-| Troubleshooting | `docs/troubleshooting.md` |
-| Pipeline de docs | `docs/catalog-sync-pipeline.md` |
-| Manual del NAS | `docs/nas-manual.md` |
-| Homepage config | `docs/services/homepage-guide.md` |
-| Comandos shell | `docker-nas/references/entorno.md` |
-| Comandos svc | `docker-nas/references/svc.md` |
-
----
-
-## Reglas estrictas para el LLM
+Estas reglas son permanentes. No cambian con modelos nuevos.
 
 ```
-NUNCA:                              SIEMPRE:
+NUNCA usar:                         SIEMPRE usar:
+─────────────────────────────────────────────────────
   cd /docker/X                  →   dk X
   cd /nas-dotfiles              →   nasfk
   cd /home/aadm                 →   adm
   git pull                      →   gpl
   git status                    →   gs
-  apt install                   →   instal
-  docker compose up             →   svc up X
+  git add                       →   ga
+  git commit -m "msg"           →   gc "msg"
+  git push                      →   gp
+  git add -A && commit && push  →   git-quick "msg"
+  apt install pkg               →   instal pkg
+  pip install pkg               →   pipins pkg
+  docker compose up -d          →   svc up X
+  docker compose down           →   svc down X
   docker compose logs           →   svc logs X
   docker restart X              →   svc restart X
-  pip install                   →   pipins
   cat archivo                   →   bat archivo
-  /path/to/...                  →   preguntar o deducir del contexto
+  notify-send                   →   ntfy_send (headless)
   docker-compose.yml            →   compose.yml
-  notify-send                   →   ntfy_send (headless, no hay GUI)
+  /path/to/...                  →   deducir o preguntar
+  hardcodear rutas              →   usar $variables
 ```
+
+### Notificaciones
+
+```bash
+# Función compartida (source automático)
+ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
+
+# Topics: usb, docker, backups, system, alarma, nas-alerts
+# Prioridades: min, low, default, high, urgent
+```
+
+### Nuevo servicio (orden obligatorio)
+
+```
+1. mkdir -p $dkco/<svc>/data
+2. Crear compose.yml + .env
+3. chmod 600 .env
+4. Agregar labels homepage.* en compose
+5. dk <svc> && svc up <svc>
+6. svc catalog-sync <svc>  → genera toda la documentación
+```
+
+### Homepage
+
+- **Labels en compose (auto-descubrimiento)** > services.yaml
+- `services.yaml` solo para servicios nativos (systemd)
+- Recrear contenedor para que tome labels nuevas: `svc recreate X`
 
 ---
 
-## Nuevo servicio (orden obligatorio)
+## 4. Skill Registry [AUTO]
 
-1. `mkdir -p $dkco/<svc>/data`
-2. Crear `compose.yml` + `.env`
-3. `chmod 600 $dkco/<svc>/.env`
-4. Agregar labels `homepage.*` en compose
-5. `dk <svc> && svc up <svc>`
-6. `svc catalog-sync <svc>` → genera toda la documentación
+Índice ligero de servicios. **NO cargar los archivos — solo buscar cuando se necesite.**
+
+| Servicio | Puerto | Red | Docs (cargar si se necesita) |
+|----------|--------|-----|------|
+| adguard | 53,80 (IP: .201) | macvlan | `agent/catalog/services/adguard/` |
+| emqx | 1883,18083 | iot_net, db_net | `agent/catalog/services/emqx/ficha.md` |
+| esphome | 6052 | host | `agent/catalog/services/esphome/ficha.md` |
+| datasql | 5050 | db_net | `docs/services/datasql-guide.md` |
+| filebrowser | 8085 | default | `docs/services/filebrowser-guide.md` |
+| homepage | 3000 | homepage_net | `docs/services/homepage-guide.md` |
+| ntfy | 8090 | homepage_net | `docs/services/ntfy-guide.md` |
+| usb-api | 8091 | nativo (systemd) | `agent/catalog/services/usb-api/ficha.md` |
+
+### Redes
+
+| Red | Propósito | Regla |
+|-----|-----------|-------|
+| `adguard_macvlan_NET` | IP dedicada AdGuard (DNS:53) | Solo macvlan |
+| `db_net` | Apps ↔ DBs (interno) | Nunca exponer puertos al host |
+| `iot_net` | EMQX ↔ ESPHome ↔ HA | Todo IoT aquí |
+| `homepage_net` | Homepage ↔ servicios (widgets) | Para APIs internas |
+
+### USB Automount
+
+| Campo | Valor |
+|-------|-------|
+| Mount base | `/NAS/USB/` |
+| Formato | `/NAS/USB/<LABEL>` o `/NAS/USB/usb-<dev>` (sin label) |
+| API | `GET http://192.168.1.200:8091/usb/list` |
+| Desmontar | `POST http://192.168.1.200:8091/usb/unmount/<dev>` |
+| Cleanup | `usb-automount.sh --cleanup` o `umount -l` + `rmdir` |
+
+---
+
+## 5. Documentación disponible (lazy loading)
+
+**Regla: NO leer estos archivos al activar la skill.** Solo cargar cuando el usuario pregunte sobre ese tema.
+
+| Trigger | Archivo a cargar |
+|---------|-----------------|
+| Preguntan por un servicio específico | `docs/services/<svc>-guide.md` → `agent/catalog/services/<svc>/ficha.md` |
+| Quieren crear servicio nuevo | `agent/catalog/_template.md` + `agent/catalog/_compose_base.md` |
+| Troubleshooting USB / mounts | `docs/services/ntfy-guide.md` §Troubleshooting |
+| Configurar Homepage | `docs/services/homepage-guide.md` |
+| Pipeline de auto-docs | `docs/catalog-sync-pipeline.md` |
+| Info completa del NAS | `docs/nas-manual.md` |
+| Todos los comandos shell | `docker-nas/references/entorno.md` |
+| Todos los comandos svc | `docker-nas/references/svc.md` |
+| Seguridad y convenciones | `docker-nas/references/seguridad.md` |
+| Diagnóstico paso a paso | `docker-nas/references/diagnostic.md` |
+| Redes avanzadas (macvlan) | `docker-nas/references/networking.md` |
+| Agente IA (tools, plugins) | `docker-nas/references/agent.md` |
+| Extender framework | `docker-nas/references/extend.md` |
+
+---
+
+## 6. Progressive Updates (self-learning)
+
+Cuando el usuario corrige al LLM o da feedback, agregar aquí.
+Formato: `[fecha] corrección`.
+
+```
+[2026-08-15] La IP real del NAS es 192.168.1.200 (no .0.200)
+[2026-08-15] ntfy ya estaba en homepage_net (el compose lo incluye)
+[2026-08-15] EMQX ya tiene labels Homepage en su compose (no poner en services.yaml)
+[2026-08-15] ENABLE_NOTIFICATIONS estaba en "false" — siempre verificar /etc/usb-automount.conf
+[2026-08-15] El script de usb-automount en /usr/local/bin/ puede ser versión vieja — verificar con grep ntfy_send
+[2026-08-15] USBs ahora montan con LABEL (no usb-sdb1) — formato: /NAS/USB/<LABEL>
+[2026-08-15] Mountpoints fantasma: solución = umount -l + rmdir (el timer no puede limpiarlos)
+[2026-08-15] Browser push notifications requieren HTTPS — usar Chrome con --unsafely-treat-insecure-origin-as-secure flag en LAN
+```
+
+> **Instrucción al LLM:** Cuando el usuario te corrija algo sobre el NAS
+> (ruta, IP, alias, comportamiento de un servicio), agregar una línea aquí
+> con la fecha y la corrección. Esto evita repetir el mismo error.
+
+---
+
+## 7. Verificación rápida (para el LLM)
+
+Antes de sugerir CUALQUIER comando para el NAS, verificar:
+
+- [ ] ¿Usé el alias correcto? (dk, svc, nasfk, gpl, instal...)
+- [ ] ¿Usé variables de entorno, no rutas hardcodeadas?
+- [ ] ¿El servicio tiene guía? → Leerla ANTES de sugerir cambios
+- [ ] ¿Sugerí labels de Homepage en vez de services.yaml?
+- [ ] ¿El orden es correcto? (mkdir → archivos → permisos → levantar)
+- [ ] ¿Notificaciones van con ntfy_send, no notify-send?
