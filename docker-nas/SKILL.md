@@ -8,6 +8,8 @@ description: >
   Activar cuando el usuario mencione: NAS, homelab, contenedor, servicio,
   compose, dk, adm, svc, agent, plugin, Docker, o cualquier comando del
   entorno bash personalizado del servidor.
+  IMPORTANTE: Leer SIEMPRE references/nas-context.md para conocer aliases,
+  servicios activos, puertos, redes y reglas antes de sugerir comandos.
 ---
 
 # docker-nas skill

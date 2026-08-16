@@ -616,3 +616,53 @@ _catalog_status() {
     echo "  Ejecutar 'svc catalog-sync' para generar lo que falta."
     echo ""
 }
+
+
+
+# ==============================================================================
+# REGENERAR nas-context.md (skill compacta para LLMs)
+# ==============================================================================
+
+_regenerate_nas_context() {
+    local context_file="${NAS_DOTFILES:-/nas-dotfiles}/docker-nas/references/nas-context.md"
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        _sync_new "[dry-run] Regeneraría nas-context.md"
+        return 0
+    fi
+
+    # Recolectar servicios activos
+    local services_table=""
+    for compose in "${DOCKER_BASE}"/*/compose.yml; do
+        [[ -f "$compose" ]] || continue
+        local svc
+        svc=$(basename "$(dirname "$compose")")
+        [[ "$svc" == "backups" || "$svc" == "cli" ]] && continue
+
+        # Puerto principal
+        local port
+        port=$(grep -m1 -oP '"\K\d+(?=:\d+")' "$compose" 2>/dev/null || echo "—")
+
+        # Redes
+        local nets
+        nets=$(grep -A10 'networks:' "$compose" | grep -oP '^\s+- \K\w+' | grep -v 'driver\|external' | tr '\n' ',' | sed 's/,$//')
+        [[ -z "$nets" ]] && nets="bridge"
+
+        # Homepage labels
+        local hp="❌"
+        grep -q 'homepage\.' "$compose" 2>/dev/null && hp="✅ labels"
+
+        services_table="${services_table}| ${svc} | ${port} | ${nets} | Docker | ${hp} |\n"
+    done
+
+    # Agregar usb-api (nativo)
+    if systemctl is-active --quiet usb-api.service 2>/dev/null; then
+        services_table="${services_table}| usb-api | 8091 | — | systemd nativo | services.yaml |\n"
+    fi
+
+    # Escribir fecha de actualización en el archivo existente
+    if [[ -f "$context_file" ]]; then
+        sed -i "s/^> Última actualización:.*/> Última actualización: $(date +%Y-%m-%d)/" "$context_file"
+        _sync_ok "nas-context.md fecha actualizada"
+    fi
+}
