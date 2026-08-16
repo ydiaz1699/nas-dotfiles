@@ -499,19 +499,131 @@ shell_command:
 > **⚠️ NUNCA usar `$(date...)` en el filename del shell_command** — se ejecuta
 > en un momento diferente al snapshot y el archivo no coincide. Usar nombre fijo.
 
-### Resumen de métodos HA → ntfy
+### Prueba rápida desde terminal (sin HA)
 
-| Método | Pros | Contras |
-|--------|------|---------|
-| **Integración oficial** (recomendado) | Nativo, UI, sin timing bugs, soporte oficial | Requiere HA reciente |
-| shell_command + curl | Sin dependencias, funciona en cualquier HA | Timing manual, sin attachments inline |
+Para verificar que el flujo cámara → ntfy funciona end-to-end:
 
-### Errores comunes
+```bash
+# 1. Capturar snapshot via API de HA (requiere Long-Lived Access Token)
+curl -s -o /tmp/camara-test.jpg \
+  -H "Authorization: Bearer TU_TOKEN_HA_LARGO" \
+  "http://192.168.1.200:8123/api/camera_proxy/camera.camara_profile_000"
 
-- **`$(date...)` no coincide con el filename del snapshot**: Usar nombre fijo (`alarma.jpg`)
-- **La imagen no se adjunta**: Verificar que el path es absoluto (`/config/www/...`)
-- **No llega la notificación**: Verificar topic correcto en la app + que ntfy responde: `curl http://192.168.1.200:8090/v1/health`
-- **Falsos positivos del sensor**: Agregar `for: { seconds: 5 }` al trigger
+# 2. Enviar a ntfy con imagen
+curl -H "Title: 🧪 Test cámara en vivo" \
+     -H "Priority: high" \
+     -H "Tags: camera,test_tube" \
+     -H "Filename: camara-test.jpg" \
+     -T /tmp/camara-test.jpg \
+     http://192.168.1.200:8090/nas-alerts
+
+# 3. Limpiar
+rm /tmp/camara-test.jpg
+```
+
+> **Nota:** El `access_token` del entity state (el que aparece en `entity_picture`)
+> es solo para el proxy del frontend. Para la API necesitas un **Long-Lived Access Token**:
+> HA → Tu perfil → scroll abajo → "Long-Lived Access Tokens" → Crear.
+
+---
+
+### Automatización en HA (sin terminal, 100% dentro de Home Assistant)
+
+La automatización se configura una vez y se ejecuta sola cada vez que la cámara
+detecta movimiento. No necesitas tocar la terminal.
+
+#### Paso 1: Instalar integración ntfy en HA
+
+1. Settings → Devices & Services → **Add Integration** → buscar **ntfy**
+2. Service URL: `http://192.168.1.200:8090`
+3. Sin autenticación (dejar vacío)
+4. Verify SSL: desactivar (es HTTP local)
+5. Add Topic → escribir: `nas-alerts`
+
+Esto crea la entidad `notify.nas_alerts`.
+
+#### Paso 2: Crear la automatización
+
+Settings → Automations & Scenes → **Create Automation** → Editar en YAML:
+
+```yaml
+alias: "Movimiento cámara → ntfy con snapshot"
+description: "Captura imagen y envía push notification al detectar movimiento"
+mode: single
+trigger:
+  - platform: state
+    entity_id: binary_sensor.camara_cell_motion_detection
+    to: "on"
+    for:
+      seconds: 5
+action:
+  # Capturar snapshot
+  - action: camera.snapshot
+    target:
+      entity_id: camera.camara_profile_000
+    data:
+      filename: "/config/www/snapshots/alarma.jpg"
+
+  # Esperar a que se escriba el archivo
+  - delay:
+      seconds: 2
+
+  # Enviar notificación con imagen
+  - action: ntfy.publish
+    target:
+      entity_id: notify.nas_alerts
+    data:
+      title: "🚨 Movimiento detectado"
+      message: "Cámara detectó movimiento"
+      priority: high
+      tags: "warning,camera"
+      image: "/config/www/snapshots/alarma.jpg"
+```
+
+#### Paso 3: Verificar que funciona
+
+1. Guardar la automatización
+2. Pasar frente a la cámara (esperar 5 segundos del filtro)
+3. Debería llegar al celular: título "🚨 Movimiento detectado" + imagen de la cámara
+
+#### Paso 4 (opcional): Más automatizaciones útiles
+
+```yaml
+# Notificar cuando un servicio Docker se cae (si HA monitorea uptime)
+- alias: "Servicio Docker caído → ntfy"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.emqx_running  # (si tienes sensor de Docker)
+      to: "off"
+      for:
+        seconds: 30
+  action:
+    - action: ntfy.publish
+      target:
+        entity_id: notify.nas_alerts
+      data:
+        title: "⚠️ Servicio Docker caído"
+        message: "EMQX no responde desde hace 30s"
+        priority: high
+        tags: "warning,whale"
+```
+
+```yaml
+# Notificación diaria de estado del NAS
+- alias: "Reporte diario NAS → ntfy"
+  trigger:
+    - platform: time
+      at: "09:00:00"
+  action:
+    - action: ntfy.publish
+      target:
+        entity_id: notify.nas_alerts
+      data:
+        title: "📊 NAS Status"
+        message: "Servicios: OK | Disco: {{ states('sensor.disk_use_percent') }}%"
+        priority: low
+        tags: "chart_with_upwards_trend"
+```
 
 ---
 
