@@ -125,6 +125,7 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 | esphome | 6052 | host | `agent/catalog/services/esphome/ficha.md` |
 | datasql | 5050 | db_net | `docs/services/datasql-guide.md` |
 | filebrowser | 8085 | default | `docs/services/filebrowser-guide.md` |
+| homeassistant | 8123 | host | `docs/services/homeassistant-guide.md` |
 | homepage | 3000 | homepage_net | `docs/services/homepage-guide.md` |
 | ntfy | 8090 | homepage_net | `docs/services/ntfy-guide.md` |
 | usb-api | 8091 | nativo (systemd) | `agent/catalog/services/usb-api/ficha.md` |
@@ -153,13 +154,16 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 ## 5. Documentación disponible (lazy loading)
 
 **Regla: NO leer estos archivos al activar la skill.** Solo cargar cuando el usuario pregunte sobre ese tema.
+**EXCEPCIÓN: SIEMPRE leer `docs/docker-entorno.md` ANTES de modificar cualquier compose.**
 
 | Trigger | Archivo a cargar |
 |---------|-----------------|
+| Modificar/crear un compose.yml | `docs/docker-entorno.md` (**OBLIGATORIO ANTES de cualquier cambio**) |
 | Preguntan por un servicio específico | `docs/services/<svc>-guide.md` → `agent/catalog/services/<svc>/ficha.md` |
-| Quieren crear servicio nuevo | `agent/catalog/_template.md` + `agent/catalog/_compose_base.md` |
+| Quieren crear servicio nuevo | `docs/docker-entorno.md` + `agent/catalog/_template.md` |
 | Troubleshooting USB / mounts | `docs/services/ntfy-guide.md` §Troubleshooting |
 | Configurar Homepage | `docs/services/homepage-guide.md` |
+| Home Assistant (automatizaciones, ntfy, cámara) | `docs/services/homeassistant-guide.md` |
 | Pipeline de auto-docs | `docs/catalog-sync-pipeline.md` |
 | Info completa del NAS | `docs/nas-manual.md` |
 | Todos los comandos shell | `docker-nas/references/entorno.md` |
@@ -186,6 +190,14 @@ Formato: `[fecha] corrección`.
 [2026-08-15] USBs ahora montan con LABEL (no usb-sdb1) — formato: /NAS/USB/<LABEL>
 [2026-08-15] Mountpoints fantasma: solución = umount -l + rmdir (el timer no puede limpiarlos)
 [2026-08-15] Browser push notifications requieren HTTPS — usar Chrome con --unsafely-treat-insecure-origin-as-secure flag en LAN
+[2026-08-16] NUNCA decir "no necesitas modificar el compose" sin leer docs/docker-entorno.md primero
+[2026-08-16] Todos los compose deben usar env_file: [../.env, .env] — NUNCA hardcodear SERVER_IP ni TZ
+[2026-08-16] TZ NUNCA va en environment: si ya está en $dkco/.env (se hereda via env_file)
+[2026-08-16] ntfy.publish de HA NO soporta imágenes — usar shell_command + curl -T
+[2026-08-16] priority en ntfy.publish de HA es NÚMERO (4=high), no texto ("high")
+[2026-08-16] Carpeta www/snapshots/ debe existir ANTES de camera.snapshot
+[2026-08-16] HA config se organiza con !include en carpeta includes/ (no todo en configuration.yaml)
+[2026-08-16] Home Assistant usa network_mode:host — no necesita redes Docker, accede directo a LAN
 ```
 
 > **Instrucción al LLM:** Cuando el usuario te corrija algo sobre el NAS
@@ -196,7 +208,7 @@ Formato: `[fecha] corrección`.
 
 ## 7. Verificación rápida (para el LLM)
 
-Antes de sugerir CUALQUIER comando para el NAS, verificar:
+Antes de sugerir CUALQUIER comando o cambio para el NAS, verificar:
 
 - [ ] ¿Usé el alias correcto? (dk, svc, nasfk, gpl, instal...)
 - [ ] ¿Usé variables de entorno, no rutas hardcodeadas?
@@ -204,3 +216,7 @@ Antes de sugerir CUALQUIER comando para el NAS, verificar:
 - [ ] ¿Sugerí labels de Homepage en vez de services.yaml?
 - [ ] ¿El orden es correcto? (mkdir → archivos → permisos → levantar)
 - [ ] ¿Notificaciones van con ntfy_send, no notify-send?
+- [ ] **¿Voy a modificar un compose? → LEÍ `docs/docker-entorno.md` PRIMERO?**
+- [ ] ¿El compose usa `env_file: [../.env, .env]` (no IP/TZ hardcodeados)?
+- [ ] ¿Las carpetas de volúmenes existen ANTES de levantar?
+- [ ] ¿Después del cambio sugiero `svc catalog-sync <svc>`?
