@@ -288,6 +288,7 @@ Orden de consulta:
 | **filebrowser** | `docs/services/filebrowser-guide.md` | Bind mounts, `:rshared` para USB, fstab, permisos, mount propagation |
 | **ntfy** | `docs/services/ntfy-guide.md` | Notificaciones push, topics, clientes Android/PWA, alarma+cámara, Homepage |
 | **usb-api** | `docs/services/ntfy-guide.md#usb-api` | API REST para USBs, systemd nativo, Homepage widget, desmontaje seguro |
+| **homeassistant** | `docs/services/homeassistant-guide.md` | Automatización, cámara→ntfy, includes, TvOverlay, shell_commands |
 | **emqx** | `agent/catalog/services/emqx/ficha.md` | Puertos WS 8083/8084, ulimits, dashboard LAN, iot_net |
 | **esphome** | `agent/catalog/services/esphome/ficha.md` | Puerto 6052, iot_net |
 

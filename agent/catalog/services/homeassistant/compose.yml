@@ -1,0 +1,42 @@
+# $dkco/homeassistant/compose.yml
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    restart: unless-stopped
+    network_mode: host
+    stop_grace_period: 60s
+    dns:
+      - 190.104.12.42
+      - 200.73.96.146
+      - 8.8.8.8
+    privileged: true
+    environment:
+      - TZ=America/La_Paz
+    volumes:
+      - ./data:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8123"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    labels:
+      - homepage.group=IoT
+      - homepage.name=Home Assistant
+      - homepage.icon=home-assistant
+      - homepage.href=http://192.168.1.200:8123
+      - homepage.description=Automatización del hogar
+      - homepage.widget.type=homeassistant
+      - homepage.widget.url=http://192.168.1.200:8123
+      - homepage.widget.key=${HOMEASSISTANT_TOKEN}
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
