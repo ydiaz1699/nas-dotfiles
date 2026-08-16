@@ -14,8 +14,6 @@ services:
     env_file:
       - ../.env
       - .env
-    environment:
-      - TZ=America/La_Paz
     volumes:
       - ./data:/config
       - /etc/localtime:/etc/localtime:ro
