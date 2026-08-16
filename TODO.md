@@ -1,7 +1,7 @@
 # TODO — nas-dotfiles
 
 Roadmap de features pendientes, priorizadas por impacto/esfuerzo.
-Actualizado: 2026-08-13
+Actualizado: 2026-08-15
 
 ---
 
@@ -48,7 +48,7 @@ Actualizado: 2026-08-13
 | # | Feature | Descripción | Esfuerzo | Estado |
 |---|---------|-------------|:--------:|:------:|
 | 1 | Exportar métricas a Prometheus | `svc doctor` → textfile que Grafana levanta via node_exporter | 40 min | ⬜ |
-| 2 | Notificaciones Telegram/ntfy | Alertar cuando un servicio cae, backup falla, o agente hace algo destructivo | 45 min | ⬜ |
+| 2 | Notificaciones Telegram/ntfy | ~~Alertar cuando un servicio cae, backup falla, o agente hace algo destructivo~~ | ~~45 min~~ | ✅ |
 
 ---
 
@@ -77,6 +77,26 @@ Actualizado: 2026-08-13
 
 | Feature | Fecha | Commit/PR |
 |---------|-------|-----------|
+| ntfy: servidor push self-hosted (Docker, :8090) + 6 topics | 2026-08-15 | PR #31 |
+| usb-api: REST API para USBs (systemd nativo, :8091) | 2026-08-15 | PR #31 |
+| lib/notifications.sh: ntfy_send() para svc y scripts | 2026-08-15 | PR #31 |
+| notification_plugin.py: plugin agente (docker.unhealthy, backup, etc.) | 2026-08-15 | PR #31 |
+| usb-automount: reemplazar notify-send → ntfy_send | 2026-08-15 | DebMenux PR#1 |
+| usb-automount: montar con LABEL del filesystem | 2026-08-15 | DebMenux main |
+| usb-api: filtrar solo USBs reales (/usb-* o /<LABEL>) | 2026-08-15 | DebMenux main |
+| Homepage: documentación + config (labels first, services.yaml solo nativos) | 2026-08-15 | main |
+| Catálogo: homepage (ficha + compose + config templates) | 2026-08-15 | main |
+| Catálogo: emqx/compose.yml (real con anchors + labels) | 2026-08-15 | main |
+| docs/nas-manual.md: manual NAS (hardware, redes, puertos, convenciones) | 2026-08-15 | main |
+| docs/services/ntfy-guide.md: guía completa (primer uso, PC, troubleshooting) | 2026-08-15 | main |
+| docs/services/homepage-guide.md: guía (labels > services.yaml) | 2026-08-15 | main |
+| docs/catalog-sync-pipeline.md: pipeline auto-documentación en cascada | 2026-08-15 | main |
+| catalog-sync.sh: genera ficha+guía+script+SKILL en cascada | 2026-08-15 | main |
+| Hook Kiro: PostFileSave compose.yml → auto-documentación | 2026-08-15 | main |
+| DebMenux integration.sh: guía placeholder + ntfy al registrar | 2026-08-15 | DebMenux main |
+| Skill 2.0: nas-context.md (registry, lazy loading, self-learning, trigger pushy) | 2026-08-15 | main |
+| AGENTS.md: formato abierto para cualquier AI agent (ambos repos) | 2026-08-15 | main |
+| SKILL.md: trigger pushy con 50+ palabras clave (Anthropic best practice) | 2026-08-15 | main |
 | Variables globales: svc pasa --env-file automático (global + local) | 2026-08-13 | main |
 | init.sh exporta $DOCKER_BASE/.env al shell (SERVER_IP, TZ disponibles) | 2026-08-13 | main |
 | install.sh configura .bashrc del usuario Y root automáticamente | 2026-08-13 | main |

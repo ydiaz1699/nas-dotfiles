@@ -70,20 +70,27 @@ agent --status                       # info de sesion
 nas-dotfiles/
 ├── shell/              Personaliza Bash (aliases, prompt, navegacion, pipins, nasfk)
 ├── docker/cli/         CLI Bash de Docker (comando svc)
+│   └── lib/
+│       ├── notifications.sh   ntfy_send() para scripts
+│       └── catalog-sync.sh    Pipeline auto-documentación
 ├── svc_py/             CLI Python de Docker (Rich + InquirerPy + Typer)
 ├── agent/              Agente IA (28 tools, memoria, plugins, MQTT, scheduler)
 │   ├── core/           Managers + MemoryManager
 │   ├── tools/          Tools (@tool) incluyendo memoria (Learning Loop)
-│   ├── plugins/        Plugins (docker, backup, network, memory, ha_discovery)
+│   ├── plugins/        Plugins (docker, backup, network, memory, notification)
 │   ├── memory/         Datos persistentes (MEMORY.md, USER.md, SKILLS.md)
 │   ├── catalog/        Catálogo de servicios (fichas + compose + .env.example)
 │   └── daemon.py       Entry point del daemon (systemd)
-├── docker-nas/         Skill de Kiro Web (SKILL.md + references/)
+├── docker-nas/         Skill de Kiro Web (SKILL.md + references/nas-context.md)
+├── docs/               Documentación extendida
+│   ├── nas-manual.md          Manual del NAS (hardware, redes, puertos)
+│   ├── catalog-sync-pipeline.md  Pipeline auto-docs
+│   └── services/              Guías operativas por servicio
 ├── systemd/            Unit file para nas-agent.service
 ├── tests/              Tests (pytest, 75+ tests)
-├── docs/               Documentación extendida (cheatsheet, guías, troubleshooting)
 ├── logs/               Historial de paquetes (APT + pip)
-└── ui/                 Instalador TUI
+├── ui/                 Instalador TUI
+└── AGENTS.md           Contexto para AI agents (formato abierto)
 ```
 
 ## Proveedores de IA
@@ -122,8 +129,13 @@ TZ=America/La_Paz
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Como agregar comandos, tools y plugins |
 | [agent/README.md](agent/README.md) | Documentacion tecnica del agente |
 | [TODO.md](TODO.md) | Roadmap y features completadas |
+| [AGENTS.md](AGENTS.md) | Contexto para AI coding agents (formato abierto) |
+| [docs/nas-manual.md](docs/nas-manual.md) | Manual del NAS (hardware, redes, puertos, convenciones) |
 | [docs/cheatsheet.md](docs/cheatsheet.md) | Cheatsheet de operaciones manuales |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | Diagnósticos resueltos y soluciones |
+| [docs/catalog-sync-pipeline.md](docs/catalog-sync-pipeline.md) | Pipeline de auto-documentación en cascada |
+| [docs/services/ntfy-guide.md](docs/services/ntfy-guide.md) | ntfy: notificaciones push (setup, clientes, troubleshooting) |
+| [docs/services/homepage-guide.md](docs/services/homepage-guide.md) | Homepage: dashboard (labels vs services.yaml) |
 | [docs/github-cli.md](docs/github-cli.md) | Instalación y autenticación de gh |
 
 ## Licencia
