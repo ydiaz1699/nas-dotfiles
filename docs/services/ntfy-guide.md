@@ -404,51 +404,114 @@ ntfy_backup_complete "datasql" "2.3GB"
 
 ## Integración con Home Assistant
 
-### Caso: Alarma → Cámara → ntfy → PC/Celular
+### Método recomendado: Integración oficial nativa
 
-Cuando la alarma suena, HA captura snapshot de la cámara y lo envía como push
-notification con imagen adjunta.
+Desde 2025, ntfy tiene **integración oficial** en Home Assistant (no necesita HACS
+ni custom components). Se configura desde la UI.
+
+**Configuración:**
+
+1. Settings → Devices & Services → Add Integration → **ntfy**
+2. Service URL: `http://192.168.1.200:8090`
+3. Sin autenticación (LAN con auth abierto)
+4. Add Topic → escribir `nas-alerts` (o el topic que uses)
+
+Esto crea una entidad `notify.nas_alerts` que puedes usar en automatizaciones.
+
+### Caso real: Cámara detecta movimiento → snapshot → push al celular
+
+Entidades de tu setup:
+- `binary_sensor.camara_cell_motion_detection` — sensor de movimiento
+- `camera.camara_profile_000` — cámara IP
 
 ```yaml
-# automation.yaml
-- alias: "Alarma → ntfy con snapshot"
+# automations.yaml
+- alias: "Movimiento cámara → ntfy con snapshot"
   trigger:
     - platform: state
-      entity_id: alarm_control_panel.alarma
-      to: "triggered"
+      entity_id: binary_sensor.camara_cell_motion_detection
+      to: "on"
+      for:
+        seconds: 5    # filtro anti-falsos-positivos
   action:
-    - service: camera.snapshot
+    # 1. Capturar snapshot (nombre fijo, se sobreescribe cada vez)
+    - action: camera.snapshot
       target:
-        entity_id: camera.puerta_principal
+        entity_id: camera.camara_profile_000
       data:
-        filename: "/config/www/snapshots/alarma_{{ now().strftime('%Y%m%d_%H%M%S') }}.jpg"
-    - delay: { seconds: 2 }
-    - service: shell_command.ntfy_alarma
+        filename: "/config/www/snapshots/alarma.jpg"
 
-# configuration.yaml
-shell_command:
-  ntfy_alarma: >
-    curl -H "Title: 🚨 Alarma activada"
-    -H "Priority: urgent"
-    -H "Tags: rotating_light"
-    -H "Actions: view, Ver cámara, http://192.168.1.200:8123/lovelace/camaras"
-    -H "Filename: alarma.jpg"
-    -T /config/www/snapshots/alarma_$(date +%Y%m%d_%H%M%S).jpg
-    http://192.168.1.200:8090/alarma
+    # 2. Esperar a que se escriba el archivo
+    - delay:
+        seconds: 2
+
+    # 3. Enviar notificación con la imagen
+    - action: ntfy.publish
+      target:
+        entity_id: notify.nas_alerts
+      data:
+        title: "🚨 Movimiento detectado"
+        message: "Cámara detectó movimiento"
+        priority: high
+        tags: "warning,camera"
+        image: "/config/www/snapshots/alarma.jpg"
 ```
 
-### Integración alternativa (custom component)
+> **Nota:** Se usa `ntfy.publish` (acción oficial) en vez de `notify.send_message`
+> para acceder a todas las features de ntfy (priority, tags, image, actions).
 
-Repo: `hbrennhaeuser/homeassistant_integration_ntfy`
+### Alternativa: shell_command (sin integración oficial)
+
+Si prefieres no instalar la integración (o tu versión de HA no la tiene):
 
 ```yaml
 # configuration.yaml
-notify:
-  - platform: ntfy
-    name: ntfy_nas
-    url: http://192.168.1.200:8090
-    topic: alarma
+shell_command:
+  ntfy_camara: >
+    curl -s -H "Title: 🚨 Movimiento detectado"
+    -H "Priority: high"
+    -H "Tags: warning,camera"
+    -H "Filename: alarma.jpg"
+    -T /config/www/snapshots/alarma.jpg
+    http://192.168.1.200:8090/nas-alerts
 ```
+
+```yaml
+# automations.yaml
+- alias: "Movimiento cámara → ntfy (shell_command)"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.camara_cell_motion_detection
+      to: "on"
+      for:
+        seconds: 5
+  action:
+    - action: camera.snapshot
+      target:
+        entity_id: camera.camara_profile_000
+      data:
+        filename: "/config/www/snapshots/alarma.jpg"
+    - delay:
+        seconds: 2
+    - action: shell_command.ntfy_camara
+```
+
+> **⚠️ NUNCA usar `$(date...)` en el filename del shell_command** — se ejecuta
+> en un momento diferente al snapshot y el archivo no coincide. Usar nombre fijo.
+
+### Resumen de métodos HA → ntfy
+
+| Método | Pros | Contras |
+|--------|------|---------|
+| **Integración oficial** (recomendado) | Nativo, UI, sin timing bugs, soporte oficial | Requiere HA reciente |
+| shell_command + curl | Sin dependencias, funciona en cualquier HA | Timing manual, sin attachments inline |
+
+### Errores comunes
+
+- **`$(date...)` no coincide con el filename del snapshot**: Usar nombre fijo (`alarma.jpg`)
+- **La imagen no se adjunta**: Verificar que el path es absoluto (`/config/www/...`)
+- **No llega la notificación**: Verificar topic correcto en la app + que ntfy responde: `curl http://192.168.1.200:8090/v1/health`
+- **Falsos positivos del sensor**: Agregar `for: { seconds: 5 }` al trigger
 
 ---
 
