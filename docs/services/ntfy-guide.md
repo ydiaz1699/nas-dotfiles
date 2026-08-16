@@ -452,13 +452,14 @@ Entidades de tu setup:
       data:
         title: "🚨 Movimiento detectado"
         message: "Cámara detectó movimiento"
-        priority: high
+        priority: 4
         tags: "warning,camera"
         image: "/config/www/snapshots/alarma.jpg"
 ```
 
-> **Nota:** Se usa `ntfy.publish` (acción oficial) en vez de `notify.send_message`
-> para acceder a todas las features de ntfy (priority, tags, image, actions).
+> **Nota:** `priority` en la integración oficial de HA usa **números**:
+> 1=min, 2=low, 3=default, 4=high, 5=urgent.
+> En curl/bash se usa texto ("high"), pero en `ntfy.publish` de HA se usa número.
 
 ### Alternativa: shell_command (sin integración oficial)
 
@@ -575,7 +576,7 @@ action:
     data:
       title: "🚨 Movimiento detectado"
       message: "Cámara detectó movimiento"
-      priority: high
+      priority: 4
       tags: "warning,camera"
       image: "/config/www/snapshots/alarma.jpg"
 ```
@@ -604,7 +605,7 @@ action:
       data:
         title: "⚠️ Servicio Docker caído"
         message: "EMQX no responde desde hace 30s"
-        priority: high
+        priority: 4
         tags: "warning,whale"
 ```
 
