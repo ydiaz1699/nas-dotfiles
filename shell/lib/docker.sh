@@ -2,7 +2,7 @@
 # Autocompletado de svc
 
 # ── Comandos globales (no necesitan servicio) ──────────────────────────────
-_SVC_GLOBAL_CMDS="lista health update-all menu port-map size net watch create doctor diff catalog-sync --help -h"
+_SVC_GLOBAL_CMDS="lista health update-all menu port-map size net watch create doctor diff catalog-sync scan backup-all logs-grep clone cron doctor-history lock unlock --help -h"
 
 # ── Comandos que requieren un servicio ─────────────────────────────────────
 _SVC_SERVICE_CMDS="

@@ -9,8 +9,10 @@ $NAS_DOTFILES/docker/cli/
     ├── discovery.sh  ← detección de servicios
     ├── docker.sh     ← update-all
     ├── health.sh     ← health, lista
-    ├── backup.sh     ← backup, restore
-    ├── extras.sh     ← port-map, size, net, doctor, diff, watch, create, env
+    ├── backup.sh     ← backup, restore, backup-all
+    ├── extras.sh     ← port-map, size, net, doctor, diff, watch, create, env, clone, cron, lock, doctor-history
+    ├── catalog-sync.sh ← pipeline auto-documentación
+    ├── notifications.sh ← ntfy_send()
     ├── menu.sh       ← TUI fzf
     └── help.sh       ← ayuda
 ```
@@ -33,15 +35,24 @@ NAS_CLI=python  # alternativo — usa $NAS_DOTFILES/svc_py/ (Rich + InquirerPy)
 |---------|--------|
 | `svc lista` | servicios con estado ●/○ |
 | `svc health` | tabla: estado, uptime, restarts |
-| `svc doctor` | chequeo 6 puntos: disco, memoria, servicios, puertos, restarts, storage |
+| `svc doctor` | chequeo 8 puntos: disco, memoria, servicios, puertos, restarts, storage, secretos, permisos .env |
+| `svc doctor-history` | historial con tendencia (mem%, disk%, errores) |
 | `svc update-all` | pull + recrear todos |
+| `svc backup-all` | backup de todos los servicios en secuencia + resumen + ntfy |
 | `svc port-map` | mapa global de puertos |
 | `svc size` | disco por servicio |
 | `svc net` | redes Docker con contenedores |
 | `svc watch` | monitoreo continuo (5s refresh) |
 | `svc create <nombre>` | scaffolding nuevo servicio |
+| `svc clone <origen> <nuevo>` | duplicar servicio (compose + .env sanitizado) |
 | `svc menu` | TUI interactivo (fzf) |
 | `svc diff <svc>` | compose disco vs resuelta |
+| `svc logs-grep <patrón>` | buscar en logs de todos los servicios |
+| `svc cron` | agendar backups/updates via crontab (add/list/remove) |
+| `svc lock <svc>` | proteger servicio (doble confirmación para stop/down/kill/restore) |
+| `svc unlock <svc>` | quitar protección |
+| `svc catalog-sync [svc]` | generar docs en cascada (ficha, guía, script DebMenux) |
+| `svc scan` | detectar lagunas del proyecto (servicios, CLI, docs) |
 
 ## Comandos con servicio
 
@@ -58,7 +69,7 @@ NAS_CLI=python  # alternativo — usa $NAS_DOTFILES/svc_py/ (Rich + InquirerPy)
 | `svc stats <svc>` | CPU/RAM en vivo |
 | `svc top <svc>` | procesos internos |
 | `svc exec <svc> <cmd>` | ejecutar en contenedor |
-| `svc backup <svc>` | volúmenes → tar.gz (rotación: 5) |
+| `svc backup <svc>` | volúmenes → tar.gz (rotación: 5, verificación tar -tzf) |
 | `svc restore <svc>` | restaurar (fzf + confirmación) |
 | `svc depends <svc>` | ver dependencias |
 | `svc open <svc>` | abrir URL (auto-detecta puerto) |
