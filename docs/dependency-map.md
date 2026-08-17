@@ -28,6 +28,8 @@ $dkco/<svc>/compose.yml  (FUENTE DE VERDAD)
 | Si modifico... | Debo actualizar... | Automatizable |
 |----------------|-------------------|:-------------:|
 | **compose.yml de un servicio** | catálogo (ficha+compose), guía, SKILL.md, nas-context.md, AGENTS.md, nas-manual.md, script DebMenux | ✅ `svc catalog-sync <svc>` |
+| **Mejoro un compose existente** (env_file, :rshared, labels, security) | guía del servicio (ANTES vs DESPUÉS), ficha, compose catálogo | Manual |
+| **Mejoro gestión de un servicio** (ej: HA !include, nueva carpeta) | guía del servicio, estructura en README si cambia el árbol | Manual |
 | **Puerto de un servicio** | compose, ficha, guía, AGENTS.md, nas-manual.md (tabla puertos), nas-context.md | Parcial (catalog-sync + manual) |
 | **Red de un servicio** | compose, ficha, guía, AGENTS.md, nas-manual.md (tabla redes), nas-context.md, docker-entorno.md | Parcial |
 | **Variables .env de un servicio** | .env, .env.example en catálogo, ficha (env_required), guía | ✅ `svc catalog-sync <svc>` |
@@ -36,8 +38,9 @@ $dkco/<svc>/compose.yml  (FUENTE DE VERDAD)
 | **usb-automount.sh (template)** | Copiar a /usr/local/bin/, ntfy-guide.md troubleshooting | Manual |
 | **lib/notifications.sh (DebMenux)** | docker/cli/lib/notifications.sh (nas-dotfiles), ntfy-guide.md | Manual |
 | **SKILL.md** | nas-context.md (si cambia la tabla de guías) | Manual |
-| **Agregar servicio nuevo** | TODO lo del grafo de arriba | ✅ `svc catalog-sync <svc>` |
-| **Eliminar servicio** | Quitar de: catálogo, SKILL.md, nas-context.md, AGENTS.md, nas-manual.md, services.json | Manual |
+| **Creo archivo nuevo en docs/ o scripts/** | README.md (árbol de estructura), AGENTS.md si relevante | Manual |
+| **Agregar servicio nuevo** | TODO lo del grafo de arriba + README.md estructura | ✅ `svc catalog-sync <svc>` + manual |
+| **Eliminar servicio** | Quitar de: catálogo, SKILL.md, nas-context.md, AGENTS.md, nas-manual.md, services.json, README.md | Manual |
 | **Cambiar IP del NAS** | $dkco/.env, AGENTS.md, nas-context.md, nas-manual.md, ntfy-guide.md, usb-automount.conf | Manual (grep -r "IP_VIEJA") |
 
 ---

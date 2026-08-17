@@ -203,6 +203,10 @@ Formato: `[fecha] corrección`.
 [2026-08-16] Home Assistant usa network_mode:host — no necesita redes Docker, accede directo a LAN
 [2026-08-16] SIEMPRE consultar dependency-map.md después de cualquier cambio para no olvidar archivos conectados
 [2026-08-16] Si el usuario pega un compose de internet → ajustarlo a las convenciones (env_file, ${SERVER_IP}, labels, security_opt, cap_drop)
+[2026-08-16] filebrowser requiere :rshared en el bind mount /NAS:/srv:rshared — sin él los USBs montados después no se ven
+[2026-08-16] Cuando se mejora un compose existente (ej: agregar :rshared, env_file, quitar TZ) → actualizar TAMBIÉN la guía y la ficha del catálogo
+[2026-08-16] Cuando se mejora la gestión de un servicio (ej: HA con !include) → documentar el ANTES y DESPUÉS en la guía para que otros LLMs no sugieran la forma vieja
+[2026-08-16] README.md debe reflejar archivos nuevos en la estructura del proyecto — si se crea docs/X.md o scripts/X.sh, actualizar el árbol en README
 ```
 
 > **Instrucciones al LLM (comportamiento proactivo):**
@@ -225,14 +229,26 @@ Formato: `[fecha] corrección`.
 >    - compose + .env + carpetas
 >    - `svc catalog-sync <svc>` (genera ficha, guía, script DebMenux)
 >    - Verificar si falta actualizar AGENTS.md y nas-manual.md (manual)
+>    - Verificar si falta actualizar README.md (estructura del proyecto)
 >
 > 5. **Cuando se cree un script/herramienta nueva** → preguntar:
 >    - ¿Dónde vive? (nas-dotfiles o DebMenux)
 >    - ¿Se conecta con algún servicio existente?
 >    - ¿Necesita entry en AGENTS.md o en la skill?
 >    - ¿Necesita documentación en docs/?
+>    - ¿README.md refleja el nuevo archivo en su estructura?
 >
-> 6. **Antes de decir "listo" o "no necesita cambios"** → verificar dependency-map.md
+> 6. **Cuando se mejore un compose o config existente** (ej: agregar :rshared, env_file,
+>    migrar a !include, quitar TZ duplicado) → actualizar TAMBIÉN:
+>    - La guía del servicio (`docs/services/<svc>-guide.md`) con el cambio
+>    - La ficha del catálogo (`agent/catalog/services/<svc>/ficha.md`) si cambió algo
+>    - El compose del catálogo (`agent/catalog/services/<svc>/compose.yml`)
+>    - Documentar ANTES vs DESPUÉS en la guía para que otros LLMs no sugieran la forma vieja
+>
+> 7. **Antes de decir "listo" o "no necesita cambios"** → verificar:
+>    - dependency-map.md: ¿olvidé algún archivo conectado?
+>    - README.md: ¿refleja la estructura actual del proyecto?
+>    - ¿La guía del servicio coincide con el compose real?
 
 ---
 
