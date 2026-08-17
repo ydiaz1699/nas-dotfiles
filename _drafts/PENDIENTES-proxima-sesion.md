@@ -14,30 +14,26 @@ Estado actual (`svc catalog-sync --status`):
 |----------|-------|
 | **n8n** | ficha ❌, guía ❌, DebMenux script ❌ |
 | **vaultwarden** | ficha ❌, guía ❌, DebMenux script ❌, Homepage labels ❌ |
-| **emqx** | guía ❌ (tiene ficha y compose) |
-| **esphome** | guía ❌, DebMenux script ❌ |
-| **datasql** | DebMenux script ❌ |
-| **node-red** | DebMenux script ❌ |
-| **homepage** | DebMenux script ❌ |
+| ~~**emqx**~~ | ~~guía ❌~~ → ✅ **HECHO 2026-08-17** (emqx-guide.md) |
+| ~~**esphome**~~ | ~~guía ❌, DebMenux script ❌~~ → ✅ **HECHO 2026-08-17** (esphome-guide.md + esphome.sh) |
+| ~~**datasql**~~ | ~~DebMenux script ❌~~ → ✅ **HECHO 2026-08-17** (datasql.sh) |
+| ~~**node-red**~~ | ~~DebMenux script ❌~~ → ✅ **HECHO 2026-08-17** (node-red.sh) |
+| ~~**homepage**~~ | ~~DebMenux script ❌~~ → ✅ **HECHO 2026-08-17** (homepage.sh) |
 
-**Acción:** Ejecutar `NAS_CLI=bash svc catalog-sync` para generar todo lo automático.
-Después completar manualmente guías y scripts DebMenux de los servicios importantes.
+**Pendiente aún:** n8n y vaultwarden (no están instalados aún en el NAS).
 
 ---
 
 ## 2. catalog-sync en Python CLI
 
-**Problema:** `catalog-sync` solo está en bash CLI (`svc.sh`). El usuario usa
-`NAS_CLI=python` por defecto. Resultado: `svc catalog-sync` da error.
+~~**Problema:** `catalog-sync` solo está en bash CLI (`svc.sh`). El usuario usa
+`NAS_CLI=python` por defecto. Resultado: `svc catalog-sync` da error.~~
 
-**Workaround actual:** `NAS_CLI=bash svc catalog-sync --status`
-
-**Solución:** Agregar comando `catalog-sync` a `svc_py/` (Python CLI con Typer).
-Puede ser un wrapper que invoca el bash script o reimplementación en Python.
-
-**Archivos a modificar:**
-- `svc_py/__init__.py` o `svc_py/main.py` — agregar comando Typer
-- Decidir: ¿wrapper (`subprocess.run(svc.sh catalog-sync)`) o reimplementar?
+✅ **RESUELTO 2026-08-17:** Creado `svc_py/commands/catalog.py` con:
+- `svc catalog-sync` → wrapper del bash script (o fallback nativo)
+- `svc catalog-sync --status` → tabla Rich nativa (sin depender de bash)
+- `svc catalog-sync --regenerate-index` → invoca `python3 -m agent.catalog._index`
+- `svc catalog-sync --dry-run` → muestra qué haría sin ejecutar
 
 ---
 
@@ -55,15 +51,16 @@ con tabla de qué comandos están en cuál CLI.
 
 ## 4. Guías de servicios importantes que faltan
 
-### emqx-guide.md
-- Ya tiene ficha completa y compose con anchors
-- La guía debería documentar: setup inicial, temas MQTT, ACLs, clustering (si aplica)
-- Referencia: `agent/catalog/services/emqx/ficha.md` ya tiene mucho detalle
+### ~~emqx-guide.md~~ → ✅ **HECHO 2026-08-17**
+Guía operativa completa: instalación, configuración, puertos/protocolos, dashboard web,
+temas MQTT y estructura, clientes, autenticación/ACLs, integración con ESPHome/HA/Node-RED,
+Homepage labels, backup/recuperación, troubleshooting.
 
-### esphome-guide.md
-- Cómo flashear ESP32 desde el NAS
-- Conexión con EMQX
-- Configuración de dispositivos
+### ~~esphome-guide.md~~ → ✅ **HECHO 2026-08-17**
+Guía operativa completa: instalación, configuración (secrets.yaml, network_mode:host),
+dashboard web, crear dispositivos (wizard + YAML manual), flashear (USB + OTA + CLI),
+integración con EMQX (MQTT), Home Assistant (API vs MQTT), Homepage widget,
+backup/recuperación, troubleshooting.
 
 ---
 
@@ -221,13 +218,32 @@ de comandos. No se actualiza automáticamente al agregar comandos nuevos.
 | 7 | Quitar TZ del .env.example | .env.example | Ya no es responsabilidad del .env local | ✅ |
 | 8 | Regenerar catalog.json | catalog.json | 1 servicio → 7 servicios indexados | ✅ |
 
-### Hallazgos (cosas que YA estaban corregidas de sesiones anteriores)
+### Tarea: Guías operativas
 
-- `PGDATA` ya NO estaba en env_required (corregido previamente)
-- Puerto `5432:5432` ya NO estaba expuesto al host (corregido previamente)
-- `.env.global.example` ya existía en `agent/catalog/`
+| # | Archivo creado | Contenido | Estado |
+|---|----------------|-----------|:------:|
+| 1 | `docs/services/emqx-guide.md` | Instalación, config, puertos, dashboard, MQTT topics, auth/ACLs, integración ESPHome/HA/Node-RED, backup, troubleshooting | ✅ |
+| 2 | `docs/services/esphome-guide.md` | Instalación, config, dashboard, crear dispositivos, flash USB/OTA, integración MQTT/HA, backup, troubleshooting | ✅ |
 
-### Pendientes que NO se tocaron en esta sesión (verificar en la sesión original)
+### Tarea: Scripts DebMenux
 
-- [ ] emqx/ficha.md: quitar db_net (mínimo privilegio) — el learning dice hacerlo, pero el compose actual SÍ usa db_net → **requiere decisión**: ¿emqx necesita db_net o no?
-- [ ] Tabla de `docs/docker-entorno.md` muestra datasql con "env en compose" → actualizar para reflejar que ahora usa env_file dual
+| # | Archivo creado | Características | Estado |
+|---|----------------|-----------------|:------:|
+| 1 | `scripts/services/datasql.sh` | Stack PostgreSQL+pgAdmin+Redis, genera passwords auto, db_net, no expone puertos DB, pgAdmin uid 5050 | ✅ |
+| 2 | `scripts/services/esphome.sh` | network_mode:host, privileged, secrets.yaml template, detecta USB, sin cap_drop | ✅ |
+| 3 | `scripts/services/homepage.sh` | Config completa (settings/docker/services/widgets/bookmarks YAML), Docker socket, homepage_net | ✅ |
+| 4 | `scripts/services/node-red.sh` | iot_net, uid 1000, sin cap_drop, conexión a EMQX via hostname, healthcheck | ✅ |
+
+### Tarea: catalog-sync en Python CLI
+
+| # | Archivo | Cambio | Estado |
+|---|---------|--------|:------:|
+| 1 | `svc_py/commands/catalog.py` | Nuevo módulo: --status (tabla Rich), wrapper bash, --regenerate-index, fallback nativo | ✅ |
+| 2 | `svc_py/app.py` | Registrado comando `catalog-sync` en la app Typer | ✅ |
+
+### Hallazgos adicionales
+
+- `emqx/compose.yml` tiene IP hardcodeada en label homepage.href (`192.168.1.200`) → debería corregirse (no se tocó en esta sesión, era solo para datasql)
+- `catalog.json` pasó de 1 servicio a 7 al regenerar — indica que nunca se había regenerado después de agregar servicios
+- `filebrowser` no tiene script DebMenux — no estaba en PENDIENTES pero se detectó con `--status`
+- `homepage` no tiene labels Homepage — es normal (no se auto-descubre a sí mismo)
