@@ -13,7 +13,7 @@ Actualizado: 2026-08-15
 | 2 | `svc clone <origen> <nuevo>` | Duplicar servicio existente (compose + .env con placeholders) como base para uno nuevo | 30 min | ✅ |
 | 3 | `svc logs --grep <patrón>` | Buscar texto en logs de todos los servicios a la vez | 15 min | ✅ |
 | 4 | Verificación post-backup | `tar -tzf` automático después de crear backup, antes de confirmar éxito | 10 min | ✅ |
-| 5 | `svc lock <servicio>` | Marcar servicio como protegido en runtime (doble confirmación para stop/down/restore) | 25 min | ⬜ |
+| 5 | `svc lock <servicio>` | Marcar servicio como protegido en runtime (doble confirmación para stop/down/restore) | 25 min | ✅ |
 | 6 | `svc cron` | Helper para agendar backups/updates automáticos vía crontab | 20 min | ✅ |
 | 7 | Healthcheck HTTP genérico | Si un servicio no define healthcheck en compose, `svc doctor` intenta curl al puerto expuesto | 15 min | ✅ |
 | 8 | Historial de `svc doctor` | Guardar cada corrida con timestamp en log para ver tendencia de disco/memoria | 15 min | ✅ |
@@ -86,6 +86,7 @@ Actualizado: 2026-08-15
 | `svc cron` (add/list/remove): agendar backup-all/update-all/doctor | 2026-08-17 | main |
 | Healthcheck HTTP genérico en `svc doctor` (curl a puerto si no tiene HC) | 2026-08-17 | main |
 | `svc doctor-history`: historial con tendencia (mem%, disk%, errores) | 2026-08-17 | main |
+| `svc lock/unlock`: proteger servicios (doble confirmación para stop/down/kill/restore) | 2026-08-17 | main |
 | Project Scanner (`svc scan`): detectar lagunas automáticamente | 2026-08-17 | main |
 | `svc catalog-sync` en Python CLI (tabla Rich + wrapper bash) | 2026-08-17 | main |
 | Dual CLI decidido: bash=verdad, python=interfaz (bash_bridge.py) | 2026-08-17 | main |

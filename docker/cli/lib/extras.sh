@@ -1096,3 +1096,125 @@ svc_doctor_history() {
   echo "  Tip: agendar con 'svc cron add doctor daily'"
   echo ""
 }
+
+
+
+# ── svc lock/unlock — proteger servicios contra stop/down accidental ───────
+LOCK_FILE="${DOCKER_BASE:-/docker}/.locks"
+
+svc_lock() {
+  local svc="$1"
+
+  if [[ -z "$svc" ]]; then
+    echo ""
+    echo "  Uso: svc lock <servicio>"
+    echo ""
+    echo "  Marca un servicio como protegido. Las acciones destructivas"
+    echo "  (stop, down, kill, restore) requieren doble confirmación."
+    echo ""
+    echo "  Servicios protegidos actualmente:"
+    _svc_lock_list
+    echo ""
+    return 0
+  fi
+
+  # Verificar que el servicio existe
+  local f
+  f=$(svc_compose_file "$svc")
+  if [[ -z "$f" ]]; then
+    echo "  Servicio '$svc' no encontrado."
+    return 1
+  fi
+
+  # Agregar al archivo de locks (si no está ya)
+  touch "$LOCK_FILE"
+  if grep -qx "$svc" "$LOCK_FILE" 2>/dev/null; then
+    echo ""
+    echo -e "  \033[1;33m⚠ '$svc' ya está protegido.\033[0m"
+    echo ""
+  else
+    echo "$svc" >> "$LOCK_FILE"
+    echo ""
+    echo -e "  \033[0;32m🔒 '$svc' protegido.\033[0m"
+    echo "  Acciones stop/down/kill/restore requerirán doble confirmación."
+    echo "  Desproteger con: svc unlock $svc"
+    echo ""
+  fi
+}
+
+svc_unlock() {
+  local svc="$1"
+
+  if [[ -z "$svc" ]]; then
+    echo ""
+    echo "  Uso: svc unlock <servicio>"
+    echo ""
+    echo "  Servicios protegidos actualmente:"
+    _svc_lock_list
+    echo ""
+    return 0
+  fi
+
+  if [[ ! -f "$LOCK_FILE" ]] || ! grep -qx "$svc" "$LOCK_FILE" 2>/dev/null; then
+    echo ""
+    echo "  '$svc' no está protegido."
+    echo ""
+    return 0
+  fi
+
+  # Quitar del archivo
+  local tmp
+  tmp=$(mktemp)
+  grep -vx "$svc" "$LOCK_FILE" > "$tmp"
+  mv "$tmp" "$LOCK_FILE"
+
+  echo ""
+  echo -e "  \033[0;32m🔓 '$svc' desprotegido.\033[0m"
+  echo ""
+}
+
+_svc_lock_list() {
+  if [[ ! -f "$LOCK_FILE" ]] || [[ ! -s "$LOCK_FILE" ]]; then
+    echo "    (ninguno)"
+    return
+  fi
+  while read -r svc; do
+    [[ -n "$svc" ]] && echo "    🔒 $svc"
+  done < "$LOCK_FILE"
+}
+
+# Guard: verificar si un servicio está protegido antes de acción destructiva
+# Retorna 0 si se puede continuar, 1 si se cancela
+_svc_lock_guard() {
+  local svc="$1"
+  local action="$2"
+
+  if [[ ! -f "$LOCK_FILE" ]]; then
+    return 0
+  fi
+
+  if ! grep -qx "$svc" "$LOCK_FILE" 2>/dev/null; then
+    return 0
+  fi
+
+  # Servicio protegido — pedir doble confirmación
+  echo ""
+  echo -e "  \033[0;31m⚠️  ATENCIÓN: '$svc' está PROTEGIDO (🔒)\033[0m"
+  echo ""
+  echo "  Estás a punto de ejecutar: svc $action $svc"
+  echo "  Esta acción puede causar downtime o pérdida de datos."
+  echo ""
+  read -rp "  Escribir el nombre del servicio para confirmar: " confirm_name
+
+  if [[ "$confirm_name" != "$svc" ]]; then
+    echo ""
+    echo -e "  \033[0;32m  Cancelado. (nombre no coincide)\033[0m"
+    echo ""
+    return 1
+  fi
+
+  echo ""
+  echo -e "  \033[1;33m  Confirmado — procediendo con $action...\033[0m"
+  echo ""
+  return 0
+}

@@ -38,6 +38,8 @@ case "$cmd" in
   clone) svc_clone "$@" ; exit 0 ;;
   cron) svc_cron "$@" ; exit 0 ;;
   doctor-history) svc_doctor_history "$@" ; exit 0 ;;
+  lock) svc_lock "$1" ; exit 0 ;;
+  unlock) svc_unlock "$1" ; exit 0 ;;
   ""|"-h"|"--help") _svc_ayuda ; exit 0 ;;
 esac
 
@@ -87,6 +89,7 @@ case "$cmd" in
     docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" up -d "$@"
     ;;
   down)
+    _svc_lock_guard "$servicio" "down" || exit 0
     echo -e "\033[0;31m  Bajando $servicio...\033[0m"
     docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" down "$@"
     ;;
@@ -95,6 +98,7 @@ case "$cmd" in
     docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" restart "$@"
     ;;
   stop)
+    _svc_lock_guard "$servicio" "stop" || exit 0
     echo -e "\033[1;33m  Deteniendo $servicio...\033[0m"
     docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" stop "$@"
     ;;
@@ -103,6 +107,7 @@ case "$cmd" in
     docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" start "$@"
     ;;
   kill)
+    _svc_lock_guard "$servicio" "kill" || exit 0
     echo -e "\033[0;31m  Forzando parada de $servicio...\033[0m"
     docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_FILE" kill "$@"
     ;;
@@ -123,6 +128,7 @@ case "$cmd" in
     svc_backup "$servicio"
     ;;
   restore)
+    _svc_lock_guard "$servicio" "restore" || exit 0
     svc_restore "$servicio" "$@"
     ;;
   depends)
