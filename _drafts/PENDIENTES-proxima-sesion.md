@@ -127,3 +127,71 @@ done
 4. Para saber qué actualizar: leer `docs/dependency-map.md`
 5. Para entender decisiones pasadas: leer `docs/ideas-decisions.md`
 6. Para estado de docs: `NAS_CLI=bash svc catalog-sync --status`
+
+
+
+---
+
+## 9. Scanner de proyecto (herramienta que DETECTA lagunas automáticamente)
+
+**Problema real:**
+- El dependency-map es estático — solo sirve si el LLM lo lee
+- Se creó `catalog-sync` pero ni el agente local ni el dependency-map lo detectaron
+- El agente local no sabe de comandos nuevos (su prompt/tools están desactualizados)
+- Pueden haber MUCHAS lagunas que nadie ve (scripts sin conectar, docs desactualizadas, etc.)
+
+**Lo que se necesita:** Una herramienta que:
+1. **Escanee** todos los archivos del proyecto (ambos repos)
+2. **Identifique** qué es cada archivo (script, módulo, compose, doc, plugin, tool)
+3. **Mapee conexiones** (quién carga a quién, qué sourcea qué, qué case llama qué)
+4. **Detecte huecos** (script existe pero no está en svc.sh, comando en bash pero no en python, etc.)
+5. **Genere reporte** de inconsistencias sin saturar el contexto del LLM
+
+**Posible implementación:**
+- Script Python: `agent/tools/project_scanner.py` o `docker/cli/lib/project-scan.sh`
+- Lee progresivamente (no carga todo de golpe)
+- Output: reporte de inconsistencias tipo:
+  ```
+  ⚠️  docker/cli/lib/catalog-sync.sh → no registrado en svc_py/ (Python CLI)
+  ⚠️  svc catalog-sync → no documentado en agent/memory/SKILLS.md
+  ⚠️  n8n tiene compose pero no ficha.md ni guía
+  ⚠️  vaultwarden tiene compose pero no labels Homepage
+  ✅  ntfy: compose → ficha → guía → script → labels → conectado
+  ```
+
+**Relación con dependency-map:**
+- dependency-map = reglas estáticas (qué DEBERÍA estar conectado)
+- scanner = verificación dinámica (qué REALMENTE está conectado)
+- Juntos: dependency-map dice las reglas, scanner verifica que se cumplan
+
+---
+
+## 10. Actualizar prompt del agente local
+
+**Problema:** El agente local (`agent "que comandos tengo"`) no sabe de:
+- `svc catalog-sync`
+- `svc diff` (tampoco lo mencionó)
+- Comandos que se agregaron después de que se escribió el prompt
+
+**Causa:** El prompt del agente (`agent/` system prompt) tiene una lista fija
+de comandos. No se actualiza automáticamente al agregar comandos nuevos.
+
+**Solución posible:**
+- Que el prompt del agente lea dinámicamente los comandos disponibles desde svc.sh
+- O que el prompt referencie `docker-nas/references/svc.md` en vez de listar inline
+- O agregar un tool que ejecute `svc --help` y parsee la salida
+
+---
+
+## 11. Resumen de "lagunas del sistema" detectadas en esta sesión
+
+| Laguna | Cómo se detectó | Solución implementada | Falta |
+|--------|----------------|----------------------|-------|
+| catalog-sync no conectado a svc | Usuario ejecutó comando | Conectado a bash CLI | Falta en Python CLI |
+| catalog-sync no conocido por el agente | Usuario preguntó al agente | — | Actualizar prompt/skills del agente |
+| Dual CLI no documentado | catalog-sync falló con Python | Documentado en dependency-map | Scanner automático |
+| Servicios sin docs (n8n, vaultwarden) | catalog-sync --status | — | Ejecutar catalog-sync |
+| IP hardcodeada en compose de HA | Revisión manual | Corregido con ${SERVER_IP} | Scanner detectaría automáticamente |
+| TZ duplicado en HA compose | Revisión manual | Corregido (quitar environment TZ) | Scanner detectaría |
+| ntfy.publish no soporta imágenes | Error en runtime | Documentado + shell_command workaround | — |
+| Carpeta www/snapshots/ no existía | Error en runtime | mkdir -p | Scanner verificaría paths de volumes |
