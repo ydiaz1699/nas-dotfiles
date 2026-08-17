@@ -150,7 +150,25 @@ services:
 | Puertos de DB expuestos al host (`5432:5432`) | Solo accesibles via red interna (`db_net`) |
 | `docker-compose.yml` como nombre | `compose.yml` |
 | Sin healthcheck | Siempre agregar healthcheck |
-| Sin resource limits | Siempre definir limits + reservations |
+
+### Seguridad y recursos (aplicar con criterio)
+
+| Elemento | Cuándo usar | Cuándo NO usar |
+|----------|-------------|----------------|
+| `security_opt: [no-new-privileges:true]` | **Siempre** — no rompe nada | Solo si da error explícito |
+| `healthcheck` | **Siempre** — solo monitorea, no restringe | Nunca hay razón para no ponerlo |
+| `cap_drop: [ALL]` + `cap_add:` | Servicios simples y estáticos (ntfy, filebrowser, redis) | Servicios que instalan paquetes en runtime (Node-RED), necesitan red avanzada, o acceso a hardware (HA, ESPHome) |
+| `deploy: resources: limits:` | Servicios ya probados donde sabes cuánto consumen | Servicios nuevos que aún no verificaste — puede causar OOM kill |
+
+**Regla:** No aplicar `cap_drop: [ALL]` ni resource limits ciegamente a todo servicio.
+Primero levantar, verificar que funciona, medir consumo con `docker stats`, y después
+agregar restricciones si se necesitan.
+
+**Servicios que SÍ toleran cap_drop:**
+- ntfy, filebrowser, redis, pgadmin, homepage, postgres
+
+**Servicios que NO deben tener cap_drop:**
+- homeassistant (privileged), esphome (USB serial), node-red (npm install en runtime)
 
 ---
 
@@ -347,7 +365,8 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 - [ ] ¿Las carpetas de volúmenes existen?
 - [ ] ¿Tiene healthcheck?
 - [ ] ¿Tiene labels de Homepage?
-- [ ] ¿Tiene resource limits?
 - [ ] ¿Tiene `security_opt: [no-new-privileges:true]`?
+- [ ] ¿`cap_drop: [ALL]` es apropiado para ESTE servicio? (no aplicar ciegamente)
+- [ ] ¿Resource limits son apropiados? (no poner si no se sabe el consumo real)
 - [ ] ¿Los puertos de DBs NO están expuestos al host?
 - [ ] ¿Después del cambio ejecuté `svc catalog-sync <svc>`?
