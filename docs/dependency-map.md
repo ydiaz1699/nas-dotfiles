@@ -1,95 +1,238 @@
-# Mapa de Dependencias — nas-dotfiles + DebMenux
+# Mapa de Dependencias — Sistema Completo (nas-dotfiles + DebMenux)
 
 > Cuando modificas un archivo, ¿qué otros deben actualizarse?
-> Este mapa evita que se queden archivos desincronizados.
+> Cubre AMBOS repos como un solo sistema interconectado.
+> Actualizado: 2026-08-16
 
 ---
 
-## Grafo de dependencias por servicio
+## Vista general del sistema
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         SISTEMA COMPLETO                                     │
+│                                                                              │
+│  ┌─── nas-dotfiles (/nas-dotfiles) ────────────────────────────────────┐    │
+│  │                                                                      │    │
+│  │  ┌─ Shell ──────┐  ┌─ CLI Docker ─┐  ┌─ Agente IA ──────────────┐ │    │
+│  │  │ init.sh      │  │ svc.sh       │  │ nas_agent.py             │ │    │
+│  │  │ lib/         │  │ lib/         │  │ tools/ plugins/ events/  │ │    │
+│  │  │  aliases.sh  │  │  discovery   │  │ catalog/ memory/         │ │    │
+│  │  │  nav.sh      │  │  health      │  │ config/ scheduler/       │ │    │
+│  │  │  prompt.sh   │  │  backup      │  └──────────────────────────┘ │    │
+│  │  │  system.sh   │  │  menu        │                                │    │
+│  │  │  instal.sh   │  │  notifications│  ┌─ Skill (Kiro/LLMs) ─────┐ │    │
+│  │  │  git.sh      │  │  catalog-sync│  │ SKILL.md                 │ │    │
+│  │  │  completions │  └──────────────┘  │ references/nas-context   │ │    │
+│  │  └──────────────┘                     │ references/entorno,svc.. │ │    │
+│  │                                       └──────────────────────────┘ │    │
+│  │  ┌─ Docs ──────────────────────────────────────────────────────┐  │    │
+│  │  │ AGENTS.md  README.md  GUIDE.md  TODO.md  INSTALL.md         │  │    │
+│  │  │ docs/docker-entorno.md  docs/dependency-map.md               │  │    │
+│  │  │ docs/ideas-decisions.md  docs/nas-manual.md                  │  │    │
+│  │  │ docs/catalog-sync-pipeline.md                                │  │    │
+│  │  │ docs/services/<svc>-guide.md (por servicio)                  │  │    │
+│  │  └─────────────────────────────────────────────────────────────┘  │    │
+│  │                                                                      │    │
+│  │  ┌─ Catálogo (agent/catalog/services/<svc>/) ──────────────────┐  │    │
+│  │  │ ficha.md + compose.yml + .env.example  (por servicio)        │  │    │
+│  │  └─────────────────────────────────────────────────────────────┘  │    │
+│  └──────────────────────────────────────────────────────────────────────┘    │
+│                              │                                                │
+│                    Integración bidireccional                                  │
+│                              │                                                │
+│  ┌─── DebMenux (/debmenux) ────────────────────────────────────────────┐    │
+│  │                                                                      │    │
+│  │  ┌─ Core ───────┐  ┌─ Scripts ────────────┐  ┌─ Templates ───────┐ │    │
+│  │  │ menu         │  │ services/             │  │ usb-automount/    │ │    │
+│  │  │ install.sh   │  │   _template.sh        │  │   usb-automount.sh│ │    │
+│  │  │ services.json│  │   adguard.sh          │  │   *.service       │ │    │
+│  │  └──────────────┘  │   emqx.sh            │  │   *.rules         │ │    │
+│  │                     │   ntfy.sh            │  └───────────────────┘ │    │
+│  │  ┌─ Lib ────────┐  │   usb-api.sh         │                        │    │
+│  │  │ utils.sh     │  │   homeassistant.sh    │  ┌─ Docs ────────────┐ │    │
+│  │  │ docker.sh    │  └───────────────────────┘  │ AGENTS.md         │ │    │
+│  │  │ integration  │                             │ README.md         │ │    │
+│  │  │ notifications│                             └───────────────────┘ │    │
+│  │  └──────────────┘                                                    │    │
+│  └──────────────────────────────────────────────────────────────────────┘    │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Grafos de dependencias por tipo de cambio
+
+### A. Servicio Docker (compose.yml)
 
 ```
 $dkco/<svc>/compose.yml  (FUENTE DE VERDAD)
     │
+    │  nas-dotfiles:
     ├──→ agent/catalog/services/<svc>/compose.yml    (copia en catálogo)
     ├──→ agent/catalog/services/<svc>/ficha.md       (metadatos extraídos)
     ├──→ agent/catalog/services/<svc>/.env.example   (sanitizado de .env)
     ├──→ docs/services/<svc>-guide.md                (guía operativa)
-    ├──→ /debmenux/scripts/services/<svc>.sh         (instalador DebMenux)
     ├──→ docker-nas/SKILL.md                         (tabla de guías)
-    ├──→ docker-nas/references/nas-context.md        (skill registry table)
+    ├──→ docker-nas/references/nas-context.md        (skill registry)
     ├──→ AGENTS.md                                   (tabla de servicios)
-    └──→ docs/nas-manual.md                          (tabla servicios + puertos)
+    ├──→ docs/nas-manual.md                          (tabla servicios + puertos)
+    ├──→ README.md                                   (si cambia estructura)
+    │
+    │  DebMenux:
+    ├──→ /debmenux/scripts/services/<svc>.sh         (instalador)
+    └──→ /debmenux/services.json                     (catálogo DebMenux)
 ```
 
-## Grafo de dependencias por script/herramienta
+### B. Script/comando de svc
 
 ```
-docker/cli/lib/<nuevo-script>.sh  (SCRIPT CREADO)
+docker/cli/lib/<nuevo>.sh  (SCRIPT CREADO)
     │
-    ├──→ docker/cli/svc.sh              (registrar como comando: case "nombre)")
-    ├──→ GUIDE.md                       (agregar a lista de comandos de svc)
-    ├──→ README.md                      (agregar al árbol de estructura)
-    ├──→ docker-nas/SKILL.md            (agregar a comandos esenciales si relevante)
-    ├──→ docker-nas/references/svc.md   (referencia completa de svc)
-    ├──→ AGENTS.md                      (si es comando que el LLM debe conocer)
-    ├──→ docs/dependency-map.md         (tabla "Herramientas CLI" — marcar ✅)
-    └──→ shell/lib/completions.sh       (autocompletado TAB para el nuevo comando)
+    │  Conexión al CLI:
+    ├──→ docker/cli/svc.sh                  (case "comando)" — OBLIGATORIO)
+    ├──→ shell/lib/completions.sh           (autocompletado TAB)
+    │
+    │  Documentación:
+    ├──→ GUIDE.md                           (sección "Comandos de svc")
+    ├──→ README.md                          (estructura del proyecto)
+    ├──→ docker-nas/references/svc.md       (referencia completa de svc)
+    ├──→ docker-nas/SKILL.md                (comandos esenciales)
+    ├──→ AGENTS.md                          (si es comando frecuente)
+    └──→ docs/dependency-map.md             (tabla CLI — marcar ✅)
 ```
 
-## Grafo de dependencias por herramienta nueva (cualquier tipo)
+### C. Módulo de shell (aliases, navegación, prompt)
 
 ```
-Herramienta/script nuevo
+shell/lib/<modulo>.sh  (MÓDULO CREADO/MODIFICADO)
     │
-    ├─ ¿Es un comando de svc?
-    │     ├──→ Conectar en svc.sh (case statement)
-    │     ├──→ Actualizar GUIDE.md (lista de comandos)
-    │     ├──→ Actualizar README.md (estructura)
-    │     ├──→ Actualizar references/svc.md
-    │     ├──→ Actualizar completions.sh (TAB)
-    │     └──→ Marcar ✅ en dependency-map tabla CLI
+    │  Carga:
+    ├──→ shell/init.sh                      (source del módulo — OBLIGATORIO)
     │
-    ├─ ¿Es un alias de shell?
-    │     ├──→ Agregar en shell/lib/aliases.sh
-    │     ├──→ Actualizar GUIDE.md
-    │     ├──→ Actualizar AGENTS.md (tabla aliases)
-    │     └──→ Actualizar nas-context.md (encoded preferences)
+    │  Documentación:
+    ├──→ GUIDE.md                           (sección del módulo)
+    ├──→ README.md                          (si cambia estructura)
+    ├──→ docker-nas/references/entorno.md   (referencia shell)
+    ├──→ docker-nas/references/nas-context.md (encoded preferences si es alias)
+    └──→ AGENTS.md                          (si es alias que el LLM debe conocer)
+```
+
+### D. Plugin del agente
+
+```
+agent/plugins/<plugin>.py  (PLUGIN CREADO)
     │
-    ├─ ¿Es un plugin del agente?
-    │     ├──→ Registrar en agent/plugins/
-    │     ├──→ Actualizar agent/README.md
-    │     └──→ Actualizar references/agent.md
+    │  Registro:
+    ├──→ agent/plugins/__init__.py          (importar — para carga dinámica)
     │
-    └─ ¿Es una librería compartida (lib/)?
-          ├──→ Documentar quién la usa (source)
-          ├──→ Si existe en DebMenux → sincronizar
-          └──→ Actualizar dependency-map (archivos espejo)
+    │  Documentación:
+    ├──→ agent/README.md                    (tabla de plugins)
+    ├──→ docker-nas/references/agent.md     (referencia del agente)
+    ├──→ README.md                          (si cambia estructura)
+    └──→ GUIDE.md                           (sección agente → plugins)
+```
+
+### E. Tool del agente
+
+```
+agent/tools/<tool>.py  (TOOL CREADA)
+    │
+    │  Registro:
+    ├──→ agent/tools/__init__.py            (importar)
+    │
+    │  Documentación:
+    ├──→ agent/README.md                    (tabla de 28+ tools)
+    ├──→ docker-nas/references/agent.md     (referencia)
+    └──→ GUIDE.md                           (lista de tools)
+```
+
+### F. Template de DebMenux (usb-automount, etc.)
+
+```
+/debmenux/templates/<template>/  (TEMPLATE CREADO/MODIFICADO)
+    │
+    │  Instalación (se copia al sistema):
+    ├──→ /usr/local/bin/<script>            (copiar manualmente o via post-install)
+    ├──→ /etc/systemd/system/<unit>         (si tiene .service/.timer)
+    │
+    │  Documentación:
+    ├──→ /debmenux/README.md                (si cambia arquitectura)
+    ├──→ nas-dotfiles/docs/services/<svc>-guide.md  (si afecta un servicio)
+    ├──→ nas-dotfiles/docs/nas-manual.md    (si cambia comportamiento del NAS)
+    └──→ nas-dotfiles/AGENTS.md             (si cambia un comando/ruta)
+```
+
+### G. Script de servicio en DebMenux
+
+```
+/debmenux/scripts/services/<svc>.sh  (INSTALADOR CREADO)
+    │
+    │  Registro:
+    ├──→ /debmenux/services.json            (agregar entrada — OBLIGATORIO)
+    │
+    │  Integración (si habilitada):
+    ├──→ register_to_catalog() genera:
+    │     ├──→ nas-dotfiles/agent/catalog/services/<svc>/ficha.md
+    │     ├──→ nas-dotfiles/agent/catalog/services/<svc>/compose.yml
+    │     ├──→ nas-dotfiles/agent/catalog/services/<svc>/.env.example
+    │     ├──→ nas-dotfiles/docs/services/<svc>-guide.md
+    │     └──→ ntfy notification (topic: docker)
+    │
+    │  Documentación:
+    ├──→ /debmenux/README.md                (tabla de servicios)
+    └──→ /debmenux/AGENTS.md                (si cambia estructura)
+```
+
+### H. Documentación (docs/, guías, README)
+
+```
+docs/<nuevo-archivo>.md  (DOCUMENTO CREADO)
+    │
+    ├──→ README.md                          (tabla de documentación)
+    ├──→ docker-nas/SKILL.md                (si es guía de servicio → tabla)
+    ├──→ docker-nas/references/nas-context.md (lazy loading table)
+    └──→ AGENTS.md                          (tabla "Documentación adicional")
+```
+
+### I. Variables globales ($dkco/.env)
+
+```
+$dkco/.env  (MODIFICADO)
+    │
+    ├──→ Todos los compose con env_file: ../.env  (re-interpolar al recrear)
+    ├──→ docs/docker-entorno.md             (documentar cambio)
+    ├──→ AGENTS.md                          (si cambia IP)
+    ├──→ docker-nas/references/nas-context.md (si cambia IP)
+    ├──→ docs/nas-manual.md                 (si cambia IP)
+    └──→ /etc/usb-automount.conf            (si cambia NTFY_URL)
 ```
 
 ---
 
-## Tabla de impacto: "Si modifico X, debo actualizar..."
+## Tabla de impacto completa
 
-| Si modifico... | Debo actualizar... | Automatizable |
-|----------------|-------------------|:-------------:|
-| **compose.yml de un servicio** | catálogo (ficha+compose), guía, SKILL.md, nas-context.md, AGENTS.md, nas-manual.md, script DebMenux | ✅ `svc catalog-sync <svc>` |
-| **Mejoro un compose existente** (env_file, :rshared, labels, security) | guía del servicio (ANTES vs DESPUÉS), ficha, compose catálogo | Manual |
-| **Mejoro gestión de un servicio** (ej: HA !include, nueva carpeta) | guía del servicio, estructura en README si cambia el árbol | Manual |
-| **Puerto de un servicio** | compose, ficha, guía, AGENTS.md, nas-manual.md (tabla puertos), nas-context.md | Parcial (catalog-sync + manual) |
-| **Red de un servicio** | compose, ficha, guía, AGENTS.md, nas-manual.md (tabla redes), nas-context.md, docker-entorno.md | Parcial |
-| **Variables .env de un servicio** | .env, .env.example en catálogo, ficha (env_required), guía | ✅ `svc catalog-sync <svc>` |
-| **$dkco/.env (global)** | Todos los compose que lo heredan, docker-entorno.md | Manual |
-| **Labels de Homepage** | compose, homepage-guide.md (tabla de grupos) | Manual |
-| **usb-automount.sh (template)** | Copiar a /usr/local/bin/, ntfy-guide.md troubleshooting | Manual |
-| **lib/notifications.sh (DebMenux)** | docker/cli/lib/notifications.sh (nas-dotfiles), ntfy-guide.md | Manual |
-| **SKILL.md** | nas-context.md (si cambia la tabla de guías) | Manual |
-| **Creo archivo nuevo en docs/ o scripts/** | README.md (árbol de estructura), AGENTS.md si relevante | Manual |
-| **Creo script para svc (docker/cli/lib/)** | svc.sh (case), GUIDE.md (comandos), README.md, references/svc.md, completions.sh, dependency-map (tabla CLI) | Manual |
-| **Creo alias de shell** | aliases.sh, GUIDE.md, AGENTS.md (tabla aliases), nas-context.md | Manual |
-| **Creo plugin del agente** | agent/plugins/, agent/README.md, references/agent.md | Manual |
-| **Agregar servicio nuevo** | TODO lo del grafo de arriba + README.md estructura | ✅ `svc catalog-sync <svc>` + manual |
-| **Eliminar servicio** | Quitar de: catálogo, SKILL.md, nas-context.md, AGENTS.md, nas-manual.md, services.json, README.md | Manual |
-| **Cambiar IP del NAS** | $dkco/.env, AGENTS.md, nas-context.md, nas-manual.md, ntfy-guide.md, usb-automount.conf | Manual (grep -r "IP_VIEJA") |
+| Si modifico... | Debo actualizar en nas-dotfiles... | Debo actualizar en DebMenux... |
+|----------------|-----------------------------------|-------------------------------|
+| **compose.yml de servicio** | catálogo, guía, SKILL.md, nas-context, AGENTS.md, nas-manual | services.json, script .sh (si no existe) |
+| **Mejoro compose existente** | guía (ANTES/DESPUÉS), ficha, compose catálogo | — |
+| **Puerto de servicio** | ficha, guía, AGENTS.md, nas-manual, nas-context | services.json |
+| **Red de servicio** | ficha, guía, AGENTS.md, nas-manual, docker-entorno | — |
+| **Variables .env** | .env.example catálogo, ficha | — |
+| **$dkco/.env global** | docker-entorno, AGENTS.md, nas-context, nas-manual | — |
+| **Labels Homepage** | guía, homepage-guide | — |
+| **Script nuevo para svc** | svc.sh, completions, GUIDE, README, svc.md, SKILL, AGENTS, dependency-map | — |
+| **Alias nuevo de shell** | aliases.sh, init.sh (si nuevo módulo), GUIDE, AGENTS, nas-context | — |
+| **Plugin del agente** | plugins/__init__, agent/README, agent.md, GUIDE | — |
+| **Tool del agente** | tools/__init__, agent/README, agent.md, GUIDE | — |
+| **Template DebMenux** | guía del servicio, nas-manual, AGENTS | README.md |
+| **Script servicio DebMenux** | (auto: register_to_catalog genera) | services.json, README |
+| **Documento nuevo en docs/** | README (tabla docs), SKILL (si guía), nas-context (lazy loading), AGENTS | — |
+| **usb-automount.sh (template)** | copiar a /usr/local/bin/, ntfy-guide troubleshooting | README si cambia estructura |
+| **notifications.sh** | — | Si cambió API de ntfy_send → sincronizar en nas-dotfiles |
+| **integration.sh** | — | README si cambia cascada |
+| **init.sh (shell loader)** | GUIDE (si cambia qué carga), README | — |
+| **IP del NAS** | $dkco/.env, AGENTS, nas-context, nas-manual, ntfy-guide, usb-automount.conf | — |
 
 ---
 
@@ -97,173 +240,139 @@ Herramienta/script nuevo
 
 Archivos que existen en AMBOS repos y deben estar sincronizados:
 
-| nas-dotfiles | DebMenux | Relación |
+| nas-dotfiles | DebMenux | Sincronización |
 |---|---|---|
-| `docker/cli/lib/notifications.sh` | `lib/notifications.sh` | Misma función `ntfy_send()` |
-| `agent/catalog/services/<svc>/compose.yml` | `$dkco/<svc>/compose.yml` | Catálogo = copia del real |
-| `docs/services/<svc>-guide.md` | — | Solo en nas-dotfiles |
-| — | `scripts/services/<svc>.sh` | Solo en DebMenux |
+| `docker/cli/lib/notifications.sh` | `lib/notifications.sh` | Misma función `ntfy_send()` — si cambia en uno, actualizar el otro |
+| `agent/catalog/services/<svc>/compose.yml` | `$dkco/<svc>/compose.yml` (host real) | Catálogo = copia del real |
+| — | `templates/usb-automount/usb-automount.sh` | Se copia a `/usr/local/bin/` en el NAS |
 | `AGENTS.md` | `AGENTS.md` | Independientes pero complementarios |
 
-**Regla:** Cuando DebMenux instala un servicio (`register_to_catalog`), genera automáticamente los archivos en nas-dotfiles. Cuando nas-dotfiles detecta un compose sin script (`svc catalog-sync`), genera el placeholder en DebMenux.
+---
+
+## Herramientas CLI — Estado de conexión
+
+| Script | Comando | Conectado a | Estado |
+|--------|---------|-------------|--------|
+| `docker/cli/svc.sh` | `svc` | alias en shell/lib/docker.sh | ✅ |
+| `docker/cli/lib/discovery.sh` | (interno) | sourced por svc.sh | ✅ |
+| `docker/cli/lib/health.sh` | `svc health` | case en svc.sh | ✅ |
+| `docker/cli/lib/backup.sh` | `svc backup` | case en svc.sh | ✅ |
+| `docker/cli/lib/menu.sh` | `svc menu` | case en svc.sh | ✅ |
+| `docker/cli/lib/notifications.sh` | `ntfy_send()` | source manual | ✅ |
+| `docker/cli/lib/catalog-sync.sh` | `svc catalog-sync` | case en svc.sh | ❌ **PENDIENTE** |
+| `shell/lib/aliases.sh` | aliases (ll, dps, bat...) | sourced por init.sh | ✅ |
+| `shell/lib/nav.sh` | dk, adm, nasfk, up | sourced por init.sh | ✅ |
+| `shell/lib/prompt.sh` | (prompt PS1) | sourced por init.sh | ✅ |
+| `shell/lib/system.sh` | nas, disk, netinfo, logs | sourced por init.sh | ✅ |
+| `shell/lib/instal.sh` | instal | sourced por init.sh | ✅ |
+| `shell/lib/pipins.sh` | pipins | sourced por init.sh | ✅ |
+| `shell/lib/git.sh` | gs, ga, gc, gp, gpl... | sourced por init.sh | ✅ |
+| `shell/lib/completions.sh` | TAB completions | sourced por init.sh | ✅ |
+| `shell/scripts/start-all.sh` | (directo o cron) | en PATH via init.sh | ✅ |
+| `shell/scripts/stop-all.sh` | `off` | alias en aliases.sh | ✅ |
+| `/debmenux/menu` | `debmenu` | symlink en /usr/local/bin/ | ✅ |
 
 ---
 
-## Dependencias por archivo clave
+## Reglas del LLM al crear algo nuevo
 
-### compose.yml (de cualquier servicio)
-
+### Si creo un SERVICIO:
 ```
-compose.yml DEPENDE DE:
-  ← $dkco/.env (SERVER_IP, TZ via env_file)
-  ← .env local (secretos del servicio)
-  ← Red Docker existente (docker network create)
-  ← Carpetas de volúmenes creadas (mkdir -p)
-
-compose.yml ES DEPENDENCIA DE:
-  → agent/catalog/services/<svc>/compose.yml (copia)
-  → agent/catalog/services/<svc>/ficha.md (extrae datos)
-  → docs/services/<svc>-guide.md (documenta)
-  → /debmenux/scripts/services/<svc>.sh (instala)
-  → Homepage (auto-descubre via labels)
-  → docker-nas/references/nas-context.md (registry)
-  → AGENTS.md (tabla de servicios)
+1. compose.yml + .env + carpetas (mkdir)
+2. svc up <svc>
+3. catalog-sync (o manual): ficha + guía + .env.example
+4. AGENTS.md: agregar a tabla de servicios
+5. nas-manual.md: agregar puerto
+6. nas-context.md: agregar al registry
+7. DebMenux: services.json + script .sh (si aplica)
+8. README.md: si cambia estructura del proyecto
 ```
 
-### AGENTS.md
-
+### Si creo un SCRIPT para svc:
 ```
-AGENTS.md DEPENDE DE:
-  ← Todos los compose.yml (tabla de servicios)
-  ← docker-nas/references/nas-context.md (hechos operativos)
-  ← docs/docker-entorno.md (convenciones)
-
-AGENTS.md ES LEÍDO POR:
-  → Kiro Web (inyectado automáticamente)
-  → Claude Code (lee automáticamente)
-  → Cursor, Codex, Gemini CLI, Aider
+1. Crear docker/cli/lib/<nombre>.sh
+2. Conectar en svc.sh (case statement) ← OBLIGATORIO
+3. Agregar completions en shell/lib/completions.sh
+4. GUIDE.md: agregar a lista de comandos
+5. references/svc.md: documentar uso
+6. README.md: actualizar estructura
+7. dependency-map: marcar ✅ en tabla CLI
+8. AGENTS.md: si es comando frecuente
 ```
 
-### docker-nas/references/nas-context.md
-
+### Si creo un ALIAS de shell:
 ```
-nas-context.md DEPENDE DE:
-  ← Todos los compose.yml (registry table)
-  ← docs/docker-entorno.md (reglas)
-  ← docs/services/*-guide.md (lazy loading index)
-  ← Progressive updates (feedback del usuario)
-
-nas-context.md ES LEÍDO POR:
-  → Kiro Web (via SKILL.md trigger)
-  → Cualquier LLM que use la skill
+1. Agregar en shell/lib/<modulo>.sh (aliases.sh o nuevo módulo)
+2. Si es módulo nuevo: source en init.sh
+3. GUIDE.md: documentar
+4. AGENTS.md: agregar a tabla de aliases
+5. nas-context.md: agregar a encoded preferences (NUNCA/SIEMPRE)
+6. references/entorno.md: documentar
 ```
 
-### docs/docker-entorno.md
-
+### Si creo un PLUGIN del agente:
 ```
-docker-entorno.md DEPENDE DE:
-  ← $dkco/.env (variables globales)
-  ← Todos los compose.yml (convenciones verificadas)
-  ← Redes Docker reales (docker network ls)
-  ← Errores resueltos (progressive updates)
-
-docker-entorno.md ES DEPENDENCIA DE:
-  → nas-context.md (referencia obligatoria)
-  → Cualquier LLM que modifique un compose (DEBE leerlo)
+1. Crear agent/plugins/<nombre>_plugin.py
+2. Heredar de BasePlugin, definir meta, setup()
+3. agent/README.md: agregar a tabla de plugins
+4. references/agent.md: documentar
+5. GUIDE.md: mencionar en sección agente
 ```
 
----
-
-## Flujo de sincronización automática
-
+### Si creo un SCRIPT de servicio en DebMenux:
 ```
-┌─ Trigger ─────────────────────┐
-│                                │
-│  compose.yml modificado        │
-│         │                      │
-│         ▼                      │
-│  ┌─────────────────────┐      │
-│  │ svc catalog-sync    │      │     ┌─ Genera automáticamente ─┐
-│  │ (o hook Kiro)       │──────┼────▶│ ficha.md                 │
-│  │ (o debmenu install) │      │     │ compose.yml (catálogo)   │
-│  └─────────────────────┘      │     │ .env.example             │
-│                                │     │ guía placeholder         │
-│                                │     │ script DebMenux          │
-│                                │     │ SKILL.md (tabla)         │
-│                                │     │ ntfy notification        │
-│                                │     └──────────────────────────┘
-│                                │
-│  ┌─ NO automático (manual) ─┐ │
-│  │ AGENTS.md                 │ │
-│  │ nas-manual.md (puertos)   │ │
-│  │ docker-entorno.md         │ │
-│  │ nas-context.md (registry) │ │
-│  └───────────────────────────┘ │
-└────────────────────────────────┘
+1. Crear /debmenux/scripts/services/<svc>.sh
+2. services.json: agregar entrada ← OBLIGATORIO
+3. Al final de install_service(): register_to_catalog()
+4. /debmenux/README.md: agregar a tabla de servicios
+5. /debmenux/AGENTS.md: si cambia estructura
+```
+
+### Si creo un DOCUMENTO nuevo:
+```
+1. Crear docs/<nombre>.md
+2. README.md: agregar a tabla de documentación
+3. SKILL.md: si es guía de servicio → agregar a tabla de guías
+4. nas-context.md: agregar a tabla lazy loading
+5. AGENTS.md: si es referencia que el LLM debe conocer
+```
+
+### Si creo un TEMPLATE en DebMenux:
+```
+1. Crear /debmenux/templates/<nombre>/
+2. Script de post-install que lo instala en el sistema
+3. Documentar en guía del servicio correspondiente (nas-dotfiles)
+4. /debmenux/README.md: actualizar arquitectura
+5. Si se copia al sistema (/usr/local/bin/): verificar que la versión está actualizada
 ```
 
 ---
 
-## Checklist: ¿Terminé de verdad?
-
-Después de cualquier cambio a un servicio, verificar:
+## Verificación rápida
 
 ```bash
-svc catalog-sync --status
-```
+# ¿Todos los scripts de svc están conectados?
+grep -oP "^\s+\K[a-z-]+\)" /nas-dotfiles/docker/cli/svc.sh | sort
 
-Si muestra ❌ en alguna columna → ejecutar `svc catalog-sync <svc>`.
+# ¿Todos los módulos de shell se cargan?
+grep "source.*lib/" /nas-dotfiles/shell/init.sh
 
-Para lo que NO es automático, revisar manualmente:
+# ¿services.json de DebMenux tiene todos los scripts?
+ls /debmenux/scripts/services/*.sh | sed 's|.*/||;s|\.sh||;s|_template||' | sort
+jq -r '.services[].id' /debmenux/services.json | sort
 
-- [ ] ¿AGENTS.md tiene el servicio en la tabla?
-- [ ] ¿nas-manual.md tiene el puerto en la tabla?
-- [ ] ¿docker-entorno.md refleja las convenciones usadas?
-- [ ] ¿nas-context.md tiene el servicio en el registry?
-- [ ] Si es servicio nuevo: ¿services.json de DebMenux lo tiene?
-
----
-
-## Comando rápido: verificar sincronización total
-
-```bash
-# Ver estado de TODOS los servicios (auto-docs)
-svc catalog-sync --status
-
-# Buscar IP hardcodeada (debería ser 0 resultados)
+# ¿IP hardcodeada en algún compose?
 grep -r "192.168.1.200" $dkco/*/compose.yml
 
-# Buscar TZ duplicado en environment (debería ser 0)
+# ¿TZ duplicado?
 grep -rn "TZ=America" $dkco/*/compose.yml | grep -v "^.*:#"
 
-# Verificar que todos tienen env_file
+# ¿Falta env_file en algún compose?
 for f in $dkco/*/compose.yml; do
   grep -qL "env_file" "$f" && echo "⚠️  Falta env_file: $f"
 done
+
+# ¿Catálogo sincronizado con servicios reales?
+diff <(ls $dkco/*/compose.yml | sed 's|.*/\(.*\)/compose.yml|\1|' | sort) \
+     <(ls /nas-dotfiles/agent/catalog/services/ | sort)
 ```
-
-
-
----
-
-## Herramientas CLI — ¿Qué scripts están conectados a qué comandos?
-
-> Si creaste un script, ¿se puede ejecutar? Verificar aquí.
-
-| Script | Comando que lo invoca | Estado |
-|--------|----------------------|--------|
-| `docker/cli/svc.sh` | `svc` (alias en shell) | ✅ Conectado |
-| `docker/cli/lib/discovery.sh` | Cargado por svc.sh | ✅ Conectado |
-| `docker/cli/lib/health.sh` | `svc health` | ✅ Conectado |
-| `docker/cli/lib/backup.sh` | `svc backup` | ✅ Conectado |
-| `docker/cli/lib/menu.sh` | `svc menu` | ✅ Conectado |
-| `docker/cli/lib/notifications.sh` | `source` manual o desde svc | ✅ Conectado |
-| `docker/cli/lib/catalog-sync.sh` | `svc catalog-sync` | ❌ **NO CONECTADO** — pendiente integrar en svc.sh |
-
-### Regla para el LLM:
-
-**Al crear un script nuevo, SIEMPRE verificar:**
-1. ¿Qué comando lo ejecuta? (¿svc X? ¿alias? ¿directo?)
-2. ¿Está registrado en svc.sh (case statement) o en un alias?
-3. ¿Se puede probar con `svc <comando>` desde terminal?
-4. Si NO está conectado → **documentar como pendiente** y avisar al usuario
