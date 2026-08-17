@@ -204,6 +204,7 @@ svc scan --json       # output JSON (para herramientas)
 
 | Trigger | Archivo a cargar |
 |---------|-----------------|
+| Inicio de sesión / "revisar framework" / "qué hay" | `docs/framework-audit.md` (**primero — evita releer todo**) |
 | Modificar/crear un compose.yml | `docs/docker-entorno.md` + `docs/dependency-map.md` (**OBLIGATORIO**) |
 | Usuario copia compose de internet | `docs/docker-entorno.md` (ajustar a convenciones: env_file, ${SERVER_IP}, labels, security) |
 | Crear servicio nuevo | `docs/dependency-map.md` + `docs/docker-entorno.md` + `agent/catalog/_template.md` |
