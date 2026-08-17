@@ -62,7 +62,11 @@ svc_backup() {
             alpine tar czf "/backup/$(basename "$out")" -C /data . 2>/dev/null; then
           local size
           size=$(du -sh "$out" 2>/dev/null | cut -f1)
-          echo -e "\033[0;32m ok ($size)\033[0m"
+          if _svc_backup_verify "$out"; then
+            echo -e "\033[0;32m ok ($size) ✓\033[0m"
+          else
+            echo -e "\033[1;33m ok ($size) ⚠ verify failed\033[0m"
+          fi
           ((ok++))
         else
           echo -e "\033[0;31m error al comprimir\033[0m"
@@ -77,7 +81,11 @@ svc_backup() {
               alpine tar czf "/backup/$(basename "$out")" -C /data . 2>/dev/null; then
             local size
             size=$(du -sh "$out" 2>/dev/null | cut -f1)
-            echo -e "\033[0;32m ok ($size)\033[0m"
+            if _svc_backup_verify "$out"; then
+              echo -e "\033[0;32m ok ($size) ✓\033[0m"
+            else
+              echo -e "\033[1;33m ok ($size) ⚠ verify failed\033[0m"
+            fi
             ((ok++))
           else
             echo -e "\033[0;31m error\033[0m"
@@ -106,7 +114,11 @@ svc_backup() {
       if tar czf "$out" -C "$mount_path" . 2>/dev/null; then
         local size
         size=$(du -sh "$out" 2>/dev/null | cut -f1)
-        echo -e "\033[0;32m ok ($size)\033[0m"
+        if _svc_backup_verify "$out"; then
+          echo -e "\033[0;32m ok ($size) ✓\033[0m"
+        else
+          echo -e "\033[1;33m ok ($size) ⚠ verify failed\033[0m"
+        fi
         ((ok++))
       else
         echo -e "\033[0;31m error\033[0m"
@@ -268,5 +280,197 @@ svc_restore() {
     return 1
   fi
 
+  echo ""
+}
+
+
+
+# ── svc backup-all — Backup de todos los servicios en secuencia ────────────
+svc_backup_all() {
+  local auto_yes=false
+
+  # Parsear flags
+  for arg in "$@"; do
+    case "$arg" in
+      -y|--yes) auto_yes=true ;;
+    esac
+  done
+
+  local services
+  services=$(svc_list)
+  local count
+  count=$(echo "$services" | wc -l | tr -d ' ')
+
+  echo ""
+  echo -e "\033[0;36m  ━━━ svc backup-all: Backup de $count servicios ━━━\033[0m"
+  echo ""
+
+  # Mostrar servicios a respaldar
+  for svc in $services; do
+    echo "    • $svc"
+  done
+  echo ""
+
+  # Confirmación
+  if ! $auto_yes; then
+    read -rp "  ¿Iniciar backup de todos? [y/N] " confirm
+    if [[ ! "$confirm" =~ ^[yY]$ ]]; then
+      echo "  Cancelado."
+      return 0
+    fi
+  fi
+
+  echo ""
+
+  local ok=0 fail=0 skip=0
+  local start_time
+  start_time=$(date +%s)
+  local results=()
+
+  for svc in $services; do
+    local compose_file
+    compose_file=$(svc_compose_file "$svc")
+
+    if [[ -z "$compose_file" ]]; then
+      results+=("⚠️  $svc: sin compose file")
+      ((skip++))
+      continue
+    fi
+
+    # Verificar si tiene volúmenes
+    local volumes
+    volumes=$(docker compose -f "$compose_file" config --volumes 2>/dev/null)
+    local bind_mounts
+    bind_mounts=$(docker compose -f "$compose_file" config 2>/dev/null \
+      | grep -A2 "volumes:" \
+      | grep -oP '^\s+- \K/[^:]+' \
+      | sort -u)
+
+    if [[ -z "$volumes" && -z "$bind_mounts" ]]; then
+      results+=("⏭️  $svc: sin volúmenes (skip)")
+      ((skip++))
+      continue
+    fi
+
+    echo -e "\033[1;33m  ┌─ $svc\033[0m"
+    if svc_backup "$svc" 2>/dev/null; then
+      # Verificar último backup creado
+      local last_backup
+      last_backup=$(ls -1t "$BACKUP_DIR/${svc}_"*.tar.gz 2>/dev/null | head -1)
+      if [[ -n "$last_backup" ]] && _svc_backup_verify "$last_backup"; then
+        local size
+        size=$(du -sh "$last_backup" 2>/dev/null | cut -f1)
+        results+=("✅ $svc: OK ($size)")
+        ((ok++))
+      else
+        results+=("⚠️  $svc: backup creado pero verificación falló")
+        ((ok++))
+      fi
+    else
+      results+=("🔴 $svc: ERROR")
+      ((fail++))
+    fi
+    echo -e "  └─ done"
+    echo ""
+  done
+
+  local end_time
+  end_time=$(date +%s)
+  local elapsed=$(( end_time - start_time ))
+
+  # Resumen final
+  echo ""
+  echo "  ━━━ Resumen backup-all ━━━"
+  echo ""
+  for r in "${results[@]}"; do
+    echo "    $r"
+  done
+  echo ""
+  echo -e "  \033[0;32m✅ $ok OK\033[0m | \033[0;31m🔴 $fail errores\033[0m | ⏭️  $skip saltados"
+  echo "  ⏱️  Tiempo total: ${elapsed}s"
+  echo "  📂 Destino: $BACKUP_DIR"
+  echo ""
+
+  # Notificar via ntfy si está disponible
+  if [[ $ok -gt 0 ]] && command -v curl &>/dev/null && [[ -n "${NTFY_URL:-}" ]]; then
+    local notify_msg="${ok} servicios respaldados"
+    [[ $fail -gt 0 ]] && notify_msg="${notify_msg}, ${fail} con error"
+    if [[ -f "${NAS_DOTFILES:-/nas-dotfiles}/docker/cli/lib/notifications.sh" ]]; then
+      source "${NAS_DOTFILES:-/nas-dotfiles}/docker/cli/lib/notifications.sh" 2>/dev/null
+      ntfy_send "backups" "📦 backup-all completado" "$notify_msg (${elapsed}s)" "default" "package"
+    fi
+  fi
+}
+
+# ── Verificación post-backup (tar -tzf) ───────────────────────────────────
+_svc_backup_verify() {
+  local archive="$1"
+
+  if [[ ! -f "$archive" ]]; then
+    return 1
+  fi
+
+  # Verificar integridad del tar.gz (listar contenido sin extraer)
+  if tar -tzf "$archive" >/dev/null 2>&1; then
+    return 0
+  else
+    echo -e "    \033[0;31m⚠ Backup corrupto: $(basename "$archive")\033[0m"
+    return 1
+  fi
+}
+
+# ── svc logs-grep — buscar en logs de todos los servicios ──────────────────
+svc_logs_grep() {
+  local pattern="$1"
+
+  if [[ -z "$pattern" ]]; then
+    echo ""
+    echo "  Uso: svc logs-grep <patrón>"
+    echo ""
+    echo "  Busca texto en los logs de todos los servicios Docker."
+    echo "  Muestra las últimas 100 líneas que coinciden."
+    echo ""
+    echo "  Ejemplos:"
+    echo "    svc logs-grep error"
+    echo "    svc logs-grep 'connection refused'"
+    echo "    svc logs-grep OOM"
+    echo ""
+    return 1
+  fi
+
+  echo ""
+  echo -e "\033[0;34m  ━━━ svc logs-grep: buscando '$pattern' ━━━\033[0m"
+  echo ""
+
+  local found=0
+
+  for svc in $(svc_list); do
+    local f
+    f=$(svc_compose_file "$svc")
+    [[ -z "$f" ]] && continue
+
+    # Solo buscar en servicios que están corriendo
+    if ! docker compose -f "$f" ps -q 2>/dev/null | grep -q .; then
+      continue
+    fi
+
+    local matches
+    matches=$(docker compose -f "$f" logs --tail=500 2>/dev/null | grep -i "$pattern" 2>/dev/null | tail -5)
+
+    if [[ -n "$matches" ]]; then
+      local match_count
+      match_count=$(docker compose -f "$f" logs --tail=500 2>/dev/null | grep -ic "$pattern" 2>/dev/null || echo "0")
+      echo -e "  \033[1;33m── $svc ($match_count coincidencias) ──\033[0m"
+      echo "$matches" | sed 's/^/    /'
+      echo ""
+      ((found++))
+    fi
+  done
+
+  if [[ $found -eq 0 ]]; then
+    echo "  No se encontró '$pattern' en los logs de ningún servicio."
+  else
+    echo -e "  ━━━ $found servicio(s) con coincidencias ━━━"
+  fi
   echo ""
 }

@@ -442,7 +442,7 @@ svc_watch() {
 # ── svc doctor — chequeo general del NAS ───────────────────────────────────
 svc_doctor() {
   echo ""
-  echo -e "\033[1m  svc doctor — Chequeo general del NAS\033[0m"
+  echo -e "\033[1m  svc doctor — Chequeo general del NAS (8 puntos)\033[0m"
   echo "  ═══════════════════════════════════════════════════════════════"
   echo ""
 
@@ -561,6 +561,49 @@ svc_doctor() {
     echo -e "    \033[1;33m⚠ $dangling imágenes dangling (limpiar con: docker image prune)\033[0m"
     ((warnings++))
   fi
+  echo ""
+
+  # 7. Secretos sin rotar (PASSWORD/TOKEN con valor placeholder)
+  echo -e "\033[0;34m  [7/8] Secretos\033[0m"
+  local weak_secrets=0
+  for svc_dir in "$BASE"/*/; do
+    [[ -f "${svc_dir}.env" ]] || continue
+    local svc_name
+    svc_name=$(basename "$svc_dir")
+    while IFS='=' read -r key value; do
+      # Saltar comentarios y líneas vacías
+      [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
+      # Solo verificar variables que parecen secretos
+      if [[ "$key" =~ (PASSWORD|SECRET|TOKEN|COOKIE|KEY) ]]; then
+        # Detectar placeholders o valores débiles
+        if [[ "$value" == "CAMBIAR" || "$value" == "changeme" || "$value" == "password" \
+           || "$value" == "__pega_aqui__" || "$value" == "admin" || ${#value} -lt 8 ]]; then
+          echo -e "    \033[1;33m⚠ $svc_name: $key tiene valor débil/placeholder\033[0m"
+          ((weak_secrets++))
+          ((warnings++))
+        fi
+      fi
+    done < "${svc_dir}.env"
+  done
+  [[ $weak_secrets -eq 0 ]] && echo "    ✓ Sin secretos débiles detectados"
+  echo ""
+
+  # 8. Permisos de .env (deben ser 600)
+  echo -e "\033[0;34m  [8/8] Permisos .env\033[0m"
+  local bad_perms=0
+  for svc_dir in "$BASE"/*/; do
+    [[ -f "${svc_dir}.env" ]] || continue
+    local svc_name
+    svc_name=$(basename "$svc_dir")
+    local perms
+    perms=$(stat -c "%a" "${svc_dir}.env" 2>/dev/null)
+    if [[ "$perms" != "600" ]]; then
+      echo -e "    \033[1;33m⚠ $svc_name/.env tiene permisos $perms (debería ser 600)\033[0m"
+      ((bad_perms++))
+      ((warnings++))
+    fi
+  done
+  [[ $bad_perms -eq 0 ]] && echo "    ✓ Todos los .env con permisos 600"
   echo ""
 
   # Resumen

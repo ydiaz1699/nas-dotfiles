@@ -33,6 +33,8 @@ case "$cmd" in
   diff)        svc_diff "$@" ;    exit 0 ;;
   catalog-sync) source "$CLI_DIR/lib/catalog-sync.sh" ; catalog_sync "$@" ; exit 0 ;;
   scan) python3 "${NAS_DOTFILES:-/nas-dotfiles}/agent/tools/project_scanner.py" "$@" ; exit 0 ;;
+  backup-all) svc_backup_all "$@" ; exit 0 ;;
+  logs-grep) svc_logs_grep "$@" ; exit 0 ;;
   ""|"-h"|"--help") _svc_ayuda ; exit 0 ;;
 esac
 
