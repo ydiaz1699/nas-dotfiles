@@ -26,6 +26,16 @@ estos bloques base.
 Cada compose DEBE incluir estos anchors al inicio y referenciarlos en el servicio:
 
 ```yaml
+# ── OPCIONAL: x-common-env ─────────────────────────────────────────────────
+# Solo necesario si el servicio NO usa env_file: [../.env, .env]
+# Si ya tiene env_file apuntando al global → TZ se hereda automáticamente
+# y este anchor es REDUNDANTE. No usar en ese caso.
+#
+# Usar cuando:
+#   - El servicio no soporta env_file (raro)
+#   - Quieres inyectar variables compartidas distintas a TZ (ej: PUID, PGID)
+#   - Stack multi-servicio donde quieres DRY sin repetir en cada bloque
+#
 x-common-env: &common-env
   TZ: ${TZ}
 x-healthcheck-defaults: &healthcheck-defaults
@@ -59,9 +69,12 @@ services:
     container_name: nombre
     restart: unless-stopped
     <<: [*security-defaults, *resource-defaults]
+    env_file:
+      - ../.env          # ← global: SERVER_IP, TZ (SIEMPRE)
+      - .env             # ← local: secretos del servicio
     environment:
-      <<: *common-env
-      # Variables específicas del servicio...
+      # Solo variables específicas del servicio (NO TZ, ya viene del global)
+      VARIABLE_PROPIA: valor
     healthcheck:
       <<: *healthcheck-defaults
       test: ["CMD", "..."]
@@ -71,6 +84,10 @@ services:
     ports:
       - "${PUERTO_EXTERNO}:puerto_interno"
 ```
+
+> **Regla:** `env_file: [../.env, .env]` reemplaza a `<<: *common-env`.
+> Si un compose tiene `env_file` apuntando al global, NO agregar
+> `<<: *common-env` en environment (es redundante).
 
 ## Variaciones por servicio
 
@@ -148,11 +165,21 @@ dashboard sin bind a `127.0.0.1`, para forzar la revisión de esta decisión.
 
 ## .env base
 
-Todos los `.env` DEBEN incluir como mínimo:
+El `.env` local del servicio contiene SOLO secretos. TZ y SERVER_IP vienen del global (`$dkco/.env`).
 
 ```bash
+# $dkco/.env (global — compartido por todos los servicios)
+SERVER_IP=192.168.1.200
 TZ=America/La_Paz
 ```
+
+```bash
+# $dkco/<servicio>/.env (local — solo secretos)
+MI_PASSWORD=__pega_aqui__
+API_KEY=__pega_aqui__
+```
+
+> **NUNCA** poner TZ en el .env local — ya viene del global via `env_file: [../.env, .env]`.
 
 ### Generación de secretos
 
