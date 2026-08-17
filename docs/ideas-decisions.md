@@ -22,6 +22,8 @@
 10. [ntfy.publish no soporta imágenes](#10-ntfypublish-no-soporta-imágenes)
 11. [Dependency map para no olvidar cascadas](#11-dependency-map-para-no-olvidar-cascadas)
 12. [Skill proactiva con progressive updates](#12-skill-proactiva-con-progressive-updates)
+13. [Script creado pero no conectado al sistema](#13-script-creado-pero-no-conectado-al-sistema)
+14. [Dual CLI: bash = verdad, Python = interfaz](#14-dual-cli-bash--verdad-python--interfaz)
 
 ---
 
@@ -365,3 +367,59 @@ deberían atrapar este tipo de errores.
   - ¿Se puede probar desde terminal?
 - Agregar a la checklist del LLM: "Si creé un script, ¿está accesible para el usuario?"
 - El dependency-map debería tener una sección de "herramientas CLI" que liste qué scripts están conectados a qué comandos
+
+---
+
+## 14. Dual CLI: bash = verdad, Python = interfaz
+
+**Problema:**
+El NAS tiene 2 CLIs (`svc.sh` en bash y `svc_py/` en Python). Al crear un comando
+nuevo (catalog-sync, scan), se implementó solo en bash. El usuario usa Python por
+defecto (`NAS_CLI=python`) → el comando no existía para él. Se duplicó la lógica
+manualmente, con riesgo de divergencia.
+
+**Idea del usuario:**
+Bash como ÚNICA fuente de verdad para la lógica. Python solo como interfaz bonita
+que ejecuta bash por detrás (`subprocess`). Un comando nuevo solo se implementa
+en bash y Python lo hereda automáticamente.
+
+**Proceso de solución:**
+1. Crear `svc_py/core/bash_bridge.py` — helper genérico para invocar `svc.sh`
+2. Comandos simples: Python → `subprocess.run(["bash", svc.sh, cmd, svc])`
+3. Comandos con output tabular: Python ejecuta bash, parsea output, embellece con Rich
+4. Comandos interactivos (menu, update-all): Python usa InquirerPy para selección,
+   luego invoca bash para la acción real
+5. Un comando nuevo en bash se expone automáticamente en Python sin código adicional
+   (passthrough genérico para comandos no registrados explícitamente)
+
+**Arquitectura:**
+
+```
+┌───────────────────────────────────────────┐
+│  Python CLI (svc_py/)                     │
+│  • Rich tables, colores, spinners         │
+│  • InquirerPy multi-select               │
+│  • Parsea + embellece output de bash      │
+│  • NUNCA reimplementa lógica de negocio   │
+│                                           │
+│         ↓ bash_bridge.svc() ↓             │
+│                                           │
+│  Bash CLI (docker/cli/svc.sh)             │
+│  • TODA la lógica real                    │
+│  • Funciona sin Python (0 dependencias)   │
+│  • Fuente de verdad única                 │
+└───────────────────────────────────────────┘
+```
+
+**Reglas de implementación:**
+- Comando nuevo → implementar SOLO en bash (`svc.sh` + lib correspondiente)
+- Python obtiene el comando gratis via passthrough del bridge
+- Si el comando se beneficia de UI elaborada (tabla, progreso, interactividad)
+  → agregar wrapper explícito en `svc_py/commands/` que invoca bash y embellece
+- Si Python falla (deps rotas, venv corrupto) → bash siempre funciona como fallback
+
+**Aprendizaje:**
+- "Una sola fuente de verdad" elimina la divergencia entre CLIs
+- El Python CLI agrega VALOR (UX) sin duplicar LÓGICA
+- La selección de CLI (`NAS_CLI=bash|python`) solo afecta la presentación, no el comportamiento
+- Futuros LLMs: al crear un comando nuevo, solo tocar bash — Python lo hereda

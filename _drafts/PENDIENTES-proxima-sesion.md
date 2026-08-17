@@ -39,13 +39,20 @@ Estado actual (`svc catalog-sync --status`):
 
 ## 3. Dual CLI (bash vs Python) — documentar en dependency-map
 
-**Ya documentado:** El dependency-map ahora tiene sección de arquitectura dual
-con tabla de qué comandos están en cuál CLI.
+~~**Ya documentado:** El dependency-map ahora tiene sección de arquitectura dual
+con tabla de qué comandos están en cuál CLI.~~
 
-**Pendiente:** Decidir estrategia a futuro:
-- ¿Todos los comandos nuevos van a ambos CLIs?
-- ¿O el Python CLI es la versión "bonita" y el bash la "completa"?
-- ¿Los comandos que solo existen en bash deberían tener un passthrough en Python?
+~~**Pendiente:** Decidir estrategia a futuro:~~
+~~- ¿Todos los comandos nuevos van a ambos CLIs?~~
+~~- ¿O el Python CLI es la versión "bonita" y el bash la "completa"?~~
+~~- ¿Los comandos que solo existen en bash deberían tener un passthrough en Python?~~
+
+✅ **RESUELTO 2026-08-17:** Decisión documentada en `docs/ideas-decisions.md` (#14):
+- **Bash = fuente de verdad** (toda la lógica, 0 deps, siempre funciona)
+- **Python = interfaz bonita** (Rich tables, InquirerPy, embellece output de bash)
+- **bash_bridge.py** creado en `svc_py/core/` — helper genérico que invoca `svc.sh`
+- Comando nuevo → implementar SOLO en bash → Python lo hereda via passthrough
+- Si Python se beneficia de UI elaborada → wrapper explícito que llama bash + embellece
 
 ---
 
