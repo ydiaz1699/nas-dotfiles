@@ -2,7 +2,7 @@
 services:
   emqx:
     extends:
-      file: ../../_common.yml
+      file: ../_common.yml
       service: _defaults
     image: emqx/emqx:5.8.3
     container_name: emqx
