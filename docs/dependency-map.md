@@ -193,3 +193,29 @@ for f in $dkco/*/compose.yml; do
   grep -qL "env_file" "$f" && echo "⚠️  Falta env_file: $f"
 done
 ```
+
+
+
+---
+
+## Herramientas CLI — ¿Qué scripts están conectados a qué comandos?
+
+> Si creaste un script, ¿se puede ejecutar? Verificar aquí.
+
+| Script | Comando que lo invoca | Estado |
+|--------|----------------------|--------|
+| `docker/cli/svc.sh` | `svc` (alias en shell) | ✅ Conectado |
+| `docker/cli/lib/discovery.sh` | Cargado por svc.sh | ✅ Conectado |
+| `docker/cli/lib/health.sh` | `svc health` | ✅ Conectado |
+| `docker/cli/lib/backup.sh` | `svc backup` | ✅ Conectado |
+| `docker/cli/lib/menu.sh` | `svc menu` | ✅ Conectado |
+| `docker/cli/lib/notifications.sh` | `source` manual o desde svc | ✅ Conectado |
+| `docker/cli/lib/catalog-sync.sh` | `svc catalog-sync` | ❌ **NO CONECTADO** — pendiente integrar en svc.sh |
+
+### Regla para el LLM:
+
+**Al crear un script nuevo, SIEMPRE verificar:**
+1. ¿Qué comando lo ejecuta? (¿svc X? ¿alias? ¿directo?)
+2. ¿Está registrado en svc.sh (case statement) o en un alias?
+3. ¿Se puede probar con `svc <comando>` desde terminal?
+4. Si NO está conectado → **documentar como pendiente** y avisar al usuario

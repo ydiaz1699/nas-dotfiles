@@ -332,3 +332,36 @@ y registrar aprendizajes automáticamente.
 > **Instrucción al LLM:** Cuando se resuelva un problema nuevo en una sesión,
 > agregar una entrada aquí siguiendo la plantilla. Esto permite que futuros
 > LLMs entiendan no solo QUÉ se hizo, sino POR QUÉ y CÓMO se llegó a esa decisión.
+
+
+
+---
+
+## 13. Script creado pero no conectado al sistema
+
+**Problema:**
+Se creó `docker/cli/lib/catalog-sync.sh` con la función `catalog_sync()`, se documentó
+como `svc catalog-sync`, pero NUNCA se conectó al CLI `svc`. Al ejecutar el comando
+en el NAS: "No such command 'catalog-sync'".
+
+**Idea del usuario:**
+Detectar esto antes — al crear una herramienta, verificar que esté CONECTADA
+al sistema (no solo que exista el archivo). El dependency-map y la skill proactiva
+deberían atrapar este tipo de errores.
+
+**Proceso de solución:**
+1. El script existe en `docker/cli/lib/catalog-sync.sh`
+2. Falta: agregar `catalog-sync` como comando en `svc.sh` (bash CLI) o `svc_py` (Python CLI)
+3. Mientras no se conecte, el LLM ejecuta la cascada manualmente
+
+**Pendiente de implementar:**
+- En `docker/cli/svc.sh`: agregar case `catalog-sync)` que haga `source` del script y llame a `catalog_sync "$@"`
+- O en `svc_py/`: agregar comando Typer que invoque el mismo script
+
+**Aprendizaje:**
+- Crear un archivo ≠ conectarlo al sistema. SIEMPRE verificar:
+  - ¿Cómo se invoca? (¿qué comando lo ejecuta?)
+  - ¿Está registrado en svc/alias/PATH?
+  - ¿Se puede probar desde terminal?
+- Agregar a la checklist del LLM: "Si creé un script, ¿está accesible para el usuario?"
+- El dependency-map debería tener una sección de "herramientas CLI" que liste qué scripts están conectados a qué comandos

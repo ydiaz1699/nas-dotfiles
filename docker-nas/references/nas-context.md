@@ -212,6 +212,8 @@ Formato: `[fecha] corrección`.
 [2026-08-16] README.md debe reflejar archivos nuevos en la estructura del proyecto — si se crea docs/X.md o scripts/X.sh, actualizar el árbol en README
 [2026-08-16] cap_drop:[ALL] NO aplicar ciegamente — rompe Node-RED, HA, ESPHome. Solo para servicios simples (ntfy, redis, filebrowser)
 [2026-08-16] deploy:resources:limits NO poner si no se sabe el consumo real — puede causar OOM kill. Primero probar con docker stats
+[2026-08-16] catalog-sync.sh EXISTE pero NO está conectado al CLI svc — el comando 'svc catalog-sync' no funciona. Pendiente: integrar en svc.sh o svc_py. Por ahora el LLM ejecuta la cascada manualmente.
+[2026-08-16] Al crear una herramienta/script nueva, SIEMPRE verificar que está CONECTADA al sistema (no solo que existe el archivo). Preguntar: ¿cómo se invoca? ¿qué comando la ejecuta? ¿está registrada en svc/alias/path?
 ```
 
 > **Instrucciones al LLM (comportamiento proactivo):**
