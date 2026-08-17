@@ -16,7 +16,6 @@ volumes:
   - "./data/lib:/var/lib/ntfy"
   - "./data/attachments:/var/cache/ntfy/attachments"
 env_required:
-  - TZ
   - SERVER_IP
 env_optional:
   - NTFY_AUTH_DEFAULT_ACCESS=read-write

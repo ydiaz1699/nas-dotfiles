@@ -13,8 +13,7 @@ db_type: ""
 volumes:
   - "./config:/app/config"
   - "/var/run/docker.sock:/var/run/docker.sock:ro"
-env_required:
-  - TZ
+env_required: []
 env_optional:
   - HOMEPAGE_ALLOWED_HOSTS=*
 healthcheck: "GET http://localhost:3000"
@@ -23,7 +22,7 @@ backup_paths:
   - "./config"
 protected: false
 docs_url: "docs/services/homepage-guide.md"
-notes: "Usa Docker socket (read-only) para auto-descubrir contenedores via labels. Los servicios que quieran aparecer automáticamente deben estar en homepage_net y tener labels homepage.*. La config YAML en ./config/ se edita en caliente (no requiere reiniciar). Para servicios nativos (usb-api) usar widget customapi con IP del host."
+notes: "Usa Docker socket (read-only) para auto-descubrir contenedores via labels. Los servicios que quieran aparecer automáticamente deben tener labels homepage.* en su compose. La config YAML en ./config/ se edita en caliente (no requiere reiniciar). Para servicios nativos (usb-api) usar widget customapi con IP del host. Usa env_file: [../.env, .env] para heredar TZ y SERVER_IP del global."
 networks:
   - homepage_net
 ports:
