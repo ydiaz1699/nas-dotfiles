@@ -22,11 +22,12 @@ Tres capas: Shell personalizado, CLI Docker (`svc`), Agente IA Python.
 
 ## Comandos — SIEMPRE usar aliases
 
+### Shell aliases
+
 ```
 dk <svc>            →  cd /docker/<svc>
 adm                 →  cd /home/aadm
 nasfk               →  cd /nas-dotfiles
-svc <cmd> <svc>     →  docker compose (up/down/logs/restart/update/backup)
 instal <pkg>        →  apt install
 pipins <pkg>        →  pip install
 gpl                 →  git pull
@@ -38,6 +39,53 @@ git-quick "msg"     →  add -A + commit + push
 bat <file>          →  cat con colores (batcat)
 nas                 →  dashboard del servidor
 ```
+
+### `svc` — Comandos globales (sin servicio)
+
+| Comando | Acción |
+|---------|--------|
+| `svc lista` | Servicios con estado ●/○ |
+| `svc health` | Tabla: estado, uptime, restarts |
+| `svc doctor` | Chequeo 8 puntos: disco, memoria, servicios, puertos, restarts, storage, secretos, permisos .env |
+| `svc doctor-history` | Historial con tendencia (mem%, disk%, errores) |
+| `svc update-all` | Pull + recrear todos |
+| `svc backup-all` | Backup de todos los servicios en secuencia + resumen + ntfy |
+| `svc port-map` | Mapa global de puertos |
+| `svc size` | Disco por servicio |
+| `svc net` | Redes Docker con contenedores |
+| `svc watch` | Monitoreo continuo (5s refresh) |
+| `svc create <nombre>` | Scaffolding nuevo servicio |
+| `svc clone <origen> <nuevo>` | Duplicar servicio (compose + .env sanitizado) |
+| `svc menu` | TUI interactivo (fzf) |
+| `svc diff <svc>` | Compose disco vs resuelta |
+| `svc logs-grep <patrón>` | Buscar en logs de todos los servicios |
+| `svc cron` | Helper para agendar backups/updates via crontab (add/list/remove) |
+| `svc lock <svc>` | Proteger servicio (doble confirmación para stop/down/kill/restore) |
+| `svc unlock <svc>` | Quitar protección |
+| `svc catalog-sync [svc]` | Generar docs en cascada (ficha, guía, script DebMenux) |
+| `svc scan` | Detectar lagunas del proyecto (servicios, CLI, docs) |
+
+### `svc` — Comandos con servicio
+
+| Comando | Acción |
+|---------|--------|
+| `svc up <svc>` | Crear e iniciar (detached) |
+| `svc down <svc>` | Detener y eliminar |
+| `svc restart <svc>` | Reiniciar |
+| `svc start/stop/kill <svc>` | Control básico |
+| `svc update <svc>` | Pull + recrear |
+| `svc recreate <svc>` | Recrear sin pull (force-recreate) |
+| `svc logs <svc>` | Follow, tail 200 |
+| `svc ps <svc>` | Contenedores |
+| `svc stats <svc>` | CPU/RAM en vivo |
+| `svc top <svc>` | Procesos internos |
+| `svc exec <svc> <cmd>` | Ejecutar en contenedor |
+| `svc backup <svc>` | Volúmenes → tar.gz (rotación: 5, verificación tar -tzf) |
+| `svc restore <svc>` | Restaurar (fzf + confirmación) |
+| `svc depends <svc>` | Ver dependencias |
+| `svc open <svc>` | Abrir URL (auto-detecta puerto) |
+| `svc env <svc>` | Ver/editar variables |
+| `svc config <svc>` | Configuración resuelta |
 
 ## Servicios Docker activos
 
@@ -100,11 +148,16 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 ## Testing / Verificación
 
 ```bash
-svc health              # Estado de todos los servicios
-svc doctor              # Chequeo de 6 puntos
-svc catalog-sync        # Generar docs en cascada (ficha, guía, script DebMenux)
+svc health                 # Estado de todos los servicios
+svc doctor                 # Chequeo de 8 puntos
+svc doctor-history         # Tendencia histórica (mem%, disk%)
+svc scan                   # Detectar lagunas (servicios, CLI, docs)
+svc scan --verbose         # Detalle completo de cada verificación
+svc catalog-sync           # Generar docs en cascada (ficha, guía, script DebMenux)
 svc catalog-sync --status  # Qué servicios tienen/faltan docs
 svc catalog-sync --dry-run # Previsualizar sin cambios
+svc logs-grep <patrón>     # Buscar texto en logs de todos los servicios
+svc diff <svc>             # Compose en disco vs resuelta (interpolada)
 ```
 
 ## Reglas estrictas
