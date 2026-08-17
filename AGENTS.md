@@ -102,7 +102,9 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 ```bash
 svc health              # Estado de todos los servicios
 svc doctor              # Chequeo de 6 puntos
+svc catalog-sync        # Generar docs en cascada (ficha, guía, script DebMenux)
 svc catalog-sync --status  # Qué servicios tienen/faltan docs
+svc catalog-sync --dry-run # Previsualizar sin cambios
 ```
 
 ## Reglas estrictas

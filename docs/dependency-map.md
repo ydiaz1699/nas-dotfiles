@@ -259,7 +259,7 @@ Archivos que existen en AMBOS repos y deben estar sincronizados:
 | `docker/cli/lib/backup.sh` | `svc backup` | case en svc.sh | ✅ |
 | `docker/cli/lib/menu.sh` | `svc menu` | case en svc.sh | ✅ |
 | `docker/cli/lib/notifications.sh` | `ntfy_send()` | source manual | ✅ |
-| `docker/cli/lib/catalog-sync.sh` | `svc catalog-sync` | case en svc.sh | ❌ **PENDIENTE** |
+| `docker/cli/lib/catalog-sync.sh` | `svc catalog-sync` | case en svc.sh | ✅ Conectado |
 | `shell/lib/aliases.sh` | aliases (ll, dps, bat...) | sourced por init.sh | ✅ |
 | `shell/lib/nav.sh` | dk, adm, nasfk, up | sourced por init.sh | ✅ |
 | `shell/lib/prompt.sh` | (prompt PS1) | sourced por init.sh | ✅ |
