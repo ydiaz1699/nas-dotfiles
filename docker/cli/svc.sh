@@ -32,6 +32,7 @@ case "$cmd" in
   doctor)      svc_doctor ;       exit 0 ;;
   diff)        svc_diff "$@" ;    exit 0 ;;
   catalog-sync) source "$CLI_DIR/lib/catalog-sync.sh" ; catalog_sync "$@" ; exit 0 ;;
+  scan) python3 "${NAS_DOTFILES:-/nas-dotfiles}/agent/tools/project_scanner.py" "$@" ; exit 0 ;;
   ""|"-h"|"--help") _svc_ayuda ; exit 0 ;;
 esac
 

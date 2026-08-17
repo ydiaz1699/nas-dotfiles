@@ -137,11 +137,16 @@ done
 
 ## 9. Scanner de proyecto (herramienta que DETECTA lagunas automáticamente)
 
-**Problema real:**
-- El dependency-map es estático — solo sirve si el LLM lo lee
-- Se creó `catalog-sync` pero ni el agente local ni el dependency-map lo detectaron
-- El agente local no sabe de comandos nuevos (su prompt/tools están desactualizados)
-- Pueden haber MUCHAS lagunas que nadie ve (scripts sin conectar, docs desactualizadas, etc.)
+~~**Problema real:**~~
+~~- El dependency-map es estático — solo sirve si el LLM lo lee~~
+~~- Se creó `catalog-sync` pero ni el agente local ni el dependency-map lo detectaron~~
+
+✅ **RESUELTO 2026-08-17:** Implementado `agent/tools/project_scanner.py` con:
+- 5 categorías de verificación: servicios, compose hygiene, CLI parity, prompt agente, docs refs
+- Accesible via: `svc scan` (bash y python), `python3 agent/tools/project_scanner.py`, tool del agente
+- Soporta `--verbose`, `--json`
+- Detecta: servicios sin ficha/guía/script, IP hardcodeada, TZ duplicado, env_file faltante,
+  comandos no documentados en el prompt del agente, docs_url rotos
 
 **Lo que se necesita:** Una herramienta que:
 1. **Escanee** todos los archivos del proyecto (ambos repos)
@@ -171,18 +176,21 @@ done
 
 ## 10. Actualizar prompt del agente local
 
-**Problema:** El agente local (`agent "que comandos tengo"`) no sabe de:
-- `svc catalog-sync`
-- `svc diff` (tampoco lo mencionó)
-- Comandos que se agregaron después de que se escribió el prompt
+~~**Problema:** El agente local (`agent "que comandos tengo"`) no sabe de:~~
+~~- `svc catalog-sync`~~
+~~- `svc diff` (tampoco lo mencionó)~~
+~~- Comandos que se agregaron después de que se escribió el prompt~~
 
-**Causa:** El prompt del agente (`agent/` system prompt) tiene una lista fija
-de comandos. No se actualiza automáticamente al agregar comandos nuevos.
+✅ **RESUELTO 2026-08-17:** BLOCK_CONTEXTO_NAS actualizado con:
+- `svc lista` — listar servicios con estado
+- `svc catalog-sync [servicio]` — sincronizar documentación
+- `svc scan` — detectar lagunas del proyecto
+- `svc depends <servicio>` — ver dependencias
 
-**Solución posible:**
-- Que el prompt del agente lea dinámicamente los comandos disponibles desde svc.sh
-- O que el prompt referencie `docker-nas/references/svc.md` en vez de listar inline
-- O agregar un tool que ejecute `svc --help` y parsee la salida
+BLOCK_HERRAMIENTAS actualizado con:
+- `project_scan(verbose)` — tool que ejecuta el scanner
+
+Tool registrada en `agent/tools/__init__.py` → ALL_TOOLS.
 
 ---
 
@@ -247,3 +255,28 @@ de comandos. No se actualiza automáticamente al agregar comandos nuevos.
 - `catalog.json` pasó de 1 servicio a 7 al regenerar — indica que nunca se había regenerado después de agregar servicios
 - `filebrowser` no tiene script DebMenux — no estaba en PENDIENTES pero se detectó con `--status`
 - `homepage` no tiene labels Homepage — es normal (no se auto-descubre a sí mismo)
+
+
+
+### Tarea: Project Scanner + actualizar prompt del agente
+
+| # | Archivo | Cambio | Estado |
+|---|---------|--------|:------:|
+| 1 | `agent/tools/project_scanner.py` | Nuevo: scanner con 5 categorías de verificación (servicios, compose hygiene, CLI parity, prompt agente, docs refs). Standalone + @tool compatible | ✅ |
+| 2 | `svc_py/commands/scanner.py` | Nuevo: comando `svc scan` en Python CLI (subprocess al scanner) | ✅ |
+| 3 | `svc_py/app.py` | Registrado comando `scan` en app Typer | ✅ |
+| 4 | `docker/cli/svc.sh` | Registrado case `scan` que invoca el script Python | ✅ |
+| 5 | `agent/nas_agent.py` → BLOCK_CONTEXTO_NAS | Agregados: `svc lista`, `svc catalog-sync`, `svc scan`, `svc depends` | ✅ |
+| 6 | `agent/nas_agent.py` → BLOCK_HERRAMIENTAS | Agregado: `project_scan(verbose)` | ✅ |
+| 7 | `agent/tools/__init__.py` | Import + ALL_TOOLS: `project_scan` registrado | ✅ |
+
+### Resultado del scanner tras correcciones
+
+```
+📊 Scan completado: 8 servicios
+   ✅ Completos: 7
+   🔴 Errores: 0
+   ⚠️  Warnings: 0
+```
+
+Solo queda filebrowser sin script DebMenux (info, no urgente).

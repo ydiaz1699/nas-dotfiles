@@ -49,6 +49,7 @@ from agent.tools.diagnostic_tools import (
     port_conflicts,
     troubleshoot,
 )
+from agent.tools.project_scanner import project_scan
 from agent.tools.memory_tools import (
     remember,
     recall,
@@ -92,6 +93,8 @@ ALL_TOOLS = [
     service_health,
     port_conflicts,
     troubleshoot,
+    # Scanner de proyecto
+    project_scan,
     # Memoria persistente (Learning Loop)
     remember,
     recall,

@@ -296,6 +296,7 @@ BLOCK_HERRAMIENTAS = """
 - service_health() → Dashboard de salud
 - port_conflicts() → Detectar conflictos
 - troubleshoot(service) → Diagnóstico completo
+- project_scan(verbose) → Escanear proyecto y detectar lagunas/inconsistencias
 
 ## Memoria Persistente
 - remember(fact, category) → Guardar hecho/lección
@@ -352,6 +353,10 @@ Cuando pregunte sobre comandos Docker, MENCIONARLE SUS COMANDOS:
 - `svc diff <servicio>` → comparar compose vs resuelto
 - `svc env <servicio>` → ver variables de entorno
 - `svc open <servicio>` → mostrar URL
+- `svc lista` → listar servicios con estado (activo/detenido)
+- `svc catalog-sync [servicio]` → sincronizar documentación del catálogo
+- `svc scan` → detectar lagunas e inconsistencias del proyecto
+- `svc depends <servicio>` → ver dependencias de un servicio
 
 ### Agente (este programa):
 - `agent "pregunta"` → consulta puntual
