@@ -474,3 +474,171 @@ svc_logs_grep() {
   fi
   echo ""
 }
+
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# svc snapshot / svc rollback — Config liviana (compose+.env) antes de cambios
+# ══════════════════════════════════════════════════════════════════════════════
+# A diferencia de backup (volúmenes pesados), snapshot guarda SOLO la config:
+#   compose.yml + .env → un tar.gz pequeño para revertir rápido
+# Útil antes de editar compose, actualizar imagen, o cambiar variables.
+
+SNAPSHOT_DIR="${SNAPSHOT_DIR:-/docker/backups/.snapshots}"
+
+svc_snapshot() {
+  local svc="$1"
+  local compose_file
+  compose_file=$(svc_compose_file "$svc")
+
+  if [[ -z "$compose_file" ]]; then
+    echo "  Servicio '$svc' no encontrado."
+    return 1
+  fi
+
+  local svc_dir
+  svc_dir=$(dirname "$compose_file")
+  local timestamp
+  timestamp=$(date +%Y%m%d_%H%M%S)
+
+  mkdir -p "$SNAPSHOT_DIR"
+
+  local out="${SNAPSHOT_DIR}/${svc}_${timestamp}.tar.gz"
+
+  # Archivos a guardar: compose + .env + cualquier .yml en raíz
+  local files_to_snap=()
+  for f in "$svc_dir"/compose.yml "$svc_dir"/compose.yaml "$svc_dir"/docker-compose.yml \
+           "$svc_dir"/.env "$svc_dir"/*.yml "$svc_dir"/*.yaml; do
+    [[ -f "$f" ]] && files_to_snap+=("$f")
+  done
+
+  if [[ ${#files_to_snap[@]} -eq 0 ]]; then
+    echo "  No hay archivos de config para '$svc'."
+    return 1
+  fi
+
+  # Crear snapshot relativo al directorio del servicio
+  tar czf "$out" -C "$svc_dir" \
+    $(for f in "${files_to_snap[@]}"; do basename "$f"; done | sort -u) 2>/dev/null
+
+  local size
+  size=$(du -sh "$out" 2>/dev/null | cut -f1)
+
+  echo ""
+  echo -e "  \033[0;32m📸 Snapshot de '$svc' guardado ($size)\033[0m"
+  echo "     ${out}"
+  echo ""
+
+  # Rotación: conservar últimos 10 snapshots por servicio
+  local count
+  count=$(ls -1 "$SNAPSHOT_DIR/${svc}_"*.tar.gz 2>/dev/null | wc -l)
+  if [[ $count -gt 10 ]]; then
+    local to_delete=$(( count - 10 ))
+    ls -1t "$SNAPSHOT_DIR/${svc}_"*.tar.gz | tail -n "$to_delete" | xargs rm -f
+    echo -e "  \033[0;37m  Rotación: eliminados $to_delete snapshot(s) antiguos\033[0m"
+  fi
+}
+
+svc_rollback() {
+  local svc="$1"
+  local compose_file
+  compose_file=$(svc_compose_file "$svc")
+
+  if [[ -z "$compose_file" ]]; then
+    echo "  Servicio '$svc' no encontrado."
+    return 1
+  fi
+
+  local svc_dir
+  svc_dir=$(dirname "$compose_file")
+
+  # Listar snapshots disponibles
+  local snapshots
+  snapshots=$(ls -1t "$SNAPSHOT_DIR/${svc}_"*.tar.gz 2>/dev/null)
+
+  if [[ -z "$snapshots" ]]; then
+    echo ""
+    echo "  No hay snapshots para '$svc'."
+    echo "  Crea uno con: svc snapshot $svc"
+    echo ""
+    return 1
+  fi
+
+  echo ""
+  echo -e "\033[0;34m  Snapshots disponibles para '$svc':\033[0m"
+  echo ""
+
+  local i=1
+  while IFS= read -r f; do
+    local size
+    size=$(du -sh "$f" 2>/dev/null | cut -f1)
+    local date_str
+    date_str=$(stat -c %y "$f" 2>/dev/null | cut -d. -f1)
+    printf "    %2d) %-45s %5s  %s\n" "$i" "$(basename "$f")" "$size" "$date_str"
+    ((i++))
+  done <<< "$snapshots"
+  echo ""
+
+  local selected=""
+
+  # Selector interactivo si fzf está disponible
+  if command -v fzf &>/dev/null; then
+    selected=$(echo "$snapshots" | fzf --prompt="  Seleccionar snapshot > " \
+      --preview="tar -tzf {}" --height=15)
+  else
+    read -rp "  Número (o path): " choice
+    if [[ "$choice" =~ ^[0-9]+$ ]]; then
+      selected=$(echo "$snapshots" | sed -n "${choice}p")
+    else
+      selected="$choice"
+    fi
+  fi
+
+  if [[ -z "$selected" ]]; then
+    echo "  Cancelado."
+    return 0
+  fi
+
+  if [[ ! -f "$selected" ]]; then
+    echo "  Archivo no encontrado: $selected"
+    return 1
+  fi
+
+  echo ""
+  echo -e "\033[1;33m  ⚠️  Esto SOBREESCRIBIRÁ la config actual de '$svc'.\033[0m"
+  echo "     Snapshot: $(basename "$selected")"
+  echo "     Destino:  $svc_dir/"
+  echo ""
+
+  # Mostrar qué contiene el snapshot
+  echo "  Contenido del snapshot:"
+  tar -tzf "$selected" 2>/dev/null | sed 's/^/    /'
+  echo ""
+
+  read -rp "  ¿Restaurar? [y/N] " confirm
+  if [[ ! "$confirm" =~ ^[yY]$ ]]; then
+    echo "  Cancelado."
+    return 0
+  fi
+
+  # Guardar un snapshot de seguridad antes del rollback
+  echo ""
+  echo -e "  \033[0;37m  Guardando snapshot de seguridad antes del rollback...\033[0m"
+  svc_snapshot "$svc" 2>/dev/null
+
+  # Restaurar
+  tar xzf "$selected" -C "$svc_dir"
+
+  echo ""
+  echo -e "  \033[0;32m✅ Config restaurada a: $(basename "$selected")\033[0m"
+  echo ""
+
+  read -rp "  ¿Recrear contenedor con la config restaurada? [Y/n] " recreate_confirm
+  if [[ ! "$recreate_confirm" =~ ^[nN]$ ]]; then
+    echo ""
+    docker compose -f "$compose_file" up -d --force-recreate
+    echo ""
+    echo -e "  \033[0;32m  Servicio recreado con config anterior.\033[0m"
+  fi
+  echo ""
+}

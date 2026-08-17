@@ -121,7 +121,7 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 | Servicio | Puerto | Red | Docs (cargar si se necesita) |
 |----------|--------|-----|------|
 | adguard | 53,80 (IP: .201) | macvlan | `agent/catalog/services/adguard/` |
-| emqx | 1883,18083 | iot_net, db_net | `agent/catalog/services/emqx/ficha.md` |
+| emqx | 1883,18083 | iot_net | `agent/catalog/services/emqx/ficha.md` |
 | esphome | 6052 | host | `agent/catalog/services/esphome/ficha.md` |
 | datasql | 5050 | db_net | `docs/services/datasql-guide.md` |
 | filebrowser | 8085 | default | `docs/services/filebrowser-guide.md` |
@@ -149,6 +149,50 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 | API | `GET http://192.168.1.200:8091/usb/list` |
 | Desmontar | `POST http://192.168.1.200:8091/usb/unmount/<dev>` |
 | Cleanup | `usb-automount.sh --cleanup` o `umount -l` + `rmdir` |
+
+---
+
+## 4b. Herramientas de verificación (3 tools que trabajan juntas)
+
+```
+Scanner   DETECTA   → "esto está desconectado / desactualizado"
+Catalog-sync GENERA → crea o actualiza lo que falta
+Dependency-map DOCUMENTA → las reglas para que el próximo LLM sepa qué cascada seguir
+```
+
+| Herramienta | Comando | Función |
+|---|---|---|
+| **Scanner incremental** | `svc scan` | Verifica reglas vía `git diff` — solo procesa lo que cambió |
+| **Catalog-sync** | `svc catalog-sync [svc]` | Genera ficha, guía, script DebMenux en cascada |
+| **Dependency-map** | `docs/dependency-map.md` | Reglas estáticas (grafos A–I) de qué conecta con qué |
+| **Compare catalog** | Tool `compare_catalog("svc")` | Detecta drift: compose real vs catálogo |
+
+### Scanner — modos de uso
+
+```bash
+svc scan              # incremental (si hay snapshot previo) o full (primera vez)
+svc scan --full       # forzar scan completo + regenerar snapshot
+svc scan --changed    # solo listar qué archivos cambiaron desde último scan
+svc scan --verbose    # incluir issues de severidad info
+svc scan --json       # output JSON (para herramientas)
+```
+
+### Cómo funciona el scanner incremental
+
+1. **Primera ejecución:** lee TODO el proyecto → genera `agent/cache/project-snapshot.json`
+2. **Siguientes ejecuciones:** `git diff` desde el último commit escaneado → solo re-verifica los servicios afectados
+3. **Clasifica** cada archivo modificado (12 tipos: compose, ficha, guide, script, plugin, tool, etc.)
+4. **Verifica** reglas: IP hardcodeada, TZ duplicado, env_file faltante, script sin registrar, prompt desactualizado, docs_url rotos
+
+### Cuándo usar cada herramienta
+
+| Situación | Herramienta |
+|-----------|-------------|
+| Al inicio de sesión — "¿qué falta?" | `svc scan` o `svc scan --changed` |
+| Después de modificar un compose | `svc catalog-sync <svc>` + `svc scan` |
+| Detectar si el real drifteó del catálogo | Tool `compare_catalog("svc")` |
+| Antes de decir "listo" | Consultar `docs/dependency-map.md` mentalmente |
+| Después de crear script/herramienta nueva | `svc scan` (detecta si no está conectado) |
 
 ---
 
@@ -215,10 +259,14 @@ Formato: `[fecha] corrección`.
 [2026-08-16] README.md debe reflejar archivos nuevos en la estructura del proyecto — si se crea docs/X.md o scripts/X.sh, actualizar el árbol en README
 [2026-08-16] cap_drop:[ALL] NO aplicar ciegamente — rompe Node-RED, HA, ESPHome. Solo para servicios simples (ntfy, redis, filebrowser)
 [2026-08-16] deploy:resources:limits NO poner si no se sabe el consumo real — puede causar OOM kill. Primero probar con docker stats
-[2026-08-16] catalog-sync.sh EXISTE pero NO está conectado al CLI svc — el comando 'svc catalog-sync' no funciona. Pendiente: integrar en svc.sh o svc_py. Por ahora el LLM ejecuta la cascada manualmente.
+[2026-08-16] catalog-sync.sh CONECTADO a svc.sh (bash) y svc_py (Python). `svc catalog-sync` funciona en ambos CLIs. Scanner incremental implementado con git diff + snapshot.
 [2026-08-16] Al crear una herramienta/script nueva, SIEMPRE verificar que está CONECTADA al sistema (no solo que existe el archivo). Preguntar: ¿cómo se invoca? ¿qué comando la ejecuta? ¿está registrada en svc/alias/path?
-[2026-08-16] svc tiene DOS CLIs: bash (svc.sh) y Python (svc_py). Variable NAS_CLI=bash|python decide cuál se usa. Si el usuario tiene NAS_CLI=python, los comandos nuevos agregados a svc.sh NO funcionan hasta que también se agreguen al Python CLI. SIEMPRE verificar en CUÁL CLI se agregó el comando.
-[2026-08-16] catalog-sync está en bash CLI pero NO en Python CLI — el usuario usa Python. Pendiente: agregar comando a svc_py/ (Typer)
+[2026-08-16] svc tiene DOS CLIs: bash (svc.sh) y Python (svc_py). Variable NAS_CLI=bash|python decide cuál se usa. Decisión: bash=verdad (toda la lógica), Python=interfaz bonita (Rich, InquirerPy). Comando nuevo → implementar SOLO en bash → Python lo hereda via bash_bridge.py (passthrough).
+[2026-08-16] catalog-sync está en AMBOS CLIs (bash nativo + Python wrapper via bash_bridge.py). `svc scan` también en ambos.
+[2026-08-17] Scanner incremental implementado: `svc scan` usa git diff + snapshot. Primera vez: full scan → project-snapshot.json. Siguientes: solo procesa archivos que cambiaron. Detecta: servicios sin docs, IP hardcodeada, TZ duplicado, env_file faltante, scripts no conectados.
+[2026-08-17] compare_catalog(service) implementado: tool del agente que detecta drift entre compose real ($DOCKER_BASE) y catálogo (imagen, puertos, redes, volúmenes, env_file, healthcheck, security).
+[2026-08-17] svc snapshot/rollback implementado: guardar compose+.env antes de cambios (liviano, rotación 10). `svc snapshot X` antes de editar, `svc rollback X` para revertir.
+[2026-08-17] Catálogo pre-cargado: al arrancar, el agente inyecta resumen de todos los servicios en el prompt (sin llamar tools). El agente ya sabe qué servicios existen.
 ```
 
 > **Instrucciones al LLM (comportamiento proactivo):**
