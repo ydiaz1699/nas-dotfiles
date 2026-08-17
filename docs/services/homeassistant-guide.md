@@ -61,8 +61,9 @@ services:
       - 200.73.96.146
       - 8.8.8.8
     privileged: true
-    environment:
-      - TZ=America/La_Paz
+    env_file:
+      - ../.env
+      - .env
     volumes:
       - ./data:/config
       - /etc/localtime:/etc/localtime:ro
@@ -77,10 +78,10 @@ services:
       - homepage.group=IoT
       - homepage.name=Home Assistant
       - homepage.icon=home-assistant
-      - homepage.href=http://192.168.1.200:8123
+      - homepage.href=http://${SERVER_IP}:8123
       - homepage.description=Automatización del hogar
       - homepage.widget.type=homeassistant
-      - homepage.widget.url=http://192.168.1.200:8123
+      - homepage.widget.url=http://${SERVER_IP}:8123
       - homepage.widget.key=${HOMEASSISTANT_TOKEN}
     deploy:
       resources:
@@ -93,11 +94,13 @@ services:
 ```
 
 **Notas del compose:**
+- `env_file: [../.env, .env]` — hereda SERVER_IP y TZ del global, secretos del local
 - `network_mode: host` — HA accede directo a la LAN (necesario para mDNS, descubrimiento IoT)
 - `privileged: true` — acceso a USB, Bluetooth, dbus (necesario para integraciones hardware)
 - `dns` personalizado — evita depender de AdGuard para resolver (si AdGuard cae, HA sigue)
 - `stop_grace_period: 60s` — tiempo para guardar estado al apagar
-- Homepage labels — widget tipo `homeassistant` con token para mostrar entidades
+- Homepage labels — usa `${SERVER_IP}` (nunca IP hardcodeada)
+- **NO** tiene `environment: TZ` — se hereda del `.env` global
 
 ---
 
