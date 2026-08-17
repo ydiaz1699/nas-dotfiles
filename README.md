@@ -174,5 +174,8 @@ MIT
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Cada repo funciona 100% independiente.** La integración es opcional: si ambos están instalados, `debmenu install emqx` auto-registra la ficha en `nas-dotfiles/agent/catalog/`.
+**Cada repo funciona 100% independiente.** La integración es opcional y **bidireccional**:
+- `debmenu install X` → auto-registra ficha + guía + notificación en nas-dotfiles
+- `svc catalog-sync` → genera scripts DebMenux faltantes desde los compose existentes
+- Hook Kiro → al guardar compose.yml genera toda la documentación automáticamente
 
