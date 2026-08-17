@@ -512,6 +512,30 @@ svc_doctor() {
     done <<< "$restarting"
   fi
   [[ $down_svc -eq 0 && -z "$restarting" ]] && echo "    ✓ $total_svc servicios, todos activos"
+
+  # Healthcheck HTTP genérico (para servicios sin healthcheck en compose)
+  for svc in $(svc_list 2>/dev/null); do
+    local f
+    f=$(svc_compose_file "$svc" 2>/dev/null)
+    [[ -z "$f" ]] && continue
+    # Solo si está corriendo
+    local running
+    running=$(docker compose -f "$f" ps -q 2>/dev/null | wc -l)
+    [[ $running -eq 0 ]] && continue
+    # Solo si NO tiene healthcheck definido
+    if grep -q "healthcheck:" "$f" 2>/dev/null; then
+      continue
+    fi
+    # Detectar puerto expuesto
+    local port
+    port=$(grep -oP '"\K\d+(?=:\d+")' "$f" 2>/dev/null | head -1)
+    [[ -z "$port" ]] && continue
+    # Intentar curl
+    if ! curl -sf --max-time 3 "http://localhost:${port}/" >/dev/null 2>&1; then
+      echo -e "    \033[1;33m⚠ $svc (:$port) sin healthcheck y no responde HTTP\033[0m"
+      ((warnings++))
+    fi
+  done
   echo ""
 
   # 4. Puertos reservados
@@ -616,6 +640,9 @@ svc_doctor() {
     echo -e "  \033[0;32m  RESULTADO: ✓ Todo en orden\033[0m"
   fi
   echo ""
+
+  # Guardar historial (para tendencias)
+  _svc_doctor_log "$issues" "$warnings"
 }
 
 # ── svc diff — comparar compose en disco vs resuelto ───────────────────────
@@ -705,5 +732,367 @@ svc_diff() {
     fi
   fi
 
+  echo ""
+}
+
+
+
+# ── svc clone — duplicar servicio existente ────────────────────────────────
+svc_clone() {
+  local origen="$1"
+  local nuevo="$2"
+
+  if [[ -z "$origen" || -z "$nuevo" ]]; then
+    echo ""
+    echo "  Uso: svc clone <servicio_origen> <servicio_nuevo>"
+    echo ""
+    echo "  Duplica un servicio existente como base para uno nuevo:"
+    echo "    • Copia compose.yml con container_name y puertos actualizados"
+    echo "    • Copia .env con secretos reemplazados por placeholders"
+    echo "    • Crea estructura de carpetas (data/config)"
+    echo "    • NO inicia el servicio (editar .env primero)"
+    echo ""
+    echo "  Ejemplo: svc clone ntfy ntfy-dev"
+    echo ""
+    return 1
+  fi
+
+  local origen_dir="${BASE}/${origen}"
+  local nuevo_dir="${BASE}/${nuevo}"
+
+  # Validar origen
+  local compose_file
+  compose_file=$(svc_compose_file "$origen")
+  if [[ -z "$compose_file" ]]; then
+    echo ""
+    echo -e "  \033[0;31mServicio origen '$origen' no encontrado.\033[0m"
+    echo ""
+    return 1
+  fi
+
+  # Validar que nuevo no exista
+  if [[ -d "$nuevo_dir" ]]; then
+    echo ""
+    echo -e "  \033[0;31mEl destino '$nuevo' ya existe en $BASE/\033[0m"
+    echo ""
+    return 1
+  fi
+
+  # Validar nombre
+  if [[ ! "$nuevo" =~ ^[a-z0-9][a-z0-9._-]{0,63}$ ]]; then
+    echo ""
+    echo -e "  \033[0;31mNombre inválido: '$nuevo'\033[0m"
+    echo "  Formato: [a-z0-9][a-z0-9._-]{0,63}"
+    echo ""
+    return 1
+  fi
+
+  echo ""
+  echo -e "\033[0;36m  Clonando '$origen' → '$nuevo'\033[0m"
+  echo ""
+
+  # Crear directorio
+  mkdir -p "$nuevo_dir"
+
+  # Copiar compose.yml con reemplazos
+  if [[ -f "${origen_dir}/compose.yml" ]]; then
+    sed \
+      -e "s/container_name: ${origen}/container_name: ${nuevo}/g" \
+      -e "s/container_name: \"${origen}\"/container_name: \"${nuevo}\"/g" \
+      "${origen_dir}/compose.yml" > "${nuevo_dir}/compose.yml"
+
+    # Advertir sobre puertos que podrían conflictuar
+    local ports
+    ports=$(grep -oP '"\K\d+(?=:\d+")' "${nuevo_dir}/compose.yml" 2>/dev/null | head -5)
+    if [[ -n "$ports" ]]; then
+      echo -e "  \033[1;33m⚠ Puertos copiados (editar para evitar conflictos):\033[0m"
+      echo "$ports" | sed 's/^/    /'
+    fi
+    echo "  ✓ compose.yml copiado (container_name actualizado)"
+  fi
+
+  # Copiar .env sanitizado (secretos → placeholder)
+  if [[ -f "${origen_dir}/.env" ]]; then
+    local secret_patterns="PASSWORD|SECRET|TOKEN|COOKIE|KEY|PASS"
+    while IFS= read -r line; do
+      if [[ "$line" =~ ^[[:space:]]*# ]] || [[ -z "$line" ]]; then
+        echo "$line"
+      elif [[ "$line" =~ ^([A-Z_]+)= ]]; then
+        local key="${BASH_REMATCH[1]}"
+        if [[ "$key" =~ ($secret_patterns) ]]; then
+          echo "${key}=__CAMBIAR__"
+        else
+          echo "$line"
+        fi
+      else
+        echo "$line"
+      fi
+    done < "${origen_dir}/.env" > "${nuevo_dir}/.env"
+    chmod 600 "${nuevo_dir}/.env"
+    echo "  ✓ .env copiado (secretos → __CAMBIAR__)"
+  fi
+
+  # Copiar estructura de carpetas de datos (vacías)
+  if [[ -d "${origen_dir}/data" ]]; then
+    # Replicar estructura sin contenido
+    (cd "${origen_dir}" && find data -type d) | while read -r dir; do
+      mkdir -p "${nuevo_dir}/${dir}"
+    done
+    echo "  ✓ Estructura data/ replicada (vacía)"
+  fi
+
+  if [[ -d "${origen_dir}/config" ]]; then
+    # Config se copia con contenido (son plantillas)
+    cp -r "${origen_dir}/config" "${nuevo_dir}/config"
+    echo "  ✓ config/ copiado (con contenido)"
+  fi
+
+  echo ""
+  echo -e "  \033[0;32m✅ Clonado exitosamente en $nuevo_dir\033[0m"
+  echo ""
+  echo "  Próximos pasos:"
+  echo "    1. Editar .env: nano $nuevo_dir/.env"
+  echo "    2. Editar compose.yml: cambiar puertos, redes, etc."
+  echo "    3. Levantar: dk $nuevo && svc up $nuevo"
+  echo ""
+}
+
+# ── svc cron — helper para agendar backups/updates via crontab ─────────────
+svc_cron() {
+  local action="$1"
+  shift || true
+
+  case "$action" in
+    add)
+      _svc_cron_add "$@"
+      ;;
+    list)
+      _svc_cron_list
+      ;;
+    remove)
+      _svc_cron_remove "$@"
+      ;;
+    ""|--help|-h)
+      echo ""
+      echo "  Uso: svc cron <acción> [opciones]"
+      echo ""
+      echo "  Acciones:"
+      echo "    add <tipo> <horario> [servicio]   Agendar tarea"
+      echo "    list                              Ver tareas agendadas"
+      echo "    remove <n>                        Eliminar tarea por número"
+      echo ""
+      echo "  Tipos:"
+      echo "    backup-all    Backup de todos los servicios"
+      echo "    backup <svc>  Backup de un servicio específico"
+      echo "    update-all    Actualizar todos los servicios"
+      echo "    doctor        Chequeo general con log"
+      echo ""
+      echo "  Horarios (formato cron simplificado):"
+      echo "    daily         Todos los días a las 03:00"
+      echo "    weekly        Domingos a las 03:00"
+      echo "    hourly        Cada hora"
+      echo "    <cron expr>   Expresión cron completa (ej: '0 4 * * 1-5')"
+      echo ""
+      echo "  Ejemplos:"
+      echo "    svc cron add backup-all daily"
+      echo "    svc cron add backup datasql weekly"
+      echo "    svc cron add update-all weekly"
+      echo "    svc cron add doctor daily"
+      echo "    svc cron list"
+      echo "    svc cron remove 2"
+      echo ""
+      ;;
+    *)
+      echo "  Acción desconocida: $action (usa: add, list, remove)"
+      return 1
+      ;;
+  esac
+}
+
+_svc_cron_add() {
+  local tipo="$1"
+  local horario="$2"
+  local servicio="$3"
+
+  if [[ -z "$tipo" || -z "$horario" ]]; then
+    echo "  Uso: svc cron add <tipo> <horario> [servicio]"
+    return 1
+  fi
+
+  # Resolver horario simplificado
+  local cron_expr
+  case "$horario" in
+    daily)   cron_expr="0 3 * * *" ;;
+    weekly)  cron_expr="0 3 * * 0" ;;
+    hourly)  cron_expr="0 * * * *" ;;
+    *)       cron_expr="$horario" ;;
+  esac
+
+  # Construir comando
+  local svc_cmd
+  local cli_path="${NAS_DOTFILES:-/nas-dotfiles}/docker/cli/svc.sh"
+  local env_prefix="DOCKER_BASE=${BASE} NAS_DOTFILES=${NAS_DOTFILES:-/nas-dotfiles}"
+
+  case "$tipo" in
+    backup-all)
+      svc_cmd="${env_prefix} bash ${cli_path} backup-all -y"
+      ;;
+    backup)
+      if [[ -z "$servicio" ]]; then
+        echo "  'backup' requiere servicio: svc cron add backup <servicio> <horario>"
+        return 1
+      fi
+      svc_cmd="${env_prefix} bash ${cli_path} backup ${servicio}"
+      ;;
+    update-all)
+      svc_cmd="${env_prefix} bash ${cli_path} update-all -y"
+      ;;
+    doctor)
+      svc_cmd="${env_prefix} bash ${cli_path} doctor >> /var/log/svc-doctor.log 2>&1"
+      ;;
+    *)
+      echo "  Tipo desconocido: $tipo"
+      return 1
+      ;;
+  esac
+
+  # Agregar al crontab
+  local cron_line="${cron_expr} ${svc_cmd} # svc-cron:${tipo}"
+  (crontab -l 2>/dev/null; echo "$cron_line") | crontab -
+
+  echo ""
+  echo -e "  \033[0;32m✅ Tarea agendada:\033[0m"
+  echo "     Tipo: $tipo"
+  echo "     Horario: $cron_expr ($horario)"
+  echo "     Comando: $svc_cmd"
+  echo ""
+  echo "  Ver todas: svc cron list"
+  echo ""
+}
+
+_svc_cron_list() {
+  echo ""
+  echo -e "\033[0;34m  ━━━ Tareas svc agendadas en crontab ━━━\033[0m"
+  echo ""
+
+  local found=0
+  local i=1
+  while IFS= read -r line; do
+    if [[ "$line" == *"# svc-cron:"* ]]; then
+      local tipo
+      tipo=$(echo "$line" | grep -oP '# svc-cron:\K\S+')
+      local schedule
+      schedule=$(echo "$line" | awk '{print $1,$2,$3,$4,$5}')
+      printf "    %2d) [%s] %s\n" "$i" "$schedule" "$tipo"
+      ((found++))
+      ((i++))
+    fi
+  done < <(crontab -l 2>/dev/null)
+
+  if [[ $found -eq 0 ]]; then
+    echo "    (ninguna tarea agendada)"
+    echo ""
+    echo "    Agendar: svc cron add backup-all daily"
+  fi
+  echo ""
+}
+
+_svc_cron_remove() {
+  local num="$1"
+
+  if [[ -z "$num" ]]; then
+    echo "  Uso: svc cron remove <número>"
+    echo "  (ver números con: svc cron list)"
+    return 1
+  fi
+
+  # Obtener línea N de las que tienen svc-cron
+  local target_line
+  local i=0
+  while IFS= read -r line; do
+    if [[ "$line" == *"# svc-cron:"* ]]; then
+      ((i++))
+      if [[ $i -eq $num ]]; then
+        target_line="$line"
+        break
+      fi
+    fi
+  done < <(crontab -l 2>/dev/null)
+
+  if [[ -z "$target_line" ]]; then
+    echo "  No se encontró tarea #$num"
+    return 1
+  fi
+
+  # Escapar para grep -v
+  local escaped
+  escaped=$(printf '%s\n' "$target_line" | sed 's/[[\.*^$()+?{|]/\\&/g')
+  crontab -l 2>/dev/null | grep -vF "$target_line" | crontab -
+
+  echo ""
+  echo -e "  \033[0;32m✅ Tarea #$num eliminada\033[0m"
+  echo ""
+}
+
+
+
+# ── Doctor history — guardar resultado para tendencias ─────────────────────
+DOCTOR_LOG="${DOCKER_BASE:-/docker}/backups/doctor-history.log"
+
+_svc_doctor_log() {
+  local issues="$1"
+  local warnings="$2"
+  local timestamp
+  timestamp=$(date -Iseconds)
+  local mem_pct
+  mem_pct=$(free | awk '/^Mem:/{printf "%.0f", $3/$2*100}' 2>/dev/null || echo "0")
+  local disk_pct
+  disk_pct=$(df / 2>/dev/null | awk 'NR==2{print $5}' | tr -d '%')
+  local containers
+  containers=$(docker ps -q 2>/dev/null | wc -l)
+
+  mkdir -p "$(dirname "$DOCTOR_LOG")"
+
+  # Formato: timestamp | issues | warnings | mem% | disk% | containers
+  echo "${timestamp}|${issues}|${warnings}|${mem_pct}|${disk_pct:-0}|${containers}" >> "$DOCTOR_LOG"
+}
+
+# ── svc doctor-history — ver tendencia de las últimas corridas ─────────────
+svc_doctor_history() {
+  local lines="${1:-20}"
+
+  if [[ ! -f "$DOCTOR_LOG" ]]; then
+    echo ""
+    echo "  Sin historial de doctor. Ejecutar 'svc doctor' al menos una vez."
+    echo ""
+    return 0
+  fi
+
+  echo ""
+  echo -e "\033[0;34m  ━━━ Historial de svc doctor (últimas $lines corridas) ━━━\033[0m"
+  echo ""
+  printf "  %-22s %7s %7s %5s %5s %6s\n" "FECHA" "ERRORES" "WARNS" "MEM%" "DISK%" "CONT."
+  echo "  ──────────────────────────────────────────────────────────────────"
+
+  tail -n "$lines" "$DOCTOR_LOG" | while IFS='|' read -r ts issues warns mem disk conts; do
+    local date_short
+    date_short=$(echo "$ts" | cut -d'T' -f1,2 | sed 's/T/ /' | cut -c1-16)
+
+    # Colorear según severidad
+    local issue_color="\033[0;32m"
+    [[ $issues -gt 0 ]] && issue_color="\033[0;31m"
+    local warn_color="\033[0;32m"
+    [[ $warns -gt 0 ]] && warn_color="\033[1;33m"
+    local mem_color=""
+    [[ ${mem:-0} -ge 80 ]] && mem_color="\033[1;33m"
+    [[ ${mem:-0} -ge 90 ]] && mem_color="\033[0;31m"
+
+    printf "  %-22s ${issue_color}%7s\033[0m ${warn_color}%7s\033[0m ${mem_color}%5s\033[0m %5s %6s\n" \
+      "$date_short" "$issues" "$warns" "${mem}%" "${disk}%" "$conts"
+  done
+
+  echo ""
+  echo "  Ubicación: $DOCTOR_LOG"
+  echo "  Tip: agendar con 'svc cron add doctor daily'"
   echo ""
 }

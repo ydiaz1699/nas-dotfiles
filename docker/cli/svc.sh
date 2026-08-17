@@ -35,6 +35,9 @@ case "$cmd" in
   scan) python3 "${NAS_DOTFILES:-/nas-dotfiles}/agent/tools/project_scanner.py" "$@" ; exit 0 ;;
   backup-all) svc_backup_all "$@" ; exit 0 ;;
   logs-grep) svc_logs_grep "$@" ; exit 0 ;;
+  clone) svc_clone "$@" ; exit 0 ;;
+  cron) svc_cron "$@" ; exit 0 ;;
+  doctor-history) svc_doctor_history "$@" ; exit 0 ;;
   ""|"-h"|"--help") _svc_ayuda ; exit 0 ;;
 esac
 
