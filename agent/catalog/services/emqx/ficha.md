@@ -29,7 +29,7 @@ backup_critical: true
 backup_paths:
   - "./data/data"
 protected: false
-docs_url: "https://docs.emqx.com/en/emqx/latest/"
+docs_url: "docs/services/emqx-guide.md"
 notes: "Requiere ulimits nofile alto (1048576). Dashboard en puerto 18083, expuesto en LAN (no restringido a localhost pese a la regla general de _compose_base.md); ver justificación en README del servicio. Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del .env global."
 networks:
   - iot_net
