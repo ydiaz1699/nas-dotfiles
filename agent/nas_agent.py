@@ -354,8 +354,17 @@ Cuando pregunte sobre comandos Docker, MENCIONARLE SUS COMANDOS:
 - `svc env <servicio>` → ver variables de entorno
 - `svc open <servicio>` → mostrar URL
 - `svc lista` → listar servicios con estado (activo/detenido)
+- `svc backup-all` → backup de todos los servicios en secuencia + resumen + ntfy
+- `svc doctor-history` → historial con tendencia (mem%, disk%, errores)
+- `svc clone <origen> <nuevo>` → duplicar servicio (compose + .env sanitizado)
+- `svc logs-grep <patrón>` → buscar texto en logs de todos los servicios
+- `svc cron` → agendar backups/updates/doctor via crontab (add/list/remove)
+- `svc lock <servicio>` → proteger (doble confirmación para stop/down/kill/restore)
+- `svc unlock <servicio>` → quitar protección
 - `svc catalog-sync [servicio]` → sincronizar documentación del catálogo
 - `svc scan` → detectar lagunas e inconsistencias del proyecto
+- `svc scan --full` → scan completo (ignorar snapshot)
+- `svc scan --changed` → solo listar qué archivos cambiaron
 - `svc depends <servicio>` → ver dependencias de un servicio
 
 ### Agente (este programa):

@@ -22,6 +22,13 @@ Estado actual (`svc catalog-sync --status`):
 
 **Pendiente aún:** n8n y vaultwarden (no están instalados aún en el NAS).
 
+### Correcciones adicionales (sesión Kiro Web 2026-08-17 #2):
+- ~~emqx/compose.yml: quitar db_net~~ → ✅ PR #33
+- ~~emqx/ficha.md: quitar db_net~~ → ✅ PR #33
+- ~~homepage/compose.yml: TZ inline → env_file dual~~ → ✅ PR #33
+- ~~homepage/ficha.md: quitar TZ de env_required~~ → ✅ PR #33
+- ~~ntfy/ficha.md: quitar TZ de env_required~~ → ✅ PR #33
+
 ---
 
 ## 2. catalog-sync en Python CLI
@@ -77,6 +84,7 @@ backup/recuperación, troubleshooting.
 |---------|--------|--------|
 | `PLAN-ntfy-usb-api.md` | ✅ Implementado completamente | Eliminar o archivar |
 | `Skills_2.0.md` | ✅ Ideas extraídas y aplicadas | Eliminar o archivar |
+| `IDEA-scanner-incremental-git.md` | ✅ Implementado (PR #33) | Eliminar o archivar |
 
 ---
 
@@ -151,9 +159,17 @@ done
 ✅ **RESUELTO 2026-08-17:** Implementado `agent/tools/project_scanner.py` con:
 - 5 categorías de verificación: servicios, compose hygiene, CLI parity, prompt agente, docs refs
 - Accesible via: `svc scan` (bash y python), `python3 agent/tools/project_scanner.py`, tool del agente
-- Soporta `--verbose`, `--json`
+- Soporta `--verbose`, `--json`, `--full`, `--changed`
 - Detecta: servicios sin ficha/guía/script, IP hardcodeada, TZ duplicado, env_file faltante,
   comandos no documentados en el prompt del agente, docs_url rotos
+
+### ✅ Scanner INCREMENTAL (git-based) implementado (PR #33, sesión Kiro Web #2):
+- Snapshot persistido en `agent/cache/project-snapshot.json`
+- `svc scan` → incremental (si hay snapshot) o full (primera vez)
+- `svc scan --full` → forzar scan completo + regenerar snapshot
+- `svc scan --changed` → solo listar qué archivos cambiaron desde último scan
+- Clasificador reconoce 12 tipos de archivo (compose, ficha, guide, script, plugin, tool, etc.)
+- git diff detecta cambios → solo verifica servicios afectados → reporte corto
 
 **Lo que se necesita:** Una herramienta que:
 1. **Escanee** todos los archivos del proyecto (ambos repos)
@@ -192,7 +208,15 @@ done
 - `svc lista` — listar servicios con estado
 - `svc catalog-sync [servicio]` — sincronizar documentación
 - `svc scan` — detectar lagunas del proyecto
+- `svc scan --full` — scan completo (ignorar snapshot)
+- `svc scan --changed` — solo listar qué archivos cambiaron
 - `svc depends <servicio>` — ver dependencias
+- `svc backup-all` — backup de todos + resumen + ntfy
+- `svc doctor-history` — historial con tendencia
+- `svc clone <origen> <nuevo>` — duplicar servicio
+- `svc logs-grep <patrón>` — buscar en logs de todos
+- `svc cron` — agendar backups/updates via crontab
+- `svc lock/unlock <servicio>` — proteger/desproteger
 
 BLOCK_HERRAMIENTAS actualizado con:
 - `project_scan(verbose)` — tool que ejecuta el scanner
@@ -287,3 +311,37 @@ Tool registrada en `agent/tools/__init__.py` → ALL_TOOLS.
 ```
 
 Solo queda filebrowser sin script DebMenux (info, no urgente).
+
+
+---
+
+## 📋 Registro de sesión 2026-08-17 — Kiro Web #2 (Resolver gaps)
+
+### PR #33: fix/gaps-completions-scanner-incremental
+
+| # | Archivo | Cambio | Estado |
+|---|---------|--------|:------:|
+| 1 | `shell/lib/docker.sh` | +8 comandos en `_SVC_GLOBAL_CMDS` (TAB completions) | ✅ |
+| 2 | `AGENTS.md` | Tablas completas: 20 globales + 17 con servicio | ✅ |
+| 3 | `.kiro/skills/.../svc.md` | Tabla de globales completa + listing archivos | ✅ |
+| 4 | `emqx/compose.yml` | Quitar db_net (mínimo privilegio) | ✅ |
+| 5 | `emqx/ficha.md` | Quitar db_net + nota reconexión futura | ✅ |
+| 6 | `agent/tools/project_scanner.py` | Scanner INCREMENTAL (git-based, snapshot, clasificador, 3 modos) | ✅ |
+| 7 | `agent/nas_agent.py` | +9 comandos en BLOCK_CONTEXTO_NAS | ✅ |
+| 8 | `homepage/compose.yml` | Quitar TZ inline, agregar env_file dual | ✅ |
+| 9 | `homepage/ficha.md` | Quitar TZ de env_required, actualizar notes | ✅ |
+| 10 | `ntfy/ficha.md` | Quitar TZ de env_required (viene del global) | ✅ |
+
+### Hallazgos
+
+- `homepage_net` es CORRECTA — existe en el NAS real (Homepage la crea, ntfy se conecta como external)
+- emqx/compose.yml YA usaba ${SERVER_IP} (no había IP hardcodeada como se pensaba)
+- El scanner detecta correctamente que nas_agent.py no conoce los comandos nuevos
+
+### Lo que queda pendiente tras esta sesión
+
+- **n8n, vaultwarden**: sin documentar (no están instalados aún)
+- **filebrowser**: sin script DebMenux (info, no urgente)
+- **TODO.md items pendientes**: svc dashboard (TUI Textual), catálogo pre-cargado en agente, compare_catalog, resumen post-sesión, auto-heal, psutil
+- **Seguridad**: confirmación doble canal para servicios protected
+- **Backups**: backup remoto (rclone/S3), svc snapshot/rollback
