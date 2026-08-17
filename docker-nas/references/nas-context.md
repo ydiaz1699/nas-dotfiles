@@ -217,6 +217,8 @@ Formato: `[fecha] corrección`.
 [2026-08-16] deploy:resources:limits NO poner si no se sabe el consumo real — puede causar OOM kill. Primero probar con docker stats
 [2026-08-16] catalog-sync.sh EXISTE pero NO está conectado al CLI svc — el comando 'svc catalog-sync' no funciona. Pendiente: integrar en svc.sh o svc_py. Por ahora el LLM ejecuta la cascada manualmente.
 [2026-08-16] Al crear una herramienta/script nueva, SIEMPRE verificar que está CONECTADA al sistema (no solo que existe el archivo). Preguntar: ¿cómo se invoca? ¿qué comando la ejecuta? ¿está registrada en svc/alias/path?
+[2026-08-16] svc tiene DOS CLIs: bash (svc.sh) y Python (svc_py). Variable NAS_CLI=bash|python decide cuál se usa. Si el usuario tiene NAS_CLI=python, los comandos nuevos agregados a svc.sh NO funcionan hasta que también se agreguen al Python CLI. SIEMPRE verificar en CUÁL CLI se agregó el comando.
+[2026-08-16] catalog-sync está en bash CLI pero NO en Python CLI — el usuario usa Python. Pendiente: agregar comando a svc_py/ (Typer)
 ```
 
 > **Instrucciones al LLM (comportamiento proactivo):**

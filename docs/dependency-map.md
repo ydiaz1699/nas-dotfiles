@@ -279,26 +279,69 @@ Archivos que existen en AMBOS repos y deben estar sincronizados:
 
 ## Herramientas CLI — Estado de conexión
 
-| Script | Comando | Conectado a | Estado |
-|--------|---------|-------------|--------|
-| `docker/cli/svc.sh` | `svc` | alias en shell/lib/docker.sh | ✅ |
-| `docker/cli/lib/discovery.sh` | (interno) | sourced por svc.sh | ✅ |
-| `docker/cli/lib/health.sh` | `svc health` | case en svc.sh | ✅ |
-| `docker/cli/lib/backup.sh` | `svc backup` | case en svc.sh | ✅ |
-| `docker/cli/lib/menu.sh` | `svc menu` | case en svc.sh | ✅ |
-| `docker/cli/lib/notifications.sh` | `ntfy_send()` | source manual | ✅ |
-| `docker/cli/lib/catalog-sync.sh` | `svc catalog-sync` | case en svc.sh | ✅ Conectado |
-| `shell/lib/aliases.sh` | aliases (ll, dps, bat...) | sourced por init.sh | ✅ |
-| `shell/lib/nav.sh` | dk, adm, nasfk, up | sourced por init.sh | ✅ |
-| `shell/lib/prompt.sh` | (prompt PS1) | sourced por init.sh | ✅ |
-| `shell/lib/system.sh` | nas, disk, netinfo, logs | sourced por init.sh | ✅ |
-| `shell/lib/instal.sh` | instal | sourced por init.sh | ✅ |
-| `shell/lib/pipins.sh` | pipins | sourced por init.sh | ✅ |
-| `shell/lib/git.sh` | gs, ga, gc, gp, gpl... | sourced por init.sh | ✅ |
-| `shell/lib/completions.sh` | TAB completions | sourced por init.sh | ✅ |
-| `shell/scripts/start-all.sh` | (directo o cron) | en PATH via init.sh | ✅ |
-| `shell/scripts/stop-all.sh` | `off` | alias en aliases.sh | ✅ |
-| `/debmenux/menu` | `debmenu` | symlink en /usr/local/bin/ | ✅ |
+> **IMPORTANTE:** `svc` tiene DOS implementaciones (bash y Python).
+> La variable `NAS_CLI=bash|python` decide cuál se ejecuta.
+> Un comando agregado a svc.sh NO funciona si el usuario usa `NAS_CLI=python` (y viceversa).
+
+### Arquitectura dual del CLI
+
+```
+Usuario escribe: svc <comando>
+    │
+    └─→ función svc() en shell/init.sh
+          │
+          ├─ NAS_CLI=bash (default)
+          │     └──→ $NAS_DOTFILES/docker/cli/svc.sh
+          │            └── lib/*.sh (discovery, health, backup, menu, catalog-sync...)
+          │
+          └─ NAS_CLI=python
+                └──→ python3 -m svc_py
+                       └── svc_py/ (Typer + Rich + InquirerPy + Docker SDK)
+```
+
+**Regla al agregar comando nuevo a svc:**
+1. ¿A cuál CLI se agrega? (bash, python, o ambos)
+2. Si el usuario usa Python (`NAS_CLI=python`), agregar SOLO a bash no sirve
+3. Lo ideal: implementar en bash primero, después port a Python si se necesita
+4. Documentar en cuál está: ver tabla abajo
+
+### Tabla de comandos y en cuál CLI están
+
+| Comando | Bash (svc.sh) | Python (svc_py) | Notas |
+|---------|:-------------:|:---------------:|-------|
+| `lista` | ✅ | ✅ | Ambos |
+| `health` | ✅ | ✅ | Ambos |
+| `up/down/restart/stop/start` | ✅ | ✅ | Ambos |
+| `logs` | ✅ | ✅ | Ambos |
+| `update` / `update-all` | ✅ | ✅ | Ambos |
+| `backup` / `restore` | ✅ | ✅ | Ambos |
+| `menu` | ✅ | ✅ | Bash=fzf, Python=InquirerPy |
+| `doctor` | ✅ | ✅ | Ambos |
+| `port-map` | ✅ | ✅ | Ambos |
+| `create` | ✅ | ✅ | Ambos |
+| `diff` | ✅ | ❌ | Solo bash |
+| `size` | ✅ | ❌ | Solo bash |
+| `net` | ✅ | ❌ | Solo bash |
+| `watch` | ✅ | ❌ | Solo bash |
+| `catalog-sync` | ✅ | ❌ **PENDIENTE** | Solo bash — el usuario usa Python |
+
+### Al agregar comando nuevo, actualizar:
+
+```
+Nuevo comando para svc
+    │
+    ├──→ ¿En cuál CLI?
+    │     ├── Bash: docker/cli/svc.sh (case) + docker/cli/lib/<script>.sh
+    │     ├── Python: svc_py/ (agregar comando Typer)
+    │     └── Ambos: implementar en los dos
+    │
+    ├──→ shell/lib/docker.sh (_SVC_GLOBAL_CMDS o _SVC_SERVICE_CMDS) ← completions
+    ├──→ GUIDE.md (lista de comandos)
+    ├──→ references/svc.md
+    ├──→ AGENTS.md (si es frecuente)
+    ├──→ dependency-map (esta tabla — marcar en cuál CLI está)
+    └──→ Si solo está en UN CLI → documentar como pendiente para el otro
+```
 
 ---
 
