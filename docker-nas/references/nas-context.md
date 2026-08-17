@@ -163,6 +163,8 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 | Usuario copia compose de internet | `docs/docker-entorno.md` (ajustar a convenciones: env_file, ${SERVER_IP}, labels, security) |
 | Crear servicio nuevo | `docs/dependency-map.md` + `docs/docker-entorno.md` + `agent/catalog/_template.md` |
 | Crear script/herramienta nueva | `docs/dependency-map.md` (verificar dónde conecta con el sistema) |
+| Resolver un problema nuevo | `docs/ideas-decisions.md` (agregar entrada con problema → idea → solución → aprendizaje) |
+| Entender por qué algo se hizo así | `docs/ideas-decisions.md` (historial de decisiones con contexto) |
 | Preguntan por un servicio específico | `docs/services/<svc>-guide.md` → `agent/catalog/services/<svc>/ficha.md` |
 | Troubleshooting USB / mounts | `docs/services/ntfy-guide.md` §Troubleshooting |
 | Configurar Homepage | `docs/services/homepage-guide.md` |
