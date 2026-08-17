@@ -365,6 +365,8 @@ Cuando pregunte sobre comandos Docker, MENCIONARLE SUS COMANDOS:
 - `svc scan` → detectar lagunas e inconsistencias del proyecto
 - `svc scan --full` → scan completo (ignorar snapshot)
 - `svc scan --changed` → solo listar qué archivos cambiaron
+- `svc snapshot <servicio>` → guardar compose+.env antes de cambios
+- `svc rollback <servicio>` → restaurar config desde snapshot anterior
 - `svc depends <servicio>` → ver dependencias de un servicio
 
 ### Agente (este programa):
@@ -505,6 +507,86 @@ BLOCK_ADMIN = """
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# CATÁLOGO PRE-CARGADO — inyecta metadata de servicios al arrancar
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _load_catalog_summary() -> str:
+    """Lee todas las fichas del catálogo y genera un resumen compacto.
+
+    Se ejecuta UNA vez al crear el agente. El bloque resultante se inyecta
+    en el prompt cuando la query es sobre servicios, creación, o diagnóstico.
+    """
+    catalog_services = CATALOG_DIR / "services"
+    if not catalog_services.exists():
+        return "(catálogo vacío)"
+
+    lines = []
+    for svc_dir in sorted(catalog_services.iterdir()):
+        if not svc_dir.is_dir():
+            continue
+        ficha = svc_dir / "ficha.md"
+        if not ficha.exists():
+            continue
+
+        # Extraer metadata del frontmatter YAML (entre ---)
+        content = ficha.read_text(encoding="utf-8")
+        in_front = False
+        meta = {}
+        for line in content.splitlines():
+            if line.strip() == "---":
+                if not in_front:
+                    in_front = True
+                    continue
+                else:
+                    break
+            if in_front and ":" in line:
+                key, _, val = line.partition(":")
+                key = key.strip()
+                val = val.strip().strip('"').strip("'")
+                if key in ("id", "description", "port_default", "category", "image"):
+                    meta[key] = val
+                elif key == "networks":
+                    meta[key] = val
+
+        svc_id = meta.get("id", svc_dir.name)
+        desc = meta.get("description", "")
+        port = meta.get("port_default", "?")
+        cat = meta.get("category", "")
+        img = meta.get("image", "")
+        nets = meta.get("networks", "")
+
+        lines.append(f"  {svc_id:<16} :{port:<6} [{cat}] {desc}")
+        if img:
+            lines.append(f"  {'':16} img: {img}")
+
+    if not lines:
+        return "(catálogo vacío)"
+
+    return "\n".join(lines)
+
+
+# Cache del catálogo (se genera una vez por invocación)
+_CATALOG_CACHE: str = ""
+
+
+def _get_catalog_block() -> str:
+    """Retorna el bloque de catálogo pre-cargado (con cache)."""
+    global _CATALOG_CACHE
+    if not _CATALOG_CACHE:
+        _CATALOG_CACHE = _load_catalog_summary()
+    return f"""
+# CATÁLOGO DE SERVICIOS (pre-cargado)
+
+Servicios documentados en el catálogo del NAS:
+
+{_CATALOG_CACHE}
+
+Para detalles de un servicio: usar `read_file_content("agent/catalog/services/<id>/ficha.md")`
+Para comparar config real vs catálogo: usar `compare_catalog(service)`
+"""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Motor de clasificación y ensamblaje de bloques
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -523,7 +605,7 @@ def _classify_query(query: str) -> list:
         "no funciona", "unhealthy", "arreglar", "lento", "crash",
         "502", "503", "timeout", "log", "por qué", "qué pasa",
     ]):
-        blocks.extend(["reglas_core", "herramientas", "memoria", "diagnostico", "formato"])
+        blocks.extend(["reglas_core", "herramientas", "memoria", "diagnostico", "catalogo", "formato"])
         return blocks
 
     # Creación
@@ -531,7 +613,7 @@ def _classify_query(query: str) -> list:
         "instalar", "crear", "nuevo servicio", "quiero", "montar",
         "configurar", "deployer", "agregar", "setup",
     ]):
-        blocks.extend(["reglas_core", "herramientas", "seguridad", "creacion", "formato"])
+        blocks.extend(["reglas_core", "herramientas", "seguridad", "creacion", "catalogo", "formato"])
         return blocks
 
     # Backup
@@ -554,7 +636,7 @@ def _classify_query(query: str) -> list:
         "servicios", "estado", "salud", "health", "disco", "memoria",
         "puertos", "red", "lista",
     ]):
-        blocks.extend(["reglas_core", "herramientas", "formato"])
+        blocks.extend(["reglas_core", "herramientas", "catalogo", "formato"])
         return blocks
 
     # Identidad / modelo
@@ -590,6 +672,7 @@ def _assemble_prompt(blocks: list, model_info: str, provider: str) -> str:
         "backup": BLOCK_BACKUP,
         "admin": BLOCK_ADMIN,
         "memoria": BLOCK_MEMORIA,
+        "catalogo": _get_catalog_block(),
     }
 
     parts = [THINKING_PROMPT]

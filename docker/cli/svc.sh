@@ -40,6 +40,8 @@ case "$cmd" in
   doctor-history) svc_doctor_history "$@" ; exit 0 ;;
   lock) svc_lock "$1" ; exit 0 ;;
   unlock) svc_unlock "$1" ; exit 0 ;;
+  snapshot) svc_snapshot "$1" ; exit 0 ;;
+  rollback) svc_rollback "$1" ; exit 0 ;;
   ""|"-h"|"--help") _svc_ayuda ; exit 0 ;;
 esac
 
