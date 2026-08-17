@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Verificar continuidad de sesiones anteriores",
+      "trigger": "SessionStart",
+      "description": "At session start, checks if there are pending session handoff files in _drafts/ to offer continuity from previous work.",
+      "matcher": "null",
+      "action": {
+        "type": "agent",
+        "prompt": "Check if there are files matching _drafts/SESSION-*.md or _drafts/PENDIENTES-*.md or _drafts/SESION-*.md in the nas-dotfiles repository. If any exist, read the most recent one and briefly tell the user: \"I found a previous session handoff from [date]. It was working on [topic]. Would you like to continue where it left off?\" Do NOT read the full file into context unless the user says yes. Just mention it exists."
+      }
+    }
+  ]
+}
