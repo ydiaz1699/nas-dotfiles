@@ -154,13 +154,16 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 ## 5. Documentación disponible (lazy loading)
 
 **Regla: NO leer estos archivos al activar la skill.** Solo cargar cuando el usuario pregunte sobre ese tema.
-**EXCEPCIÓN: SIEMPRE leer `docs/docker-entorno.md` ANTES de modificar cualquier compose.**
+**EXCEPCIÓN 1: SIEMPRE leer `docs/docker-entorno.md` ANTES de modificar cualquier compose.**
+**EXCEPCIÓN 2: SIEMPRE consultar `docs/dependency-map.md` DESPUÉS de cualquier cambio para verificar la cascada.**
 
 | Trigger | Archivo a cargar |
 |---------|-----------------|
-| Modificar/crear un compose.yml | `docs/docker-entorno.md` (**OBLIGATORIO ANTES de cualquier cambio**) |
+| Modificar/crear un compose.yml | `docs/docker-entorno.md` + `docs/dependency-map.md` (**OBLIGATORIO**) |
+| Usuario copia compose de internet | `docs/docker-entorno.md` (ajustar a convenciones: env_file, ${SERVER_IP}, labels, security) |
+| Crear servicio nuevo | `docs/dependency-map.md` + `docs/docker-entorno.md` + `agent/catalog/_template.md` |
+| Crear script/herramienta nueva | `docs/dependency-map.md` (verificar dónde conecta con el sistema) |
 | Preguntan por un servicio específico | `docs/services/<svc>-guide.md` → `agent/catalog/services/<svc>/ficha.md` |
-| Quieren crear servicio nuevo | `docs/docker-entorno.md` + `agent/catalog/_template.md` |
 | Troubleshooting USB / mounts | `docs/services/ntfy-guide.md` §Troubleshooting |
 | Configurar Homepage | `docs/services/homepage-guide.md` |
 | Home Assistant (automatizaciones, ntfy, cámara) | `docs/services/homeassistant-guide.md` |
@@ -198,11 +201,38 @@ Formato: `[fecha] corrección`.
 [2026-08-16] Carpeta www/snapshots/ debe existir ANTES de camera.snapshot
 [2026-08-16] HA config se organiza con !include en carpeta includes/ (no todo en configuration.yaml)
 [2026-08-16] Home Assistant usa network_mode:host — no necesita redes Docker, accede directo a LAN
+[2026-08-16] SIEMPRE consultar dependency-map.md después de cualquier cambio para no olvidar archivos conectados
+[2026-08-16] Si el usuario pega un compose de internet → ajustarlo a las convenciones (env_file, ${SERVER_IP}, labels, security_opt, cap_drop)
 ```
 
-> **Instrucción al LLM:** Cuando el usuario te corrija algo sobre el NAS
-> (ruta, IP, alias, comportamiento de un servicio), agregar una línea aquí
-> con la fecha y la corrección. Esto evita repetir el mismo error.
+> **Instrucciones al LLM (comportamiento proactivo):**
+>
+> 1. **Cuando el usuario te corrija** → agregar una línea aquí con fecha y corrección
+>
+> 2. **Cuando se cree/modifique cualquier archivo** → consultar `docs/dependency-map.md`
+>    y recomendar qué otros archivos actualizar (no esperar a que el usuario pregunte)
+>
+> 3. **Cuando el usuario copie un compose de internet** → ANTES de aceptarlo, verificar:
+>    - ¿Tiene `env_file: [../.env, .env]`? Si no → agregar
+>    - ¿Tiene IP hardcodeada en labels? → cambiar a `${SERVER_IP}`
+>    - ¿Tiene `TZ` en environment? → quitar (se hereda)
+>    - ¿Tiene `security_opt: [no-new-privileges:true]` + `cap_drop: [ALL]`? → agregar
+>    - ¿Tiene healthcheck? → agregar si falta
+>    - ¿Tiene labels `homepage.*`? → sugerir agregar
+>    - Recomendar: `svc catalog-sync <svc>` después de levantar
+>
+> 4. **Cuando se cree un servicio nuevo** → recordar la cascada completa:
+>    - compose + .env + carpetas
+>    - `svc catalog-sync <svc>` (genera ficha, guía, script DebMenux)
+>    - Verificar si falta actualizar AGENTS.md y nas-manual.md (manual)
+>
+> 5. **Cuando se cree un script/herramienta nueva** → preguntar:
+>    - ¿Dónde vive? (nas-dotfiles o DebMenux)
+>    - ¿Se conecta con algún servicio existente?
+>    - ¿Necesita entry en AGENTS.md o en la skill?
+>    - ¿Necesita documentación en docs/?
+>
+> 6. **Antes de decir "listo" o "no necesita cambios"** → verificar dependency-map.md
 
 ---
 
@@ -220,3 +250,12 @@ Antes de sugerir CUALQUIER comando o cambio para el NAS, verificar:
 - [ ] ¿El compose usa `env_file: [../.env, .env]` (no IP/TZ hardcodeados)?
 - [ ] ¿Las carpetas de volúmenes existen ANTES de levantar?
 - [ ] ¿Después del cambio sugiero `svc catalog-sync <svc>`?
+- [ ] **¿Consulté `docs/dependency-map.md` para ver qué más debo actualizar?**
+- [ ] **¿Si es servicio nuevo: generé script DebMenux + actualicé AGENTS.md + nas-manual.md?**
+
+### Antes de decir "listo" o "terminado"
+
+- [ ] ¿Todos los archivos del grafo de dependencias están sincronizados?
+- [ ] ¿`svc catalog-sync --status` muestra todo ✅?
+- [ ] ¿Si copié compose de internet, lo ajusté a las convenciones?
+- [ ] ¿Recomendé al usuario qué hacer después? (catalog-sync, recreate, gpl)
