@@ -311,7 +311,7 @@ Usuario escribe: svc <comando>
 |---------|:-------------:|:---------------:|-------|
 | `lista` | ✅ | ✅ | Ambos |
 | `health` | ✅ | ✅ | Ambos |
-| `up/down/restart/stop/start` | ✅ | ✅ | Ambos |
+| `up/down/restart/stop/start` | ✅ | ✅ | Ambos (passthrough) |
 | `logs` | ✅ | ✅ | Ambos |
 | `update` / `update-all` | ✅ | ✅ | Ambos |
 | `backup` / `restore` | ✅ | ✅ | Ambos |
@@ -323,7 +323,20 @@ Usuario escribe: svc <comando>
 | `size` | ✅ | ❌ | Solo bash |
 | `net` | ✅ | ❌ | Solo bash |
 | `watch` | ✅ | ❌ | Solo bash |
-| `catalog-sync` | ✅ | ❌ **PENDIENTE** | Solo bash — el usuario usa Python |
+| `catalog-sync` | ✅ | ✅ | Ambos (Python wrapper via bash_bridge) |
+| `scan` | ✅ | ✅ | Ambos (Python: subprocess al scanner) |
+| `backup-all` | ✅ | ❌ | Solo bash — Python hereda via passthrough |
+| `logs-grep` | ✅ | ❌ | Solo bash |
+| `clone` | ✅ | ❌ | Solo bash |
+| `cron` | ✅ | ❌ | Solo bash |
+| `doctor-history` | ✅ | ❌ | Solo bash |
+| `lock` / `unlock` | ✅ | ❌ | Solo bash |
+| `snapshot` / `rollback` | ✅ | ❌ | Solo bash — nuevo (2026-08-17) |
+| `depends` | ✅ | ✅ | Ambos |
+| `open` | ✅ | ✅ | Ambos |
+| `env` | ✅ | ✅ | Ambos |
+
+> **Estrategia:** Comando nuevo → implementar SOLO en bash → Python lo hereda via `bash_bridge.py` si necesita UI elaborada. Los que están "solo bash" funcionan porque la función `svc()` invoca svc.sh cuando el comando no está registrado en Typer.
 
 ### Al agregar comando nuevo, actualizar:
 

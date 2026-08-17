@@ -18,6 +18,13 @@
 6. [Skill 2.0: nas-context.md compacto](#6-skill-20-nas-contextmd-compacto)
 7. [AGENTS.md formato abierto](#7-agentsmd-formato-abierto)
 8. [env_file global + ${SERVER_IP}](#8-env_file-global--server_ip)
+9. HA config con !include
+10. [ntfy.publish no soporta imágenes](#10-ntfypublish-no-soporta-imágenes)
+11. [Dependency map para no olvidar cascadas](#11-dependency-map-para-no-olvidar-cascadas)
+12. [Skill proactiva con progressive updates](#12-skill-proactiva-con-progressive-updates)
+13. [Script creado pero no conectado al sistema](#13-script-creado-pero-no-conectado-al-sistema)
+14. [Dual CLI: bash = verdad, Python = interfaz](#14-dual-cli-bash--verdad-python--interfaz)
+15. [El LLM no auto-documenta lo que crea](#15-el-llm-no-auto-documenta-lo-que-crea-validación-cruzada)
 9. [HA config con !include](#9-ha-config-con-include)
 10. [ntfy.publish no soporta imágenes](#10-ntfypublish-no-soporta-imágenes)
 11. [Dependency map para no olvidar cascadas](#11-dependency-map-para-no-olvidar-cascadas)
@@ -423,3 +430,41 @@ en bash y Python lo hereda automáticamente.
 - El Python CLI agrega VALOR (UX) sin duplicar LÓGICA
 - La selección de CLI (`NAS_CLI=bash|python`) solo afecta la presentación, no el comportamiento
 - Futuros LLMs: al crear un comando nuevo, solo tocar bash — Python lo hereda
+
+
+---
+
+## 15. El LLM no auto-documenta lo que crea (validación cruzada)
+
+**Problema:**
+En sesión 2026-08-17 (Kiro Web), un LLM implementó: scanner incremental, svc snapshot/rollback,
+compare_catalog, completions, agent prompt. Pero al auditar después, se descubrió que:
+- `dependency-map.md` tabla CLI no se actualizó (seguía marcando catalog-sync como "PENDIENTE")
+- La skill (nas-context.md) no mencionaba las 3 tools nuevas
+- No se generó SESSION-*.md al cerrar
+
+El LLM creó código correcto pero no aplicó el sistema de auto-documentación que él mismo
+ayudó a diseñar.
+
+**Idea del usuario:**
+Comparar la auditoría del LLM contra las ideas/decisiones documentadas para detectar
+exactamente qué se quedó sin sincronizar. El scanner detecta servicios desconectados,
+pero NO detecta documentos desactualizados (como la tabla CLI del dependency-map).
+
+**Proceso de solución:**
+1. Usuario comparó output del scanner vs docs manualmente → encontró 3 gaps
+2. Se corrigió dependency-map.md (tabla CLI de 15 → 26 comandos con estado real)
+3. Se documentó esta lección como entry #15
+
+**Aprendizaje:**
+- El scanner detecta archivos desconectados, pero NO verifica contenido semántico de docs
+- Para eso se necesita: después de cualquier cambio, el LLM DEBE consultar dependency-map.md
+- La skill ya tiene esta regla (sección 7 checklist), pero el LLM la ignoró por falta de contexto
+- **Futuro:** el scanner podría verificar que la tabla CLI tiene la misma cantidad de comandos
+  que `_SVC_GLOBAL_CMDS` en `shell/lib/docker.sh` — detección automática de desincronización
+
+**Regla nueva:**
+Al cerrar una sesión que implementó features nuevas, SIEMPRE correr mentalmente:
+1. ¿dependency-map tabla CLI refleja los comandos nuevos?
+2. ¿nas-context.md Progressive Updates tiene la fecha de hoy?
+3. ¿PENDIENTES-proxima-sesion.md tiene registro de esta sesión?
