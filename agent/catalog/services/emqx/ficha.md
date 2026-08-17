@@ -33,6 +33,7 @@ docs_url: "docs/services/emqx-guide.md"
 notes: "Requiere ulimits nofile alto (1048576). Dashboard en puerto 18083, expuesto en LAN (no restringido a localhost pese a la regla general de _compose_base.md); ver justificación en README del servicio. Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del .env global."
 networks:
   - iot_net
+  - db_net
 ports:
   mqtt: 1883
   mqtts: 8883
@@ -110,9 +111,7 @@ environment:
 ## Redes
 
 - `iot_net`: Compartida con Node-RED, Home Assistant, ESPHome
-
-> Nota: `db_net` se eliminó por mínimo privilegio. Reconectar cuando se implemente
-> persistencia externa (PostgreSQL como backend de EMQX).
+- `db_net`: Acceso a la red de bases de datos (persistencia, otros servicios que consultan MQTT)
 
 ## .env
 

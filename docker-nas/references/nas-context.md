@@ -121,7 +121,7 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 | Servicio | Puerto | Red | Docs (cargar si se necesita) |
 |----------|--------|-----|------|
 | adguard | 53,80 (IP: .201) | macvlan | `agent/catalog/services/adguard/` |
-| emqx | 1883,18083 | iot_net | `agent/catalog/services/emqx/ficha.md` |
+| emqx | 1883,18083 | iot_net, db_net | `agent/catalog/services/emqx/ficha.md` |
 | esphome | 6052 | host | `agent/catalog/services/esphome/ficha.md` |
 | datasql | 5050 | db_net | `docs/services/datasql-guide.md` |
 | filebrowser | 8085 | default | `docs/services/filebrowser-guide.md` |

@@ -67,7 +67,10 @@ services:
       - homepage.description=Broker MQTT para IoT
     networks:
       - iot_net
+      - db_net
 
 networks:
   iot_net:
+    external: true
+  db_net:
     external: true
