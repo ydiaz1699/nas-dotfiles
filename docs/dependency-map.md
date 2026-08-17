@@ -208,6 +208,34 @@ $dkco/.env  (MODIFICADO)
     └──→ /etc/usb-automount.conf            (si cambia NTFY_URL)
 ```
 
+### J. Contenido en _drafts/ (carpeta temporal de ideas)
+
+```
+_drafts/<archivo>  (CONTENIDO NUEVO — ideas, planes, fragmentos, composes copiados)
+    │
+    │  El LLM debe IDENTIFICAR qué tipo de contenido es:
+    │
+    ├─ ¿Es un PLAN de implementación? (como PLAN-ntfy-usb-api.md)
+    │     └──→ Leer, entender alcance, preguntar si implementar
+    │
+    ├─ ¿Son FRAGMENTOS dispersos sobre un tema? (diagnósticos, notas, chat logs)
+    │     └──→ Usar docs/meta-prompt-unificar.md para unificar en UNA guía coherente
+    │          └──→ Resultado va a docs/services/<svc>-guide.md o docs/<tema>.md
+    │
+    ├─ ¿Es un COMPOSE copiado de internet?
+    │     └──→ Ajustar a convenciones (docs/docker-entorno.md)
+    │          └──→ Resultado va a $dkco/<svc>/compose.yml → cascade completa
+    │
+    ├─ ¿Es una IDEA o feature request?
+    │     └──→ Agregar a TODO.md en la sección correspondiente
+    │
+    ├─ ¿Es DOCUMENTACIÓN de otra sesión/LLM? (como Skills_2.0.md)
+    │     └──→ Extraer ideas aplicables → implementar o agregar a ideas-decisions.md
+    │
+    └─ ¿Ya se implementó lo que describe?
+          └──→ Se puede eliminar o mover a docs/ como referencia histórica
+```
+
 ---
 
 ## Tabla de impacto completa

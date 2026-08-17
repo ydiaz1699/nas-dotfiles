@@ -166,6 +166,9 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 | Crear script/herramienta nueva | `docs/dependency-map.md` (verificar dónde conecta con el sistema) |
 | Resolver un problema nuevo | `docs/ideas-decisions.md` (agregar entrada con problema → idea → solución → aprendizaje) |
 | Entender por qué algo se hizo así | `docs/ideas-decisions.md` (historial de decisiones con contexto) |
+| Hay archivos en `_drafts/` | Identificar tipo → procesar según `docs/dependency-map.md` §J |
+| Fragmentos dispersos a unificar | `docs/meta-prompt-unificar.md` (reglas de unificación sin perder contenido) |
+| Usuario sube compose copiado | `docs/docker-entorno.md` (ajustar a convenciones) |
 | Preguntan por un servicio específico | `docs/services/<svc>-guide.md` → `agent/catalog/services/<svc>/ficha.md` |
 | Troubleshooting USB / mounts | `docs/services/ntfy-guide.md` §Troubleshooting |
 | Configurar Homepage | `docs/services/homepage-guide.md` |
@@ -259,6 +262,20 @@ Formato: `[fecha] corrección`.
 >    - dependency-map.md: ¿olvidé algún archivo conectado?
 >    - README.md: ¿refleja la estructura actual del proyecto?
 >    - ¿La guía del servicio coincide con el compose real?
+>
+> 8. **Cuando hay archivos en `_drafts/`** → analizarlos proactivamente:
+>    - Identificar qué tipo de contenido es (plan, fragmentos, compose, idea, docs de otro LLM)
+>    - Consultar dependency-map.md §J para saber qué hacer con cada uno
+>    - Si son fragmentos dispersos → usar `docs/meta-prompt-unificar.md` para unificar
+>    - Si es un compose copiado → ajustar a convenciones antes de implementar
+>    - Si ya se implementó lo que describe → sugerir eliminar o archivar
+>    - Preguntar al usuario: "Encontré X en _drafts/, ¿quieres que lo procese?"
+>
+> 9. **Cuando el usuario suba contenido nuevo** (gist, texto, archivo) → clasificar:
+>    - ¿Es implementable ahora? → implementar siguiendo dependency-map
+>    - ¿Es una idea para el futuro? → agregar a TODO.md
+>    - ¿Es información de referencia? → agregar a docs/ o ideas-decisions.md
+>    - ¿Es output de otro LLM? → verificar contra la realidad del proyecto antes de aplicar
 
 ---
 
