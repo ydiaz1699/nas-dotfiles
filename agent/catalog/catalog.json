@@ -1,7 +1,116 @@
 {
   "version": "1.0",
-  "services_count": 1,
+  "services_count": 7,
   "services": {
+    "datasql": {
+      "id": "datasql",
+      "name": "DataSQL",
+      "description": "Stack de bases de datos: PostgreSQL 16, pgAdmin 4 y Redis 7 para persistencia de servicios del NAS",
+      "aliases": [
+        "postgres",
+        "pgadmin",
+        "redis",
+        "db",
+        "database"
+      ],
+      "image": "postgres:16-alpine",
+      "category": "base-datos",
+      "protocol": "tcp",
+      "needs_proxy": false,
+      "needs_db": false,
+      "db_type": "",
+      "services": {
+        "postgres": {
+          "image": "postgres:16-alpine",
+          "container_name": "datapostgres",
+          "port_internal": 5432,
+          "port_default": null,
+          "exposure": "internal",
+          "healthcheck": "[\"CMD-SHELL\", \"pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}\"]",
+          "volumes": [
+            "./data/postgres/pgdata:/var/lib/postgresql/data/pgdata",
+            "./data/postgres/backups:/backups"
+          ],
+          "resources": {
+            "memory_limit": "2G",
+            "memory_reservation": "512M",
+            "cpus_limit": "2",
+            "cpus_reservation": "0.5"
+          }
+        },
+        "pgadmin": {
+          "image": "dpage/pgadmin4:latest",
+          "container_name": "datapgadmin",
+          "port_internal": 80,
+          "port_default": 5050,
+          "exposure": "lan",
+          "healthcheck": null,
+          "volumes": [
+            "./data/pgadmin:/var/lib/pgadmin"
+          ],
+          "resources": {
+            "memory_limit": "512M",
+            "memory_reservation": "128M",
+            "cpus_limit": "1",
+            "cpus_reservation": "0.25"
+          }
+        },
+        "redis": {
+          "image": "redis:7-alpine",
+          "container_name": "dataredis",
+          "port_internal": 6379,
+          "port_default": null,
+          "exposure": "internal",
+          "healthcheck": "[\"CMD\", \"redis-cli\", \"-a\", \"${REDIS_PASSWORD}\", \"ping\"]",
+          "volumes": [
+            "./data/redis:/data"
+          ],
+          "resources": {
+            "memory_limit": "256M",
+            "memory_reservation": "64M",
+            "cpus_limit": "0.5",
+            "cpus_reservation": "0.1"
+          }
+        }
+      },
+      "env_required": [
+        "POSTGRES_DB",
+        "POSTGRES_USER",
+        "POSTGRES_PASSWORD",
+        "PGADMIN_EMAIL",
+        "PGADMIN_PASSWORD",
+        "REDIS_PASSWORD"
+      ],
+      "env_optional": [],
+      "backup_critical": true,
+      "backup_paths": [
+        "./data/postgres/backups",
+        "./data/pgadmin",
+        "./data/redis"
+      ],
+      "protected": false,
+      "docs_url": "docs/services/datasql-guide.md",
+      "notes": "PostgreSQL y Redis NO exponen puertos al host — acceso solo via db_net. pgAdmin expuesto en LAN (:5050). PGDATA y TZ son variables fijas/globales (no requieren .env local). Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del global.",
+      "networks": [
+        "db_net"
+      ],
+      "security_extra": {
+        "all_services": {
+          "security_opt": [
+            "no-new-privileges:true"
+          ],
+          "cap_drop": [
+            "ALL"
+          ],
+          "cap_add": [
+            "CHOWN",
+            "DAC_OVERRIDE",
+            "SETUID",
+            "SETGID"
+          ]
+        }
+      }
+    },
     "emqx": {
       "id": "emqx",
       "name": "EMQX",
@@ -38,7 +147,7 @@
       ],
       "protected": false,
       "docs_url": "https://docs.emqx.com/en/emqx/latest/",
-      "notes": "Requiere ulimits nofile alto (1048576). Dashboard en puerto 18083, expuesto en LAN (no restringido a localhost pese a la regla general de _compose_base.md); ver justificación en README del servicio.",
+      "notes": "Requiere ulimits nofile alto (1048576). Dashboard en puerto 18083, expuesto en LAN (no restringido a localhost pese a la regla general de _compose_base.md); ver justificación en README del servicio. Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del .env global.",
       "networks": [
         "iot_net",
         "db_net"
@@ -62,19 +171,262 @@
           }
         }
       }
+    },
+    "homeassistant": {
+      "id": "homeassistant",
+      "name": "Home Assistant",
+      "description": "Plataforma de automatización del hogar con integraciones IoT",
+      "image": "ghcr.io/home-assistant/home-assistant:stable",
+      "category": "domótica",
+      "port_internal": 8123,
+      "port_default": 8123,
+      "protocol": "http",
+      "needs_proxy": false,
+      "needs_db": false,
+      "db_type": "sqlite (interno)",
+      "volumes": [
+        "./data:/config",
+        "/etc/localtime:/etc/localtime:ro",
+        "/run/dbus:/run/dbus:ro"
+      ],
+      "env_required": [
+        "HOMEASSISTANT_TOKEN"
+      ],
+      "env_optional": [
+        "TZ=America/La_Paz"
+      ],
+      "healthcheck": "[\"CMD\", \"curl\", \"-f\", \"http://localhost:8123\"]",
+      "backup_critical": true,
+      "backup_paths": [
+        "./data"
+      ],
+      "protected": true,
+      "docs_url": "docs/services/homeassistant-guide.md",
+      "notes": "Usa network_mode: host (acceso directo a LAN para mDNS, descubrimiento IoT). Privileged: true (USB, Bluetooth, dbus). Config organizada con !include en carpeta includes/. Integración ntfy para push notifications con imagen (via shell_command, no ntfy.publish — este último no soporta attachments aún). TvOverlay configurado como rest_command.",
+      "networks": [],
+      "ports": {
+        "http": 8123
+      },
+      "resources": {
+        "memory_limit": "2g",
+        "memory_reservation": "512m"
+      },
+      "aliases": [
+        "homeassistant",
+        "home-assistant",
+        "ha",
+        "domótica",
+        "automatización"
+      ]
+    },
+    "homepage": {
+      "id": "homepage",
+      "name": "Homepage",
+      "description": "Dashboard de servicios del NAS con widgets personalizados",
+      "image": "ghcr.io/gethomepage/homepage:latest",
+      "category": "sistema",
+      "port_internal": 3000,
+      "port_default": 3000,
+      "protocol": "http",
+      "needs_proxy": false,
+      "needs_db": false,
+      "db_type": "",
+      "volumes": [
+        "./config:/app/config",
+        "/var/run/docker.sock:/var/run/docker.sock:ro"
+      ],
+      "env_required": [
+        "TZ"
+      ],
+      "env_optional": [
+        "HOMEPAGE_ALLOWED_HOSTS=*"
+      ],
+      "healthcheck": "GET http://localhost:3000",
+      "backup_critical": true,
+      "backup_paths": [
+        "./config"
+      ],
+      "protected": false,
+      "docs_url": "docs/services/homepage-guide.md",
+      "notes": "Usa Docker socket (read-only) para auto-descubrir contenedores via labels. Los servicios que quieran aparecer automáticamente deben estar en homepage_net y tener labels homepage.*. La config YAML en ./config/ se edita en caliente (no requiere reiniciar). Para servicios nativos (usb-api) usar widget customapi con IP del host.",
+      "networks": [
+        "homepage_net"
+      ],
+      "ports": {
+        "http": 3000
+      },
+      "resources": {
+        "memory_limit": "256m",
+        "memory_reservation": "64m"
+      },
+      "aliases": [
+        "homepage",
+        "dashboard",
+        "panel"
+      ]
+    },
+    "node-red": {
+      "id": "node-red",
+      "name": "Node-RED",
+      "description": "Plataforma visual de automatización de flujos IoT",
+      "image": "nodered/node-red:latest",
+      "category": "domótica",
+      "port_internal": 1880,
+      "port_default": 1880,
+      "protocol": "http",
+      "needs_proxy": false,
+      "needs_db": false,
+      "db_type": "",
+      "volumes": [
+        "./data:/data"
+      ],
+      "env_required": [],
+      "env_optional": [],
+      "healthcheck": "[\"CMD\", \"curl\", \"-f\", \"http://localhost:1880\"]",
+      "backup_critical": true,
+      "backup_paths": [
+        "./data"
+      ],
+      "protected": false,
+      "docs_url": "docs/services/node-red-guide.md",
+      "notes": "Conectado a iot_net para comunicación con EMQX (MQTT), ESPHome, y HA. NO usar cap_drop:[ALL] — Node-RED instala paquetes npm en runtime y necesita permisos flexibles. Los flujos se guardan en ./data/flows.json.",
+      "networks": [
+        "iot_net"
+      ],
+      "ports": {
+        "http": 1880
+      },
+      "resources": {
+        "memory_limit": "sin definir (medir con docker stats primero)"
+      },
+      "aliases": [
+        "node-red",
+        "nodered",
+        "flujos",
+        "flows"
+      ]
+    },
+    "ntfy": {
+      "id": "ntfy",
+      "name": "ntfy",
+      "description": "Servidor de notificaciones push HTTP pub-sub self-hosted",
+      "image": "binwiederhier/ntfy:latest",
+      "category": "sistema",
+      "port_internal": 80,
+      "port_default": 8090,
+      "protocol": "http",
+      "needs_proxy": false,
+      "needs_db": false,
+      "db_type": "",
+      "volumes": [
+        "./config:/etc/ntfy",
+        "./data/cache:/var/cache/ntfy",
+        "./data/lib:/var/lib/ntfy",
+        "./data/attachments:/var/cache/ntfy/attachments"
+      ],
+      "env_required": [
+        "TZ",
+        "SERVER_IP"
+      ],
+      "env_optional": [
+        "NTFY_AUTH_DEFAULT_ACCESS=read-write"
+      ],
+      "healthcheck": "[\"CMD\", \"wget\", \"--no-verbose\", \"--tries=1\", \"--spider\", \"http://localhost:80/v1/health\"]",
+      "backup_critical": false,
+      "backup_paths": [
+        "./data/lib",
+        "./config"
+      ],
+      "protected": false,
+      "docs_url": "docs/services/ntfy-guide.md",
+      "notes": "Stateless cache — los mensajes se guardan 24h y luego se purgan. Los attachments (imágenes de cámaras) expiran en 24h. Auth por defecto abierto (LAN only). Para exponer a internet: cambiar auth-default-access a deny-all y crear usuarios con ntfy user add.",
+      "networks": [
+        "homepage_net"
+      ],
+      "ports": {
+        "http": 8090
+      },
+      "resources": {
+        "memory_limit": "256m",
+        "memory_reservation": "64m"
+      },
+      "aliases": [
+        "ntfy",
+        "notificaciones",
+        "push",
+        "alertas"
+      ]
+    },
+    "usb-api": {
+      "id": "usb-api",
+      "name": "USB API",
+      "description": "Mini API REST para listar y desmontar USBs desde web (Homepage widget)",
+      "image": null,
+      "category": "sistema",
+      "port_internal": 8091,
+      "port_default": 8091,
+      "protocol": "http",
+      "native": true,
+      "needs_proxy": false,
+      "needs_db": false,
+      "db_type": "",
+      "volumes": [],
+      "env_required": [
+        "USB_API_PORT",
+        "MOUNT_BASE",
+        "NTFY_URL"
+      ],
+      "env_optional": [
+        "USB_API_BIND=0.0.0.0"
+      ],
+      "healthcheck": "GET /health",
+      "backup_critical": false,
+      "backup_paths": [],
+      "protected": false,
+      "docs_url": "docs/services/ntfy-guide.md",
+      "notes": "Servicio NATIVO (systemd, NO Docker) porque necesita ejecutar umount en el host. Instalado por DebMenux scripts/services/usb-api.sh. El script Python está en /usr/local/lib/usb-api/server.py. Unit file en /etc/systemd/system/usb-api.service. Requiere acceso a MOUNT_BASE (/NAS/USB). Envía notificación a ntfy al desmontar. CORS habilitado para Homepage widgets.",
+      "networks": [],
+      "ports": {
+        "http": 8091
+      },
+      "resources": {
+        "memory_limit": "32m"
+      },
+      "aliases": [
+        "usb-api",
+        "usb",
+        "usb-manager",
+        "eject"
+      ]
     }
   },
   "by_category": {
+    "base-datos": [
+      "datasql"
+    ],
     "domótica": [
-      "emqx"
+      "emqx",
+      "homeassistant",
+      "node-red"
+    ],
+    "sistema": [
+      "homepage",
+      "ntfy",
+      "usb-api"
     ]
   },
   "by_network": {
-    "iot_net": [
+    "db_net": [
+      "datasql",
       "emqx"
     ],
-    "db_net": [
-      "emqx"
+    "iot_net": [
+      "emqx",
+      "node-red"
+    ],
+    "homepage_net": [
+      "homepage",
+      "ntfy"
     ]
   }
 }

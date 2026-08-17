@@ -91,7 +91,7 @@ env_file:
 | filebrowser | ❌ (usa .env solo) | ✅ | ❌ |
 | homeassistant | ✅ | ✅ | ❌ (hereda) |
 | esphome | ❌ (network_mode:host) | ✅ | ❌ |
-| datasql | ❌ (env en compose) | ✅ | via ${TZ} |
+| datasql | ✅ | ✅ | ❌ (hereda) |
 | homepage | ❌ | ❌ | inline `TZ=...` |
 | adguard | ❌ (macvlan) | ✅ | ❌ |
 

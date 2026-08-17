@@ -78,10 +78,16 @@ con tabla de qué comandos están en cuál CLI.
 
 ## 6. Correcciones pendientes al catálogo (de learnings anteriores)
 
-- [ ] datasql/ficha.md: quitar PGDATA de env_required
-- [ ] datasql/compose.yml: quitar ports "5432:5432" de postgres
-- [ ] Regenerar catalog.json con `python3 -m agent.catalog._index`
-- [ ] Crear $dkco/.env global (¿ya existe? verificar)
+- [x] datasql/ficha.md: quitar PGDATA de env_required ← **YA ESTABA HECHO** (sesión anterior)
+- [x] datasql/ficha.md: quitar TZ de env_required (hereda del global) ← **2026-08-17**
+- [x] datasql/compose.yml: quitar ports "5432:5432" de postgres ← **YA ESTABA HECHO** (sesión anterior)
+- [x] datasql/compose.yml: cambiar `env_file: .env` → `env_file: [../.env, .env]` ← **2026-08-17**
+- [x] datasql/compose.yml: quitar `TZ: ${TZ}` de environment postgres (hereda del global) ← **2026-08-17**
+- [x] datasql/compose.yml: IP hardcodeada `192.168.1.200` → `${SERVER_IP}` en label pgadmin ← **2026-08-17**
+- [x] datasql/.env.example: quitar TZ (viene del global) ← **2026-08-17**
+- [x] datasql/ficha.md: actualizar notes (env_file dual, TZ global) ← **2026-08-17**
+- [x] Regenerar catalog.json con `python3 -m agent.catalog._index` ← **2026-08-17** (1→7 servicios)
+- [x] Crear $dkco/.env global (¿ya existe? verificar) ← **YA EXISTÍA**: `agent/catalog/.env.global.example`
 
 ---
 
@@ -195,3 +201,33 @@ de comandos. No se actualiza automáticamente al agregar comandos nuevos.
 | TZ duplicado en HA compose | Revisión manual | Corregido (quitar environment TZ) | Scanner detectaría |
 | ntfy.publish no soporta imágenes | Error en runtime | Documentado + shell_command workaround | — |
 | Carpeta www/snapshots/ no existía | Error en runtime | mkdir -p | Scanner verificaría paths de volumes |
+
+
+
+---
+
+## 📋 Registro de sesión 2026-08-17 (Kiro Web)
+
+### Tarea: Corregir catálogo datasql
+
+| # | Acción | Archivo | Detalle | Estado |
+|---|--------|---------|---------|:------:|
+| 1 | Quitar TZ de env_required | ficha.md | Era redundante: TZ viene de ../.env global | ✅ |
+| 2 | Actualizar notes | ficha.md | Documenta env_file dual y que TZ/PGDATA no requieren .env local | ✅ |
+| 3 | Actualizar sección "Variables de entorno" | ficha.md | Separar "Requeridas (.env local)" de "Heredadas del global" | ✅ |
+| 4 | Cambiar env_file a formato dual | compose.yml | `env_file: .env` → `env_file: [../.env, .env]` en postgres y pgadmin | ✅ |
+| 5 | Quitar TZ de environment | compose.yml | En postgres: `TZ: ${TZ}` eliminado (hereda del global) | ✅ |
+| 6 | Reemplazar IP hardcodeada | compose.yml | `192.168.1.200` → `${SERVER_IP}` en label homepage.href de pgadmin | ✅ |
+| 7 | Quitar TZ del .env.example | .env.example | Ya no es responsabilidad del .env local | ✅ |
+| 8 | Regenerar catalog.json | catalog.json | 1 servicio → 7 servicios indexados | ✅ |
+
+### Hallazgos (cosas que YA estaban corregidas de sesiones anteriores)
+
+- `PGDATA` ya NO estaba en env_required (corregido previamente)
+- Puerto `5432:5432` ya NO estaba expuesto al host (corregido previamente)
+- `.env.global.example` ya existía en `agent/catalog/`
+
+### Pendientes que NO se tocaron en esta sesión (verificar en la sesión original)
+
+- [ ] emqx/ficha.md: quitar db_net (mínimo privilegio) — el learning dice hacerlo, pero el compose actual SÍ usa db_net → **requiere decisión**: ¿emqx necesita db_net o no?
+- [ ] Tabla de `docs/docker-entorno.md` muestra datasql con "env en compose" → actualizar para reflejar que ahora usa env_file dual

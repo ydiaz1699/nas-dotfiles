@@ -65,7 +65,6 @@ env_required:
   - PGADMIN_EMAIL
   - PGADMIN_PASSWORD
   - REDIS_PASSWORD
-  - TZ
 env_optional: []
 backup_critical: true
 backup_paths:
@@ -74,7 +73,7 @@ backup_paths:
   - "./data/redis"
 protected: false
 docs_url: "docs/services/datasql-guide.md"
-notes: "PostgreSQL y Redis NO exponen puertos al host — acceso solo via db_net. pgAdmin expuesto en LAN (:5050). PGDATA es variable fija interna (no requiere .env). Usa env_file para .env local."
+notes: "PostgreSQL y Redis NO exponen puertos al host — acceso solo via db_net. pgAdmin expuesto en LAN (:5050). PGDATA y TZ son variables fijas/globales (no requieren .env local). Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del global."
 networks:
   - db_net
 security_extra:
@@ -116,7 +115,7 @@ del homelab que necesiten persistencia se conectan a este stack via `db_net`.
 
 ## Variables de entorno
 
-### Requeridas (.env)
+### Requeridas (.env local)
 
 ```bash
 POSTGRES_DB=homelab
@@ -125,8 +124,12 @@ POSTGRES_PASSWORD=__pega_aqui__
 PGADMIN_EMAIL=admin@local.lan
 PGADMIN_PASSWORD=__pega_aqui__
 REDIS_PASSWORD=__pega_aqui__
-TZ=America/La_Paz
 ```
+
+### Heredadas del global (../.env)
+
+- `SERVER_IP=192.168.1.200` — usado en labels de Homepage
+- `TZ=America/La_Paz` — zona horaria para todos los servicios
 
 ### Fijas (en compose, NO requieren .env)
 

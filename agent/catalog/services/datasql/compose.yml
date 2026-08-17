@@ -4,14 +4,15 @@ services:
     image: postgres:16-alpine
     container_name: datapostgres
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - ../.env
+      - .env
     # No exponer puerto al host — acceso solo via db_net
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
-      TZ: ${TZ}
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     volumes:
       - ./data/postgres/pgdata:/var/lib/postgresql/data/pgdata
@@ -41,7 +42,9 @@ services:
     image: dpage/pgadmin4:latest
     container_name: datapgadmin
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - ../.env
+      - .env
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
@@ -61,7 +64,7 @@ services:
       - homepage.group=Bases de datos
       - homepage.name=pgAdmin
       - homepage.icon=pgadmin
-      - homepage.href=http://192.168.1.200:5050
+      - homepage.href=http://${SERVER_IP}:5050
       - homepage.description=Administración de PostgreSQL (datasql)
     deploy:
       resources:
