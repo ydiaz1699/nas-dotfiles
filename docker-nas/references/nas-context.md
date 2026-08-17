@@ -244,6 +244,9 @@ Formato: `[fecha] corrección`.
 >    - ¿Necesita entry en AGENTS.md o en la skill?
 >    - ¿Necesita documentación en docs/?
 >    - ¿README.md refleja el nuevo archivo en su estructura?
+>    - **¿Cómo se ejecuta? ¿Está conectado a svc/alias/PATH?**
+>    - **Si es comando de svc → ¿se agregó el case en svc.sh + completions + GUIDE.md?**
+>    - **Si NO está conectado → avisar al usuario: "el script existe pero no es ejecutable aún"**
 >
 > 6. **Cuando se mejore un compose o config existente** (ej: agregar :rshared, env_file,
 >    migrar a !include, quitar TZ duplicado) → actualizar TAMBIÉN:

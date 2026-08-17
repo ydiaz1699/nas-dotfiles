@@ -21,6 +21,51 @@ $dkco/<svc>/compose.yml  (FUENTE DE VERDAD)
     └──→ docs/nas-manual.md                          (tabla servicios + puertos)
 ```
 
+## Grafo de dependencias por script/herramienta
+
+```
+docker/cli/lib/<nuevo-script>.sh  (SCRIPT CREADO)
+    │
+    ├──→ docker/cli/svc.sh              (registrar como comando: case "nombre)")
+    ├──→ GUIDE.md                       (agregar a lista de comandos de svc)
+    ├──→ README.md                      (agregar al árbol de estructura)
+    ├──→ docker-nas/SKILL.md            (agregar a comandos esenciales si relevante)
+    ├──→ docker-nas/references/svc.md   (referencia completa de svc)
+    ├──→ AGENTS.md                      (si es comando que el LLM debe conocer)
+    ├──→ docs/dependency-map.md         (tabla "Herramientas CLI" — marcar ✅)
+    └──→ shell/lib/completions.sh       (autocompletado TAB para el nuevo comando)
+```
+
+## Grafo de dependencias por herramienta nueva (cualquier tipo)
+
+```
+Herramienta/script nuevo
+    │
+    ├─ ¿Es un comando de svc?
+    │     ├──→ Conectar en svc.sh (case statement)
+    │     ├──→ Actualizar GUIDE.md (lista de comandos)
+    │     ├──→ Actualizar README.md (estructura)
+    │     ├──→ Actualizar references/svc.md
+    │     ├──→ Actualizar completions.sh (TAB)
+    │     └──→ Marcar ✅ en dependency-map tabla CLI
+    │
+    ├─ ¿Es un alias de shell?
+    │     ├──→ Agregar en shell/lib/aliases.sh
+    │     ├──→ Actualizar GUIDE.md
+    │     ├──→ Actualizar AGENTS.md (tabla aliases)
+    │     └──→ Actualizar nas-context.md (encoded preferences)
+    │
+    ├─ ¿Es un plugin del agente?
+    │     ├──→ Registrar en agent/plugins/
+    │     ├──→ Actualizar agent/README.md
+    │     └──→ Actualizar references/agent.md
+    │
+    └─ ¿Es una librería compartida (lib/)?
+          ├──→ Documentar quién la usa (source)
+          ├──→ Si existe en DebMenux → sincronizar
+          └──→ Actualizar dependency-map (archivos espejo)
+```
+
 ---
 
 ## Tabla de impacto: "Si modifico X, debo actualizar..."
@@ -39,6 +84,9 @@ $dkco/<svc>/compose.yml  (FUENTE DE VERDAD)
 | **lib/notifications.sh (DebMenux)** | docker/cli/lib/notifications.sh (nas-dotfiles), ntfy-guide.md | Manual |
 | **SKILL.md** | nas-context.md (si cambia la tabla de guías) | Manual |
 | **Creo archivo nuevo en docs/ o scripts/** | README.md (árbol de estructura), AGENTS.md si relevante | Manual |
+| **Creo script para svc (docker/cli/lib/)** | svc.sh (case), GUIDE.md (comandos), README.md, references/svc.md, completions.sh, dependency-map (tabla CLI) | Manual |
+| **Creo alias de shell** | aliases.sh, GUIDE.md, AGENTS.md (tabla aliases), nas-context.md | Manual |
+| **Creo plugin del agente** | agent/plugins/, agent/README.md, references/agent.md | Manual |
 | **Agregar servicio nuevo** | TODO lo del grafo de arriba + README.md estructura | ✅ `svc catalog-sync <svc>` + manual |
 | **Eliminar servicio** | Quitar de: catálogo, SKILL.md, nas-context.md, AGENTS.md, nas-manual.md, services.json, README.md | Manual |
 | **Cambiar IP del NAS** | $dkco/.env, AGENTS.md, nas-context.md, nas-manual.md, ntfy-guide.md, usb-automount.conf | Manual (grep -r "IP_VIEJA") |
