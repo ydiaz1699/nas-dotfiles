@@ -64,6 +64,8 @@ nas                 →  dashboard del servidor
 | `svc unlock <svc>` | Quitar protección |
 | `svc catalog-sync [svc]` | Generar docs en cascada (ficha, guía, script DebMenux) |
 | `svc scan` | Detectar lagunas del proyecto (servicios, CLI, docs) |
+| `svc snapshot <svc>` | Guardar compose+.env antes de cambios (liviano, rotación 10) |
+| `svc rollback <svc>` | Restaurar config desde snapshot anterior (fzf + confirmación) |
 
 ### `svc` — Comandos con servicio
 

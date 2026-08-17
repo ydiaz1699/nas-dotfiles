@@ -53,6 +53,8 @@ NAS_CLI=python  # alternativo — usa $NAS_DOTFILES/svc_py/ (Rich + InquirerPy)
 | `svc unlock <svc>` | quitar protección |
 | `svc catalog-sync [svc]` | generar docs en cascada (ficha, guía, script DebMenux) |
 | `svc scan` | detectar lagunas del proyecto (servicios, CLI, docs) |
+| `svc snapshot <svc>` | guardar compose+.env antes de cambios (liviano, rotación 10) |
+| `svc rollback <svc>` | restaurar config desde snapshot anterior (fzf + confirmación) |
 
 ## Comandos con servicio
 
