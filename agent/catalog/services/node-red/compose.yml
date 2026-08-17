@@ -1,0 +1,33 @@
+# $dkco/node-red/compose.yml
+services:
+  node-red:
+    image: nodered/node-red:latest
+    container_name: node-red
+    restart: unless-stopped
+    env_file:
+      - ../.env
+      - .env
+    volumes:
+      - ./data:/data
+    ports:
+      - "1880:1880"
+    networks:
+      - iot_net
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1880"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    labels:
+      - homepage.group=IoT
+      - homepage.name=Node-RED
+      - homepage.icon=node-red
+      - homepage.href=http://${SERVER_IP}:1880
+      - homepage.description=Automatización de flujos IoT
+
+networks:
+  iot_net:
+    external: true

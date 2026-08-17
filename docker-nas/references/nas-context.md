@@ -128,6 +128,7 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 | homeassistant | 8123 | host | `docs/services/homeassistant-guide.md` |
 | homepage | 3000 | homepage_net | `docs/services/homepage-guide.md` |
 | ntfy | 8090 | homepage_net | `docs/services/ntfy-guide.md` |
+| node-red | 1880 | iot_net | `docs/services/node-red-guide.md` |
 | usb-api | 8091 | nativo (systemd) | `agent/catalog/services/usb-api/ficha.md` |
 
 ### Redes

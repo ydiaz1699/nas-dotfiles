@@ -50,6 +50,7 @@ nas                 →  dashboard del servidor
 | filebrowser | 8085 | filebrowser_default | ✅ labels |
 | homepage | 3000 | homepage_net | — (es el dashboard) |
 | ntfy | 8090 | homepage_net | ✅ labels |
+| node-red | 1880 | iot_net | ✅ labels |
 | usb-api (systemd) | 8091 | nativo | services.yaml |
 | spacedrive | — | spacedrive_default | — |
 

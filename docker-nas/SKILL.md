@@ -289,6 +289,7 @@ Orden de consulta:
 | **ntfy** | `docs/services/ntfy-guide.md` | Notificaciones push, topics, clientes Android/PWA, alarma+cámara, Homepage |
 | **usb-api** | `docs/services/ntfy-guide.md#usb-api` | API REST para USBs, systemd nativo, Homepage widget, desmontaje seguro |
 | **homeassistant** | `docs/services/homeassistant-guide.md` | Automatización, cámara→ntfy, includes, TvOverlay, shell_commands |
+| **node-red** | `docs/services/node-red-guide.md` | Flujos IoT, conexión EMQX/MQTT, no usar cap_drop, backup flows.json |
 | **emqx** | `agent/catalog/services/emqx/ficha.md` | Puertos WS 8083/8084, ulimits, dashboard LAN, iot_net |
 | **esphome** | `agent/catalog/services/esphome/ficha.md` | Puerto 6052, iot_net |
 
