@@ -1,0 +1,45 @@
+# $dkco/_common.yml — Defaults globales para todos los servicios
+#
+# Uso en compose de cada servicio:
+#   services:
+#     mi-servicio:
+#       extends:
+#         file: ../_common.yml
+#         service: _defaults
+#       image: ...
+#       deploy:
+#         resources:
+#           limits:
+#             memory: 1g    # sobreescribe solo esto (deep merge)
+#
+# Lo que se hereda automáticamente (sin declarar nada):
+#   - restart: unless-stopped
+#   - security_opt: no-new-privileges
+#   - logging: json-file, 10m, 3 archivos
+#   - deploy.resources: 512m limit, 128m reservation
+#
+# Lo que cada servicio DEBE declarar (no se hereda):
+#   - image
+#   - container_name
+#   - env_file: [../.env, .env]
+#   - ports
+#   - volumes
+#   - healthcheck (específico de cada servicio)
+#   - networks
+
+services:
+  _defaults:
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+        reservations:
+          memory: 128m

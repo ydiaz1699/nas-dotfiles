@@ -25,6 +25,7 @@
 13. [Script creado pero no conectado al sistema](#13-script-creado-pero-no-conectado-al-sistema)
 14. [Dual CLI: bash = verdad, Python = interfaz](#14-dual-cli-bash--verdad-python--interfaz)
 15. [El LLM no auto-documenta lo que crea](#15-el-llm-no-auto-documenta-lo-que-crea-validación-cruzada)
+16. [Centralizar defaults con extends + _common.yml](#16-centralizar-defaults-con-extends--_commonyml)
 9. [HA config con !include](#9-ha-config-con-include)
 10. [ntfy.publish no soporta imágenes](#10-ntfypublish-no-soporta-imágenes)
 11. [Dependency map para no olvidar cascadas](#11-dependency-map-para-no-olvidar-cascadas)
@@ -468,3 +469,55 @@ Al cerrar una sesión que implementó features nuevas, SIEMPRE correr mentalment
 1. ¿dependency-map tabla CLI refleja los comandos nuevos?
 2. ¿nas-context.md Progressive Updates tiene la fecha de hoy?
 3. ¿PENDIENTES-proxima-sesion.md tiene registro de esta sesión?
+
+
+---
+
+## 16. Centralizar defaults con `extends` + `_common.yml`
+
+**Problema:**
+Cada compose repetía los mismos bloques (resource limits, security_opt, logging)
+como anchors YAML. Con 10+ servicios, un cambio en los defaults requería editar
+10 archivos. Además, `<<: *anchor` hace shallow merge (si sobreescribes un sub-campo,
+pierdes el resto del bloque).
+
+**Idea del usuario:**
+Tener un archivo global con los defaults para no repetirlos en cada compose.
+Similar a `<<: *common-env` pero para resources, security, logging.
+
+**Opciones evaluadas:**
+
+| Opción | Cómo funciona | Pro | Contra |
+|--------|---------------|-----|--------|
+| A: include | Importa servicios | — | No importa anchors sueltos |
+| B: extends | Deep merge desde archivo externo | ✅ Estándar Docker, sobreescribe parcial | Necesita _common.yml accesible |
+| C: multi-file (-f) | svc pasa -f _anchors.yml automático | Mantiene estilo anchors | Requiere parchar svc.sh, no funciona con docker compose directo |
+
+**Decisión: Opción B (`extends`)**
+
+Razones:
+1. **Deep merge** — cambias `memory: 1g` sin perder `reservations`
+2. **No requiere parchar svc.sh** — funciona con `docker compose` directo
+3. **Estándar Docker** — cualquier persona/LLM entiende `extends`
+4. **Un cambio en _common.yml se propaga a todos** sin tocar cada compose
+
+**Implementación:**
+- `$dkco/_common.yml` (o `agent/catalog/_common.yml` en el repo) con servicio `_defaults`
+- Cada compose: `extends: {file: ../_common.yml, service: _defaults}`
+- Solo declarar lo que DIFIERE del default (memory, ulimits, etc.)
+
+**Migración gradual:**
+- Piloto: EMQX (migrado en catálogo)
+- Después: migrar uno por uno cuando se toque cada servicio
+- NO migrar todos de golpe (riesgo innecesario)
+
+**Rollback:**
+- Si falla: `git checkout -- agent/catalog/services/<svc>/compose.yml`
+- En el NAS: `svc rollback <svc>` (restaura snapshot anterior)
+- Plan completo en `docs/PLAN-extends-common.md`
+
+**Aprendizaje:**
+- `<<:` (YAML merge key) es shallow — no sirve para sobreescribir sub-campos
+- `extends` es deep merge — Docker lo resuelve internamente
+- `x-common-env` con TZ no se necesita si ya hay `env_file: [../.env, .env]`
+- Migrar gradualmente (1 servicio piloto) reduce riesgo

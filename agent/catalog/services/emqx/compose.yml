@@ -1,42 +1,12 @@
 # $dkco/emqx/compose.yml
-x-common-ports: &common-ports
-  - "${EMQX_PORT_MQTT}:1883"
-  - "${EMQX_PORT_MQTTS}:8883"
-  - "${EMQX_PORT_WS}:8083"
-  - "${EMQX_PORT_WSS}:8084"
-  - "${EMQX_PORT_DASHBOARD}:18083"
-x-healthcheck-defaults: &healthcheck-defaults
-  interval: 30s
-  timeout: 10s
-  retries: 5
-  start_period: 40s
-x-security-defaults: &security-defaults
-  security_opt:
-    - no-new-privileges:true
-  ulimits:
-    nofile:
-      soft: 1048576
-      hard: 1048576
-x-logging-defaults: &logging-defaults
-  driver: json-file
-  options:
-    max-size: "10m"
-    max-file: "3"
-x-resource-defaults: &resource-defaults
-  deploy:
-    resources:
-      limits:
-        memory: 1g
-      reservations:
-        memory: 256m
-
 services:
   emqx:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
     image: emqx/emqx:5.8.3
     container_name: emqx
     hostname: emqx.iot_net
-    restart: unless-stopped
-    <<: [*security-defaults, *resource-defaults]
     env_file:
       - ../.env
       - .env
@@ -51,19 +21,36 @@ services:
       EMQX_LOG__CONSOLE_HANDLER__LEVEL: warning
       EMQX_MQTT__SESSION_EXPIRY_INTERVAL: 1h
       EMQX_MQTT__MAX_TOPIC_LEVELS: 7
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 256m
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
     healthcheck:
-      <<: *healthcheck-defaults
       test: ["CMD", "emqx", "ctl", "status"]
-    logging: *logging-defaults
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
     volumes:
       - ./data/data:/opt/emqx/data
       - ./data/log:/opt/emqx/log
-    ports: *common-ports
+    ports:
+      - "${EMQX_PORT_MQTT:-1883}:1883"
+      - "${EMQX_PORT_MQTTS:-8883}:8883"
+      - "${EMQX_PORT_WS:-8083}:8083"
+      - "${EMQX_PORT_WSS:-8084}:8084"
+      - "${EMQX_PORT_DASHBOARD:-18083}:18083"
     labels:
       - homepage.group=IoT
       - homepage.name=EMQX
       - homepage.icon=emqx
-      - homepage.href=http://${SERVER_IP}:${EMQX_PORT_DASHBOARD}
+      - homepage.href=http://${SERVER_IP}:${EMQX_PORT_DASHBOARD:-18083}
       - homepage.description=Broker MQTT para IoT
     networks:
       - iot_net
