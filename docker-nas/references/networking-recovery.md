@@ -1,10 +1,10 @@
-# Derivación de recuperación — red, DNS, macvlan y SSH
+# 🆘 Derivación de recuperación — red, DNS, macvlan y SSH
 
 > **Propósito:** recuperar un NAS después de una pérdida de red, un reinicio en frío, una migración incompleta o un cambio de `systemd-resolved`.
 > **Fuente de verdad:** [`networking.md`](networking.md). Esta derivación es un runbook de triage; el rollback completo del snapshot está en la sección 10 de la guía canónica.
 > **Regla:** si no hay SSH, dejar de ejecutar comandos remotos y pasar a consola física, KVM o canal fuera de banda.
 
-## 1. Antes de cambiar nada
+## 1. 🔎 Antes de cambiar nada
 
 Desde consola:
 
@@ -38,9 +38,234 @@ resolvectl status 2>&1 || true
 
 No ejecutar todavía `ip addr flush`, no borrar `/etc/resolv.conf`, no purgar `ifupdown` y no aplicar `docker network prune`.
 
-## 2. Árbol rápido de decisión
+## 🧾 Incidente registrado: rutas IPv4 desaparecidas
 
-### A. `eno1` está `DOWN` o `NO-CARRIER`
+Este caso documenta una incidencia real del NAS para poder reconocerla y resolverla sin improvisar:
+
+- `systemd-networkd` estaba activo; `networking` y NetworkManager estaban inactivos.
+- `eno1` tenía inicialmente `192.168.1.200/24`, pero perdió la ruta conectada y la ruta por defecto durante reconfiguraciones repetidas asociadas al cliente DHCPv6.
+- El shim conservó la ruta específica hacia AdGuard `192.168.1.201`.
+- AdGuard respondía directamente con `dig`, por lo que el bloqueo no era DNS sino la salida IPv4 del host.
+- `networkctl` podía mostrar `configured` aunque faltaran en el kernel las rutas funcionales de `eno1`.
+
+### 🩺 Síntomas y significado
+
+| Síntoma | Interpretación |
+|---|---|
+| `Invalid prefsrc address` | `192.168.1.200` ya no estaba asignada a `eno1`; no se puede usar como `src`. |
+| `Nexthop has invalid gateway` | Falta primero la ruta conectada `192.168.1.0/24`; el kernel no puede alcanzar `192.168.1.1`. |
+| `ip route get` muestra la ruta, pero `ping` dice `Network is unreachable` | La ruta `onlink` temporal no reemplaza la ruta conectada o fue retirada durante otra reconfiguración. |
+| `dig @192.168.1.201` funciona y `dig @1.1.1.1` falla | El shim/AdGuard funcionan; falta la ruta IPv4 hacia el gateway/Internet. |
+
+### 🧯 Recuperación temporal, en el orden correcto
+
+Definir los valores del NAS antes de continuar:
+
+```bash
+IFACE="${IFACE:-eno1}"
+HOST_IP="${HOST_IP:-192.168.1.200}"
+PREFIX="${PREFIX:-24}"
+LAN_CIDR="${LAN_CIDR:-192.168.1.0/24}"
+GATEWAY="${GATEWAY:-192.168.1.1}"
+ADGUARD_IP="${ADGUARD_IP:-192.168.1.201}"
+```
+
+Comprobar primero si la IP desapareció:
+
+```bash
+ip -4 addr show dev "$IFACE"
+ip route
+```
+
+Si no aparece `HOST_IP/PREFIX`, restaurarla sin hacer `flush`:
+
+```bash
+ip link set "$IFACE" up
+if ! ip -4 addr show dev "$IFACE" | grep -q "inet ${HOST_IP}/${PREFIX}"; then
+    ip addr add "${HOST_IP}/${PREFIX}" dev "$IFACE"
+fi
+```
+
+Crear después la ruta conectada de la LAN:
+
+```bash
+ip route replace "$LAN_CIDR" dev "$IFACE" scope link src "$HOST_IP"
+ip route show dev "$IFACE"
+```
+
+Solo cuando esa ruta exista, crear la ruta por defecto:
+
+```bash
+ip route replace default via "$GATEWAY" dev "$IFACE"
+```
+
+Si el gateway se rechaza aunque la ruta conectada exista, usar `onlink` únicamente como puente temporal:
+
+```bash
+ip route replace default via "$GATEWAY" dev "$IFACE" onlink
+```
+
+Validar antes de tocar otra cosa:
+
+```bash
+ip route get 1.1.1.1
+ping -c 3 -W 2 "$GATEWAY"
+ping -c 3 -W 2 1.1.1.1
+dig +time=2 +tries=1 "@$ADGUARD_IP" github.com
+```
+
+Estas rutas creadas con `ip route`/`ip addr` son temporales. No reiniciar el NAS ni recargar networkd hasta corregir la causa persistente.
+
+### 💾 Backup PRE y POST de la incidencia
+
+El backup anterior a la modificación debe conservarse como fuente de rollback. El backup posterior solo demuestra el estado nuevo validado; no debe reemplazar el backup PRE usado por `LATEST`.
+
+Si ya existe una copia puntual creada antes del cambio, localizarla y no borrarla:
+
+```bash
+ls -l /etc/systemd/network/10-eno1.network.bak.* 2>/dev/null || true
+```
+
+Para crear un backup PRE legible y completo:
+
+```bash
+SNAPSHOT_ROOT="${aadm:-}"
+if [ -z "$SNAPSHOT_ROOT" ]; then
+    SNAPSHOT_ROOT="$(getent passwd aadm | cut -d: -f6)"
+fi
+SNAPSHOT_ROOT="${SNAPSHOT_ROOT:-$HOME}"
+SNAPSHOT_PARENT="$SNAPSHOT_ROOT/network-snapshots"
+BACKUP_ID="$(date -u +%Y%m%d-%H%M%S)"
+BACKUP_PRE="$SNAPSHOT_PARENT/${BACKUP_ID}-network-pre-dhcpv6"
+mkdir -p "$BACKUP_PRE"
+
+if [ -d /etc/systemd/network ]; then
+    cp -a /etc/systemd/network "$BACKUP_PRE/network"
+else
+    touch "$BACKUP_PRE/network.absent"
+fi
+
+if [ -d /etc/avahi ]; then
+    cp -a /etc/avahi "$BACKUP_PRE/avahi"
+else
+    touch "$BACKUP_PRE/avahi.absent"
+fi
+
+if [ -d /etc/systemd/resolved.conf.d ]; then
+    cp -a /etc/systemd/resolved.conf.d "$BACKUP_PRE/resolved.conf.d"
+else
+    touch "$BACKUP_PRE/resolved.conf.d.absent"
+fi
+
+if [ -e /etc/resolv.conf ] || [ -L /etc/resolv.conf ]; then
+    cp -a /etc/resolv.conf "$BACKUP_PRE/resolv.conf.before-resolved"
+    cp -a /etc/resolv.conf "$BACKUP_PRE/resolv.conf.original"
+else
+    touch "$BACKUP_PRE/resolv.conf.absent"
+fi
+cp -a /etc/systemd/resolved.conf "$BACKUP_PRE/resolved.conf.original" 2>/dev/null || touch "$BACKUP_PRE/resolved.conf.absent"
+cp -a /etc/nsswitch.conf "$BACKUP_PRE/nsswitch.conf.original" 2>/dev/null || touch "$BACKUP_PRE/nsswitch.conf.absent"
+systemctl is-enabled systemd-resolved > "$BACKUP_PRE/resolved.enabled" 2>&1 || true
+systemctl is-active systemd-resolved > "$BACKUP_PRE/resolved.active" 2>&1 || true
+
+ip -br addr > "$BACKUP_PRE/ip-br-addr"
+ip route > "$BACKUP_PRE/ip-route"
+networkctl status > "$BACKUP_PRE/networkctl.status" 2>&1 || true
+resolvectl status > "$BACKUP_PRE/resolvectl.status" 2>&1 || true
+journalctl -b -u systemd-networkd --no-pager -n 100 > "$BACKUP_PRE/networkd.journal"
+printf '%s\n' "$BACKUP_PRE" > "$SNAPSHOT_PARENT/PREVIOUS"
+printf '%s\n' "$BACKUP_PRE" > "$SNAPSHOT_PARENT/LATEST"
+printf '%s\n' "$BACKUP_PRE"
+```
+
+Después de modificar la configuración, recuperar Internet y validar IP, rutas, AdGuard, DNS, IPv6, Avahi y Home Assistant, crear el backup POST:
+
+```bash
+BACKUP_ID="$(date -u +%Y%m%d-%H%M%S)"
+BACKUP_POST="$SNAPSHOT_PARENT/${BACKUP_ID}-network-post-dhcpv6"
+mkdir -p "$BACKUP_POST"
+
+if [ -d /etc/systemd/network ]; then
+    cp -a /etc/systemd/network "$BACKUP_POST/network"
+else
+    touch "$BACKUP_POST/network.absent"
+fi
+
+if [ -d /etc/avahi ]; then
+    cp -a /etc/avahi "$BACKUP_POST/avahi"
+else
+    touch "$BACKUP_POST/avahi.absent"
+fi
+
+if [ -d /etc/systemd/resolved.conf.d ]; then
+    cp -a /etc/systemd/resolved.conf.d "$BACKUP_POST/resolved.conf.d"
+else
+    touch "$BACKUP_POST/resolved.conf.d.absent"
+fi
+
+if [ -e /etc/resolv.conf ] || [ -L /etc/resolv.conf ]; then
+    cp -a /etc/resolv.conf "$BACKUP_POST/resolv.conf.before-resolved"
+    cp -a /etc/resolv.conf "$BACKUP_POST/resolv.conf.original"
+else
+    touch "$BACKUP_POST/resolv.conf.absent"
+fi
+cp -a /etc/systemd/resolved.conf "$BACKUP_POST/resolved.conf.original" 2>/dev/null || touch "$BACKUP_POST/resolved.conf.absent"
+cp -a /etc/nsswitch.conf "$BACKUP_POST/nsswitch.conf.original" 2>/dev/null || touch "$BACKUP_POST/nsswitch.conf.absent"
+systemctl is-enabled systemd-resolved > "$BACKUP_POST/resolved.enabled" 2>&1 || true
+systemctl is-active systemd-resolved > "$BACKUP_POST/resolved.active" 2>&1 || true
+
+ip -br addr > "$BACKUP_POST/ip-br-addr"
+ip route > "$BACKUP_POST/ip-route"
+networkctl status > "$BACKUP_POST/networkctl.status" 2>&1 || true
+resolvectl status > "$BACKUP_POST/resolvectl.status" 2>&1 || true
+journalctl -b -u systemd-networkd --no-pager -n 100 > "$BACKUP_POST/networkd.journal"
+printf '%s\n' "$BACKUP_POST" > "$SNAPSHOT_PARENT/CURRENT"
+printf '%s\n' "$BACKUP_POST"
+```
+
+La convención queda así:
+
+- `PREVIOUS`: backup anterior a la modificación.
+- `LATEST`: fuente de rollback; debe seguir apuntando al backup PRE.
+- `CURRENT`: configuración nueva posterior a la recuperación y validada.
+
+No apuntar `LATEST` al POST hasta tener un nuevo backup PRE válido para el siguiente cambio.
+
+### 🔧 Corrección persistente del error DHCPv6
+
+Guardar primero la configuración actual y editar después:
+
+```bash
+cp -a /etc/systemd/network/10-eno1.network \
+      "/etc/systemd/network/10-eno1.network.bak.$(date +%Y%m%d-%H%M%S)"
+nano /etc/systemd/network/10-eno1.network
+```
+
+Si se confirma que se desea conservar IPv6 pero detener el cliente DHCPv6, añadir:
+
+```ini
+[IPv6AcceptRA]
+DHCPv6Client=no
+```
+
+No añadir por defecto `IPv6AcceptRA=no` ni `LinkLocalAddressing=ipv4`: eso desactiva partes de IPv6 que pueden ser necesarias para Matter, Thread, Home Assistant y descubrimiento IoT.
+
+Aplicar desde consola local o con una segunda sesión SSH:
+
+```bash
+networkctl reload
+networkctl reconfigure "$IFACE"
+sleep 3
+ip -4 addr show dev "$IFACE"
+ip route
+ip route get 1.1.1.1
+```
+
+Si `eno1` vuelve a perder la IP o las rutas, no insistir con reinicios. Restaurar el backup PRE desde la sección **5. Rollback selectivo desde `LATEST`**, registrar la salida de `networkctl` y `journalctl`, y detenerse.
+
+## 2. 🌳 Árbol rápido de decisión
+
+### A. 🔌 `eno1` está `DOWN` o `NO-CARRIER`
 
 1. Revisar cable, switch, puerto y luces de la NIC.
 2. Confirmar que el nombre de interfaz no cambió:
@@ -59,7 +284,7 @@ ethtool $IFACE 2>/dev/null || true
 
 `ConfigureWithoutCarrier=yes` permite aplicar una configuración estática antes de detectar carrier, pero no puede solucionar una desconexión física ni un fallo de hardware.
 
-### B. La interfaz está `UP` pero no tiene la IP esperada
+### B. 🖧 La interfaz está `UP` pero no tiene la IP esperada
 
 Leer los archivos antes de editarlos:
 
@@ -80,7 +305,7 @@ ip route
 
 Si la configuración actual es incorrecta y hay snapshot, seguir la restauración selectiva de la sección **5**. No reconstruir un archivo a partir de memoria ni copiar el rango histórico `192.168.0.x` sin confirmar el router.
 
-### C. Hay una IP DHCP residual o dos IPs inesperadas
+### C. 🧭 Hay una IP DHCP residual o dos IPs inesperadas
 
 Identificar el responsable:
 
@@ -93,7 +318,7 @@ systemctl status dhcpcd --no-pager 2>/dev/null || true
 
 La coexistencia de una IP antigua y una nueva puede ser temporal durante una migración. No quitar direcciones con `flush`; detener solo el servicio DHCP confirmado y volver a aplicar networkd. La doble IP deliberada se explica en [`networking-migration.md`](networking-migration.md).
 
-### D. SSH funciona por IP, pero no resuelven dominios
+### D. 🧩 SSH funciona por IP, pero no resuelven dominios
 
 Separar red, AdGuard, resolved y el enlace:
 
@@ -116,7 +341,7 @@ Interpretación:
 
 No sustituir el diagnóstico por `echo nameserver ... > /etc/resolv.conf`. Si el stub o el drop-in están mal, aplicar el rollback selectivo de la sección **5**.
 
-### E. El host no llega a AdGuard macvlan
+### E. 🔗 El host no llega a AdGuard macvlan
 
 ```bash
 ip -br addr show dev macvlan-shim
@@ -137,7 +362,7 @@ Verificar que:
 
 Si se modificó el rango, seguir [`networking-migration.md`](networking-migration.md). No usar `docker network prune -f` para intentar reparar una red.
 
-### F. `Nas.local` no resuelve o desaparece el descubrimiento
+### F. 🏠 `Nas.local` no resuelve o desaparece el descubrimiento
 
 ```bash
 systemctl status avahi-daemon --no-pager
@@ -150,7 +375,7 @@ ip -6 route
 
 `avahi-resolve` prueba Avahi directamente y `getent` prueba NSS. Si Avahi funciona pero NSS no, revisar `libnss-mdns` y `nsswitch.conf`. No activar `MulticastDNS=yes` en resolved como reacción automática: Avahi sigue siendo el propietario de la publicación mDNS.
 
-### G. Home Assistant perdió descubrimiento
+### G. 🤖 Home Assistant perdió descubrimiento
 
 Primero comprobar la red del host y luego el contenedor:
 
@@ -164,7 +389,7 @@ svc exec homeassistant getent hosts github.com
 
 No concluir que el DNS está bien porque `dig` funciona. Probar el descubrimiento real del dispositivo. Matter y Thread necesitan IPv6; no aplicar `IPv6AcceptRA=no`, `LinkLocalAddressing=ipv4` ni `use-ipv6=no` sin confirmar que no se usan.
 
-### H. El puerto 53 está ocupado
+### H. 🚪 El puerto 53 está ocupado
 
 ```bash
 ss -lntup | grep -E '(:53[[:space:]]|:5353[[:space:]])' || true
@@ -172,7 +397,7 @@ ss -lntup | grep -E '(:53[[:space:]]|:5353[[:space:]])' || true
 
 Identificar si el propietario es el stub local, AdGuard, Avahi u otro proceso antes de detenerlo. No desactivar resolved ni AdGuard por reflejo.
 
-## 3. Recuperar la conectividad mínima
+## 3. 🛠️ Recuperar la conectividad mínima
 
 Si el problema es networkd y se está trabajando desde consola:
 
@@ -194,7 +419,7 @@ No ejecutar esto si `networking` fue deshabilitado porque su configuración ya n
 
 Cuando vuelva SSH, abrir una segunda sesión y validar todas las capas antes de reiniciar.
 
-## 4. Recuperar solo el DNS
+## 4. 🧩 Recuperar solo el DNS
 
 Si la red y AdGuard funcionan, pero resolved no:
 
@@ -215,7 +440,7 @@ systemctl restart systemd-resolved
 
 Después verificar el symlink de `/etc/resolv.conf`. Si el drop-in o el enlace fueron el cambio que provocó la caída, no improvisar: usar el rollback selectivo de la sección siguiente.
 
-## 5. Rollback selectivo desde `LATEST`
+## 5. ↩️ Rollback selectivo desde `LATEST`
 
 Usar la sección **10. Rollback** de [`networking.md`](networking.md) como procedimiento completo. La secuencia de decisión es:
 
@@ -228,7 +453,7 @@ Usar la sección **10. Rollback** de [`networking.md`](networking.md) como proce
 
 Antes de mover cualquier archivo, comprobar que la copia existe. Si falta `resolv.conf.before-resolved`, no inventar una restauración: determinar si el enlace nunca se cambió o si la copia original se encuentra con otro nombre en el snapshot.
 
-## 6. Validación de recuperación
+## 6. ✅ Validación de recuperación
 
 ```bash
 networkctl status $IFACE
@@ -248,7 +473,7 @@ svc ps homeassistant
 
 Después de una migración o rollback, reiniciar en una ventana controlada y repetir la lista. Conservar el snapshot hasta confirmar un reinicio correcto, una sesión SSH nueva, DNS, IPv6, mDNS, AdGuard y descubrimiento de Home Assistant.
 
-## 7. Datos que registrar para mejorar la guía
+## 7. 📝 Datos que registrar para mejorar la guía
 
 Cuando se resuelva una incidencia, guardar en la documentación de la sesión:
 
