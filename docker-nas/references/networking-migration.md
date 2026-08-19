@@ -1,10 +1,10 @@
-# Derivación de migración — cambio de backend o de rango IP
+# 🔀 Derivación de migración — cambio de backend o de rango IP
 
 > **Propósito:** migrar un NAS existente sin perder SSH, sin dejar DHCP residual y sin romper el shim macvlan, AdGuard, IPv6 o Home Assistant.
 > **Fuente de verdad:** [`networking.md`](networking.md). Esta derivación contiene decisiones propias de una migración; el snapshot, el rollback y la validación completa siguen siendo los de la guía canónica.
 > **No es una receta de cambio de rango específica:** las redes `192.168.0.x` de los drafts son históricas. El rango real debe obtenerse del preflight y del router actual.
 
-## 1. Cuándo usar este procedimiento
+## 1. 🧭 Cuándo usar este procedimiento
 
 Usar esta derivación si ya existe una instalación y se va a:
 
@@ -32,7 +32,7 @@ if systemctl is-active --quiet NetworkManager; then
 fi
 ```
 
-## 2. Guardarraíles
+## 2. 🛡️ Guardarraíles
 
 1. Trabajar desde consola física/KVM o con una sesión SSH secundaria abierta.
 2. Crear el snapshot de [`networking.md`](networking.md) antes de editar `/etc`.
@@ -42,7 +42,7 @@ fi
 6. No desactivar IPv6 para resolver un problema de DHCPv6 o de descubrimiento.
 7. No retirar la configuración antigua hasta validar el nuevo SSH, la ruta a AdGuard, DNS, Avahi, IPv6 y Home Assistant.
 
-## 3. Inventario previo
+## 3. 🔎 Inventario previo
 
 ```bash
 ip -br addr
@@ -73,9 +73,9 @@ dig +time=2 +tries=1 "@$ADGUARD_IP" github.com
 
 Registrar también todos los valores fijos relacionados con el rango antiguo en la configuración Docker real. Operar los servicios con `svc`; no reconstruir redes con comandos Docker directos.
 
-## 4. Estrategia de cambio de rango
+## 4. 🔁 Estrategia de cambio de rango
 
-### 4.1 Opción preferida: ventana controlada
+### 4.1 🕒 Opción preferida: ventana controlada
 
 Si se dispone de consola y el cambio puede causar un corte breve:
 
@@ -89,7 +89,7 @@ Si se dispone de consola y el cambio puede causar un corte breve:
 
 Esta opción evita mantener dos redes lógicas en la interfaz durante más tiempo del necesario.
 
-### 4.2 Opción puente: doble IP temporal
+### 4.2 🌉 Opción puente: doble IP temporal
 
 Si se necesita mantener SSH por la red antigua mientras se activa el router nuevo, se pueden declarar temporalmente dos líneas `Address=` en el mismo `.network`:
 
@@ -108,9 +108,9 @@ Esta técnica solo es válida si ambas subredes comparten el mismo enlace de cap
 
 Después de validar la nueva red, eliminar la línea antigua y volver a aplicar networkd. La doble IP es un puente de migración, no un estado final.
 
-## 5. Orden de modificación
+## 5. 🛠️ Orden de modificación
 
-### 5.1 Interfaz física
+### 5.1 🖧 Interfaz física
 
 Editar el archivo `.network` que realmente coincide con la interfaz. Conservar `DHCP=no`, `MACVLAN=` y `ConfigureWithoutCarrier=yes` si forman parte del diseño confirmado:
 
@@ -129,7 +129,7 @@ ConfigureWithoutCarrier=yes
 
 Si se usa la opción de doble IP, conservar temporalmente también `Address=<IP_ANTIGUA>/<PREFIJO>`.
 
-### 5.2 Shim macvlan
+### 5.2 🔗 Shim macvlan
 
 El archivo `.netdev` normalmente no cambia si el parent físico sigue siendo el mismo. El `.network` sí debe apuntar al rango nuevo:
 
@@ -147,7 +147,7 @@ Scope=link
 
 Si se necesita una transición sin corte y se ha verificado que ambas redes están disponibles, se pueden conservar temporalmente dos direcciones del shim y dos rutas de destino. Retirar la pareja antigua después de validar AdGuard; no dejar rutas históricas indefinidamente.
 
-### 5.3 Aplicar y comprobar networkd
+### 5.3 ✅ Aplicar y comprobar networkd
 
 ```bash
 networkctl reload
@@ -162,7 +162,7 @@ ip route get <GATEWAY_NUEVO>
 
 Si la sesión SSH se corta, no insistir con comandos remotos: usar [`networking-recovery.md`](networking-recovery.md).
 
-## 6. Actualizar AdGuard y redes macvlan
+## 6. 🛡️ Actualizar AdGuard y redes macvlan
 
 Si cambia la subred macvlan, deben cambiar juntos:
 
@@ -193,7 +193,7 @@ svc health
 
 No ejecutar `docker network prune -f`: puede borrar redes no relacionadas. Si `svc up` no puede recrear la red macvlan, detenerse; no sustituirla por una red bridge ni crear una red manual con parámetros adivinados.
 
-## 7. Cambiar DNS después de la red
+## 7. 🧩 Cambiar DNS después de la red
 
 No modificar el enlace de `/etc/resolv.conf` durante la primera fase. Primero demostrar:
 
@@ -222,7 +222,7 @@ dig +time=2 +tries=1 @127.0.0.53 github.com
 No retirar la dirección/ruta antigua ni cerrar la ventana de mantenimiento hasta que el DNS nuevo responda por AdGuard directo y por el stub.
 
 
-## 8. Cierre de la migración
+## 8. ✅ Cierre de la migración
 
 Solo retirar la IP/ruta antigua o purgar componentes antiguos después de verificar:
 

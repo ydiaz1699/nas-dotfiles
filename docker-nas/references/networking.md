@@ -1,4 +1,4 @@
-# Redes avanzadas del NAS — systemd-networkd, systemd-resolved, Avahi y macvlan
+# 🌐 Redes avanzadas del NAS — systemd-networkd, systemd-resolved, Avahi y macvlan
 
 > **Estado:** guía de instalación y recuperación; la configuración efectiva debe verificarse en el NAS antes de aplicar cambios.
 > **Alcance:** DNS del host, `systemd-networkd`, IPv4/IPv6, Avahi/mDNS, AdGuard en macvlan, Docker y Home Assistant.
@@ -6,7 +6,7 @@
 
 Esta guía amplía la antigua referencia de macvlan. No sustituye la configuración real del NAS: los archivos de `/etc` no están versionados en `nas-dotfiles`, por lo que el preflight y el snapshot son obligatorios.
 
-## Cómo usar esta documentación
+## 🧭 Cómo usar esta documentación
 
 Esta es la referencia canónica para la red del host. Las siguientes derivaciones contienen únicamente la secuencia específica de cada escenario y siempre vuelven a esta guía para el snapshot, la configuración de `systemd-resolved`, la validación y el rollback:
 
@@ -16,7 +16,7 @@ Esta es la referencia canónica para la red del host. Las siguientes derivacione
 
 No copiar una guía histórica completa sobre otra. Los drafts de `Redes systemd-networkd` fueron consolidados en estas cuatro capas: esta referencia posee la arquitectura y los procedimientos comunes; cada derivación posee solo su flujo particular.
 
-## 1. Arquitectura que debe conservarse
+## 1. 🧭 Arquitectura que debe conservarse
 
 En el NAS actual, la topología declarada es:
 
@@ -40,7 +40,7 @@ ADGUARD_IP="${ADGUARD_IP:-192.168.1.201}"
 
 Home Assistant usa `network_mode: host`, por lo que comparte la red del host. Si se desactiva IPv6 en `eno1`, también se elimina IPv6 para Home Assistant. Matter y Thread requieren IPv6; ESPHome, MQTT y muchas integraciones HTTP pueden funcionar con IPv4.
 
-### Invariantes de `systemd-networkd` y del shim macvlan
+### 🔒 Invariantes de `systemd-networkd` y del shim macvlan
 
 Las instalaciones futuras deben conservar estas propiedades, verificándolas contra el hardware real antes de escribir archivos:
 
@@ -92,7 +92,7 @@ Scope=link
 
 La configuración efectiva actual del NAS permanece declarada en la sección de arquitectura y debe comprobarse con `networkctl`, `ip` y el contenido real de `/etc/systemd/network`. Las derivaciones contienen la secuencia segura de creación, migración y recuperación.
 
-## 2. Qué hace systemd-resolved
+## 2. 🧠 Qué hace systemd-resolved
 
 `systemd-resolved` es el resolvedor local del host. Puede proporcionar:
 
@@ -117,7 +117,7 @@ aplicaciones del host → /etc/resolv.conf → 127.0.0.53
 
 AdGuard continúa siendo un servidor DNS independiente en `192.168.1.201:53`; no se debe publicar otro DNS con `0.0.0.0:53` en el host si el stub local o el modelo macvlan ya ocupa ese puerto.
 
-## 3. Preflight obligatorio — solo lectura
+## 3. 🔎 Preflight obligatorio — solo lectura
 
 Ejecutar antes de instalar o cambiar nada. No hacerlo desde la única sesión SSH disponible. Para otro NAS, sustituir estos valores después de confirmar el hardware:
 
@@ -180,11 +180,11 @@ El resultado esperado para IPv4 es una ruta similar a:
 
 Si Home Assistant utiliza Matter, Thread o dispositivos IPv6, verificarlo antes de tocar `IPv6AcceptRA` o `LinkLocalAddressing`.
 
-## 4. Snapshot reversible
+## 4. 💾 Snapshot reversible
 
 El snapshot debe existir antes de instalar el paquete o cambiar el enlace de `resolv.conf`. Se guarda en `$aadm`, no dentro del repositorio ni de un servicio Docker.
 
-### 4.1 Crear la carpeta del snapshot
+### 4.1 📁 Crear la carpeta del snapshot
 
 ```bash
 SNAPSHOT_ROOT="${aadm:-}"
@@ -206,7 +206,7 @@ printf '%s\n' "$SNAPSHOT_TMP"
 
 No publicar todavía `LATEST`: primero deben copiarse y validarse todos los artefactos.
 
-### 4.2 Guardar archivos y estado
+### 4.2 🧾 Guardar archivos y estado
 
 ```bash
 if [ -d /etc/systemd/network ]; then
@@ -226,7 +226,12 @@ if [ -d /etc/systemd/resolved.conf.d ]; then
 else
     touch "$SNAPSHOT_TMP/resolved.conf.d.absent"
 fi
-cp -a /etc/resolv.conf "$SNAPSHOT_TMP/resolv.conf.original" 2>/dev/null || touch "$SNAPSHOT_TMP/resolv.conf.absent"
+if [ -e /etc/resolv.conf ] || [ -L /etc/resolv.conf ]; then
+    cp -a /etc/resolv.conf "$SNAPSHOT_TMP/resolv.conf.before-resolved"
+    cp -a /etc/resolv.conf "$SNAPSHOT_TMP/resolv.conf.original"
+else
+    touch "$SNAPSHOT_TMP/resolv.conf.absent"
+fi
 cp -a /etc/systemd/resolved.conf "$SNAPSHOT_TMP/resolved.conf.original" 2>/dev/null || touch "$SNAPSHOT_TMP/resolved.conf.absent"
 cp -a /etc/nsswitch.conf "$SNAPSHOT_TMP/nsswitch.conf.original" 2>/dev/null || touch "$SNAPSHOT_TMP/nsswitch.conf.absent"
 ```
@@ -252,12 +257,23 @@ test -f "$SNAPSHOT_TMP/services.state" \
 mv "$SNAPSHOT_TMP" "$SNAPSHOT"
 printf '%s\n' "$SNAPSHOT" > "$SNAPSHOT_PARENT/LATEST.tmp"
 mv "$SNAPSHOT_PARENT/LATEST.tmp" "$SNAPSHOT_PARENT/LATEST"
+printf '%s\n' "$SNAPSHOT" > "$SNAPSHOT_PARENT/PREVIOUS"
 printf '%s\n' "$SNAPSHOT"
 ```
 
 Anotar el valor de `SNAPSHOT`. Si se pierde SSH, se necesita la consola local o un canal fuera de banda para ejecutar el rollback.
 
-## 5. Instalar el paquete sin borrar la configuración actual
+### 4.3 🗂️ Convención de copias PRE, CURRENT y LATEST
+
+Cuando una modificación de red se completa, conservar dos estados identificables:
+
+- `PREVIOUS`: copia anterior al cambio, útil para saber qué se modificó.
+- `CURRENT`: copia posterior al cambio, creada solo después de validar la red.
+- `LATEST`: fuente de rollback y, por tanto, debe apuntar al estado PRE válido hasta cerrar la ventana de aceptación.
+
+No reemplazar `LATEST` con el estado posterior inmediatamente: si el cambio rompe la red después de un reinicio, el rollback necesita la configuración anterior. Los procedimientos derivados usan esta convención junto con snapshots con nombres `*-pre-*` y `*-post-*`.
+
+## 5. 📦 Instalar el paquete sin borrar la configuración actual
 
 En Debian, `systemd-resolved` puede estar separado del paquete base de systemd. Instalarlo con el alias del NAS:
 
@@ -287,7 +303,7 @@ resolvectl status
 
 Si el servicio no inicia, detenerse y revisar `journalctl -u systemd-resolved`; no cambiar el enlace de `resolv.conf` todavía.
 
-## 6. Configuración recomendada mediante drop-in
+## 6. ⚙️ Configuración recomendada mediante drop-in
 
 No editar el archivo principal si no es necesario. Crear primero el directorio y después el archivo:
 
@@ -329,7 +345,7 @@ failover cuando AdGuard está caído.
 
 No duplicar políticas contradictorias en `10-eno1.network`. Si el archivo `.network` mantiene `DNS=1.1.1.1` y `DNS=8.8.8.8`, esos DNS por enlace pueden prevalecer sobre la intención de usar AdGuard. Elegir una única fuente de verdad y comprobarla con `resolvectl dns`.
 
-## 7. Configurar el enlace `resolv.conf` sin destruirlo
+## 7. 🔗 Configurar el enlace `resolv.conf` sin destruirlo
 
 Primero comprobar que existe el stub creado por el servicio:
 
@@ -362,9 +378,9 @@ Reiniciar el servicio para cargar el drop-in:
 systemctl restart systemd-resolved
 ```
 
-## 8. Validación por capas
+## 8. ✅ Validación por capas
 
-### Host y stub local
+### 🖥️ Host y stub local
 
 ```bash
 readlink -f /etc/resolv.conf
@@ -378,7 +394,7 @@ getent hosts github.com
 ss -lntup | grep -E '127\.0\.0\.53:53|127\.0\.0\.54:53' || true
 ```
 
-### AdGuard y red macvlan
+### 🛡️ AdGuard y red macvlan
 
 ```bash
 ping -c 3 192.168.1.201
@@ -394,7 +410,7 @@ dig @127.0.0.53 github.com
 
 La segunda consulta debe pasar por `systemd-resolved`; la primera prueba directamente AdGuard.
 
-### IPv6
+### 🌐 IPv6
 
 ```bash
 ip -6 addr show dev eno1
@@ -412,7 +428,7 @@ DHCPv6Client=no
 
 Debe usarse solo si la LAN no entrega configuración IPv6 necesaria mediante DHCPv6. No es equivalente a desactivar IPv6 completo.
 
-### Avahi y Home Assistant
+### 🏡 Avahi y Home Assistant
 
 ```bash
 systemctl status avahi-daemon --no-pager
@@ -443,7 +459,7 @@ estas dos comprobaciones.
 
 Probar además un descubrimiento real de un dispositivo IoT. Una resolución DNS correcta no garantiza que mDNS, SSDP, Matter o Thread funcionen.
 
-### Docker bridge
+### 🐳 Docker bridge
 
 Los contenedores bridge normalmente usan el DNS embebido de Docker (`127.0.0.11`). No cambiar `daemon.json` ni forzar el DNS del host sin comprobar primero la configuración Docker real:
 
@@ -452,7 +468,7 @@ svc config filebrowser
 svc config homepage
 ```
 
-## 9. IPv6, Avahi y reglas para Home Assistant
+## 9. 🏠 IPv6, Avahi y reglas para Home Assistant
 
 - Mantener IPv6 activo mientras se utilicen Matter, Thread o dispositivos que dependan de IPv6.
 - No copiar la antigua configuración de Avahi con `use-ipv6=no` como receta general.
@@ -461,12 +477,12 @@ svc config homepage
 - El stub DNS no reemplaza el descubrimiento multicast de Home Assistant.
 - Home Assistant con `network_mode: host` no debe tratarse como un contenedor bridge normal.
 
-## 10. Rollback
+## 10. ↩️ Rollback
 
 Usar la consola local si se perdió SSH. El rollback es reanudable desde una
 sesión nueva porque la ruta del snapshot queda guardada en `LATEST`.
 
-### 10.1 Recuperar y validar el snapshot
+### 10.1 🔎 Recuperar y validar el snapshot
 
 ```bash
 SNAPSHOT_ROOT="${aadm:-}"
@@ -490,7 +506,7 @@ test -e "$SNAPSHOT/resolv.conf.before-resolved" || test -L "$SNAPSHOT/resolv.con
 }
 ```
 
-### 10.2 Restaurar resolved y `resolv.conf`
+### 10.2 🔄 Restaurar resolved y `resolv.conf`
 
 ```bash
 systemctl stop systemd-resolved
@@ -533,7 +549,7 @@ else
 fi
 ```
 
-### 10.3 Restaurar networkd o Avahi solo si fueron modificados
+### 10.3 🧩 Restaurar networkd o Avahi solo si fueron modificados
 
 No restaurar estos directorios si solo se instaló resolved. Si también se
 cambiaron archivos de red, hacerlo desde la consola y antes de recargar networkd:
@@ -565,7 +581,7 @@ avahi-resolve -n Nas.local
 No borrar el snapshot hasta haber reiniciado el NAS y validado SSH, DNS, IPv6,
 Avahi, AdGuard y Home Assistant.
 
-## 11. Diagnóstico rápido
+## 11. 🆘 Diagnóstico rápido
 
 | Síntoma | Causa probable | Acción segura |
 |---|---|---|
@@ -577,7 +593,7 @@ Avahi, AdGuard y Home Assistant.
 | Puerto 53 ocupado | stub, AdGuard bridge o otro DNS | Identificar TCP y UDP antes de cambiar servicios |
 | GitHub no responde | ruta, DNS o salida TCP 443 | `ip route get 1.1.1.1`, `resolvectl query`, `curl -4` |
 
-## Referencias oficiales
+## 📚 Referencias oficiales
 
 - [systemd-resolved](https://www.freedesktop.org/software/systemd/man/devel/systemd-resolved.service.html)
 - [resolved.conf](https://www.freedesktop.org/software/systemd/man/devel/resolved.conf.html)
