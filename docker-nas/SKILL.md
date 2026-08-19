@@ -304,10 +304,10 @@ Orden de consulta:
 
 ### Hechos críticos que NO deben adivinarse:
 
-- **File Browser**: usa `/NAS:/srv:rshared` — sin `:rshared` los USBs montados después no son visibles
+- **File Browser**: usa un bind `/NAS` → `/srv` con `bind.propagation: rshared` — sin `rshared` los USBs montados después no son visibles
 - **DataSQL**: PostgreSQL NUNCA expone puerto al host — solo via db_net
 - **EMQX**: requiere ulimits nofile 1048576, dashboard en LAN (excepción documentada)
-- **USB Automount**: monta en `/NAS/USB/usb-<dev>` — File Browser lo ve por mount propagation
+- **USB Automount**: monta en `/NAS/USB/usb-<dev>` — File Browser lo ve por `bind.propagation: rshared`
 - **Bind mounts**: siempre usar `mount --bind` + fstab, nunca symlinks (Docker no los propaga)
 - **ntfy**: puerto 8090, stateless (cache 24h), auth abierto en LAN, attachments para snapshots de cámaras
 - **usb-api**: puerto 8091, servicio systemd NATIVO (no Docker) — necesita umount real en el host

@@ -272,7 +272,7 @@ volumes:
 
 | Servicio | Mount especial | Razón |
 |----------|---------------|-------|
-| filebrowser | `/NAS:/srv:rshared` | Mount propagation para ver USBs en tiempo real |
+| filebrowser | Bind `/NAS` → `/srv` con `propagation: rshared` | Mount propagation para ver USBs en tiempo real |
 | homeassistant | `./data:/config` | Todo HA vive en /config |
 | homeassistant | `/run/dbus:/run/dbus:ro` | Bluetooth/dbus |
 | esphome | `/dev/ttyUSB0:/dev/ttyUSB0` | Acceso a USB serial (ESP32 físico) |

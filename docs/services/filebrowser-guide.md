@@ -107,8 +107,16 @@ services:
     ports:
       - "8085:80"
     volumes:
-      - ./config:/config
-      - /NAS:/srv:rshared
+      - type: bind
+        source: ./config
+        target: /config
+        read_only: false
+      - type: bind
+        source: /NAS
+        target: /srv
+        read_only: false
+        bind:
+          propagation: rshared
     command: >
       --database /config/database.db
       --root /srv
@@ -306,7 +314,7 @@ docker exec -it filebrowser ls -la /srv   # verificar desde dentro
 
 | Síntoma | Causa | Solución |
 |---------|-------|----------|
-| Carpetas USB aparecen vacías | Falta `:rshared` en compose | Agregar `/NAS:/srv:rshared` y recrear |
+| Carpetas USB aparecen vacías | Falta `bind.propagation: rshared` en el bind de `/NAS` | Restaurar el bind largo con `propagation: rshared` y recrear |
 | Carpetas vacías en la UI | Contenedor inició antes del bind mount | Con `:rshared` ya no pasa. Sin él: `svc down && svc up` |
 | `Permission denied` en /config | Permisos incorrectos | `chmod -R 777 $dkco/filebrowser/config` → luego ajustar |
 | Contraseña no funciona | Se generó aleatoriamente | `svc logs filebrowser` para obtenerla |
@@ -314,7 +322,7 @@ docker exec -it filebrowser ls -la /srv   # verificar desde dentro
 | Puerto 8085 no responde | Contenedor crasheó | `svc logs filebrowser` para ver el error |
 | Mounts duplicados | `mount -a` sobre mounts ya activos | `umount /NAS/aadm` (2 veces) → `mount -a` |
 | `mount --bind` error "no such file" | Punto de montaje no existe | `mkdir -p /NAS/nombre` primero |
-| USB visible pero sin contenido | Docker no propaga mounts anidados sin :rshared | Agregar `:rshared` al volume de /NAS |
+| USB visible pero sin contenido | Docker no propaga mounts anidados sin `rshared` | Añadir `bind.propagation: rshared` al montaje de `/NAS` |
 
 ### Fix rápido para permisos
 
@@ -332,7 +340,7 @@ svc up filebrowser
 ## Notas técnicas
 
 - **`user: "0:0"`** — ejecuta como root para acceso completo a `/NAS`. Necesario si los archivos tienen distintos propietarios.
-- **`/NAS:/srv:rshared`** — cualquier contenido dentro de `/NAS` se refleja en la UI. El flag `:rshared` propaga mounts nuevos (como USBs) al contenedor en tiempo real, sin recrear.
+- **Bind `/NAS` → `/srv` con `bind.propagation: rshared`** — cualquier contenido dentro de `/NAS` se refleja en la UI. La propagación permite que mounts nuevos (como USBs) lleguen al contenedor en tiempo real, sin recrearlo.
 - **`${SERVER_IP}`** — viene del `.env` global (`$dkco/.env`). `svc` lo pasa automáticamente.
 - **`${FILEBROWSER_USER/PASSWORD}`** — vienen del `.env` local (`$dkco/filebrowser/.env`). Se usan en los labels de Homepage.
 - **Base de datos** — SQLite en `config/database.db`. Contiene usuarios, permisos, sesiones. Hacer backup periódico.
