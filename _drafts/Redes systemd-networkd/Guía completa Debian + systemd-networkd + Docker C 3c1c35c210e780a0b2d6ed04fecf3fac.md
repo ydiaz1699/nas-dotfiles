@@ -1,0 +1,322 @@
+# Guía completa: Debian + systemd-networkd + Docker Compose + AdGuard (macvlan) sin perder ssh
+
+```elm
+batcat --style=header,grid --paging=never /docker/cli/svc.sh /docker/cli/lib/*.sh
+```
+
+```bash
+batcat --style=header,grid --paging=never \
+  /docker/cli/svc.sh \
+  /docker/cli/lib/*.sh
+```
+
+# Guía completa: Debian + systemd-networkd + Docker Compose + AdGuard (macvlan)
+
+---
+
+## Mapa de IPs
+
+| Dispositivo | IP |
+| --- | --- |
+| Tu servidor (eno1) | `192.168.0.200` |
+| Host shim (macvlan-shim) | `192.168.0.250` |
+| AdGuard (contenedor) | `192.168.0.201` |
+| Router | `192.168.0.1` |
+
+> ⚠️ Ajusta estas IPs a tu red si es necesario.
+> 
+
+---
+
+## PARTE 1 — Instalación de Debian
+
+Durante el instalador:
+
+1. Selecciona **"Debian GNU/Linux"** sin entorno gráfico
+2. En selección de software marca **solo esto**:
+    - ✅ `SSH server`
+    - ✅ `standard system utilities`
+    - ❌ Todo lo demás desmarcado
+3. Configura la red con **DHCP** por ahora (la ponemos estática después)
+4. Completa la instalación y haz el primer boot
+
+---
+
+## PARTE 2 — Migración segura a systemd-networkd (sin perder SSH)
+
+> 🔴 **Este es el paso más crítico.** Si deshabilitas `networking` antes de tener
+`systemd-networkd` configurado y funcionando, perderás la conexión SSH.
+Sigue el orden exacto de estos pasos.
+> 
+
+### Paso 2.1 — Red de seguridad (imprescindible)
+
+Instala `at` y programa un rescate automático. Si algo sale mal, en 3 minutos
+la red vuelve sola:
+
+```bash
+apt install -y at
+echo "systemctl restart networking" | at now + 3 minutes
+```
+
+### Paso 2.2 — Identifica tu interfaz actual
+
+```bash
+ip a
+cat /etc/network/interfaces
+```
+
+Anota el nombre exacto de la interfaz (ej: `eno1`, `eth0`, `ens18`).
+
+### Paso 2.3 — Crea la config de networkd PRIMERO
+
+> ⚠️ Crea los archivos ANTES de tocar cualquier servicio.
+> 
+
+```bash
+nano /etc/systemd/network/10-eno1.network
+```
+
+Contenido (IP estática):
+
+```bash
+[Match]
+Name=eno1
+
+[Network]
+Address=192.168.0.200/24
+Gateway=192.168.0.1
+DNS=1.1.1.1
+DNS=8.8.8.8
+```
+
+### Paso 2.4 — Arranca networkd SIN apagar nada todavía
+
+```bash
+systemctl enable systemd-networkd
+systemctl start systemd-networkd
+```
+
+> En este punto los dos sistemas (ifupdown + networkd) coexisten.
+No deberías perder conexión.
+> 
+
+### Paso 2.5 — Verifica que networkd tiene IP
+
+```bash
+networkctl status
+ip addr show eno1
+```
+
+Deberías ver **dos IPs en eno1**: la del DHCP anterior y la `192.168.0.200`
+nueva. Eso es correcto y significa que networkd está funcionando.
+
+### Paso 2.6 — Apaga ifupdown
+
+Programa otro rescate y luego apaga el sistema viejo:
+
+```bash
+echo "systemctl restart networking" | at now + 3 minutes
+systemctl disable --now networking
+```
+
+Puede haber un microcorte de 1-2 segundos. Reconéctate a la nueva IP:
+
+```bash
+ssh root@192.168.0.200
+```
+
+### Paso 2.7 — Verificación final de red
+
+```bash
+ping -c 3 1.1.1.1
+ip addr show eno1
+# Solo debe aparecer 192.168.0.200
+```
+
+> ℹ️ `systemd-resolved` puede no existir en versiones recientes de Debian.
+No hace falta: el DNS funciona directamente desde el archivo `.network`.
+> 
+
+---
+
+## PARTE 3 — El truco del macvlan: shim para el host
+
+> 🔑 **Este paso es crítico.** Con macvlan, el host (`eno1`) y el contenedor
+(`192.168.0.201`) **no pueden comunicarse directamente** por diseño del
+kernel. Para que el host pueda llegar a AdGuard necesitas crear una interfaz
+macvlan también en el host.
+> 
+
+### Paso 3.1 — Crea la interfaz shim
+
+```bash
+nano /etc/systemd/network/20-macvlan-shim.netdev
+```
+
+Contenido:
+
+```bash
+[NetDev]
+Name=macvlan-shim
+Kind=macvlan
+
+[MACVLAN]
+Mode=bridge
+```
+
+### Paso 3.2 — Configura la red del shim
+
+```bash
+nano /etc/systemd/network/20-macvlan-shim.network
+```
+
+Contenido:
+
+```bash
+[Match]
+Name=macvlan-shim
+
+[Network]
+Address=192.168.0.250/32
+
+[Route]
+Destination=192.168.0.201/32
+```
+
+### Paso 3.3 — Enlaza el shim a eno1
+
+Edita el archivo que ya creaste:
+
+```bash
+nano /etc/systemd/network/10-eno1.network
+```
+
+Debe quedar así (agrega la línea `MACVLAN`):
+
+```bash
+[Match]
+Name=eno1
+
+[Network]
+Address=192.168.0.200/24
+Gateway=192.168.0.1
+DNS=1.1.1.1
+DNS=8.8.8.8
+MACVLAN=macvlan-shim
+```
+
+### Paso 3.4 — Aplica los cambios
+
+```bash
+systemctl restart systemd-networkd
+
+# Verifica que la interfaz shim existe
+ip addr show macvlan-shim
+```
+
+---
+
+## PARTE 4 — Desplegar AdGuard con Docker Compose
+
+### Paso 4.1 — Crea la estructura de carpetas
+
+```bash
+mkdir -p /docker/adguard/{work,conf}
+```
+
+### Paso 4.2 — Crea el compose
+
+```bash
+nano /docker/adguard/compose.yaml
+```
+
+Contenido:
+
+```yaml
+services:
+  adguard:
+    container_name: adguard
+    image: adguard/adguardhome:latest
+    cap_add:
+      - NET_ADMIN
+    networks:
+      macvlan_NET:
+        ipv4_address: 192.168.0.201
+    volumes:
+      - /docker/adguard/work:/opt/adguardhome/work
+      - /docker/adguard/conf:/opt/adguardhome/conf
+    restart: unless-stopped
+
+networks:
+  macvlan_NET:
+    driver: macvlan
+    driver_opts:
+      parent: eno1
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+          gateway: 192.168.0.1
+```
+
+### Paso 4.3 — Levanta el contenedor
+
+```bash
+cd /docker/adguard
+docker compose up -d
+
+# Verificar estado
+docker compose ps
+docker compose logs -f
+```
+
+---
+
+## PARTE 5 — Verificación final
+
+```bash
+# El servidor llega a AdGuard
+ping 192.168.0.201
+
+# AdGuard responde por HTTP (setup wizard)
+curl http://192.168.0.201:3000
+```
+
+Desde cualquier PC en tu red, abre:
+
+```
+http://192.168.0.201:3000
+```
+
+Ahí aparece el asistente de configuración inicial de AdGuard.
+
+---
+
+## Resumen de archivos creados
+
+| Archivo | Propósito |
+| --- | --- |
+| `/etc/systemd/network/10-eno1.network` | IP estática en eno1 + enlace al shim |
+| `/etc/systemd/network/20-macvlan-shim.netdev` | Define la interfaz macvlan del host |
+| `/etc/systemd/network/20-macvlan-shim.network` | Configura la IP y ruta del shim |
+| `/docker/adguard/compose.yaml` | Compose de AdGuard con red macvlan |
+
+---
+
+## Convención de rutas para nuevos servicios
+
+Todos los servicios Docker siguen esta estructura:
+
+```
+/docker/<servicio>/
+├── compose.yaml
+├── conf/          # configuración persistente
+└── work/          # datos de trabajo
+```
+
+Para levantar cualquier servicio:
+
+```bash
+cd /docker/<servicio>
+docker compose up -d
+```
