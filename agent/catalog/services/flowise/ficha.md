@@ -33,7 +33,7 @@ backup_paths:
   - "./data"
 protected: false
 docs_url: "docs/services/flowise-guide.md"
-notes: "Flowise usa PostgreSQL dedicado en DataSQL mediante db_net y el hostname datapostgres; no usa depends_on contra otro compose. El dashboard se expone en LAN en :8100 para esta prueba y debe protegerse antes de exponerlo fuera de la LAN. La carpeta ./data debe pertenecer al uid 1000 del contenedor. El backup requiere tanto los datos de Flowise como un pg_dump de flowise_db. La memoria de 1G es provisional hasta medir con svc stats."
+notes: "Flowise usa PostgreSQL dedicado en DataSQL mediante db_net y el hostname datapostgres; no usa depends_on contra otro compose. El dashboard se expone en LAN en :8100 para esta prueba y debe protegerse antes de exponerlo fuera de la LAN. La ruta relativa ./data del compose siempre corresponde a $dkco/flowise/data y debe pertenecer al uid 1000 del contenedor. El backup requiere tanto los datos de Flowise como un pg_dump de flowise_db. La memoria de 1G es provisional hasta medir con svc stats."
 networks:
   - db_net
 ports:

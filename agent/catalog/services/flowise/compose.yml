@@ -31,7 +31,10 @@ services:
     ports:
       - "8100:3000"
     volumes:
-      - ./data:/home/node/.flowise
+      # Ruta relativa al compose: $dkco/flowise/data -> /home/node/.flowise
+      - type: bind
+        source: ./data
+        target: /home/node/.flowise
     networks:
       - db_net
     healthcheck:

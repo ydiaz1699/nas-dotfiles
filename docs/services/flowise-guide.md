@@ -132,9 +132,23 @@ manualmente.
 
 ## Persistencia y permisos
 
-El bind mount `./data:/home/node/.flowise` contiene claves, logs, almacenamiento
-local y datos auxiliares. La imagen actual corre con un usuario no root; si hay
-errores de escritura, crear primero la carpeta y después aplicar:
+El bind mount usa una ruta relativa al archivo `compose.yml`: `./data` siempre
+se resuelve como `$dkco/flowise/data`, no como una carpeta externa ni como un
+volumen Docker administrado. Por tanto, la estructura persistente queda así:
+
+```text
+$dkco/flowise/
+├── compose.yml
+├── .env
+└── data/
+    ├── logs/
+    └── storage/
+```
+
+Dentro del contenedor, esa misma carpeta aparece como `/home/node/.flowise` y
+contiene claves, logs, almacenamiento local y datos auxiliares. La imagen actual
+corre con un usuario no root; si hay errores de escritura, crear primero la
+carpeta y después aplicar:
 
 ```bash
 chown -R 1000:1000 $dkco/flowise/data
