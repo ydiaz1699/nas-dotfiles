@@ -16,7 +16,7 @@ trigger: >
   - Servicios: Docker, contenedor, compose, imagen, puerto, red, volumen
   - Comandos: dk, adm, nasfk, svc, instal, pipins, gpl, gs, nas, bat
   - Servicios específicos: emqx, ntfy, adguard, filebrowser, esphome,
-    homepage, datasql, pgadmin, redis, usb-api, spacedrive
+    homepage, datasql, pgadmin, redis, flowise, usb-api, spacedrive
   - Infra: homelab, servidor, backup, cron, systemd, USB, mount
   - IoT: MQTT, broker, ESP32, Home Assistant, alarma, sensor
   - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS
@@ -130,6 +130,22 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 | ntfy | 8090 | homepage_net | `docs/services/ntfy-guide.md` |
 | node-red | 1880 | iot_net | `docs/services/node-red-guide.md` |
 | usb-api | 8091 | nativo (systemd) | `agent/catalog/services/usb-api/ficha.md` |
+
+### Servicios nuevos que dependen de DataSQL
+
+Cuando una aplicación necesita PostgreSQL o Redis compartido:
+
+1. Cargar `docs/services/datasql-guide.md` y la ficha de DataSQL antes de crear el compose.
+2. Usar la red externa `db_net`; nunca publicar `5432` ni `6379` al host.
+3. Crear una base y usuario dedicados dentro de DataSQL; no reutilizar `admin`.
+4. Incluir en el compose de la aplicación `env_file: [../.env, .env]`,
+   `extends.file: ../_common.yml` y labels `homepage.*`.
+5. No usar `depends_on` contra `datapostgres` si DataSQL vive en otro compose:
+   esa dependencia no controla otro proyecto. Verificar DataSQL con `svc health`.
+6. Conectar usando el hostname del contenedor/servicio en `db_net`, nunca una IP fija.
+
+SQLite solo sirve para un smoke test aislado. Para validar integración, backup y
+recuperación en el NAS, preferir PostgreSQL de DataSQL.
 
 ### Redes
 
@@ -268,6 +284,7 @@ Formato: `[fecha] corrección`.
 [2026-08-17] compare_catalog(service) implementado: tool del agente que detecta drift entre compose real ($DOCKER_BASE) y catálogo (imagen, puertos, redes, volúmenes, env_file, healthcheck, security).
 [2026-08-17] svc snapshot/rollback implementado: guardar compose+.env antes de cambios (liviano, rotación 10). `svc snapshot X` antes de editar, `svc rollback X` para revertir.
 [2026-08-17] Catálogo pre-cargado: al arrancar, el agente inyecta resumen de todos los servicios en el prompt (sin llamar tools). El agente ya sabe qué servicios existen.
+[2026-08-17] Para aplicaciones nuevas con PostgreSQL/Redis, cargar datasql-guide.md; usar db_net, usuario/DB dedicados, env_file dual, extends ../_common.yml y labels Homepage. SQLite queda solo para smoke tests.
 ```
 
 > **Instrucciones al LLM (comportamiento proactivo):**

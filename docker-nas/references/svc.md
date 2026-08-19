@@ -111,68 +111,58 @@ svc restart <TAB>  # idem
 
 ---
 
-## Plantilla compose.yml (con anchors base obligatorios)
+## Plantilla compose.yml (estándar actual con `extends`)
 
-Todo compose nuevo DEBE incluir los anchors base del catálogo
-(definidos en `agent/catalog/_compose_base.md`):
+Los defaults compartidos viven en `$dkco/_common.yml`. Todo compose nuevo debe
+heredarlos con `extends`; no debe copiar anchors locales de seguridad, logging y
+recursos. El servicio todavía declara sus propios valores específicos: imagen,
+`env_file`, puertos, volúmenes, healthcheck y redes.
 
 ```yaml
-# ── Anchors base (obligatorios) ────────────────────────────────
-x-common-env: &common-env
-  TZ: America/La_Paz
-
-x-healthcheck-defaults: &healthcheck-defaults
-  interval: 30s
-  timeout: 10s
-  retries: 5
-  start_period: 40s
-
-x-security-defaults: &security-defaults
-  no-new-privileges: true
-
-x-logging-defaults: &logging-defaults
-  driver: json-file
-  options:
-    max-size: "10m"
-    max-file: "3"
-
-x-resource-defaults: &resource-defaults
-  limits:
-    memory: 512m
-  reservations:
-    memory: 128m
-
-# ── Servicio ───────────────────────────────────────────────────
 services:
   <nombre>:
+    extends:
+      file: ../_common.yml
+      service: _defaults
     image: <imagen>:<tag>
     container_name: <nombre>
-    restart: unless-stopped
-    security_opt:
-      - <<: *security-defaults
-    deploy:
-      resources:
-        <<: *resource-defaults
-    logging:
-      <<: *logging-defaults
-    healthcheck:
-      <<: *healthcheck-defaults
-      test: ["CMD", "curl", "-f", "http://localhost:XXXX/health"]
+    env_file:
+      - ../.env          # global: SERVER_IP, TZ
+      - .env             # secretos locales
     environment:
-      <<: *common-env
+      VARIABLE_PROPIA: valor
     volumes:
       - ./data:/data
-      - ./config:/config
     ports:
-      - "XXXX:XXXX"
+      - "8100:XXXX"
+    labels:
+      - homepage.group=Grupo
+      - homepage.name=Nombre
+      - homepage.icon=mdi-application
+      - homepage.href=http://${SERVER_IP}:8100
+      - homepage.description=Descripción corta
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:XXXX/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
     networks:
-      - iot_net       # elegir según tipo de servicio
+      - homepage_net       # elegir según tipo de servicio
 
-# ── Redes (externas compartidas) ──────────────────────────────
 networks:
-  iot_net:
+  homepage_net:
     external: true
 ```
+
+`env_file: [../.env, .env]` reemplaza el antiguo `<<: *common-env` para `TZ`.
+No duplicar `TZ` en `environment:`. Si el compose se guarda en el catálogo,
+`agent/catalog/services/<svc>/compose.yml`, su ruta equivalente es
+`../../_common.yml`; el pipeline la transforma al desplegar al NAS.
+
+Para una aplicación que usa DataSQL, leer antes `docs/services/datasql-guide.md`,
+usar `db_net`, crear una DB/usuario dedicados y no publicar los puertos 5432/6379.
+No usar `depends_on` contra `datapostgres` si DataSQL está en otro compose.
 
 ---
 
@@ -197,16 +187,20 @@ Reglas:
 
 ## Plantilla con secretos (.env)
 
-**compose.yml:**
+**compose.yml: mínimo para un servicio con secretos**
 ```yaml
 services:
   <nombre>:
+    extends:
+      file: ../_common.yml
+      service: _defaults
     image: <imagen>:<tag>
     container_name: <nombre>
-    restart: unless-stopped
-    env_file: .env
+    env_file:
+      - ../.env
+      - .env
     environment:
-      <<: *common-env
+      DB_PASSWORD: "${DB_PASSWORD}"
 ```
 
 **.env** (solo secretos reales):

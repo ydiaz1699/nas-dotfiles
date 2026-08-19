@@ -127,11 +127,18 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 ## Nuevo servicio (orden obligatorio)
 
 1. `mkdir -p $dkco/<svc>/data`
-2. Crear `compose.yml` + `.env`
-3. `chmod 600 .env`
-4. Agregar labels `homepage.*` en compose (auto-descubrimiento)
-5. `dk <svc> && svc up <svc>`
-6. `svc catalog-sync <svc>` — genera ficha, guía, script DebMenux
+2. Crear `compose.yml` + `.env` si hay secretos
+3. El compose debe usar `extends.file: ../_common.yml` y `env_file: [../.env, .env]`
+4. `chmod 600 .env`
+5. Agregar labels `homepage.*` en compose (auto-descubrimiento)
+6. `dk <svc> && svc config <svc>` para validar
+7. `svc up <svc>` y verificar health, logs y consumo
+8. `svc catalog-sync <svc>` — genera ficha, guía, script DebMenux
+
+Si necesita PostgreSQL o Redis, leer primero `docs/services/datasql-guide.md` y la
+ficha de DataSQL; usar `db_net`, crear DB/usuario dedicados, no exponer puertos de
+DB y no usar `depends_on` contra DataSQL si está en otro compose. SQLite queda para
+smoke tests aislados; para integración real usar DataSQL.
 
 ## Homepage
 

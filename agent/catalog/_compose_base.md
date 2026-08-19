@@ -5,25 +5,27 @@ version: "1.1"
 description: "Template base de compose para todos los servicios del NAS"
 ---
 
-# Compose Base — Template Reutilizable
+# Compose Base — Defaults reutilizables
 
-Este archivo define la **estructura estándar** de compose que TODOS los servicios
-del NAS deben seguir. Cuando el agente genera o modifica un compose, DEBE aplicar
-estos bloques base.
+Este archivo documenta la estructura estándar de compose. Los defaults compartidos
+(restart, seguridad, logging y recursos) viven en `$dkco/_common.yml` y se heredan
+con `extends`. Los anchors YAML locales son una técnica legacy; no deben declararse
+como requisito para servicios nuevos.
 
 ## Estructura de directorio
 
 ```
 /docker/<servicio>/
-├── compose.yml (o docker-compose.yml)  ← ambos nombres son válidos
+├── compose.yml             ← nombre obligatorio
 ├── .env                    ← permisos 600
 └── data/
     └── ...                 ← datos persistentes del servicio
 ```
 
-## Bloques base (anchors YAML)
+## Formato legacy (anchors YAML)
 
-Cada compose DEBE incluir estos anchors al inicio y referenciarlos en el servicio:
+Estos anchors pertenecen al formato anterior. No son obligatorios para servicios
+nuevos: los defaults actuales se heredan desde `$dkco/_common.yml` con `extends`.
 
 ```yaml
 # ── OPCIONAL: x-common-env ─────────────────────────────────────────────────
@@ -60,7 +62,31 @@ x-resource-defaults: &resource-defaults
         memory: 128m
 ```
 
-## Uso en el servicio
+## Herencia actual con `extends`
+
+En el NAS, el compose debe usar:
+
+```yaml
+services:
+  nombre:
+    extends:
+      file: ../_common.yml
+      service: _defaults
+    env_file:
+      - ../.env
+      - .env
+    labels:
+      - homepage.group=Grupo
+      - homepage.name=Nombre
+      - homepage.href=http://${SERVER_IP}:8100
+```
+
+En el catálogo la ruta es `../../_common.yml`; el pipeline la convierte a
+`../_common.yml` al desplegar. Cada servicio debe declarar su healthcheck,
+volúmenes, puertos y redes. Si usa PostgreSQL o Redis, leer DataSQL y conectar
+por `db_net` sin exponer puertos.
+
+## Uso legacy en el servicio
 
 ```yaml
 services:

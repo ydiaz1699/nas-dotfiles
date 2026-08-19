@@ -31,6 +31,22 @@ $DOCKER_BASE/           ← SOLO datos de servicios Docker (default /docker)
 
 **Principio:** El código vive en `$NAS_DOTFILES`. Los datos de servicios viven en `$DOCKER_BASE` (`$dkco`). No se mezclan. No hay symlinks.
 
+## Regla para servicios nuevos y bases compartidas
+
+Al crear un servicio Docker, usar el orden `mkdir → .env/compose → permisos →
+validación → levantar → catalog-sync`. El `compose.yml` debe incluir:
+
+- `env_file: [../.env, .env]` para heredar `SERVER_IP` y `TZ` y cargar secretos locales.
+- `extends: {file: ../_common.yml, service: _defaults}` para heredar defaults globales.
+- labels `homepage.*` dentro del servicio Docker, no solo en `services.yaml`.
+- healthcheck específico y volumen persistente si guarda datos.
+
+Si necesita PostgreSQL o Redis, cargar primero `docs/services/datasql-guide.md` y
+la ficha de DataSQL. Usar `db_net`, crear una base/usuario dedicados, no exponer
+puertos de DB y no usar `depends_on` contra un contenedor de otro compose. SQLite
+queda reservado para smoke tests aislados; para integración, backup y recuperación
+usar DataSQL.
+
 ---
 
 ## Componente 1: Shell Framework (`$NAS_DOTFILES/shell/`)

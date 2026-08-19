@@ -59,14 +59,26 @@ Entrega siempre en este orden exacto:
 
 1. Árbol Unicode de directorios
 2. `mkdir -p $dkco/<svc>/{carpetas}`
-3. `compose.yml` completo
-4. `dk <svc> && svc up <svc>`
+3. Crear `.env` local si hay secretos y ejecutar `chmod 600 .env`
+4. Crear `compose.yml` completo con `extends` desde `$dkco/_common.yml`, `env_file: [../.env, .env]` y labels `homepage.*`
+5. `dk <svc> && svc config <svc>` para validar
+6. `svc up <svc>`; verificar salud, logs y consumo
+7. `svc catalog-sync <svc>` después de confirmar que funciona
 
 Restricciones: `compose.yml` (nombre preferido) · `.env` solo secretos ·
 variables triviales inline · `unless-stopped` · puertos 8100-8999 ·
 nunca 22/53/80/443 · nombres `^[a-z0-9][a-z0-9._-]{0,63}$`
 
 Para plantillas y estructura de carpetas, ver `references/svc.md`.
+
+### Servicio que usa DataSQL
+
+Antes de configurar PostgreSQL o Redis, leer `docs/services/datasql-guide.md` y
+`agent/catalog/services/datasql/ficha.md`. Usar `db_net` como red externa, crear
+una base/usuario dedicados y no publicar puertos de DB. El compose de la aplicación
+siempre lleva `env_file: [../.env, .env]`, `extends.file: ../_common.yml` y labels
+`homepage.*`. No usar `depends_on` para `datapostgres` si DataSQL está en otro
+compose. SQLite solo es para una prueba aislada; para integración real usar DataSQL.
 
 ---
 

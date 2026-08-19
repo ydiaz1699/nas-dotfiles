@@ -75,8 +75,7 @@ PGADMIN_PASSWORD=cambia_esto_por_algo_seguro
 # === Redis ===
 REDIS_PASSWORD=cambia_esto_por_algo_seguro
 
-# === Zona horaria ===
-TZ=America/La_Paz
+# === TZ y SERVER_IP se heredan de $dkco/.env (global) ===
 ```
 
 Proteger el archivo:
@@ -103,13 +102,15 @@ services:
     image: postgres:16-alpine
     container_name: datapostgres
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - ../.env
+      - .env
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
-      TZ: ${TZ}
+      # TZ se hereda de ../.env; no duplicar en environment
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     volumes:
       - ./data/postgres/pgdata:/var/lib/postgresql/data/pgdata
@@ -139,7 +140,9 @@ services:
     image: dpage/pgadmin4:latest
     container_name: datapgadmin
     restart: unless-stopped
-    env_file: .env
+    env_file:
+      - ../.env
+      - .env
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
@@ -149,6 +152,12 @@ services:
       - ./data/pgadmin:/var/lib/pgadmin
     ports:
       - "5050:80"
+    labels:
+      - homepage.group=Bases de datos
+      - homepage.name=pgAdmin
+      - homepage.icon=pgadmin
+      - homepage.href=http://${SERVER_IP}:5050
+      - homepage.description=Administración de PostgreSQL (datasql)
     depends_on:
       postgres:
         condition: service_healthy
@@ -251,7 +260,7 @@ DROP TABLE test;
 Acceder desde Windows directamente (sin túnel SSH):
 
 ```
-http://192.168.0.200:5050
+http://${SERVER_IP}:5050
 ```
 
 Credenciales: las del `.env` (`PGADMIN_EMAIL` / `PGADMIN_PASSWORD`).
@@ -353,7 +362,7 @@ sleep 15 && docker logs datapgadmin 2>&1 | tail -10
 
 ### Error 5: pgAdmin inaccesible desde Windows sin túnel SSH
 
-**Síntoma:** `http://192.168.0.200:5050` no respondía desde Windows.
+**Síntoma:** `http://${SERVER_IP}:5050` no respondía desde Windows.
 
 **Causa:** el puerto estaba configurado como `127.0.0.1:5050:80`, restringiéndolo únicamente a localhost del NAS.
 
@@ -364,7 +373,7 @@ ports:
   - "5050:80"    # antes: "127.0.0.1:5050:80"
 ```
 
-Esto expone pgAdmin a toda la LAN. Acceso directo desde cualquier dispositivo en `192.168.0.x` sin túnel SSH.
+Acceso directo desde cualquier dispositivo de la LAN mediante `${SERVER_IP}:5050` sin túnel SSH.
 
 ---
 
@@ -488,6 +497,15 @@ CREATE DATABASE homeassistant_db OWNER ha_user;
 | Node-RED | `nodered_db` | Nodo postgresql en la UI |
 | EMQX | `emqx_db` | Dashboard → Data Integration |
 | n8n | `n8n_db` | Variables de entorno en `compose.yml` |
+| Flowise | `flowise_db` | `DATABASE_TYPE=postgres`, `DATABASE_HOST=datapostgres`, `DATABASE_NAME=flowise_db`, usuario y contraseña dedicados |
+
+### Aplicaciones en otro compose
+
+Si la aplicación vive en un compose separado (por ejemplo, Flowise en
+`$dkco/flowise/`), comparte `db_net` con DataSQL, pero **no** uses `depends_on` contra `datapostgres`: `depends_on` solo controla
+servicios definidos en el mismo compose. Verifica primero `svc health` y configura el host como `datapostgres`.
+El compose de la aplicación debe incluir `env_file: [../.env, .env]`,
+`extends.file: ../_common.yml` y sus labels `homepage.*`.
 
 ---
 

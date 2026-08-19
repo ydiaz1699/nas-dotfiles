@@ -10,7 +10,7 @@ description: >
   - Servicios: Docker, contenedor, compose, imagen, puerto, red, volumen
   - Comandos del entorno: dk, adm, nasfk, svc, instal, pipins, gpl, gs, nas
   - Servicios específicos: emqx, ntfy, adguard, filebrowser, esphome, homepage,
-    datasql, pgadmin, redis, usb-api, spacedrive, vaultwarden
+    datasql, pgadmin, redis, flowise, usb-api, spacedrive, vaultwarden
   - Infraestructura: homelab, servidor, backup, cron, systemd, USB, mount
   - IoT/domótica: MQTT, broker, ESP32, Home Assistant, alarma, sensor
   - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS, proxy
@@ -79,15 +79,18 @@ Entrega siempre en este orden exacto:
 
 1. Árbol Unicode de directorios
 2. `mkdir -p $dkco/<svc>/{carpetas}`
-3. `compose.yml` completo (con anchors base obligatorios + `env_file: [../.env, .env]`)
-4. `dk <svc> && svc up <svc>`
+3. Crear `.env` local si hay secretos y aplicar `chmod 600 .env`
+4. Crear `compose.yml` completo usando `extends` desde `$dkco/_common.yml`, `env_file: [../.env, .env]` y labels `homepage.*`
+5. `dk <svc> && svc config <svc>` para validar antes de levantar
+6. `svc up <svc>` y verificar salud, logs y consumo
+7. `svc catalog-sync <svc>` después de confirmar que funciona
 
 ### .env global (`$dkco/.env`)
 
 Variables compartidas por TODOS los servicios. Cambiar aquí = aplica a todos al reiniciar:
 
 ```env
-SERVER_IP=192.168.0.200
+SERVER_IP=192.168.1.200
 TZ=America/La_Paz
 ```
 
@@ -101,14 +104,20 @@ env_file:
 El `.env` local sobreescribe al global si hay conflicto.
 Template en: `agent/catalog/.env.global.example`
 
-### Restricciones
+### Servicios que necesitan una base de datos existente
 
-`compose.yml` (nombre preferido) · `.env` solo secretos ·
-variables triviales inline · `unless-stopped` · puertos 8100-8999 ·
-nunca 22/53/80/443 · nombres `^[a-z0-9][a-z0-9._-]{0,63}$`
+Antes de crear un servicio que use PostgreSQL, Redis u otra base compartida:
 
-Para plantillas con anchors, redes compartidas y estructura de carpetas,
-ver `references/svc.md`.
+1. Leer `docs/services/datasql-guide.md` y la ficha de DataSQL.
+2. Usar la red externa `db_net`; nunca publicar `5432` o `6379` al host.
+3. Crear una base y un usuario dedicados dentro de DataSQL; no reutilizar el usuario administrador.
+4. Configurar `env_file: [../.env, .env]`, `extends.file: ../_common.yml` y labels `homepage.*`.
+5. No usar `depends_on` para un contenedor que pertenece a otro compose; verificar la disponibilidad con `svc health` y logs.
+6. Documentar el host de conexión como el nombre del contenedor/servicio en `db_net`, no como una IP fija.
+
+SQLite puede usarse solo para una prueba aislada y temporal. Si el objetivo es integrar
+el servicio al NAS y probar recuperación/backup, preferir PostgreSQL de DataSQL.
+
 
 ---
 
