@@ -294,7 +294,7 @@ Formato: `[fecha] corrección`.
 [2026-08-16] Home Assistant usa network_mode:host — no necesita redes Docker, accede directo a LAN
 [2026-08-16] SIEMPRE consultar dependency-map.md después de cualquier cambio para no olvidar archivos conectados
 [2026-08-16] Si el usuario pega un compose de internet → ajustarlo a las convenciones (env_file, ${SERVER_IP}, labels, security_opt, cap_drop)
-[2026-08-16] filebrowser requiere :rshared en el bind mount /NAS:/srv:rshared — sin él los USBs montados después no se ven
+[2026-08-16] filebrowser requiere `bind.propagation: rshared` en el bind `/NAS` → `/srv` — sin él los USBs montados después no se ven
 [2026-08-16] Cuando se mejora un compose existente (ej: agregar :rshared, env_file, quitar TZ) → actualizar TAMBIÉN la guía y la ficha del catálogo
 [2026-08-16] Cuando se mejora la gestión de un servicio (ej: HA con !include) → documentar el ANTES y DESPUÉS en la guía para que otros LLMs no sugieran la forma vieja
 [2026-08-16] README.md debe reflejar archivos nuevos en la estructura del proyecto — si se crea docs/X.md o scripts/X.sh, actualizar el árbol en README
