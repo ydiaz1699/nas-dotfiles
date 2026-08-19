@@ -5,6 +5,64 @@ Cada entrada documenta síntoma, causa raíz y solución.
 
 ---
 
+## API/LLM — `Too many requests, please wait before trying again`
+
+**Síntoma:**
+
+```text
+Error: Too many requests, please wait before trying again.
+Request ID: <id>
+```
+
+**Causa:**
+
+Es un límite temporal del proveedor de la API/LLM (rate limit). No lo provoca
+Docker, EMQX, el NAS, la red local ni un `compose.yml` incorrecto. El `Request ID`
+identifica el intento rechazado y debe conservarse si hay que reportar el incidente.
+
+**Prevención durante sesiones largas:**
+
+1. No enviar repetidamente `continuar`, la misma pregunta o el mismo comando
+   mientras una solicitud anterior todavía está procesándose.
+2. Esperar a que termine cada respuesta antes de iniciar la siguiente acción.
+3. Agrupar preguntas relacionadas en un solo mensaje, evitando reintentos
+   idénticos consecutivos.
+4. Pedir al agente que trabaje por etapas y que valide varias cosas juntas cuando
+   sea seguro, en vez de lanzar muchas solicitudes pequeñas sin pausa.
+5. Para una sesión larga, guardar el contexto en `_drafts/SESSION-<fecha>-<tema>.md`
+   usando `docs/session-handoff.md`; así no es necesario reconstruir todo el
+   contexto con varios mensajes al abrir una nueva sesión.
+6. Si el agente ya indicó que está bloqueado por rate limit, no repetir la misma
+   solicitud inmediatamente: esperar y luego hacer un único reintento.
+
+**Recuperación:**
+
+1. Detener los reintentos durante unos minutos; el tiempo exacto depende del
+   proveedor y no se puede determinar desde el NAS.
+2. Conservar el mensaje completo y su `Request ID`.
+3. Reintentar una sola vez con una solicitud más compacta, incluyendo solo el
+   objetivo pendiente y el contexto imprescindible.
+4. Si vuelve a ocurrir, esperar más tiempo o cambiar temporalmente de sesión/modelo
+   si la plataforma lo permite. No modificar Docker, reiniciar servicios ni cambiar
+   credenciales del NAS para resolver este error.
+5. Si persiste, reportar el `Request ID` al proveedor de la API/plataforma.
+
+**Diagnóstico rápido:**
+
+| Pregunta | Interpretación |
+|----------|----------------|
+| ¿El mensaje dice `Too many requests`? | Rate limit del proveedor/LLM |
+| ¿Aparecen `docker`, `compose`, `EMQX` o `connection refused`? | Posible problema del NAS/servicio; diagnosticar aparte |
+| ¿Solo falla una solicitud del agente y los comandos locales funcionan? | No tocar la configuración del NAS |
+
+**Lección:**
+
+Un rate limit no se corrige con `svc restart`, `svc recreate`, cambios en `.env` ni
+reiniciando EMQX. Se resuelve reduciendo la frecuencia de solicitudes y esperando la
+ventana de recuperación del proveedor.
+
+---
+
 ## auto_catalog() — NameError en stacks multi-servicio
 
 **Síntoma:**
