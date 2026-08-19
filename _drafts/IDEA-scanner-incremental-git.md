@@ -16,8 +16,8 @@ Un scanner que lee TODO el proyecto cada vez:
 
 Usar `git` como detector de cambios:
 - Primera vez: escanea TODO → genera un mapa base (snapshot)
-- Siguientes veces: `git diff` detecta solo lo que cambió → procesa solo eso
-- El scanner ya SABE el estado anterior y solo ve los deltas
+- Siguientes veces: `git diff` detecta solo lo que cambió → el objetivo es procesar solo eso
+- El scanner debe saber el estado anterior y mantener qué quedó procesado o pendiente
 
 ## Cómo funcionaría
 
@@ -171,7 +171,101 @@ def check_connections(modified_file):
 }
 ```
 
-## Cómo lo usaría un LLM
+## Estado actual de la implementación (2026-08-17)
+
+La primera versión del scanner ya está implementada, pero todavía no cumple toda
+la idea original de "leer solo lo pendiente". Es importante distinguir dos cosas:
+
+```text
+git diff                  = detector de cambios entre estados Git
+project-snapshot.json     = baseline del último scan
+estado de lectura        = todavía NO implementado
+```
+
+Actualmente el scanner guarda `last_commit`, fecha, estados agregados por servicio
+y algunos `file_hashes`. No guarda un registro por archivo con estado `processed`,
+`pending` o `failed`. Por eso no puede afirmar qué archivos fueron leídos por una
+LLM ni cuáles quedaron pendientes.
+
+### Qué detecta actualmente
+
+- Cambios ya commiteados desde `last_commit` hasta `HEAD`.
+- Archivos nuevos no trackeados mediante `git ls-files --others --exclude-standard`.
+- El servicio afectado y el conjunto de inconsistencias que debe mostrar.
+
+### Qué todavía NO detecta de forma fiable
+
+- Cambios unstaged del working tree.
+- Cambios staged que aún no fueron commiteados.
+- Archivos nuevos staged pero no commiteados.
+- Eliminaciones locales sin commit.
+- Lectura/procesamiento real de cada archivo.
+- Archivos pendientes, fallidos o descartados.
+
+Cuando encuentra cambios, la implementación actual vuelve a ejecutar detectores
+amplios y filtra principalmente los resultados por servicio. Esto es una
+optimización parcial, no un procesamiento incremental por archivo.
+
+La documentación y la skill no deben describir esta versión como "solo procesa
+archivos cambiados" hasta implementar el estado por archivo.
+
+## Estado objetivo pendiente: ledger por archivo
+
+La siguiente fase de la idea debe agregar al snapshot un ledger explícito:
+
+```json
+{
+  "baseline_commit": "abc1234",
+  "files": {
+    "docs/services/homeassistant-guide.md": {
+      "hash": "sha256:...",
+      "status": "processed",
+      "processed_at": "2026-08-17T20:00:00Z",
+      "source_change": "compose.yml"
+    },
+    "agent/catalog/services/flowise/compose.yml": {
+      "hash": "sha256:...",
+      "status": "pending",
+      "reason": "guía y ficha aún no verificadas"
+    }
+  },
+  "pending": [
+    "agent/catalog/services/flowise/compose.yml"
+  ],
+  "failed": []
+}
+```
+
+Estados mínimos:
+
+| Estado | Significado |
+|--------|-------------|
+| `changed` | Git o el hash detectó una modificación |
+| `pending` | Detectado, pero todavía no procesado |
+| `processing` | En proceso durante el scan actual |
+| `processed` | Leído y verificado correctamente |
+| `failed` | Se intentó procesar, pero hubo error |
+| `ignored` | Excluido conscientemente por regla o `.gitignore` |
+
+### Requisitos para considerar completa la implementación
+
+1. Comparar cambios commiteados, staged, unstaged, no trackeados y eliminados.
+2. Calcular hash por archivo y compararlo con el ledger anterior.
+3. Procesar solamente archivos `changed` o `pending`.
+4. Guardar el resultado de cada archivo incluso si otro archivo falla.
+5. Mantener la lista de `pending` y `failed` entre sesiones.
+6. Mostrar comandos separados:
+   - `svc scan --changed`: detectar cambios sin procesarlos.
+   - `svc scan`: procesar cambios y pendientes.
+   - `svc scan --full`: ignorar el ledger y reconstruir todo.
+   - `svc scan --status`: mostrar leídos, pendientes y fallidos.
+7. No marcar un archivo como `processed` si solo fue listado: debe haber sido
+   leído y validado por el detector correspondiente.
+
+Este ledger es la diferencia entre un scanner que detecta deltas y el scanner
+progresivo que originalmente se diseñó para que el LLM sepa exactamente qué debe
+leer y qué puede ignorar.
+
 
 ### Al inicio de sesión:
 
@@ -258,17 +352,24 @@ Usuario pide: "revisa homeassistant"
 
 ## Para implementar en próxima sesión
 
-### Prioridad 1: Versión mínima (bash)
-- `git diff --name-only` + clasificador + verificador básico
+### Prioridad 1: Versión mínima (bash) — ✅ implementada parcialmente
+- `git diff` + `git ls-files` + clasificador + verificador básico
 - Output: reporte de inconsistencias
-- Tiempo estimado: 1-2 horas
+- Limitación: todavía no hay ledger de archivos procesados/pendientes
 
-### Prioridad 2: Snapshot + incremental
-- Guardar estado en JSON
-- Solo procesar deltas
-- Tiempo estimado: 1 hora adicional
+### Prioridad 2: Snapshot + incremental — ⚠️ parcial
+- Guardar estado en JSON ✅
+- Detectar cambios desde `last_commit` ✅
+- Procesar deltas reales por archivo ❌
+- Registrar `processed/pending/failed` ❌
 
-### Prioridad 3: Integración con LLM
+### Prioridad 3: Ledger de lectura/procesamiento — pendiente prioritaria
+- Comparar working tree, índice y commits
+- Guardar hash y estado individual por archivo
+- Reanudar archivos pendientes después de una interrupción
+- Exponer `svc scan --status`
+
+### Prioridad 4: Integración con LLM
 - El scanner alimenta al LLM con contexto preciso
 - "Lee solo estos 3 archivos, ignora el resto"
-- Tiempo estimado: diseño + implementación
+- La selección debe basarse en archivos `changed`/`pending`, no solo en el servicio afectado

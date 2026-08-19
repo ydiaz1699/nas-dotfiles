@@ -36,7 +36,7 @@
          │
          ▼
 ┌── Verificación (3 tools + compare) ───────────────────────────────────────┐
-│  svc scan          → DETECTA lagunas (incremental vía git diff + snapshot) │
+│  svc scan          → DETECTA lagunas (Git + snapshot; ledger por archivo pendiente de implementar) │
 │  svc catalog-sync  → GENERA lo que falta (ficha, guía, script)             │
 │  dependency-map.md → DOCUMENTA las reglas (grafos A–I)                     │
 │  compare_catalog() → DETECTA drift (compose real vs catálogo)              │
@@ -45,7 +45,20 @@
 
 ---
 
-## Inventario de archivos por capa
+## Estado real del scanner incremental
+
+`svc scan` ya usa `git diff`, `git ls-files` y `agent/cache/project-snapshot.json`
+para detectar cambios desde `last_commit`. Sin embargo, el snapshot aún no conserva
+un ledger por archivo que indique `processed`, `pending` o `failed`. La versión actual
+filtra inconsistencias por servicio y no debe describirse como procesamiento
+incremental completo.
+
+La siguiente fase pendiente es comparar commits, staged, unstaged, no trackeados y
+eliminados; guardar hash/estado por archivo; persistir pendientes y exponer
+`svc scan --status`. El diseño detallado está en
+`_drafts/IDEA-scanner-incremental-git.md`.
+
+---
 
 ### Shell (`shell/`)
 

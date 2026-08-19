@@ -178,7 +178,7 @@ Dependency-map DOCUMENTA → las reglas para que el próximo LLM sepa qué casca
 
 | Herramienta | Comando | Función |
 |---|---|---|
-| **Scanner incremental** | `svc scan` | Verifica reglas vía `git diff` — solo procesa lo que cambió |
+| **Scanner incremental** | `svc scan` | Detecta cambios vía Git y filtra inconsistencias por servicio. **Todavía no mantiene un ledger de archivos leídos/procesados/pendientes.** |
 | **Catalog-sync** | `svc catalog-sync [svc]` | Genera ficha, guía, script DebMenux en cascada |
 | **Dependency-map** | `docs/dependency-map.md` | Reglas estáticas (grafos A–I) de qué conecta con qué |
 | **Compare catalog** | Tool `compare_catalog("svc")` | Detecta drift: compose real vs catálogo |
@@ -193,12 +193,33 @@ svc scan --verbose    # incluir issues de severidad info
 svc scan --json       # output JSON (para herramientas)
 ```
 
-### Cómo funciona el scanner incremental
+### Cómo funciona actualmente el scanner incremental
 
-1. **Primera ejecución:** lee TODO el proyecto → genera `agent/cache/project-snapshot.json`
-2. **Siguientes ejecuciones:** `git diff` desde el último commit escaneado → solo re-verifica los servicios afectados
-3. **Clasifica** cada archivo modificado (12 tipos: compose, ficha, guide, script, plugin, tool, etc.)
-4. **Verifica** reglas: IP hardcodeada, TZ duplicado, env_file faltante, script sin registrar, prompt desactualizado, docs_url rotos
+1. **Primera ejecución:** hace un scan completo y genera `agent/cache/project-snapshot.json`.
+2. **Siguientes ejecuciones:** usa `git diff` desde `last_commit` y lista archivos no trackeados.
+3. Clasifica los cambios y determina servicios afectados.
+4. Ejecuta detectores amplios y filtra los issues mostrados por servicio.
+5. Guarda el nuevo baseline del scan.
+
+> **Importante:** esta versión detecta deltas, pero no mantiene todavía un estado
+> por archivo `processed/pending/failed`. Tampoco detecta de forma completa todos
+> los cambios staged, unstaged y eliminaciones locales. No debe interpretarse como
+> una cola persistente de archivos que la LLM ya leyó.
+
+### Estado objetivo del scanner (pendiente)
+
+La idea original requiere un ledger por archivo dentro del snapshot, con hash,
+fecha y estado (`changed`, `pending`, `processing`, `processed`, `failed` o
+`ignored`). Solo así el LLM podrá saber qué archivos debe leer, cuáles ya fueron
+verificados y cuáles quedaron pendientes después de una interrupción.
+
+Requisitos pendientes:
+
+- Comparar commits, índice/staged, working tree, no trackeados y eliminados.
+- Comparar hashes de archivos y no solo `last_commit`.
+- Procesar únicamente archivos `changed` o `pending`.
+- Persistir `pending` y `failed` entre sesiones.
+- Añadir `svc scan --status` para mostrar el ledger.
 
 ### Cuándo usar cada herramienta
 
@@ -285,6 +306,7 @@ Formato: `[fecha] corrección`.
 [2026-08-17] svc snapshot/rollback implementado: guardar compose+.env antes de cambios (liviano, rotación 10). `svc snapshot X` antes de editar, `svc rollback X` para revertir.
 [2026-08-17] Catálogo pre-cargado: al arrancar, el agente inyecta resumen de todos los servicios en el prompt (sin llamar tools). El agente ya sabe qué servicios existen.
 [2026-08-17] Para aplicaciones nuevas con PostgreSQL/Redis, cargar datasql-guide.md; usar db_net, usuario/DB dedicados, env_file dual, extends ../_common.yml y labels Homepage. SQLite queda solo para smoke tests.
+[2026-08-17] El scanner incremental actual detecta cambios con Git y filtra issues, pero todavía no registra por archivo si fue leído, procesado, falló o quedó pendiente. La idea original requiere un ledger persistente `processed/pending/failed`.
 ```
 
 > **Instrucciones al LLM (comportamiento proactivo):**
