@@ -1,5 +1,11 @@
 # $dkco/_common.yml — Defaults globales para todos los servicios
+# UBICACIÓN EN EL NAS: /docker/_common.yml (junto a las carpetas de servicios)
+# UBICACIÓN EN EL REPO: agent/catalog/_common.yml
 #
+# Rutas relativas de extends según el contexto:
+#   - Catálogo: agent/catalog/services/<svc>/compose.yml → ../../_common.yml
+#   - NAS:      /docker/<svc>/compose.yml               → ../_common.yml
+# El pipeline debe transformar la ruta al copiar entre ambos contextos.
 # Uso en compose de cada servicio:
 #   services:
 #     mi-servicio:

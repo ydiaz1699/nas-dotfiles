@@ -1,4 +1,5 @@
-# $dkco/emqx/compose.yml
+# Catálogo: agent/catalog/services/emqx/compose.yml
+# Al desplegarlo en $dkco/emqx/compose.yml, la ruta se transforma a ../_common.yml.
 services:
   emqx:
     extends:

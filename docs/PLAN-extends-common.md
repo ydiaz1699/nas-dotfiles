@@ -13,6 +13,21 @@ Crear `$dkco/_common.yml` con los defaults que hoy se repiten en cada compose
 (resources, security, logging, healthcheck). Los servicios usarán `extends:` para
 heredar y solo sobreescribirán lo que necesiten.
 
+## Rutas relativas: catálogo versus NAS
+
+El mismo compose tiene dos ubicaciones posibles y, por tanto, dos rutas válidas:
+
+| Contexto | Archivo del servicio | `_common.yml` | Ruta `extends.file` |
+|----------|----------------------|---------------|---------------------|
+| Catálogo del repositorio | `agent/catalog/services/<svc>/compose.yml` | `agent/catalog/_common.yml` | `../../_common.yml` |
+| NAS desplegado | `$dkco/<svc>/compose.yml` | `$dkco/_common.yml` | `../_common.yml` |
+
+El catálogo conserva la versión portable para su propia estructura. Al copiar desde
+el catálogo al NAS, el instalador debe transformar `../../_common.yml` en
+`../_common.yml`. En el sentido inverso, `catalog-sync`, `export_service` y la
+integración de DebMenux transforman `../_common.yml` en `../../_common.yml`.
+Nunca se debe copiar el compose literalmente entre ambos contextos.
+
 ## Estado ANTES (actual — para rollback)
 
 Cada compose tiene sus propios anchors:
@@ -68,11 +83,11 @@ services:
 ```
 
 ```yaml
-# $dkco/emqx/compose.yml (DESPUÉS — sin anchors repetidos)
+# agent/catalog/services/emqx/compose.yml (catálogo)
 services:
   emqx:
     extends:
-      file: ../_common.yml
+      file: ../../_common.yml
       service: _defaults
     image: emqx/emqx:5.8.3
     deploy:
@@ -82,23 +97,64 @@ services:
     ...
 ```
 
+Al desplegar este archivo en `$dkco/emqx/compose.yml`, la ruta queda:
+
+```yaml
+extends:
+  file: ../_common.yml
+  service: _defaults
+```
+
 ## Archivos que se modifican
 
 | Archivo | Cambio | Rollback |
 |---------|--------|----------|
-| `$dkco/_common.yml` | **NUEVO** — crear | Eliminar |
-| `agent/catalog/_compose_base.md` | Documentar extends como estándar | Revertir git |
-| `agent/catalog/services/emqx/compose.yml` | Migrar a extends (piloto) | Revertir git |
+| `agent/catalog/_common.yml` | **NUEVO** — defaults del catálogo, se copia a `$dkco/_common.yml` | Eliminar en rollback |
+| `agent/catalog/services/emqx/compose.yml` | Migrar a extends con ruta de catálogo `../../_common.yml` (piloto) | Revertir git |
+| `docker/cli/lib/catalog-sync.sh` | Transformar `../_common.yml` ↔ `../../_common.yml` al sincronizar | Revertir git |
+| `agent/tools/discovery_tools.py` | Transformar la ruta al exportar desde el NAS | Revertir git |
+| `DebMenux-/lib/integration.sh` | Transformar la ruta al registrar un compose en el catálogo | Revertir git |
 | `docs/ideas-decisions.md` | Entrada #16 | — |
 
 ## Plan de ejecución
 
 1. ✅ Documentar este plan (este archivo)
-2. Crear `$dkco/_common.yml` (template en el catálogo)
-3. Migrar SOLO emqx como piloto (un servicio)
-4. Verificar con `docker compose config` que resuelve correctamente
-5. Si funciona → documentar en ideas-decisions.md #16
-6. Si NO funciona → revertir con `git checkout -- agent/catalog/services/emqx/`
+2. Crear `$dkco/_common.yml` desde `agent/catalog/_common.yml`
+3. Migrar SOLO emqx como piloto (un servicio), conservando `db_net` y `ulimits`
+4. Verificar rutas: `../../_common.yml` en catálogo y `../_common.yml` en NAS
+5. Verificar con `docker compose config` en el NAS que resuelve correctamente
+6. Si funciona → documentar en ideas-decisions.md #16
+7. Si NO funciona → restaurar el snapshot y revertir la migración
+
+## Procedimiento seguro en el NAS
+
+Antes de reemplazar el compose real:
+
+```bash
+dk emqx
+svc snapshot emqx
+```
+
+Después de copiar el compose corregido y confirmar que `$dkco/_common.yml` existe:
+
+```bash
+dk emqx
+svc recreate emqx
+svc health
+```
+
+Si `extends` falla, el rollback devuelve el compose y el `.env` del snapshot:
+
+```bash
+dk emqx
+svc rollback emqx
+svc health
+```
+
+El error anterior `open /_common.yml: no such file or directory` ocurre cuando el
+compose desplegado usa `../../_common.yml`: desde `/docker/emqx` esa ruta sube dos
+niveles y busca `/_common.yml` en la raíz del sistema. La ruta correcta en el NAS
+es `../_common.yml`, que resuelve a `$dkco/_common.yml`.
 
 ## Cómo revertir si falla
 

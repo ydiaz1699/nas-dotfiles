@@ -191,6 +191,16 @@ EOF
     _sync_new "ficha.md generada para ${svc_name}"
 }
 
+# Convertir referencias del compose desplegado al contexto del catálogo.
+# En /docker/<svc>/compose.yml la ruta es ../_common.yml; en el catálogo,
+# agent/catalog/services/<svc>/compose.yml, es ../../_common.yml.
+_catalogize_compose() {
+    local source="$1"
+    sed -E \
+        's#^([[:space:]]*file:[[:space:]]*)\.\./_common\.yml([[:space:]]*)$#\1../../_common.yml\2#' \
+        "$source"
+}
+
 # Copiar compose.yml al catálogo
 _sync_compose() {
     local svc_name="$1"
@@ -204,8 +214,8 @@ _sync_compose() {
                 _sync_new "[dry-run] Actualizaría compose.yml de ${svc_name}"
                 return 0
             fi
-            cp "$compose_file" "$target"
-            _sync_ok "compose.yml actualizado para ${svc_name}"
+            _catalogize_compose "$compose_file" > "$target"
+            _sync_ok "compose.yml actualizado para ${svc_name} (extends adaptado al catálogo)"
         else
             _sync_skip "compose.yml sin cambios para ${svc_name}"
         fi
@@ -215,8 +225,8 @@ _sync_compose() {
             return 0
         fi
         mkdir -p "${CATALOG_DIR}/${svc_name}"
-        cp "$compose_file" "$target"
-        _sync_new "compose.yml copiado para ${svc_name}"
+        _catalogize_compose "$compose_file" > "$target"
+        _sync_new "compose.yml copiado para ${svc_name} (extends adaptado al catálogo)"
     fi
 }
 
@@ -395,7 +405,9 @@ install_service() {
 
     msg_info "Copiando compose.yml desde catálogo"
     if [[ -f "${CATALOG_DIR}/${svc_name}/compose.yml" ]]; then
-        cp "${CATALOG_DIR}/${svc_name}/compose.yml" "\${svc_dir}/compose.yml"
+        # El catálogo usa ../../_common.yml; el servicio desplegado necesita ../_common.yml.
+        sed -E 's#^([[:space:]]*file:[[:space:]]*)\.\./\.\./_common\.yml([[:space:]]*)\$#\1../_common.yml\2#' \
+            "${CATALOG_DIR}/${svc_name}/compose.yml" > "\${svc_dir}/compose.yml"
     else
         msg_error "No se encontró compose.yml en el catálogo"
         return 1

@@ -122,8 +122,16 @@ para buscar servicios por alias, saber puertos, redes, variables.
 agent/catalog/services/<svc>/compose.yml
 ```
 
-Copia exacta del compose real. Se actualiza si el source es más nuevo.
-Es la "versión post-fix" (la que funciona, no la del paso a paso).
+Copia el compose real al catálogo y adapta únicamente las rutas de archivos
+externos que dependen de la ubicación. Para `extends`:
+
+- NAS: `$dkco/<svc>/compose.yml` usa `../_common.yml`.
+- Catálogo: `agent/catalog/services/<svc>/compose.yml` usa `../../_common.yml`.
+
+No se debe copiar literalmente entre ambos contextos. `catalog-sync` y
+`export_service` hacen la conversión NAS → catálogo; los scripts de instalación
+hacen la conversión catálogo → NAS. El catálogo contiene la versión portable para
+su propia estructura, no una ruta que se pueda ejecutar desde cualquier directorio.
 
 ### .env.example
 

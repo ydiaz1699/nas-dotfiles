@@ -503,7 +503,9 @@ Razones:
 
 **Implementación:**
 - `$dkco/_common.yml` (o `agent/catalog/_common.yml` en el repo) con servicio `_defaults`
-- Cada compose: `extends: {file: ../_common.yml, service: _defaults}`
+- En el catálogo: `agent/catalog/services/<svc>/compose.yml` usa `file: ../../_common.yml`
+- En el NAS: `$dkco/<svc>/compose.yml` usa `file: ../_common.yml`
+- `catalog-sync`, `export_service` y DebMenux transforman la ruta al copiar entre contextos
 - Solo declarar lo que DIFIERE del default (memory, ulimits, etc.)
 
 **Migración gradual:**

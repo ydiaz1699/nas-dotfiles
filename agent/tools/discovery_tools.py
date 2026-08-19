@@ -23,6 +23,22 @@ from agent.tools._shell import (
 CATALOG_DIR = Path(__file__).resolve().parent.parent / "catalog" / "services"
 
 
+def _catalogize_compose_paths(content: str) -> str:
+    """Ajusta rutas relativas de archivos externos al contexto del catálogo.
+
+    Un compose desplegado en ``/docker/<servicio>`` encuentra el archivo común
+    con ``../_common.yml``. En ``agent/catalog/services/<servicio>`` necesita
+    ``../../_common.yml``. Solo se transforma esa referencia concreta para no
+    alterar env_file, volúmenes u otras rutas relativas.
+    """
+    return re.sub(
+        r"(?m)^(\s*file:\s*)\.\./_common\.yml(\s*)$",
+        r"\1../../_common.yml\2",
+        content,
+    )
+
+
+
 @tool
 def list_services() -> str:
     """Lista todos los servicios Docker detectados en /docker/ con su estado.
@@ -642,10 +658,15 @@ def export_service(service_name: str) -> str:
 
     exported = []
 
-    # 1. Copiar compose.yml
+    # 1. Copiar compose.yml con rutas relativas válidas para el catálogo.
+    # El compose real usa ../_common.yml desde /docker/<servicio>; el catálogo
+    # está un nivel más profundo y necesita ../../_common.yml.
     compose_content = compose_path.read_text(encoding="utf-8")
-    (catalog_svc_dir / "compose.yml").write_text(compose_content, encoding="utf-8")
-    exported.append("compose.yml")
+    catalog_compose_content = _catalogize_compose_paths(compose_content)
+    (catalog_svc_dir / "compose.yml").write_text(
+        catalog_compose_content, encoding="utf-8"
+    )
+    exported.append("compose.yml (ruta de extends adaptada al catálogo)")
 
     # 2. Copiar .env sanitizado (reemplazar secretos por placeholders)
     env_path = svc_docker_dir / ".env"
