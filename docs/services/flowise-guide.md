@@ -146,9 +146,25 @@ $dkco/flowise/
 ```
 
 Dentro del contenedor, esa misma carpeta aparece como `/home/node/.flowise` y
-contiene claves, logs, almacenamiento local y datos auxiliares. La imagen actual
-corre con un usuario no root; si hay errores de escritura, crear primero la
-carpeta y después aplicar:
+contiene claves, logs, almacenamiento local y datos auxiliares. El montaje se
+declara como bind explícito y `read_only: false` porque Flowise debe escribir en
+esa carpeta:
+
+```yaml
+volumes:
+  - type: bind
+    source: ./data
+    target: /home/node/.flowise
+    read_only: false
+```
+
+No se añade `bind: propagation: rshared`: Flowise no crea ni consume montajes
+anidados dentro de `data`. Esa opción sí es necesaria en File Browser porque
+los USB se montan posteriormente dentro de `/NAS/USB` y deben propagarse al
+contenedor sin recrearlo.
+
+La imagen actual corre con un usuario no root; si hay errores de escritura,
+crear primero la carpeta y después aplicar:
 
 ```bash
 chown -R 1000:1000 $dkco/flowise/data
