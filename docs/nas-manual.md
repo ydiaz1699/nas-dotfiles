@@ -101,7 +101,7 @@ python3 python3-pip
 
 | Interfaz | IP | Rol |
 |----------|----|-----|
-| `eth0` (o `eno1`) | 192.168.0.200/24 | LAN principal |
+| `eth0` (o `eno1`) | 192.168.1.200/24 | LAN principal |
 | `docker0` | 172.17.0.1/16 | Bridge Docker default |
 
 > **Verificar:** Ejecutar `ip -br addr` para confirmar nombre exacto de interfaz y IP.
@@ -110,8 +110,8 @@ python3 python3-pip
 
 | Campo | Valor |
 |-------|-------|
-| Gateway | 192.168.0.1 (router) |
-| DNS | AdGuard → 192.168.0.53 (macvlan) |
+| Gateway | 192.168.1.1 (router) |
+| DNS | AdGuard → 192.168.1.201 (macvlan) |
 
 ### Gestión de red
 
@@ -119,6 +119,9 @@ python3 python3-pip
 |-------|-------|
 | Backend | systemd-networkd |
 | Config file | `/etc/systemd/network/*.network` |
+
+Para instalar o recuperar el DNS del host sin romper IPv6, Avahi, AdGuard o
+Home Assistant, seguir [`docker-nas/references/networking.md`](../docker-nas/references/networking.md).
 
 ### Acceso remoto (SSH + mDNS)
 
@@ -138,7 +141,7 @@ Esto permite conectarse por nombre sin necesidad de recordar la IP:
 ssh aadm@Nas.local
 
 # Equivalente a:
-ssh aadm@192.168.0.200
+ssh aadm@192.168.1.200
 ```
 
 **Requisitos en el cliente:**
@@ -169,7 +172,7 @@ avahi-resolve -n Nas.local   # resolver nombre → IP
 host-name=Nas
 domain-name=local
 use-ipv4=yes
-use-ipv6=no
+use-ipv6=yes
 
 [publish]
 publish-addresses=yes
@@ -187,7 +190,7 @@ Redes creadas manualmente para segmentación de servicios.
 |-----|--------|-----------|---------------------|
 | `adguard_macvlan_NET` | macvlan | IP dedicada para AdGuard (DNS:53 sin conflicto) | adguard |
 | `db_net` | bridge | Comunicación interna entre apps y bases de datos | datasql (postgres, pgadmin, redis) |
-| `iot_net` | bridge | Servicios IoT/domótica | emqx, esphome, (home-assistant futuro) |
+| `iot_net` | bridge | Servicios IoT/domótica | emqx, esphome, homeassistant |
 | `bridge` | bridge | Default Docker (servicios sin red especial) | ntfy, filebrowser, etc. |
 | `homepage_net` | bridge | Dashboard Homepage ↔ servicios internos | homepage, ntfy |
 | `host` | host | Acceso directo al stack de red del host | (casos especiales) |
@@ -198,19 +201,19 @@ Redes creadas manualmente para segmentación de servicios.
 ### Diagrama de redes
 
 ```
-┌─ LAN (192.168.0.0/24) ─────────────────────────────────────────────────┐
+┌─ LAN (192.168.1.0/24) ─────────────────────────────────────────────────┐
 │                                                                          │
 │  ┌─ macvlan ──────┐                                                      │
-│  │ adguard        │  ← IP dedicada 192.168.0.53 (DNS sin conflicto)     │
+│  │ adguard        │  ← IP dedicada 192.168.1.201 (DNS sin conflicto)     │
 │  │ (DNS:53)       │                                                      │
 │  └────────────────┘                                                      │
 │                                                                          │
-│  ┌─ Host (192.168.0.200) ──────────────────────────────────────────┐    │
+│  ┌─ Host (192.168.1.200) ──────────────────────────────────────────┐    │
 │  │                                                                  │    │
 │  │  ┌─ iot_net (172.x.x.0/16) ─┐  ┌─ db_net (172.y.y.0/16) ──┐  │    │
 │  │  │ emqx (:1883,:18083)      │  │ postgres (interno)         │  │    │
 │  │  │ esphome (:6052)          │  │ pgadmin (:5050)            │  │    │
-│  │  │ (home-assistant futuro)  │  │ redis (interno)            │  │    │
+│  │  │ homeassistant (:8123)    │  │ redis (interno)            │  │    │
 │  │  └──────────────────────────┘  └────────────────────────────┘  │    │
 │  │                                                                  │    │
 │  │  ┌─ bridge (default) ────────────────────────────────────────┐  │    │
@@ -231,7 +234,7 @@ Redes creadas manualmente para segmentación de servicios.
 ```bash
 docker network create db_net
 docker network create iot_net
-# macvlan requiere config especial — ver docs/services/adguard-guide.md
+# macvlan requiere config especial — ver docker-nas/references/networking.md
 ```
 
 ### Reglas de uso
@@ -286,14 +289,14 @@ docker network create iot_net
 Archivo: `$dkco/.env` (heredado por todos los servicios via `env_file: [../.env, .env]`)
 
 ```env
-SERVER_IP=192.168.0.200
+SERVER_IP=192.168.1.200
 TZ=America/La_Paz
 ```
 
 Variables del sistema (en `/etc/environment` o shell):
 
 ```env
-NTFY_URL=http://192.168.0.200:8090
+NTFY_URL=http://192.168.1.200:8090
 NAS_DOTFILES=/nas-dotfiles
 DOCKER_BASE=/docker
 ```
@@ -309,6 +312,7 @@ DOCKER_BASE=/docker
 | **adguard** | Docker (macvlan) | 53, 3000, 80 | adguard_macvlan_NET | DNS + bloqueador ads |
 | **emqx** | Docker | 1883, 8883, 8083, 8084, 18083 | iot_net | Broker MQTT IoT |
 | **esphome** | Docker | 6052 | iot_net | Firmware ESP32/ESP8266 |
+| **homeassistant** | Docker (host) | 8123 | host | Automatización del hogar |
 | **datasql** | Docker (multi) | 5050 (pgadmin) | db_net | PostgreSQL + pgAdmin + Redis |
 | **filebrowser** | Docker | 8085 | filebrowser_default | Explorador archivos web |
 | **homepage** | Docker | 3000 | homepage_net | Dashboard de servicios |
@@ -331,6 +335,7 @@ DOCKER_BASE=/docker
 | 3000 | Homepage | TCP | Dashboard de servicios |
 | 5050 | pgAdmin | TCP | Solo vía db_net |
 | 6052 | ESPHome | TCP | Dashboard ESPHome |
+| 8123 | Home Assistant | TCP | Automatización del hogar |
 | 8083 | EMQX | TCP | WebSocket MQTT |
 | 8084 | EMQX | TCP | WebSocket MQTT seguro |
 | 8085 | File Browser | TCP | Explorador archivos web |
@@ -379,7 +384,7 @@ MOUNT_BASE="/NAS/USB"
 MIN_SIZE_MB=100
 LOG_LEVEL="INFO"
 ENABLE_NOTIFICATIONS="true"
-NTFY_URL="http://192.168.0.200:8090"
+NTFY_URL="http://192.168.1.200:8090"
 MOUNT_OPTIONS="noexec,nosuid,nodev"
 ```
 
@@ -398,7 +403,7 @@ usb-automount.sh --export     # Exportar config
 
 | Campo | Valor |
 |-------|-------|
-| URL | `http://192.168.0.200:8090` |
+| URL | `http://192.168.1.200:8090` |
 | Puerto | 8090 |
 | Config | `$dkco/ntfy/config/server.yml` |
 | Auth | Abierto (LAN only) |

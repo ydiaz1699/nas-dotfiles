@@ -14,6 +14,7 @@ description: >
   - Infraestructura: homelab, servidor, backup, cron, systemd, USB, mount
   - IoT/domótica: MQTT, broker, ESP32, Home Assistant, alarma, sensor
   - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS, proxy
+  - Red del host: systemd-networkd, systemd-resolved, resolv.conf, Avahi, mDNS, IPv6
   - Notificaciones: ntfy, push, alerta, topic, notificación
   - Operaciones: actualizar, reiniciar, logs, health, doctor, port-map
   - Almacenamiento: disco, NAS, USB, automount, filebrowser, /NAS/USB
@@ -221,12 +222,13 @@ ver `references/extend.md`.
 
 ---
 
-## Redes avanzadas (macvlan / systemd-networkd)
+## Redes avanzadas (systemd-networkd / systemd-resolved / Avahi / macvlan)
 
-Migración de ifupdown a systemd-networkd con shim macvlan para exponer
-contenedores con IP propia en la LAN (ej. AdGuard con IP fija y DNS:53).
+Configuración de la red del host, DNS local, resolución mDNS, IPv4/IPv6,
+shim macvlan y AdGuard con IP propia en la LAN.
 
-Para el procedimiento completo y paso a paso, ver `references/networking.md`.
+Para el procedimiento completo, instalación reversible y rollback, ver
+`references/networking.md`.
 
 ---
 
@@ -270,7 +272,7 @@ Leer cuando se necesite detalle completo de un componente:
 - `references/seguridad.md` — Mecanismos de seguridad, variables, convenciones
 - `references/diagnostic.md` — Recetas de diagnóstico paso a paso
 - `references/extend.md` — Cómo agregar comandos, tools, plugins, módulos shell
-- `references/networking.md` — Redes avanzadas: macvlan, systemd-networkd, IPs fijas en LAN
+- `references/networking.md` — Red host y DNS: systemd-networkd, systemd-resolved, Avahi, IPv6, macvlan y rollback
 
 ---
 

@@ -98,6 +98,7 @@ services:
 - `network_mode: host` — HA accede directo a la LAN (necesario para mDNS, descubrimiento IoT)
 - `privileged: true` — acceso a USB, Bluetooth, dbus (necesario para integraciones hardware)
 - `dns` personalizado — evita depender de AdGuard para resolver (si AdGuard cae, HA sigue)
+- La relación entre este DNS explícito, `systemd-resolved`, IPv6, Avahi y descubrimiento se documenta en [`docker-nas/references/networking.md`](../../docker-nas/references/networking.md); no asumir que `network_mode: host` hace que HA use automáticamente el stub del host
 - `stop_grace_period: 60s` — tiempo para guardar estado al apagar
 - Homepage labels — usa `${SERVER_IP}` (nunca IP hardcodeada)
 - **NO** tiene `environment: TZ` — se hereda del `.env` global

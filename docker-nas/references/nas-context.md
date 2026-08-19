@@ -22,6 +22,7 @@ trigger: >
   - Infra: homelab, servidor, backup, cron, systemd, USB, mount
   - IoT: MQTT, broker, ESP32, Home Assistant, alarma, sensor
   - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS
+  - Red del host: systemd-networkd, systemd-resolved, resolv.conf, Avahi, mDNS, IPv6
   - Notificaciones: ntfy, push, alerta, topic
   - Operaciones: actualizar, reiniciar, logs, health, doctor
   - Almacenamiento: disco, NAS, USB, automount, /NAS/USB
@@ -264,7 +265,7 @@ Requisitos pendientes:
 | Todos los comandos svc | `docker-nas/references/svc.md` |
 | Seguridad y convenciones | `docker-nas/references/seguridad.md` |
 | Diagnóstico paso a paso | `docker-nas/references/diagnostic.md` |
-| Redes avanzadas (macvlan) | `docker-nas/references/networking.md` |
+| Redes avanzadas (host/DNS/macvlan) | `docker-nas/references/networking.md` |
 | Agente IA (tools, plugins) | `docker-nas/references/agent.md` |
 | Extender framework | `docker-nas/references/extend.md` |
 
