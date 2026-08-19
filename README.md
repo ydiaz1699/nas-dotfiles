@@ -131,6 +131,7 @@ TZ=America/La_Paz
 | [TODO.md](TODO.md) | Roadmap y features completadas |
 | [AGENTS.md](AGENTS.md) | Contexto para AI coding agents (formato abierto) |
 | [docs/nas-manual.md](docs/nas-manual.md) | Manual del NAS (hardware, redes, puertos, convenciones) |
+| [docker-nas/references/networking.md](docker-nas/references/networking.md) | Redes host, systemd-networkd, systemd-resolved, Avahi, IPv6 y macvlan |
 | [docs/cheatsheet.md](docs/cheatsheet.md) | Cheatsheet de operaciones manuales |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | Diagnósticos resueltos y soluciones |
 | [docs/catalog-sync-pipeline.md](docs/catalog-sync-pipeline.md) | Pipeline de auto-documentación en cascada |
