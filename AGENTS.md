@@ -191,6 +191,9 @@ svc diff <svc>             # Compose en disco vs resuelta (interpolada)
 | Ficha del catálogo | `agent/catalog/services/<svc>/ficha.md` |
 | Manual del NAS (hardware, redes, puertos) | `docs/nas-manual.md` |
 | Redes host y DNS (networkd, resolved, Avahi, IPv6, macvlan) | `docker-nas/references/networking.md` |
+| Instalación futura de red | `docker-nas/references/networking-install.md` |
+| Migración de backend o rango IP | `docker-nas/references/networking-migration.md` |
+| Recuperación de red y DNS | `docker-nas/references/networking-recovery.md` |
 | Pipeline auto-docs (catalog-sync) | `docs/catalog-sync-pipeline.md` |
 | Consistencia arquitectónica | `docs/architecture-consistency.md` |
 | Mapa canónico de arquitectura, gaps y criterios | `docs/framework-knowledge-compilation.md` |

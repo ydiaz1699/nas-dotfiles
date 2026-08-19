@@ -266,6 +266,9 @@ Requisitos pendientes:
 | Seguridad y convenciones | `docker-nas/references/seguridad.md` |
 | Diagnóstico paso a paso | `docker-nas/references/diagnostic.md` |
 | Redes avanzadas (host/DNS/macvlan) | `docker-nas/references/networking.md` |
+| Instalación futura de red | `docker-nas/references/networking-install.md` |
+| Migración de backend o rango IP | `docker-nas/references/networking-migration.md` |
+| Recuperación de red, DNS y SSH | `docker-nas/references/networking-recovery.md` |
 | Agente IA (tools, plugins) | `docker-nas/references/agent.md` |
 | Extender framework | `docker-nas/references/extend.md` |
 
