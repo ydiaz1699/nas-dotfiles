@@ -228,7 +228,11 @@ Configuración de la red del host, DNS local, resolución mDNS, IPv4/IPv6,
 shim macvlan y AdGuard con IP propia en la LAN.
 
 Para el procedimiento completo, instalación reversible y rollback, ver
-`references/networking.md`.
+`references/networking.md`. Para escenarios concretos, cargar además:
+
+- `references/networking-install.md` — instalación futura de networkd, shim macvlan y resolved.
+- `references/networking-migration.md` — migración de backend, gateway, subred o IP.
+- `references/networking-recovery.md` — recuperación desde consola tras perder SSH, DNS, macvlan, Avahi o descubrimiento.
 
 ---
 

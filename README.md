@@ -132,6 +132,9 @@ TZ=America/La_Paz
 | [AGENTS.md](AGENTS.md) | Contexto para AI coding agents (formato abierto) |
 | [docs/nas-manual.md](docs/nas-manual.md) | Manual del NAS (hardware, redes, puertos, convenciones) |
 | [docker-nas/references/networking.md](docker-nas/references/networking.md) | Redes host, systemd-networkd, systemd-resolved, Avahi, IPv6 y macvlan |
+| [docker-nas/references/networking-install.md](docker-nas/references/networking-install.md) | Instalación futura de networkd, shim macvlan y resolved |
+| [docker-nas/references/networking-migration.md](docker-nas/references/networking-migration.md) | Migración segura de backend o rango IP |
+| [docker-nas/references/networking-recovery.md](docker-nas/references/networking-recovery.md) | Recuperación de SSH, DNS, macvlan, Avahi, IPv6 y Home Assistant |
 | [docs/cheatsheet.md](docs/cheatsheet.md) | Cheatsheet de operaciones manuales |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | Diagnósticos resueltos y soluciones |
 | [docs/catalog-sync-pipeline.md](docs/catalog-sync-pipeline.md) | Pipeline de auto-documentación en cascada |

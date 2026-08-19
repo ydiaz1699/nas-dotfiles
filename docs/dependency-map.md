@@ -223,6 +223,8 @@ _drafts/<archivo>  (CONTENIDO NUEVO — ideas, planes, fragmentos, composes copi
     ├─ ¿Son FRAGMENTOS dispersos sobre un tema? (diagnósticos, notas, chat logs)
     │     └──→ Usar docs/meta-prompt-unificar.md para unificar en UNA guía coherente
     │          └──→ Resultado va a docs/services/<svc>-guide.md o docs/<tema>.md
+    │               Si es infraestructura transversal del host, usar
+    │               docker-nas/references/<tema>.md y derivaciones junto a él
     │
     ├─ ¿Es un COMPOSE copiado de internet?
     │     └──→ Ajustar a convenciones (docs/docker-entorno.md)
@@ -262,6 +264,7 @@ _drafts/<archivo>  (CONTENIDO NUEVO — ideas, planes, fragmentos, composes copi
 | **notifications.sh** | — | Si cambió API de ntfy_send → sincronizar en nas-dotfiles |
 | **integration.sh** | — | README si cambia cascada |
 | **init.sh (shell loader)** | GUIDE (si cambia qué carga), README | — |
+| **Documento nuevo en docker-nas/references/** | README, SKILL.md, nas-context.md, AGENTS.md si es referencia operativa | — |
 | **IP del NAS** | $dkco/.env, AGENTS, nas-context, nas-manual, ntfy-guide, usb-automount.conf | — |
 
 ---

@@ -6,6 +6,16 @@
 
 Esta guía amplía la antigua referencia de macvlan. No sustituye la configuración real del NAS: los archivos de `/etc` no están versionados en `nas-dotfiles`, por lo que el preflight y el snapshot son obligatorios.
 
+## Cómo usar esta documentación
+
+Esta es la referencia canónica para la red del host. Las siguientes derivaciones contienen únicamente la secuencia específica de cada escenario y siempre vuelven a esta guía para el snapshot, la configuración de `systemd-resolved`, la validación y el rollback:
+
+- [Instalación futura](networking-install.md): Debian nuevo o migración inicial desde `ifupdown`/`networking`.
+- [Migración de backend o rango IP](networking-migration.md): cambio controlado de `systemd-networkd`, gateway, subred o macvlan.
+- [Recuperación](networking-recovery.md): pérdida de SSH, DNS, AdGuard, Avahi, IPv6 o descubrimiento de Home Assistant.
+
+No copiar una guía histórica completa sobre otra. Los drafts de `Redes systemd-networkd` fueron consolidados en estas cuatro capas: esta referencia posee la arquitectura y los procedimientos comunes; cada derivación posee solo su flujo particular.
+
 ## 1. Arquitectura que debe conservarse
 
 En el NAS actual, la topología declarada es:
@@ -29,6 +39,58 @@ ADGUARD_IP="${ADGUARD_IP:-192.168.1.201}"
 ```
 
 Home Assistant usa `network_mode: host`, por lo que comparte la red del host. Si se desactiva IPv6 en `eno1`, también se elimina IPv6 para Home Assistant. Matter y Thread requieren IPv6; ESPHome, MQTT y muchas integraciones HTTP pueden funcionar con IPv4.
+
+### Invariantes de `systemd-networkd` y del shim macvlan
+
+Las instalaciones futuras deben conservar estas propiedades, verificándolas contra el hardware real antes de escribir archivos:
+
+- La interfaz física tiene una sola configuración final de backend; `DHCP=no` evita que networkd solicite una IP dinámica.
+- `ConfigureWithoutCarrier=yes` permite aplicar la configuración estática aunque el carrier tarde en aparecer. No arregla un cable desconectado, una NIC apagada ni un fallo del driver.
+- El shim se declara con un archivo `.netdev` `Kind=macvlan`, se enlaza desde la interfaz física con `MACVLAN=<nombre>` y recibe una IP `/32`.
+- La ruta del shim apunta únicamente a la IP de AdGuard; no se agrega una ruta por defecto.
+- `systemd-networkd-wait-online` no configura interfaces y no es una solución para `NO-CARRIER`; habilitarlo solo si un servicio realmente necesita bloquear el arranque hasta tener red.
+- Durante una migración puede haber temporalmente una IP antigua y una nueva. La doble IP es una técnica puente y debe retirarse después de validar la nueva red.
+
+Plantilla conceptual del host y del shim (no copiar sin sustituir valores y confirmar la interfaz):
+
+```ini
+# /etc/systemd/network/10-<interfaz>.network
+[Match]
+Name=<INTERFAZ_REAL>
+
+[Network]
+Address=<HOST_IP>/<PREFIJO>
+Gateway=<GATEWAY>
+DNS=<DNS_PROVISIONAL>
+DHCP=no
+MACVLAN=<NOMBRE_SHIM>
+ConfigureWithoutCarrier=yes
+```
+
+```ini
+# /etc/systemd/network/20-<nombre>.netdev
+[NetDev]
+Name=<NOMBRE_SHIM>
+Kind=macvlan
+
+[MACVLAN]
+Mode=bridge
+```
+
+```ini
+# /etc/systemd/network/20-<nombre>.network
+[Match]
+Name=<NOMBRE_SHIM>
+
+[Network]
+Address=<SHIM_IP>/32
+
+[Route]
+Destination=<ADGUARD_IP>/32
+Scope=link
+```
+
+La configuración efectiva actual del NAS permanece declarada en la sección de arquitectura y debe comprobarse con `networkctl`, `ip` y el contenido real de `/etc/systemd/network`. Las derivaciones contienen la secuencia segura de creación, migración y recuperación.
 
 ## 2. Qué hace systemd-resolved
 
@@ -57,7 +119,12 @@ AdGuard continúa siendo un servidor DNS independiente en `192.168.1.201:53`; no
 
 ## 3. Preflight obligatorio — solo lectura
 
-Ejecutar antes de instalar o cambiar nada. No hacerlo desde la única sesión SSH disponible.
+Ejecutar antes de instalar o cambiar nada. No hacerlo desde la única sesión SSH disponible. Para otro NAS, sustituir estos valores después de confirmar el hardware:
+
+```bash
+IFACE="${IFACE:-eno1}"
+ADGUARD_IP="${ADGUARD_IP:-192.168.1.201}"
+```
 
 ```bash
 systemctl is-active systemd-networkd
@@ -68,10 +135,10 @@ systemctl is-active networking
 ```
 
 ```bash
-networkctl status eno1
+networkctl status "$IFACE"
 ip -br addr
 ip route
-ip -6 addr show dev eno1
+ip -6 addr show dev "$IFACE"
 ip -6 route
 ```
 
@@ -129,33 +196,63 @@ test -d "$SNAPSHOT_ROOT" && test -w "$SNAPSHOT_ROOT" || {
     echo "No hay un directorio escribible para el snapshot: $SNAPSHOT_ROOT"
     exit 1
 }
-SNAPSHOT="$SNAPSHOT_ROOT/network-snapshots/$(date -u +%Y%m%d-%H%M%S)"
-mkdir -p "$SNAPSHOT"
-printf '%s\n' "$SNAPSHOT" > "$SNAPSHOT_ROOT/network-snapshots/LATEST"
-printf '%s\n' "$SNAPSHOT"
+SNAPSHOT_PARENT="$SNAPSHOT_ROOT/network-snapshots"
+SNAPSHOT_ID="$(date -u +%Y%m%d-%H%M%S)"
+SNAPSHOT_TMP="$SNAPSHOT_PARENT/.tmp-$SNAPSHOT_ID"
+SNAPSHOT="$SNAPSHOT_PARENT/$SNAPSHOT_ID"
+mkdir -p "$SNAPSHOT_TMP"
+printf '%s\n' "$SNAPSHOT_TMP"
 ```
+
+No publicar todavía `LATEST`: primero deben copiarse y validarse todos los artefactos.
 
 ### 4.2 Guardar archivos y estado
 
 ```bash
-cp -a /etc/systemd/network "$SNAPSHOT/"
-cp -a /etc/avahi "$SNAPSHOT/"
-cp -a /etc/systemd/resolved.conf.d "$SNAPSHOT/" 2>/dev/null || touch "$SNAPSHOT/resolved.conf.d.absent"
-cp -a /etc/resolv.conf "$SNAPSHOT/resolv.conf.original" 2>/dev/null || true
-cp -a /etc/systemd/resolved.conf "$SNAPSHOT/resolved.conf.original" 2>/dev/null || true
-cp -a /etc/nsswitch.conf "$SNAPSHOT/nsswitch.conf.original" 2>/dev/null || true
+if [ -d /etc/systemd/network ]; then
+    cp -a /etc/systemd/network "$SNAPSHOT_TMP/network"
+else
+    touch "$SNAPSHOT_TMP/network.absent"
+fi
+
+if [ -d /etc/avahi ]; then
+    cp -a /etc/avahi "$SNAPSHOT_TMP/avahi"
+else
+    touch "$SNAPSHOT_TMP/avahi.absent"
+fi
+
+if [ -d /etc/systemd/resolved.conf.d ]; then
+    cp -a /etc/systemd/resolved.conf.d "$SNAPSHOT_TMP/resolved.conf.d"
+else
+    touch "$SNAPSHOT_TMP/resolved.conf.d.absent"
+fi
+cp -a /etc/resolv.conf "$SNAPSHOT_TMP/resolv.conf.original" 2>/dev/null || touch "$SNAPSHOT_TMP/resolv.conf.absent"
+cp -a /etc/systemd/resolved.conf "$SNAPSHOT_TMP/resolved.conf.original" 2>/dev/null || touch "$SNAPSHOT_TMP/resolved.conf.absent"
+cp -a /etc/nsswitch.conf "$SNAPSHOT_TMP/nsswitch.conf.original" 2>/dev/null || touch "$SNAPSHOT_TMP/nsswitch.conf.absent"
 ```
 
 ```bash
-systemctl is-enabled systemd-networkd > "$SNAPSHOT/services.state" 2>&1 || true
-systemctl is-enabled systemd-resolved >> "$SNAPSHOT/services.state" 2>&1 || true
-systemctl is-enabled avahi-daemon >> "$SNAPSHOT/services.state" 2>&1 || true
-systemctl is-enabled systemd-resolved > "$SNAPSHOT/resolved.enabled" 2>&1 || true
-systemctl is-active systemd-resolved > "$SNAPSHOT/resolved.active" 2>&1 || true
-networkctl status > "$SNAPSHOT/networkctl.status" 2>&1 || true
-resolvectl status > "$SNAPSHOT/resolvectl.status" 2>&1 || true
-ip route > "$SNAPSHOT/ip-route" 2>&1 || true
-ip -6 route > "$SNAPSHOT/ip6-route" 2>&1 || true
+systemctl is-enabled systemd-networkd > "$SNAPSHOT_TMP/services.state" 2>&1 || true
+systemctl is-enabled systemd-resolved >> "$SNAPSHOT_TMP/services.state" 2>&1 || true
+systemctl is-enabled avahi-daemon >> "$SNAPSHOT_TMP/services.state" 2>&1 || true
+systemctl is-enabled systemd-resolved > "$SNAPSHOT_TMP/resolved.enabled" 2>&1 || true
+systemctl is-active systemd-resolved > "$SNAPSHOT_TMP/resolved.active" 2>&1 || true
+networkctl status > "$SNAPSHOT_TMP/networkctl.status" 2>&1 || true
+resolvectl status > "$SNAPSHOT_TMP/resolvectl.status" 2>&1 || true
+ip route > "$SNAPSHOT_TMP/ip-route" 2>&1 || true
+ip -6 route > "$SNAPSHOT_TMP/ip6-route" 2>&1 || true
+
+# Publicar solo un snapshot completo y atómico.
+test -f "$SNAPSHOT_TMP/services.state" \
+  && test -f "$SNAPSHOT_TMP/networkctl.status" \
+  && test -f "$SNAPSHOT_TMP/ip-route" || {
+    echo "Snapshot incompleto; no se publica LATEST"
+    exit 1
+}
+mv "$SNAPSHOT_TMP" "$SNAPSHOT"
+printf '%s\n' "$SNAPSHOT" > "$SNAPSHOT_PARENT/LATEST.tmp"
+mv "$SNAPSHOT_PARENT/LATEST.tmp" "$SNAPSHOT_PARENT/LATEST"
+printf '%s\n' "$SNAPSHOT"
 ```
 
 Anotar el valor de `SNAPSHOT`. Si se pierde SSH, se necesita la consola local o un canal fuera de banda para ejecutar el rollback.
