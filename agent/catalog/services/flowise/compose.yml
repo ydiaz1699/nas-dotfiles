@@ -35,6 +35,7 @@ services:
       - type: bind
         source: ./data
         target: /home/node/.flowise
+        read_only: false
     networks:
       - db_net
     healthcheck:
