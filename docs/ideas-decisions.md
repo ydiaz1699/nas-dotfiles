@@ -10,6 +10,8 @@
 
 ## Índice
 
+> El historial conserva el razonamiento de cada decisión. Para el mapa actual de arquitectura, estado, gaps y criterios de aceptación, consultar [`docs/framework-knowledge-compilation.md`](framework-knowledge-compilation.md).
+
 1. [ntfy reemplaza notify-send](#1-ntfy-reemplaza-notify-send)
 2. [usb-api como systemd nativo](#2-usb-api-como-systemd-nativo)
 3. [USB monta con LABEL](#3-usb-monta-con-label)
@@ -18,21 +20,14 @@
 6. [Skill 2.0: nas-context.md compacto](#6-skill-20-nas-contextmd-compacto)
 7. [AGENTS.md formato abierto](#7-agentsmd-formato-abierto)
 8. [env_file global + ${SERVER_IP}](#8-env_file-global--server_ip)
-9. HA config con !include
-10. [ntfy.publish no soporta imágenes](#10-ntfypublish-no-soporta-imágenes)
-11. [Dependency map para no olvidar cascadas](#11-dependency-map-para-no-olvidar-cascadas)
-12. [Skill proactiva con progressive updates](#12-skill-proactiva-con-progressive-updates)
-13. [Script creado pero no conectado al sistema](#13-script-creado-pero-no-conectado-al-sistema)
-14. [Dual CLI: bash = verdad, Python = interfaz](#14-dual-cli-bash--verdad-python--interfaz)
-15. [El LLM no auto-documenta lo que crea](#15-el-llm-no-auto-documenta-lo-que-crea-validación-cruzada)
-16. [Centralizar defaults con extends + _common.yml](#16-centralizar-defaults-con-extends--_commonyml)
 9. [HA config con !include](#9-ha-config-con-include)
 10. [ntfy.publish no soporta imágenes](#10-ntfypublish-no-soporta-imágenes)
 11. [Dependency map para no olvidar cascadas](#11-dependency-map-para-no-olvidar-cascadas)
 12. [Skill proactiva con progressive updates](#12-skill-proactiva-con-progressive-updates)
 13. [Script creado pero no conectado al sistema](#13-script-creado-pero-no-conectado-al-sistema)
 14. [Dual CLI: bash = verdad, Python = interfaz](#14-dual-cli-bash--verdad-python--interfaz)
-
+15. [El LLM no auto-documenta lo que crea](#15-el-llm-no-auto-documenta-lo-que-crea-validación-cruzada)
+17. [Flowise como prueba de integración con DataSQL](#17-flowise-como-prueba-de-integración-con-datasql)
 ---
 
 ## 1. ntfy reemplaza notify-send
@@ -523,3 +518,32 @@ Razones:
 - `extends` es deep merge — Docker lo resuelve internamente
 - `x-common-env` con TZ no se necesita si ya hay `env_file: [../.env, .env]`
 - Migrar gradualmente (1 servicio piloto) reduce riesgo
+
+
+## 17. Flowise como prueba de integración con DataSQL
+
+**Problema:**
+Se necesitaba una aplicación real para probar si las reglas de integración con DataSQL funcionan fuera del propio stack de bases de datos: usuario y base dedicados, `db_net`, secretos locales, persistencia, healthcheck y documentación en cascada.
+
+**Idea del usuario:**
+Instalar Flowise como prueba, conectándolo a PostgreSQL de DataSQL en lugar de crear otra base de datos dentro de su compose.
+
+**Decisión:**
+1. Mantener Flowise en un compose separado en `$dkco/flowise/`.
+2. Crear `flowise_db` y `flowise_user` dentro de DataSQL.
+3. Conectar mediante `db_net` usando el hostname `datapostgres`.
+4. No usar `depends_on` contra DataSQL porque está en otro compose.
+5. Persistir `/home/node/.flowise` en `./data` y conservar `FLOWISE_SECRETKEY_OVERWRITE`.
+6. Exponer temporalmente el dashboard en el puerto `8100` para la prueba LAN.
+7. Registrar la configuración en ficha, compose de catálogo, `.env.example`, guía, DebMenux y los inventarios relevantes.
+
+**Alternativas descartadas:**
+- SQLite como configuración de integración real: solo sirve como smoke test aislado.
+- Un PostgreSQL dentro del compose de Flowise: duplica DataSQL y rompe la arquitectura compartida.
+- Usar la IP fija del contenedor PostgreSQL: el nombre DNS de Docker reduce acoplamiento.
+- `depends_on` entre proyectos Compose: no controla servicios definidos en otro proyecto.
+
+**Aprendizaje:**
+- Una skill externa puede aportar variables oficiales, pero debe auditarse contra `docs/docker-entorno.md`, la guía DataSQL y el compose real antes de incorporarla.
+- La configuración oficial de Flowise usa `DATABASE_TYPE=postgres`, puerto interno `3000`, `/home/node/.flowise` para persistencia y `/api/v1/ping` para healthcheck.
+- La instalación real requiere primero validar DataSQL, la red y el puerto; el sandbox solo puede preparar y validar archivos, no operar el NAS.

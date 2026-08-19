@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "services_count": 7,
+  "services_count": 8,
   "services": {
     "datasql": {
       "id": "datasql",
@@ -357,6 +357,63 @@
         "alertas"
       ]
     },
+    "flowise": {
+      "id": "flowise",
+      "name": "Flowise",
+      "description": "Constructor visual de agentes y flujos LLM conectado a PostgreSQL de DataSQL",
+      "aliases": [
+        "flowise",
+        "ai",
+        "agentes",
+        "llm",
+        "langchain"
+      ],
+      "image": "flowiseai/flowise:latest",
+      "category": "desarrollo",
+      "port_internal": 3000,
+      "port_default": 8100,
+      "protocol": "http",
+      "needs_proxy": false,
+      "needs_db": true,
+      "db_type": "postgres",
+      "volumes": [
+        "./data:/home/node/.flowise"
+      ],
+      "env_required": [
+        "SERVER_IP",
+        "FLOWISE_DB_NAME",
+        "FLOWISE_DB_USER",
+        "FLOWISE_DB_PASSWORD",
+        "FLOWISE_SECRETKEY_OVERWRITE"
+      ],
+      "env_optional": [
+        "DATABASE_SSL=false",
+        "DISABLE_FLOWISE_TELEMETRY=true"
+      ],
+      "healthcheck": "[\"CMD\", \"curl\", \"-f\", \"http://localhost:3000/api/v1/ping\"]",
+      "backup_critical": true,
+      "backup_paths": [
+        "./data"
+      ],
+      "protected": false,
+      "docs_url": "docs/services/flowise-guide.md",
+      "notes": "Usa PostgreSQL dedicado (flowise_db/flowise_user) en DataSQL mediante db_net y datapostgres. No usa depends_on contra otro compose. El dashboard se expone en LAN en :8100 solo para la prueba; revisar autenticación antes de exponerlo fuera de la LAN. La carpeta ./data debe pertenecer al uid 1000.",
+      "networks": [
+        "db_net"
+      ],
+      "ports": {
+        "http": 8100
+      },
+      "resources": {
+        "memory_limit": "1g",
+        "memory_reservation": "256m"
+      },
+      "security_extra": {
+        "cap_drop": [
+          "ALL"
+        ]
+      }
+    },
     "usb-api": {
       "id": "usb-api",
       "name": "USB API",
@@ -409,6 +466,9 @@
       "homeassistant",
       "node-red"
     ],
+    "desarrollo": [
+      "flowise"
+    ],
     "sistema": [
       "homepage",
       "ntfy",
@@ -418,7 +478,8 @@
   "by_network": {
     "db_net": [
       "datasql",
-      "emqx"
+      "emqx",
+      "flowise"
     ],
     "iot_net": [
       "emqx",

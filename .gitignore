@@ -13,6 +13,8 @@ __pycache__/
 .config/user.conf
 
 # ── Runtime del agente ─────────────────────────────────────────────
+agent/cache/project-index.json
+agent/cache/project-snapshot.json
 agent/memory/sessions/*.md
 .nas-agent/
 

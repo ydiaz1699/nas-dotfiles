@@ -134,7 +134,8 @@ TZ=America/La_Paz
 | [docs/cheatsheet.md](docs/cheatsheet.md) | Cheatsheet de operaciones manuales |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | Diagnósticos resueltos y soluciones |
 | [docs/catalog-sync-pipeline.md](docs/catalog-sync-pipeline.md) | Pipeline de auto-documentación en cascada |
-| [docs/services/ntfy-guide.md](docs/services/ntfy-guide.md) | ntfy: notificaciones push (setup, clientes, troubleshooting) |
+| `docs/services/ntfy-guide.md` | ntfy: notificaciones push (setup, clientes, troubleshooting) |
+| [`docs/services/flowise-guide.md`](docs/services/flowise-guide.md) | Flowise: integración con DataSQL y prueba inicial |
 | [docs/services/homepage-guide.md](docs/services/homepage-guide.md) | Homepage: dashboard (labels vs services.yaml) |
 | [docs/github-cli.md](docs/github-cli.md) | Instalación y autenticación de gh |
 

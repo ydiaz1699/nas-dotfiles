@@ -1,6 +1,8 @@
 # NAS Skill — Contexto Operativo
 
-> **Auto-generado por `svc catalog-sync`.** No editar secciones marcadas [AUTO].  
+> **Mapa canónico de arquitectura y estado:** [`docs/framework-knowledge-compilation.md`](../../docs/framework-knowledge-compilation.md). Esta skill conserva solo el contexto operativo comprimido, registry y reglas proactivas; cargar la compilación para entender ownership, gaps y criterios.
+
+> **Auto-generado por `svc catalog-sync`.** No editar secciones marcadas [AUTO].
 > Última actualización: 2026-08-15
 
 ---
@@ -124,6 +126,7 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 | emqx | 1883,18083 | iot_net, db_net | `agent/catalog/services/emqx/ficha.md` |
 | esphome | 6052 | host | `agent/catalog/services/esphome/ficha.md` |
 | datasql | 5050 | db_net | `docs/services/datasql-guide.md` |
+| flowise | 8100 | db_net | `docs/services/flowise-guide.md` |
 | filebrowser | 8085 | default | `docs/services/filebrowser-guide.md` |
 | homeassistant | 8123 | host | `docs/services/homeassistant-guide.md` |
 | homepage | 3000 | homepage_net | `docs/services/homepage-guide.md` |
@@ -241,7 +244,7 @@ Requisitos pendientes:
 
 | Trigger | Archivo a cargar |
 |---------|-----------------|
-| Inicio de sesión / "revisar framework" / "qué hay" | `docs/framework-audit.md` (**primero — evita releer todo**) |
+| Inicio de sesión / "revisar framework" / "qué hay" | `docs/framework-knowledge-compilation.md` → `docs/framework-audit.md` (mapa canónico primero; audit es inventario rápido) |
 | Modificar/crear un compose.yml | `docs/docker-entorno.md` + `docs/dependency-map.md` (**OBLIGATORIO**) |
 | Usuario copia compose de internet | `docs/docker-entorno.md` (ajustar a convenciones: env_file, ${SERVER_IP}, labels, security) |
 | Crear servicio nuevo | `docs/dependency-map.md` + `docs/docker-entorno.md` + `agent/catalog/_template.md` |
@@ -392,3 +395,26 @@ Antes de sugerir CUALQUIER comando o cambio para el NAS, verificar:
 - [ ] ¿`svc catalog-sync --status` muestra todo ✅?
 - [ ] ¿Si copié compose de internet, lo ajusté a las convenciones?
 - [ ] ¿Recomendé al usuario qué hacer después? (catalog-sync, recreate, gpl)
+
+
+
+## 4c. Consistencia arquitectónica
+
+El framework también mantiene un mapa estructural para comprobar conexiones entre `nas-dotfiles` y `DebMenux`:
+
+| Pieza | Función |
+|---|---|
+| `agent/architecture/contracts.json` | Contratos verificables y niveles functional/interface/knowledge/documentation/historical |
+| `agent/tools/project_index.py` | Índice de archivos, comandos, servicios y conexiones reales en ambos repos |
+| `agent/cache/project-index.json` | Índice generado localmente; no es el snapshot incremental |
+| `project_scanner.py` | Reporta paridad Bash/Python, contratos rotos y scripts DebMenux desincronizados |
+| `docs/architecture-consistency.md` | Diseño y alcance de la arquitectura verificable |
+
+Verificación manual:
+
+```bash
+python3 agent/tools/project_index.py --check
+svc scan --full
+```
+
+`project-index.json` responde **qué existe y dónde está conectado**. `project-snapshot.json` responde **qué cambió desde el último scan**. No deben mezclarse.

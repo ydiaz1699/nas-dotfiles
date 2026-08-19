@@ -1,5 +1,7 @@
 # Auditoría del Framework — nas-dotfiles + DebMenux
 
+> **Mapa canónico de arquitectura, estado, gaps y criterios:** [`docs/framework-knowledge-compilation.md`](framework-knowledge-compilation.md). Este archivo conserva la orientación ejecutiva e inventario rápido; no sustituye contratos ni verificaciones.
+
 > **Última actualización:** 2026-08-17
 > **Propósito:** Evitar que el LLM relea todo el proyecto en cada sesión.
 > Leer SOLO este archivo para tener el mapa completo.
@@ -136,6 +138,7 @@ eliminados; guardar hash/estado por archivo; persistir pendientes y exponer
 | Servicio | Ficha | Compose | .env.example | Guía | Script DebMenux |
 |----------|:-----:|:-------:|:------------:|:----:|:---------------:|
 | datasql | ✅ | ✅ | ✅ | ✅ | ✅ |
+| flowise | ✅ | ✅ | ✅ | ✅ | ✅ |
 | emqx | ✅ | ✅ | ❌ | ✅ | ✅ |
 | esphome | ✅ | ✅ | ✅ | ✅ | ✅ |
 | filebrowser | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -155,9 +158,10 @@ eliminados; guardar hash/estado por archivo; persistir pendientes y exponer
 | `ideas-decisions.md` | Historial de 15 decisiones (problema → solución → learning) |
 | `nas-manual.md` | Hardware, IPs, puertos, redes del NAS real |
 | `catalog-sync-pipeline.md` | Cómo funciona el pipeline auto-docs |
-| `services/<svc>-guide.md` | Guía operativa por servicio (8 guías) |
+| `services/<svc>-guide.md` | Guía operativa por servicio (9 guías) |
 | `troubleshooting.md` | Problemas resueltos con soluciones |
-| `framework-audit.md` | **ESTE ARCHIVO** — mapa completo sin releer |
+| `framework-knowledge-compilation.md` | **MAPA CANÓNICO** — ideas, arquitectura, estado, gaps y criterios de aceptación |
+| `framework-audit.md` | **ESTE ARCHIVO** — mapa ejecutivo sin releer |
 
 ### Skill Kiro (`docker-nas/references/`)
 

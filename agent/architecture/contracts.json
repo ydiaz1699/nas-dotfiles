@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.0",
+  "name": "nas-framework-architecture",
+  "description": "Contratos verificables entre runtime, interfaces, conocimiento y documentación del framework nas-dotfiles + DebMenux.",
+  "repositories": {
+    "nas_dotfiles": ".",
+    "debmenux": "../DebMenux-"
+  },
+  "dependency_levels": {
+    "functional": {
+      "severity": "error",
+      "description": "La conexión es necesaria para que la capacidad pueda ejecutarse."
+    },
+    "interface": {
+      "severity": "warning",
+      "description": "La capacidad funciona, pero falta una interfaz o experiencia de uso."
+    },
+    "knowledge": {
+      "severity": "warning",
+      "description": "El agente o la skill no conocen la capacidad o sus reglas."
+    },
+    "documentation": {
+      "severity": "info",
+      "description": "La capacidad funciona, pero una referencia pública está desactualizada o ausente."
+    },
+    "historical": {
+      "severity": "info",
+      "description": "Falta contexto de decisiones o continuidad; no afecta la ejecución inmediata."
+    }
+  },
+  "entities": {
+    "svc_command": {
+      "description": "Comando público expuesto como svc <comando>.",
+      "discovery": {
+        "bash": "docker/cli/svc.sh",
+        "python": "svc_py/app.py",
+        "completion": "shell/lib/docker.sh"
+      },
+      "knowledge_surfaces": [
+        "agent/nas_agent.py",
+        "docker-nas/references/nas-context.md"
+      ],
+      "documentation_surfaces": [
+        "AGENTS.md",
+        "GUIDE.md",
+        "docker-nas/references/svc.md",
+        "docs/dependency-map.md"
+      ]
+    },
+    "service": {
+      "description": "Servicio Docker o servicio nativo integrado al ecosistema.",
+      "discovery": {
+        "compose": "docker/*/compose.yml",
+        "catalog": "agent/catalog/services/*",
+        "guide": "docs/services/*-guide.md",
+        "debmenux_script": "../DebMenux-/scripts/services/*.sh",
+        "debmenux_registry": "../DebMenux-/services.json"
+      }
+    },
+    "agent_tool": {
+      "description": "Tool Python invocable por el agente.",
+      "discovery": {
+        "implementation": "agent/tools/*.py",
+        "registration": "agent/tools/__init__.py",
+        "prompt": "agent/nas_agent.py"
+      }
+    },
+    "draft": {
+      "description": "Entrada temporal que debe clasificarse antes de convertirse en código o documentación.",
+      "discovery": {
+        "directory": "_drafts/",
+        "rules": "docs/dependency-map.md"
+      }
+    }
+  },
+  "cli_contract": {
+    "parity_mode": "report",
+    "required_shared_commands": [
+      "lista",
+      "health",
+      "doctor",
+      "update-all",
+      "port-map",
+      "size",
+      "net",
+      "watch",
+      "create",
+      "diff",
+      "catalog-sync",
+      "scan",
+      "menu",
+      "backup",
+      "restore",
+      "depends",
+      "open",
+      "env",
+      "up",
+      "down",
+      "start",
+      "stop",
+      "restart",
+      "kill",
+      "update",
+      "logs"
+    ],
+    "allowed_bash_only_commands": [
+      "backup-all",
+      "logs-grep",
+      "clone",
+      "cron",
+      "doctor-history",
+      "lock",
+      "unlock",
+      "snapshot",
+      "rollback"
+    ],
+    "allowed_python_only_commands": [],
+    "contract_surfaces": {
+      "functional": [
+        "docker/cli/svc.sh",
+        "svc_py/app.py"
+      ],
+      "interface": [
+        "shell/lib/docker.sh"
+      ],
+      "knowledge": [
+        "agent/nas_agent.py",
+        "docker-nas/references/nas-context.md"
+      ],
+      "documentation": [
+        "AGENTS.md",
+        "GUIDE.md",
+        "docker-nas/references/svc.md",
+        "docs/dependency-map.md"
+      ]
+    }
+  },
+  "connection_contracts": [
+    {
+      "id": "catalog-sync-entrypoints",
+      "entity": "svc_command",
+      "name": "catalog-sync",
+      "level": "functional",
+      "required": [
+        "docker/cli/svc.sh",
+        "docker/cli/lib/catalog-sync.sh",
+        "svc_py/app.py",
+        "svc_py/commands/catalog.py"
+      ]
+    },
+    {
+      "id": "scan-entrypoints",
+      "entity": "svc_command",
+      "name": "scan",
+      "level": "functional",
+      "required": [
+        "docker/cli/svc.sh",
+        "agent/tools/project_scanner.py",
+        "svc_py/app.py",
+        "svc_py/commands/scanner.py"
+      ]
+    },
+    {
+      "id": "catalog-sync-knowledge",
+      "entity": "svc_command",
+      "name": "catalog-sync",
+      "level": "knowledge",
+      "required": [
+        "agent/nas_agent.py",
+        "docker-nas/references/nas-context.md"
+      ]
+    },
+    {
+      "id": "scan-knowledge",
+      "entity": "svc_command",
+      "name": "scan",
+      "level": "knowledge",
+      "required": [
+        "agent/nas_agent.py",
+        "docker-nas/references/nas-context.md"
+      ]
+    }
+  ],
+  "generated_artifacts": {
+    "project_index": "agent/cache/project-index.json",
+    "note": "El índice se genera desde este contrato y el código actual; no reemplaza el snapshot incremental de project-snapshot.json."
+  }
+}

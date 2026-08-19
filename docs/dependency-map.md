@@ -1,5 +1,7 @@
 # Mapa de Dependencias — Sistema Completo (nas-dotfiles + DebMenux)
 
+> **Mapa canónico relacionado:** [`framework-knowledge-compilation.md`](framework-knowledge-compilation.md). Este archivo conserva las cascadas esperadas y checklists de impacto; el scanner es quien verifica conexiones observadas.
+
 > Cuando modificas un archivo, ¿qué otros deben actualizarse?
 > Cubre AMBOS repos como un solo sistema interconectado.
 > Actualizado: 2026-08-16
@@ -460,3 +462,49 @@ done
 diff <(ls $dkco/*/compose.yml | sed 's|.*/\(.*\)/compose.yml|\1|' | sort) \
      <(ls /nas-dotfiles/agent/catalog/services/ | sort)
 ```
+
+
+
+---
+
+## K. Consistencia arquitectónica verificable
+
+`dependency-map.md` continúa siendo la explicación humana de la cascada. La verificación ejecutable vive en tres piezas:
+
+```text
+agent/architecture/contracts.json  → contratos y niveles de dependencia
+agent/tools/project_index.py       → descubre conexiones reales en ambos repos
+agent/tools/project_scanner.py     → compara contratos contra el índice
+```
+
+El índice generado se guarda localmente en `agent/cache/project-index.json` y no reemplaza `agent/cache/project-snapshot.json`:
+
+- `project-index.json` = qué existe y dónde está conectado.
+- `project-snapshot.json` = estado del último scan incremental.
+
+Niveles de conexión:
+
+| Nivel | Significado | Severidad base |
+|---|---|---|
+| `functional` | Sin la conexión, la capacidad no puede ejecutarse | error |
+| `interface` | Falta una superficie de usuario, como completion | warning |
+| `knowledge` | El agente o skill no conoce la capacidad | warning |
+| `documentation` | Falta o está desactualizada una referencia | info |
+| `historical` | Falta contexto de decisión o continuidad | info |
+
+Antes de declarar conectado un comando nuevo, el scanner debe poder responder:
+
+1. ¿Está registrado en Bash y/o Python?
+2. ¿Tiene completion si corresponde?
+3. ¿El agente conoce el comando?
+4. ¿Está declarado en `contracts.json` si la paridad es obligatoria?
+5. ¿La documentación y el mapa reflejan su superficie real?
+
+Comandos locales del índice:
+
+```bash
+python3 agent/tools/project_index.py --check
+python3 agent/tools/project_index.py
+```
+
+La primera versión verifica especialmente `catalog-sync`, `scan`, paridad Bash/Python y la relación scripts DebMenux ↔ `services.json`.
