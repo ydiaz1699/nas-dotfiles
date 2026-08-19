@@ -254,6 +254,10 @@ docker network create iot_net
 │   ├── compose.yml
 │   ├── .env                      ← Secretos: POSTGRES_PASSWORD, etc.
 │   └── data/
+├── flowise/
+│   ├── compose.yml
+│   ├── .env                      ← Credenciales flowise_db y clave de cifrado
+│   └── data/
 ├── emqx/
 │   ├── compose.yml
 │   ├── .env
@@ -332,6 +336,7 @@ DOCKER_BASE=/docker
 | 8085 | File Browser | TCP | Explorador archivos web |
 | 8090 | ntfy | TCP | Notificaciones push |
 | 8091 | usb-api | TCP | API REST USB (nativo) |
+| 8100 | Flowise (prueba pendiente) | TCP | Reservado para la prueba; no confirmado activo |
 | 8883 | EMQX | TCP | MQTT con TLS |
 | 18083 | EMQX | TCP | Dashboard EMQX |
 

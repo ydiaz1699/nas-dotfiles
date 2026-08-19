@@ -104,6 +104,8 @@ nas                 →  dashboard del servidor
 | usb-api (systemd) | 8091 | nativo | services.yaml |
 | spacedrive | — | spacedrive_default | — |
 
+> Flowise tiene compose, ficha, guía y script preparados para la prueba, pero no se marca como servicio activo hasta verificar la instalación en el NAS.
+
 ## Redes Docker
 
 | Red | Uso | Regla |
@@ -189,8 +191,12 @@ svc diff <svc>             # Compose en disco vs resuelta (interpolada)
 | Ficha del catálogo | `agent/catalog/services/<svc>/ficha.md` |
 | Manual del NAS (hardware, redes, puertos) | `docs/nas-manual.md` |
 | Pipeline auto-docs (catalog-sync) | `docs/catalog-sync-pipeline.md` |
+| Consistencia arquitectónica | `docs/architecture-consistency.md` |
+| Mapa canónico de arquitectura, gaps y criterios | `docs/framework-knowledge-compilation.md` |
+| Contratos arquitectónicos | `agent/architecture/contracts.json` |
 | Homepage (labels, widgets, config) | `docs/services/homepage-guide.md` |
-| ntfy (topics, clientes, primer uso, PC) | `docs/services/ntfy-guide.md` |
+| DataSQL y servicios con PostgreSQL | `docs/services/datasql-guide.md` |
+| Flowise (prueba con DataSQL) | `docs/services/flowise-guide.md` |
 | Troubleshooting | `docs/troubleshooting.md` |
 | Skill completa (para LLMs) | `docker-nas/references/nas-context.md` |
 | Comandos shell | `docker-nas/references/entorno.md` |

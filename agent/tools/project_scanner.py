@@ -28,6 +28,7 @@ Uso integrado en svc:
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -61,6 +62,20 @@ DEBMENUX_ALT = NAS_DOTFILES.parent / "DebMenux-" / "scripts" / "services"
 
 # Snapshot para modo incremental
 SNAPSHOT_FILE = NAS_DOTFILES / "agent" / "cache" / "project-snapshot.json"
+
+# El índice arquitectónico es independiente del snapshot incremental.
+try:
+    _index_path = NAS_DOTFILES / "agent" / "tools" / "project_index.py"
+    _index_spec = importlib.util.spec_from_file_location("nas_project_index", _index_path)
+    if _index_spec is None or _index_spec.loader is None:
+        raise ImportError(f"No se pudo cargar {_index_path}")
+    _index_module = importlib.util.module_from_spec(_index_spec)
+    _index_spec.loader.exec_module(_index_module)
+    build_index = _index_module.build_index
+    write_index = _index_module.write_index
+except (ImportError, OSError, AttributeError):
+    build_index = None
+    write_index = None
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -351,6 +366,7 @@ class ScanResult:
     services_complete: int = 0
     issues: List[Issue] = field(default_factory=list)
     services_status: Dict[str, Dict[str, bool]] = field(default_factory=dict)
+    architecture: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def errors(self) -> List[Issue]:
@@ -384,6 +400,7 @@ class ScanResult:
                 for i in self.issues
             ],
             "services_status": self.services_status,
+            "architecture": self.architecture,
         }
 
 
@@ -689,6 +706,185 @@ def _check_agent_prompt(result: ScanResult) -> None:
         ))
 
 
+def _check_architecture_contracts(result: ScanResult) -> None:
+    """Compara el índice estructural contra contracts.json.
+
+    Esta primera versión no intenta resolver semántica de Markdown. Verifica
+    contratos de existencia, superficies CLI y relaciones explícitas entre
+    ambos repositorios. Las diferencias de paridad se reportan; no se ocultan
+    detrás de una lista de excepciones implícita.
+    """
+    if build_index is None:
+        result.issues.append(Issue(
+            severity="warning",
+            category="architecture",
+            service="global",
+            message="No se pudo cargar project_index.py",
+            fix_hint="Verificar agent/tools/project_index.py",
+        ))
+        return
+
+    try:
+        index = build_index()
+    except Exception as exc:  # El scanner no debe caerse por un índice auxiliar.
+        result.issues.append(Issue(
+            severity="error",
+            category="architecture",
+            service="global",
+            message=f"Falló la construcción del project index: {exc}",
+            fix_hint="Ejecutar python3 agent/tools/project_index.py --check",
+        ))
+        return
+
+    if write_index is not None:
+        try:
+            write_index(index)
+        except OSError as exc:
+            result.issues.append(Issue(
+                severity="info",
+                category="architecture",
+                service="global",
+                message=f"No se pudo guardar project-index.json: {exc}",
+                fix_hint="Revisar permisos de agent/cache/",
+            ))
+
+    contracts_path = NAS_DOTFILES / "agent" / "architecture" / "contracts.json"
+    try:
+        contracts = json.loads(contracts_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        result.issues.append(Issue(
+            severity="error",
+            category="architecture",
+            service="global",
+            message="No existe o no es válido agent/architecture/contracts.json",
+            fix_hint="Regenerar la especificación de contratos",
+        ))
+        return
+
+    severity_by_level = {
+        "functional": "error",
+        "interface": "warning",
+        "knowledge": "warning",
+        "documentation": "info",
+        "historical": "info",
+    }
+
+    # Conexiones explícitas del contrato.
+    for connection in index.get("connections", []):
+        if connection.get("complete"):
+            continue
+        severity = severity_by_level.get(connection.get("level"), "warning")
+        missing = [
+            item["path"]
+            for item in connection.get("required", [])
+            if not item.get("exists")
+        ]
+        result.issues.append(Issue(
+            severity=severity,
+            category="architecture",
+            service=connection.get("name") or "global",
+            message=(
+                f"Contrato '{connection.get('id')}' incompleto; faltan: "
+                + ", ".join(missing)
+            ),
+            fix_hint="Crear o conectar las superficies requeridas por contracts.json",
+        ))
+
+    cli = index.get("cli", {})
+    bash = set(cli.get("bash", {}).get("commands", []))
+    python = set(cli.get("python", {}).get("commands", []))
+    completion = set(cli.get("completion", {}).get("global_commands", []))
+    completion.update(cli.get("completion", {}).get("service_commands", []))
+    prompt = set(cli.get("agent_prompt", {}).get("commands", []))
+    cli_contract = contracts.get("cli_contract", {})
+
+    # Comandos que el contrato declara como compartidos deben existir en ambos.
+    for command in cli_contract.get("required_shared_commands", []):
+        if command not in bash or command not in python:
+            missing_in = []
+            if command not in bash:
+                missing_in.append("Bash")
+            if command not in python:
+                missing_in.append("Python")
+            result.issues.append(Issue(
+                severity="error",
+                category="architecture",
+                service="global",
+                message=f"Comando compartido '{command}' falta en: {', '.join(missing_in)}",
+                fix_hint="Registrar el comando en ambos lados del contrato CLI",
+            ))
+        if command not in completion:
+            result.issues.append(Issue(
+                severity="warning",
+                category="architecture",
+                service="global",
+                message=f"Comando '{command}' no aparece en completions",
+                fix_hint="Agregarlo a shell/lib/docker.sh",
+            ))
+        if command not in prompt:
+            result.issues.append(Issue(
+                severity="warning",
+                category="architecture",
+                service="global",
+                message=f"Comando '{command}' no aparece en el conocimiento del agente",
+                fix_hint="Agregarlo a BLOCK_CONTEXTO_NAS en agent/nas_agent.py",
+            ))
+
+    allowed_bash_only = set(cli_contract.get("allowed_bash_only_commands", []))
+    allowed_python_only = set(cli_contract.get("allowed_python_only_commands", []))
+
+    for command in sorted((bash - python) - allowed_bash_only):
+        result.issues.append(Issue(
+            severity="warning",
+            category="architecture",
+            service="global",
+            message=f"Comando Bash-only no declarado en el contrato: svc {command}",
+            fix_hint="Agregarlo a Python o declararlo explícitamente como Bash-only",
+        ))
+
+    for command in sorted((python - bash) - allowed_python_only):
+        result.issues.append(Issue(
+            severity="warning",
+            category="architecture",
+            service="global",
+            message=f"Comando Python-only no declarado en el contrato: svc {command}",
+            fix_hint="Agregarlo a Bash o declararlo explícitamente como Python-only",
+        ))
+
+    # Relación catálogo ↔ scripts ↔ services.json en el segundo repositorio.
+    for service in index.get("services", []):
+        service_id = service.get("id", "unknown")
+        if service.get("debmenux_script") and not service.get("debmenux_registry"):
+            result.issues.append(Issue(
+                severity="warning",
+                category="architecture",
+                service=service_id,
+                message="Existe script DebMenux pero falta en services.json",
+                fix_hint="Agregar la entrada del servicio al registry de DebMenux",
+            ))
+        if service.get("debmenux_registry") and not service.get("debmenux_script"):
+            result.issues.append(Issue(
+                severity="warning",
+                category="architecture",
+                service=service_id,
+                message="services.json declara el servicio pero falta su script DebMenux",
+                fix_hint="Crear scripts/services/" + service_id + ".sh o retirar la entrada",
+            ))
+
+    result.architecture = {
+        "files": index.get("summary", {}).get("files", 0),
+        "services": index.get("summary", {}).get("services", 0),
+        "connections": index.get("summary", {}).get("contract_connections", 0),
+        "broken_connections": index.get("summary", {}).get("broken_contract_connections", 0),
+        "cli_parity": index.get("cli", {}).get("parity", {}),
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DOCS REFERENCES
+# ─────────────────────────────────────────────────────────────────────────────
+
+
 def _check_docs_references(result: ScanResult) -> None:
     """Verifica que docs_url en fichas apuntan a archivos que existen."""
     if not CATALOG_DIR.exists():
@@ -737,6 +933,7 @@ def scan(verbose: bool = False) -> ScanResult:
     _check_cli_parity(result)
     _check_agent_prompt(result)
     _check_docs_references(result)
+    _check_architecture_contracts(result)
 
     return result
 
@@ -764,6 +961,26 @@ def format_report(result: ScanResult, verbose: bool = False) -> str:
 
     lines.append("  └────────────────┴─────────┴───────┴───────┴─────────┴──────────┘")
     lines.append("")
+
+    # Mapa arquitectónico y paridad CLI
+    if result.architecture:
+        parity = result.architecture.get("cli_parity", {})
+        lines.append("  Arquitectura:")
+        lines.append(
+            "     Índice: "
+            f"{result.architecture.get('files', 0)} archivos, "
+            f"{result.architecture.get('services', 0)} servicios, "
+            f"{result.architecture.get('connections', 0)} contratos"
+        )
+        lines.append(
+            "     Conexiones rotas: "
+            f"{result.architecture.get('broken_connections', 0)}"
+        )
+        bash_only = parity.get("bash_only", [])
+        python_only = parity.get("python_only", [])
+        lines.append(f"     Bash-only: {', '.join(bash_only) if bash_only else 'ninguno'}")
+        lines.append(f"     Python-only: {', '.join(python_only) if python_only else 'ninguno'}")
+        lines.append("")
 
     # Issues por categoría
     if result.issues:

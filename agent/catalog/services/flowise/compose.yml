@@ -1,0 +1,62 @@
+# Flowise — constructor visual de agentes y flujos LLM
+# En el NAS, este archivo se despliega como $dkco/flowise/compose.yml.
+services:
+  flowise:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: flowiseai/flowise:latest
+    container_name: flowise
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      PORT: "3000"
+      DATABASE_TYPE: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_HOST: datapostgres
+      DATABASE_NAME: ${FLOWISE_DB_NAME}
+      DATABASE_USER: ${FLOWISE_DB_USER}
+      DATABASE_PASSWORD: ${FLOWISE_DB_PASSWORD}
+      DATABASE_SSL: "false"
+      SECRETKEY_PATH: /home/node/.flowise
+      LOG_PATH: /home/node/.flowise/logs
+      BLOB_STORAGE_PATH: /home/node/.flowise/storage
+      LOG_LEVEL: info
+      DISABLE_FLOWISE_TELEMETRY: "true"
+      HTTP_SECURITY_CHECK: "true"
+      PATH_TRAVERSAL_SAFETY: "true"
+      CUSTOM_MCP_SECURITY_CHECK: "true"
+      FLOWISE_SECRETKEY_OVERWRITE: ${FLOWISE_SECRETKEY_OVERWRITE}
+    ports:
+      - "8100:3000"
+    volumes:
+      - ./data:/home/node/.flowise
+    networks:
+      - db_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    cap_drop: [ALL]
+    labels:
+      - homepage.group=IA y Automatización
+      - homepage.name=Flowise
+      - homepage.icon=flowise
+      - homepage.href=http://${SERVER_IP}:8100
+      - homepage.description=Constructor visual de agentes y flujos LLM
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    entrypoint: /bin/sh -c "sleep 3; flowise start"
+
+networks:
+  db_net:
+    external: true
