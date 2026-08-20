@@ -44,7 +44,8 @@ Home Assistant usa `network_mode: host`, por lo que comparte la red del host. Si
 
 Las instalaciones futuras deben conservar estas propiedades, verificándolas contra el hardware real antes de escribir archivos:
 
-- La interfaz física tiene una sola configuración final de backend; `DHCP=no` evita que networkd solicite una IP dinámica.
+- La interfaz física tiene un único propietario activo: `systemd-networkd` o el backend legacy, nunca ambos. `DHCP=no` solo impide que networkd solicite DHCP; no detiene `ifupdown`, `ifup@<interfaz>.service`, `dhcpcd` ni otro cliente.
+- Si `systemd-networkd` es el backend elegido, `/etc/network/interfaces` y `/etc/network/interfaces.d/` no deben declarar la interfaz física con `allow-hotplug`, `auto` o `iface <interfaz> inet dhcp`; tampoco debe estar activa la unidad `ifup@<interfaz>.service` ni un `dhcpcd` que la gestione.
 - `ConfigureWithoutCarrier=yes` permite aplicar la configuración estática aunque el carrier tarde en aparecer. No arregla un cable desconectado, una NIC apagada ni un fallo del driver.
 - El shim se declara con un archivo `.netdev` `Kind=macvlan`, se enlaza desde la interfaz física con `MACVLAN=<nombre>` y recibe una IP `/32`.
 - La ruta del shim apunta únicamente a la IP de AdGuard; no se agrega una ruta por defecto.
@@ -91,6 +92,29 @@ Scope=link
 ```
 
 La configuración efectiva actual del NAS permanece declarada en la sección de arquitectura y debe comprobarse con `networkctl`, `ip` y el contenido real de `/etc/systemd/network`. Las derivaciones contienen la secuencia segura de creación, migración y recuperación.
+
+### Regla de exclusividad del propietario de la interfaz
+
+Antes de activar o reconfigurar `systemd-networkd`, identificar todos los posibles
+escritores de la interfaz física. `systemd-networkd` puede mostrar `configured` o
+`routable` aunque otro proceso quite después la dirección o las rutas; ese estado
+no sustituye a la comprobación del kernel con `ip` ni a la búsqueda de clientes
+DHCP.
+
+Para la interfaz confirmada, el preflight debe demostrar simultáneamente:
+
+```text
+systemd-networkd: activo y habilitado
+ifup@<IFACE>.service: inactivo o no existente
+ifupdown: sin stanza DHCP/auto-hotplug para <IFACE>
+dhcpcd/dhclient/NetworkManager: no gestionan <IFACE>
+IP y rutas: presentes en `ip`, no solo en `networkctl`
+```
+
+No declarar terminada una migración porque `networking` esté inactivo: la unidad
+instanciada `ifup@<IFACE>.service` puede haber ejecutado `ifup --allow=hotplug`
+y haber dejado un cliente como `dhcpcd` bajo su cgroup. La unidad efectiva, su
+proceso y el journal deben comprobarse por interfaz.
 
 ## 2. 🧠 Qué hace systemd-resolved
 
@@ -156,6 +180,47 @@ ss -lntup | grep -E '(:53[[:space:]]|:5353[[:space:]])' || true
 svc net
 svc ps adguard
 svc health
+```
+
+```bash
+printf '\n=== PROPIETARIOS LEGACY DE LA INTERFAZ ===\n'
+if [ -r /etc/network/interfaces ]; then
+    bat /etc/network/interfaces
+else
+    echo "No existe /etc/network/interfaces"
+fi
+find /etc/network/interfaces.d -maxdepth 2 -type f -print \
+    -exec bat {} \; 2>/dev/null || true
+
+systemctl status "ifup@$IFACE.service" --no-pager 2>&1 || true
+systemctl show "ifup@$IFACE.service" \
+    -p FragmentPath -p ExecStart -p SubState -p UnitFileState 2>&1 || true
+systemctl is-active networking 2>&1 || true
+systemctl is-active NetworkManager 2>&1 || true
+pgrep -af '(^|/)(dhcpcd|dhclient)( |$)' || true
+
+journalctl -b --no-pager | grep -Ei \
+    "ifup|ifdown|dhcpcd|dhclient|$IFACE" || true
+```
+
+Si `systemd-networkd` será el único backend, la compuerta de migración debe
+revisar que no exista una declaración activa de `$IFACE` en ifupdown y que no
+haya un cliente DHCP gestionándola. `networking` inactivo no basta: en el
+incidente confirmado `ifup@eno1.service` era una unidad estática activa que
+había ejecutado `ifup --allow=hotplug eno1`, y `dhcpcd` quedó bajo su cgroup.
+
+```bash
+if grep -RnsE "^[[:space:]]*(auto|allow-hotplug)[[:space:]]+$IFACE|^[[:space:]]*iface[[:space:]]+$IFACE[[:space:]]+inet[[:space:]]+dhcp" \
+    /etc/network/interfaces /etc/network/interfaces.d 2>/dev/null; then
+    echo "Hay configuración ifupdown activa para $IFACE; detenerse antes de usar networkd."
+    exit 1
+fi
+
+if systemctl is-active --quiet "ifup@$IFACE.service" || \
+   pgrep -af "dhcpcd.*$IFACE|dhclient.*$IFACE" >/dev/null; then
+    echo "Otro gestor todavía administra $IFACE; detenerse antes de reconfigurar networkd."
+    exit 1
+fi
 ```
 
 ```bash
@@ -234,14 +299,30 @@ else
 fi
 cp -a /etc/systemd/resolved.conf "$SNAPSHOT_TMP/resolved.conf.original" 2>/dev/null || touch "$SNAPSHOT_TMP/resolved.conf.absent"
 cp -a /etc/nsswitch.conf "$SNAPSHOT_TMP/nsswitch.conf.original" 2>/dev/null || touch "$SNAPSHOT_TMP/nsswitch.conf.absent"
-```
 
-```bash
+# Guardar también el backend legacy: puede ser el actor que reintroduce DHCP.
+if [ -e /etc/network/interfaces ]; then
+    cp -a /etc/network/interfaces "$SNAPSHOT_TMP/interfaces.original"
+else
+    touch "$SNAPSHOT_TMP/interfaces.absent"
+fi
+if [ -d /etc/network/interfaces.d ]; then
+    cp -a /etc/network/interfaces.d "$SNAPSHOT_TMP/interfaces.d"
+else
+    touch "$SNAPSHOT_TMP/interfaces.d.absent"
+fi
+
 systemctl is-enabled systemd-networkd > "$SNAPSHOT_TMP/services.state" 2>&1 || true
 systemctl is-enabled systemd-resolved >> "$SNAPSHOT_TMP/services.state" 2>&1 || true
 systemctl is-enabled avahi-daemon >> "$SNAPSHOT_TMP/services.state" 2>&1 || true
 systemctl is-enabled systemd-resolved > "$SNAPSHOT_TMP/resolved.enabled" 2>&1 || true
 systemctl is-active systemd-resolved > "$SNAPSHOT_TMP/resolved.active" 2>&1 || true
+systemctl status "ifup@$IFACE.service" --no-pager > "$SNAPSHOT_TMP/ifup.status" 2>&1 || true
+systemctl show "ifup@$IFACE.service" -p FragmentPath -p ExecStart -p SubState -p UnitFileState \
+    > "$SNAPSHOT_TMP/ifup.properties" 2>&1 || true
+pgrep -af '(^|/)(dhcpcd|dhclient)( |$)' > "$SNAPSHOT_TMP/dhcp-processes" 2>&1 || true
+journalctl -b --no-pager | grep -Ei "ifup|ifdown|dhcpcd|dhclient|$IFACE" \
+    > "$SNAPSHOT_TMP/network-owners.journal" 2>&1 || true
 networkctl status > "$SNAPSHOT_TMP/networkctl.status" 2>&1 || true
 resolvectl status > "$SNAPSHOT_TMP/resolvectl.status" 2>&1 || true
 ip route > "$SNAPSHOT_TMP/ip-route" 2>&1 || true
@@ -250,7 +331,9 @@ ip -6 route > "$SNAPSHOT_TMP/ip6-route" 2>&1 || true
 # Publicar solo un snapshot completo y atómico.
 test -f "$SNAPSHOT_TMP/services.state" \
   && test -f "$SNAPSHOT_TMP/networkctl.status" \
-  && test -f "$SNAPSHOT_TMP/ip-route" || {
+  && test -f "$SNAPSHOT_TMP/ip-route" \
+  && test -f "$SNAPSHOT_TMP/ifup.status" \
+  && test -f "$SNAPSHOT_TMP/dhcp-processes" || {
     echo "Snapshot incompleto; no se publica LATEST"
     exit 1
 }
@@ -572,11 +655,42 @@ systemctl restart avahi-daemon
 Comprobar recuperación:
 
 ```bash
-networkctl status eno1
+networkctl status "$IFACE"
 ip route
 getent hosts github.com
 avahi-resolve -n Nas.local
 ```
+
+### 10.4 🧩 Restaurar ifupdown solo si era el backend anterior
+
+No restaures una declaración DHCP de ifupdown mientras `systemd-networkd`
+siga siendo el backend elegido. Restaurar `/etc/network/interfaces` solo si el
+snapshot demuestra que ifupdown era el backend anterior y se decidió volver a
+él; después debe detenerse networkd antes de reactivar `ifup@<interfaz>`.
+
+Si la migración falló después de comentar la stanza legacy, desde consola:
+
+```bash
+test -f "$SNAPSHOT/interfaces.original" || {
+    echo "Falta el backup de /etc/network/interfaces; no se restaura a ciegas"
+    exit 1
+}
+
+cp -a /etc/network/interfaces \
+    "$SNAPSHOT/interfaces.failed-rollback" 2>/dev/null || true
+cp -a "$SNAPSHOT/interfaces.original" /etc/network/interfaces
+
+if [ -d "$SNAPSHOT/interfaces.d" ]; then
+    cp -a /etc/network/interfaces.d \
+        "$SNAPSHOT/interfaces.d.failed-rollback" 2>/dev/null || true
+    mkdir -p /etc/network/interfaces.d
+    cp -a "$SNAPSHOT/interfaces.d/." /etc/network/interfaces.d/
+fi
+```
+
+Antes de reactivar ifupdown, comprobar explícitamente que se va a detener
+networkd y que la stanza restaurada coincide con el backend que se desea usar.
+No mezclar de nuevo ambos propietarios para "probar".
 
 No borrar el snapshot hasta haber reiniciado el NAS y validado SSH, DNS, IPv6,
 Avahi, AdGuard y Home Assistant.
@@ -586,6 +700,8 @@ Avahi, AdGuard y Home Assistant.
 | Síntoma | Causa probable | Acción segura |
 |---|---|---|
 | No hay SSH por IP ni `Nas.local` | `eno1`, gateway o networkd | Usar consola; restaurar `.network`; recargar networkd |
+| `networkctl` dice `configured`, pero faltan IP/rutas en `ip` | Otro propietario (`ifup@`, `dhcpcd`, `dhclient`) está modificando la interfaz | Revisar `/etc/network/interfaces`, la unidad `ifup@<interfaz>` y el cgroup del cliente antes de reconfigurar |
+| Aparece `proto dhcp` en una interfaz declarada estática | ifupdown/dhcpcd u otro cliente DHCP sigue activo | No usar `flush`; neutralizar el propietario confirmado y reaplicar networkd |
 | SSH funciona pero no hay dominios | `resolv.conf`, stub o upstream | `resolvectl status`; revisar symlink y `DNS=` |
 | AdGuard no recibe consultas | shim, macvlan o IP incorrecta | Probar `ping 192.168.1.201` y `dig @192.168.1.201` |
 | `Nas.local` no resuelve | Avahi o mDNS | Revisar `avahi-daemon`, `avahi-resolve` y firewall |

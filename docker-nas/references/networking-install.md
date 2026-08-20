@@ -51,6 +51,24 @@ if systemctl is-active --quiet NetworkManager; then
 fi
 ```
 
+Antes de crear archivos, inventariar también el backend legacy por interfaz:
+
+```bash
+bat /etc/network/interfaces 2>/dev/null || true
+find /etc/network/interfaces.d -maxdepth 2 -type f -print \
+    -exec bat {} \; 2>/dev/null || true
+systemctl status "ifup@$IFACE.service" --no-pager 2>&1 || true
+systemctl show "ifup@$IFACE.service" \
+    -p FragmentPath -p ExecStart -p SubState -p UnitFileState 2>&1 || true
+pgrep -af "dhcpcd.*$IFACE|dhclient.*$IFACE" || true
+```
+
+`DHCP=no` en el archivo de networkd no desactiva ifupdown ni dhcpcd. Si se
+encuentra `allow-hotplug`, `auto` o `iface $IFACE inet dhcp`, no activar aún
+networkd: primero guardar snapshot y neutralizar el propietario legacy en la
+sección 5. La migración solo puede continuar cuando un único backend administra
+la interfaz.
+
 Si hay dudas sobre la interfaz, no crear archivos todavía. `IFACE` debe coincidir exactamente con la interfaz física que conecta al router/switch.
 
 ## 3. 💾 Snapshot y rescate opcional
@@ -148,7 +166,64 @@ Scope=link
 
 La ruta `/32` limita el uso del shim al destino macvlan. No convertir el shim en un segundo gateway ni agregar una ruta por defecto.
 
-## 5. 🔌 Activar networkd sin apagar aún el backend anterior
+## 5. 🧹 Neutralizar el backend legacy antes de activar networkd
+
+No iniciar `systemd-networkd` mientras `ifupdown`, `ifup@${IFACE}.service`,
+`dhcpcd`, `dhclient` o NetworkManager todavía puedan modificar la misma
+interfaz. La coexistencia no es una fase segura por defecto: en el incidente
+confirmado, `ifup@eno1.service` ejecutó `ifup --allow=hotplug eno1`, inició
+dhcpcd y este eliminó/recreó las rutas que networkd había aplicado.
+
+Crear el snapshot de [`networking.md`](networking.md) antes de editar. Después,
+si el backend deseado es networkd, editar `/etc/network/interfaces` y comentar
+solo la stanza de la interfaz física:
+
+```text
+# allow-hotplug <IFACE_CONFIRMADA>
+# iface <IFACE_CONFIRMADA> inet dhcp
+```
+
+No borrar el archivo completo, no purgar todavía `ifupdown` y no tocar el
+loopback. Si la stanza usa otra forma de DHCP, conservarla en el snapshot y
+marcarla para revisión; no asumir que solo esas dos líneas son suficientes.
+
+Detener la unidad instanciada y comprobar su resultado:
+
+```bash
+systemctl stop "ifup@$IFACE.service" 2>&1 || true
+sleep 2
+systemctl is-active "ifup@$IFACE.service" 2>&1 || true
+
+if pgrep -af "dhcpcd.*$IFACE|dhclient.*$IFACE" >/dev/null; then
+    echo "El cliente DHCP sigue gestionando $IFACE; detenerse y usar su mecanismo de control documentado."
+    exit 1
+fi
+```
+
+No usar `pkill`, `kill -9` ni matar PIDs encontrados por texto. Si el proceso
+`dhcpcd` sigue vivo, identificar su unidad/cgroup y detener el propietario real
+antes de continuar. Si `ifup@${IFACE}.service` no existe, registrar ese hecho y
+comprobar que tampoco haya otro supervisor.
+
+La compuerta para continuar es:
+
+```bash
+if grep -RnsE "^[[:space:]]*(auto|allow-hotplug)[[:space:]]+$IFACE|^[[:space:]]*iface[[:space:]]+$IFACE[[:space:]]+inet[[:space:]]+dhcp" \
+    /etc/network/interfaces /etc/network/interfaces.d 2>/dev/null; then
+    echo "Todavía existe una stanza ifupdown para $IFACE; no activar networkd."
+    exit 1
+fi
+
+if systemctl is-active --quiet "ifup@$IFACE.service" || \
+   pgrep -af "dhcpcd.*$IFACE|dhclient.*$IFACE" >/dev/null; then
+    echo "Todavía existe otro propietario de $IFACE; no activar networkd."
+    exit 1
+fi
+```
+
+## 6. 🔌 Activar networkd después de asegurar exclusividad
+
+Solo después de superar la compuerta anterior:
 
 ```bash
 systemctl enable systemd-networkd.service
@@ -157,51 +232,50 @@ networkctl reload
 networkctl reconfigure "$IFACE"
 ```
 
-Comprobar antes de desactivar `networking`:
+Comprobar que la dirección y las rutas existen en el kernel, no solo que
+`networkctl` diga `configured`:
 
 ```bash
 networkctl status "$IFACE"
-ip -br addr show dev "$IFACE"
-ip -br addr show dev macvlan-shim
+ip -4 addr show dev "$IFACE"
+ip route
 ip route get "$GATEWAY"
 ip route get "$ADGUARD_IP"
-ping -c 3 "$GATEWAY"
-ping -c 3 1.1.1.1
+ping -c 3 -W 2 "$GATEWAY"
+ping -c 3 -W 2 1.1.1.1
+dig +time=2 +tries=1 "@$ADGUARD_IP" github.com
 ```
 
-Durante la coexistencia puede aparecer la IP DHCP antigua junto con la IP estática. Es un estado temporal de migración, no una configuración final. No usar `ip addr flush` para limpiarlo: puede cortar la única sesión SSH.
+El resultado esperado incluye `HOST_IP/PREFIX`, la ruta conectada de la LAN y
+una ruta por defecto `proto static`. Si aparece `proto dhcp`, una dirección
+dinámica o vuelve a aparecer `dhcpcd`, detenerse: todavía existe un propietario
+legacy.
 
-`systemd-networkd-wait-online.service` no configura la interfaz ni corrige `NO-CARRIER`. Solo debe habilitarse si el sistema realmente necesita bloquear servicios hasta tener red y después de medir el efecto sobre el arranque:
+`systemd-networkd-wait-online.service` no configura la interfaz ni corrige
+`NO-CARRIER`. Solo debe habilitarse si el sistema realmente necesita bloquear
+servicios hasta tener red y después de medir el efecto sobre el arranque.
 
-```bash
-systemctl enable systemd-networkd-wait-online.service
-```
-
-Si no existe esa necesidad, dejarlo sin habilitar. `ConfigureWithoutCarrier=yes` y `wait-online` resuelven problemas distintos.
-
-## 6. 🧹 Retirar ifupdown de forma controlada
+## 7. 🧩 Retirar ifupdown de forma controlada
 
 Solo después de validar la nueva IP desde una segunda sesión:
 
 ```bash
-systemctl disable --now networking
-systemctl is-active networking
-systemctl is-enabled networking
+systemctl is-active networking 2>&1 || true
+systemctl is-enabled networking 2>&1 || true
+pgrep -af "dhcpcd.*$IFACE|dhclient.*$IFACE" || true
+systemctl is-active "ifup@$IFACE.service" 2>&1 || true
 ```
 
-Reconectar usando la IP estática y comprobar que ya no hay un cliente DHCP gestionando la interfaz:
+No es necesario ejecutar `systemctl disable --now networking` si el servicio no
+es el propietario activo. Si sí está activo, detenerlo solo después de confirmar
+que la configuración de ifupdown ya no administra `$IFACE`; la unidad instanciada
+`ifup@${IFACE}.service` debe comprobarse por separado.
 
-```bash
-ip -br addr show dev "$IFACE"
-pgrep -a dhclient || true
-networkctl status "$IFACE"
-```
+No eliminar todavía `/etc/network/interfaces` ni purgar `ifupdown`. Mantener una
+ruta de vuelta hasta haber realizado un reinicio controlado y validado SSH,
+gateway, Internet y DNS.
 
-Si aparece una dirección `secondary dynamic`, identificar primero quién la creó (`networking`, `dhclient`, `dhcpcd` u otro servicio). Detener solo el responsable confirmado; no borrar direcciones a ciegas.
-
-No eliminar todavía `/etc/network/interfaces` ni purgar `ifupdown`. Mantener una ruta de vuelta hasta haber realizado un reinicio controlado y validado SSH, gateway, Internet y DNS.
-
-## 7. 🛡️ Verificar el shim y después desplegar AdGuard
+## 8. 🛡️ Verificar el shim y después desplegar AdGuard
 
 El shim debe existir antes de desplegar el contenedor:
 
@@ -221,7 +295,7 @@ Usar `svc` para operar el servicio; no usar `docker compose`, `docker network pr
 
 Después de probar el host y AdGuard, seguir la instalación de `systemd-resolved` desde la sección 5 de [`networking.md`](networking.md). No cambiar `/etc/resolv.conf` antes de comprobar el stub y la respuesta directa de AdGuard.
 
-## 8. 🔄 Reinicio de aceptación
+## 9. 🔄 Reinicio de aceptación
 
 Antes del reinicio:
 

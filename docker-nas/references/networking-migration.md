@@ -73,21 +73,55 @@ dig +time=2 +tries=1 "@$ADGUARD_IP" github.com
 
 Registrar también todos los valores fijos relacionados con el rango antiguo en la configuración Docker real. Operar los servicios con `svc`; no reconstruir redes con comandos Docker directos.
 
+### 3.1 🔒 Compuerta de exclusividad por interfaz
+
+Si el backend final será `systemd-networkd`, comprobar antes de aplicar cualquier
+cambio que ningún actor legacy administra `$IFACE`:
+
+```bash
+bat /etc/network/interfaces 2>/dev/null || true
+find /etc/network/interfaces.d -maxdepth 2 -type f -print \
+    -exec bat {} \; 2>/dev/null || true
+systemctl status "ifup@$IFACE.service" --no-pager 2>&1 || true
+systemctl show "ifup@$IFACE.service" \
+    -p FragmentPath -p ExecStart -p SubState -p UnitFileState 2>&1 || true
+pgrep -af "dhcpcd.*$IFACE|dhclient.*$IFACE" || true
+journalctl -b --no-pager | grep -Ei \
+    "ifup|ifdown|dhcpcd|dhclient|$IFACE" || true
+```
+
+`systemctl is-active networking` no sustituye estas comprobaciones: en el
+incidente confirmado `networking` podía estar inactivo mientras la unidad
+estática `ifup@eno1.service` había ejecutado `ifup --allow=hotplug eno1` y
+mantenía `dhcpcd` en su cgroup.
+
+No continuar si `/etc/network/interfaces` o `interfaces.d/` contiene una stanza
+`auto`, `allow-hotplug` o `iface $IFACE inet dhcp`, si `ifup@$IFACE.service` está
+activo o si un cliente DHCP aparece asociado a la interfaz. Crear primero el
+snapshot de [`networking.md`](networking.md), comentar solo la stanza legacy,
+detener el propietario confirmado y comprobar su ausencia. No usar `pkill`,
+`kill -9`, `systemctl mask networking` ni purgar ifupdown como atajos.
+
 ## 4. 🔁 Estrategia de cambio de rango
 
 ### 4.1 🕒 Opción preferida: ventana controlada
 
 Si se dispone de consola y el cambio puede causar un corte breve:
 
-1. Guardar snapshot.
-2. Cambiar la IP, gateway y DNS del archivo de la interfaz física.
-3. Cambiar IP/ruta del shim.
-4. Recargar networkd desde consola.
-5. Reconectar por la IP nueva.
-6. Actualizar y recrear la red macvlan de AdGuard mediante el flujo documentado del servicio.
-7. Probar DNS directo, stub, IPv6, Avahi y HA.
+1. Guardar snapshot, incluyendo `/etc/network/interfaces`, `interfaces.d/`, el estado de `ifup@$IFACE.service` y los procesos DHCP.
+2. Neutralizar y detener el backend legacy confirmado antes de cambiar la configuración de networkd.
+3. Cambiar la IP, gateway y DNS del archivo de la interfaz física.
+4. Cambiar IP/ruta del shim.
+5. Recargar networkd desde consola.
+6. Comprobar en `ip` la IP, la ruta conectada, la ruta por defecto y la ruta al shim.
+7. Reconectar por la IP nueva desde una segunda sesión.
+8. Actualizar y recrear la red macvlan de AdGuard mediante el flujo documentado del servicio.
+9. Probar DNS directo, stub, IPv6, Avahi y HA.
 
-Esta opción evita mantener dos redes lógicas en la interfaz durante más tiempo del necesario.
+Esta opción evita mantener dos gestores escribiendo sobre la misma interfaz. La
+coexistencia de ifupdown/dhcpcd y networkd no es una fase puente válida; si se
+necesita una doble IP, debe ser una decisión explícita dentro de un único
+backend, no dos propietarios concurrentes.
 
 ### 4.2 🌉 Opción puente: doble IP temporal
 
@@ -149,16 +183,26 @@ Si se necesita una transición sin corte y se ha verificado que ambas redes est�
 
 ### 5.3 ✅ Aplicar y comprobar networkd
 
+Solo ejecutar esta reconfiguración después de superar la compuerta de
+exclusividad de la sección 3.1. Si el actor legacy sigue activo, detenerse y
+volver a esa sección; no esperar que networkd gane una carrera de rutas.
+
 ```bash
 networkctl reload
 networkctl reconfigure <INTERFAZ_REAL>
 sleep 2
 networkctl status <INTERFAZ_REAL>
-ip -br addr show dev <INTERFAZ_REAL>
+ip -4 addr show dev <INTERFAZ_REAL>
+ip -4 route
 ip -br addr show dev macvlan-shim
-ip route
 ip route get <GATEWAY_NUEVO>
+ip route get <ADGUARD_NUEVO>
 ```
+
+La salida debe demostrar la IP, la ruta conectada y la ruta por defecto en el
+kernel. `networkctl configured` por sí solo no es suficiente. Si aparece
+`proto dhcp`, una dirección dinámica o vuelve `dhcpcd`, no continuar: todavía
+existe un propietario no neutralizado.
 
 Si la sesión SSH se corta, no insistir con comandos remotos: usar [`networking-recovery.md`](networking-recovery.md).
 
@@ -241,6 +285,8 @@ avahi-resolve -n Nas.local
 Además:
 
 - abrir una nueva sesión SSH por la IP nueva;
+- comprobar que `ifup@$IFACE.service` está inactivo o no existe;
+- comprobar que no aparece `dhcpcd`, `dhclient` ni una dirección `dynamic` en `$IFACE`;
 - probar `dig` directamente contra AdGuard y contra `127.0.0.53`;
 - comprobar el contenedor Home Assistant en `network_mode: host`;
 - probar un descubrimiento IoT real, no solo DNS;
@@ -249,3 +295,7 @@ Además:
 - conservar el snapshot hasta terminar la validación post-reinicio.
 
 Si la migración fue de `192.168.0.x` a `192.168.1.x`, no asumir que el cambio terminó al ver SSH: el shim, AdGuard, DNS, Homepage, labels, rutas y otros compose con IPs fijas deben quedar en el mismo modelo de red confirmado.
+
+La migración solo se considera cerrada cuando, después del reinicio, `ip route`
+muestra la ruta conectada y la ruta por defecto con el backend elegido, y no hay
+un segundo propietario que pueda borrar o recrear esas rutas.
