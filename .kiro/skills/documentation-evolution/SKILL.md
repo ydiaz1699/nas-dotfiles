@@ -47,8 +47,8 @@ comprobar su archivo de implementación y su punto de entrada.
 | Evidencia de la petición | Acción inicial |
 |---|---|
 | `_drafts/`, fragmentos, diagnósticos dispersos | Leer `meta-prompt-unificar.md` y clasificar los fragmentos antes de redactar |
-| “hay un error”, “falta conectar”, “no se detectó” | Leer `project_scanner.py`, `project_index.py` y `contracts.json` |
-| “evolucionar la herramienta”, “hacerla automática” | Revisar implementación, entrypoints, hooks, docs y contrato; no limitarse a añadir texto |
+| "hay un error", "falta conectar", "no se detectó" | Leer `project_scanner.py`, `project_index.py` y `contracts.json` |
+| "evolucionar la herramienta", "hacerla automática" | Revisar implementación, entrypoints, hooks, docs y contrato; no limitarse a añadir texto |
 | cambio en un servicio Docker | Leer primero su guía y ficha; después usar el pipeline de catálogo |
 | cambio en red del NAS | Leer primero `docker-nas/references/networking.md` y la derivación aplicable |
 
@@ -69,46 +69,72 @@ Antes de producir la guía final:
    o `NO DISPONIBLE`.
 2. Extrae comandos, configuraciones, archivos, rutas, backups, precondiciones,
    postcondiciones y dependencias de cada fragmento por separado.
-3. Clasifica las afirmaciones como `HECHO EXPLÍCITO`, `INFERENCIA TÉCNICA
-   SEGURA`, `INFERENCIA NO CONFIRMADA` o `DESCONOCIDO`, con confianza
-   `ALTA`, `MEDIA`, `BAJA` o `DESCONOCIDA`.
-4. Agrupa solo variantes realmente equivalentes. Compara propósito, mutación vs.
-   consulta, seguridad, idempotencia, timeout, observabilidad, reversibilidad y
-   compatibilidad. Si no se puede determinar cuál es mejor, deja `PENDIENTE`.
-5. Reconstruye un grafo temporal con `requiere`, `produce`, `crea`, `modifica`,
+3. Clasifica afirmaciones con **tipo** y **confianza** como campos
+   independientes:
+   - Tipo: `HECHO`, `INFERENCIA SEGURA`, `INFERENCIA NO CONFIRMADA`,
+     `DESCONOCIDO`.
+   - Confianza: `ALTA`, `MEDIA`, `BAJA`, `DESCONOCIDA`.
+   Una INFERENCIA SEGURA puede tener confianza ALTA si la relación técnica es
+   inequívoca. Un HECHO puede tener confianza MEDIA si la fuente es ambigua.
+4. Identifica artefactos con: tipo (archivo, directorio, servicio, contenedor,
+   variable, etc.), identificador, estado inicial, operación y estado esperado.
+5. Agrupa solo variantes **operacionalmente equivalentes** (mismo efecto sobre
+   los mismos artefactos). No fusionar por equivalencia textual o semántica si
+   el efecto difiere. Compara propósito, mutación vs. consulta, seguridad,
+   idempotencia, timeout, observabilidad, reversibilidad y compatibilidad. Si no
+   se puede determinar cuál es mejor, deja `PENDIENTE`.
+6. Reconstruye un grafo temporal con `requiere`, `produce`, `crea`, `modifica`,
    `elimina`, `respalda`, `restaura`, `consume`, `verifica`, `habilita`,
    `deshabilita`, `inicia`, `detiene`, `reinicia`, `precondición` y
    `postcondición`. Un backup precede las operaciones que puedan afectar el
    artefacto que protege; no todo restart requiere backup.
-6. Si aparece un ciclo, marca `⚠️ CICLO DE DEPENDENCIAS` y no fuerces un orden.
-7. Conserva las rutas exactas de backups y comprueba que el rollback consume el
+7. Si aparece un ciclo, marca `⚠️ CICLO DE DEPENDENCIAS` y no fuerces un orden.
+8. Conserva las rutas exactas de backups y comprueba que el rollback consume el
    artefacto creado.
-8. Clasifica cada elemento como `INTEGRADO`, `DUPLICADO`, `REEMPLAZADO`,
-   `RECHAZADO` con motivo, `FUERA DE ALCANCE` con destino o `PENDIENTE`.
+9. Clasifica cada elemento con las 7 categorías: `INTEGRADO`, `DUPLICADO`,
+   `REEMPLAZADO`, `RECHAZADO` con motivo, `FUERA_DE_ALCANCE` con destino,
+   `PENDIENTE` o `BLOQUEADO`.
+   - PENDIENTE: la información existe pero es contradictoria o ambigua.
+   - BLOQUEADO: la información no existe en ninguna fuente disponible.
+
+No sobre-unificar: dos operaciones con el mismo propósito pero sobre artefactos
+diferentes no son duplicados. Solo la equivalencia operacional justifica
+eliminación.
 
 Distingue siempre `systemctl enable ...` (mutación) de
 `systemctl is-enabled ...` (verificación). Si la guía se convertirá en script,
 revisa errores, paradas seguras y rollback antes de llamarla ejecutable.
 
-La salida debe incluir una sección compacta `AUDITORÍA DE FUENTES Y VARIANTES`.
-No inventes verificaciones: si una fuente no proporciona ninguna, marca
-`⚠️ NO ESPECIFICADO` y separa cualquier propuesta externa. No afirmes que se
-verificó algo si no se ejecutó realmente.
+La salida debe incluir una sección compacta `AUDITORÍA DE FUENTES Y VARIANTES`
+con tipo y confianza como columnas separadas. No inventes verificaciones: si una
+fuente no proporciona ninguna, marca `⚠️ NO ESPECIFICADO` y separa cualquier
+propuesta externa. No afirmes que se verificó algo si no se ejecutó realmente.
+
+## Reglas de optimización y contexto del proyecto
+
+Elementos como `set -euo pipefail`, wrappers (`svc`, `dk`, `instal`),
+parametrización (`${SERVER_IP}`) o convenciones del framework son reglas de
+OPTIMIZACIÓN o CONTEXTO. No se aplican automáticamente durante la reconciliación:
+
+- Durante RECONSTRUCCIÓN y RECONCILIACIÓN: preservar los valores y comandos
+  literales de las fuentes.
+- Durante OPTIMIZACIÓN (solo si se solicita): aplicar las reglas del proyecto
+  con propuesta explícita y autorización.
+- Si las fuentes provienen de un contexto externo donde los wrappers no existen,
+  no transformar comandos estándar en wrappers del proyecto.
 
 ## Flujo obligatorio de unificación
 
 1. Identificar la fuente de cada afirmación: conversación, draft, código o
    configuración actual.
-2. Leer el meta-prompt completo y respetar sus reglas: no resumir código,
-   no inventar, detectar contradicciones y marcar huecos como pendientes.
+2. Leer el meta-prompt completo y respetar sus reglas: preservar información,
+   no inventar, detectar contradicciones y marcar huecos como pendientes o
+   bloqueados.
 3. Clasificar el resultado en una sola fuente canónica y derivaciones mínimas;
    no copiar la misma prosa en varias capas.
-4. Mantener el orden temporal real:
-
-   ```text
-   mkdir → archivos → permisos → levantar → verificar
-   ```
-
+4. Respetar las dependencias reales entre artefactos (los patrones
+   mkdir→archivo→chmod→servicio→verificar son heurísticas frecuentes, no un
+   orden universal obligatorio).
 5. Si el usuario corrige un resultado, separar la corrección de la tarea actual:
    aplicar la corrección al documento dueño solo con autorización y, si cambia
    el contrato del proceso, proponer una regla versionada para aprobación. No
