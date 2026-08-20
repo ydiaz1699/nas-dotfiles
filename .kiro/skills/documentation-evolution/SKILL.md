@@ -55,39 +55,45 @@ comprobar su archivo de implementación y su punto de entrada.
 ## Protocolo de auditoría antes de unificar
 
 No redactes directamente desde el primer draft ni desde la variante que más se
-repite. Antes de producir la guía final:
+repite. El trabajo debe pasar por estas capas:
+
+```text
+RECONSTRUCCIÓN → VALIDACIÓN → RECONCILIACIÓN → PRESENTACIÓN
+                                      ↓
+                         OPTIMIZACIÓN solo si se solicita
+```
+
+Antes de producir la guía final:
 
 1. Inventaría todos los fragmentos y marca cada uno como `LEÍDO`, `PENDIENTE`
    o `NO DISPONIBLE`.
-2. Extrae comandos, configuraciones, archivos, rutas, backups y dependencias de
-   cada fragmento por separado.
-3. Agrupa solo variantes realmente equivalentes. Compara propósito, mutación vs.
+2. Extrae comandos, configuraciones, archivos, rutas, backups, precondiciones,
+   postcondiciones y dependencias de cada fragmento por separado.
+3. Clasifica las afirmaciones como `HECHO EXPLÍCITO`, `INFERENCIA TÉCNICA
+   SEGURA`, `INFERENCIA NO CONFIRMADA` o `DESCONOCIDO`, con confianza
+   `ALTA`, `MEDIA`, `BAJA` o `DESCONOCIDA`.
+4. Agrupa solo variantes realmente equivalentes. Compara propósito, mutación vs.
    consulta, seguridad, idempotencia, timeout, observabilidad, reversibilidad y
-   compatibilidad con el entorno.
-4. Reconstruye un grafo temporal: crear directorio → backup → modificar →
-   verificar → aplicar → validar → registrar rollback. No respetes el número de
-   paso de un draft si contradice una dependencia real.
-5. Conserva la ruta exacta de cada backup y comprueba que el rollback consume el
-   artefacto creado. Si dos fuentes usan rutas distintas, no las fusiones sin
-   justificarlo.
-6. Clasifica cada elemento como `INTEGRADO`, `RECHAZADO` con motivo, `FUERA DE
-   ALCANCE` con destino o `PENDIENTE`.
+   compatibilidad. Si no se puede determinar cuál es mejor, deja `PENDIENTE`.
+5. Reconstruye un grafo temporal con `requiere`, `produce`, `crea`, `modifica`,
+   `elimina`, `respalda`, `restaura`, `consume`, `verifica`, `habilita`,
+   `deshabilita`, `inicia`, `detiene`, `reinicia`, `precondición` y
+   `postcondición`. Un backup precede las operaciones que puedan afectar el
+   artefacto que protege; no todo restart requiere backup.
+6. Si aparece un ciclo, marca `⚠️ CICLO DE DEPENDENCIAS` y no fuerces un orden.
+7. Conserva las rutas exactas de backups y comprueba que el rollback consume el
+   artefacto creado.
+8. Clasifica cada elemento como `INTEGRADO`, `DUPLICADO`, `REEMPLAZADO`,
+   `RECHAZADO` con motivo, `FUERA DE ALCANCE` con destino o `PENDIENTE`.
 
-Ejemplo obligatorio:
+Distingue siempre `systemctl enable ...` (mutación) de
+`systemctl is-enabled ...` (verificación). Si la guía se convertirá en script,
+revisa errores, paradas seguras y rollback antes de llamarla ejecutable.
 
-```text
-systemctl enable systemd-networkd       = mutación
-systemctl is-enabled systemd-networkd   = verificación posterior
-```
-
-`is-enabled` no reemplaza a `enable`. Del mismo modo, una copia de seguridad
-siempre debe aparecer antes de editar el archivo que protege, aunque otro draft
-la coloque después.
-
-La salida debe incluir una sección compacta `AUDITORÍA DE FUENTES Y VARIANTES`
-con las fuentes, la variante elegida, el criterio y el destino. Si la guía va a
-convertirse en script, revisar además variables definidas, errores, backups,
-paradas seguras y rollback antes de presentarla como ejecutable.
+La salida debe incluir una sección compacta `AUDITORÍA DE FUENTES Y VARIANTES`.
+No inventes verificaciones: si una fuente no proporciona ninguna, marca
+`⚠️ NO ESPECIFICADO` y separa cualquier propuesta externa. No afirmes que se
+verificó algo si no se ejecutó realmente.
 
 ## Flujo obligatorio de unificación
 
@@ -103,8 +109,10 @@ paradas seguras y rollback antes de presentarla como ejecutable.
    mkdir → archivos → permisos → levantar → verificar
    ```
 
-5. Si el usuario corrige un resultado, conservar la corrección en la superficie
-   dueña: guía/meta-prompt/skill/contrato, no solo en la conversación.
+5. Si el usuario corrige un resultado, separar la corrección de la tarea actual:
+   aplicar la corrección al documento dueño solo con autorización y, si cambia
+   el contrato del proceso, proponer una regla versionada para aprobación. No
+   modificar silenciosamente el meta-prompt, la skill o las reglas del proyecto.
 
 ## Flujo obligatorio para evolucionar herramientas
 
