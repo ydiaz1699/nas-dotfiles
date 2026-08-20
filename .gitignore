@@ -26,3 +26,14 @@ agent/memory/sessions/*.md
 
 # ── IDE / Herramientas locales ─────────────────────────────────────
 .kiro/
+
+# Configuración Kiro compartida del proyecto (persistente)
+!.kiro/
+.kiro/*
+!.kiro/hooks/
+.kiro/hooks/*
+!.kiro/hooks/documentation-evolution-on-prompt.json
+!.kiro/skills/
+.kiro/skills/*
+!.kiro/skills/documentation-evolution/
+!.kiro/skills/documentation-evolution/SKILL.md

@@ -181,6 +181,7 @@ svc diff <svc>             # Compose en disco vs resuelta (interpolada)
   - `docs/services/<svc>-guide.md` (prioridad)
   - `agent/catalog/services/<svc>/ficha.md`
 - **SIEMPRE** orden: mkdir → archivos → permisos → levantar
+- **SIEMPRE**, si la petición trata de `_drafts`, unificación o evolución de herramientas, leer `.kiro/skills/documentation-evolution/SKILL.md` antes de responder
 - **SIEMPRE** compose.yml (nunca docker-compose.yml)
 
 ## Documentación adicional
@@ -194,7 +195,10 @@ svc diff <svc>             # Compose en disco vs resuelta (interpolada)
 | Instalación futura de red | `docker-nas/references/networking-install.md` |
 | Migración de backend o rango IP | `docker-nas/references/networking-migration.md` |
 | Recuperación de red y DNS | `docker-nas/references/networking-recovery.md` |
-| Pipeline auto-docs (catalog-sync) | `docs/catalog-sync-pipeline.md` |
+| Meta-prompt de unificación | `docs/meta-prompt-unificar.md` |
+| Bootstrap portable para cualquier chat LLM | `docs/llm-context-bootstrap.md` |
+| Skill del chat para unificar y evolucionar herramientas | `.kiro/skills/documentation-evolution/SKILL.md` |
+| Bootstrap automático del chat | `.kiro/hooks/documentation-evolution-on-prompt.json` |
 | Consistencia arquitectónica | `docs/architecture-consistency.md` |
 | Mapa canónico de arquitectura, gaps y criterios | `docs/framework-knowledge-compilation.md` |
 | Contratos arquitectónicos | `agent/architecture/contracts.json` |
