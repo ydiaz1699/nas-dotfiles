@@ -25,7 +25,24 @@ systemctl is-enabled systemd-networkd
 systemctl is-active networking
 systemctl is-active systemd-resolved
 systemctl is-active avahi-daemon
+systemctl status "ifup@$IFACE.service" --no-pager 2>&1 || true
+systemctl show "ifup@$IFACE.service" \
+    -p FragmentPath -p ExecStart -p SubState -p UnitFileState 2>&1 || true
+pgrep -af "dhcpcd.*$IFACE|dhclient.*$IFACE" || true
 ```
+
+Leer antes de cambiar:
+
+```bash
+bat /etc/network/interfaces 2>/dev/null || true
+find /etc/network/interfaces.d -maxdepth 2 -type f -print \
+    -exec bat {} \; 2>/dev/null || true
+```
+
+Si `networkd` es el backend elegido, una stanza `allow-hotplug`, `auto` o
+`iface $IFACE inet dhcp`, una unidad `ifup@$IFACE.service` activa o un cliente
+DHCP asociado bloquean la reconfiguración hasta identificar y detener al
+propietario real. `networking` inactivo no basta.
 
 Guardar la evidencia antes de corregir:
 
@@ -38,9 +55,95 @@ resolvectl status 2>&1 || true
 
 No ejecutar todavía `ip addr flush`, no borrar `/etc/resolv.conf`, no purgar `ifupdown` y no aplicar `docker network prune`.
 
-## 🧾 Incidente registrado: rutas IPv4 desaparecidas
+## 🧾 Incidente confirmado: carrera ifupdown → ifup@eno1 → dhcpcd
 
-Este caso documenta una incidencia real del NAS para poder reconocerla y resolverla sin improvisar:
+Este es el incidente resuelto en el NAS después de un reinicio. No debe
+confundirse con una avería de DNS ni con el caso separado de pérdida de rutas
+asociada a DHCPv6.
+
+### Evidencia observada
+
+- `eno1` tenía carrier y enlace físico correcto, pero inicialmente no tenía `192.168.1.200/24` ni rutas IPv4 funcionales.
+- `systemd-networkd` estaba activo y mostraba `eno1` como `configured/routable`, pero `ip route` devolvía `Network is unreachable`.
+- `macvlan-shim` conservaba la ruta a AdGuard `192.168.1.201`; `ping` y `dig @192.168.1.201` funcionaban.
+- `/etc/systemd/network/10-eno1.network` declaraba correctamente `Address=192.168.1.200/24`, `Gateway=192.168.1.1` y `DHCP=no`.
+- `/etc/network/interfaces` todavía contenía `allow-hotplug eno1` e `iface eno1 inet dhcp`.
+- `ifup@eno1.service` ejecutaba `/usr/sbin/ifup --allow=hotplug eno1` y mantenía `dhcpcd` en su cgroup.
+- `dhcpcd` obtenía `192.168.1.200` por DHCP, detectaba el conflicto de dirección con el shim/macvlan y eliminaba/recreaba la ruta LAN y la ruta por defecto.
+- Después de comentar las dos líneas DHCP, detener `ifup@eno1.service`, reaplicar networkd y reiniciar, la red volvió de forma persistente: `proto static`, gateway, Internet y AdGuard funcionaron y no reapareció `dhcpcd`.
+
+### Diagnóstico que diferencia las capas
+
+```bash
+IFACE="${IFACE:-eno1}"
+HOST_IP="${HOST_IP:-192.168.1.200}"
+ADGUARD_IP="${ADGUARD_IP:-192.168.1.201}"
+
+ip -4 addr show dev "$IFACE"
+ip route
+networkctl status "$IFACE" --no-pager
+systemctl status "ifup@$IFACE.service" --no-pager 2>&1 || true
+pgrep -af "dhcpcd.*$IFACE|dhclient.*$IFACE" || true
+
+bat /etc/network/interfaces 2>/dev/null || true
+find /etc/network/interfaces.d -maxdepth 2 -type f -print \
+    -exec bat {} \; 2>/dev/null || true
+
+journalctl -b --no-pager | grep -Ei \
+    "ifup|ifdown|dhcpcd|dhclient|$IFACE" || true
+```
+
+Interpretación:
+
+- `networkctl` dice `configured`, pero faltan IP/rutas en `ip`: no declarar la red sana; buscar otro escritor.
+- Aparece `ifup@$IFACE.service` activo: ifupdown todavía puede reactivar DHCP.
+- Aparece `dhcpcd` o `dhclient` asociado a `$IFACE`: networkd no es el único propietario.
+- `dig @192.168.1.201` funciona pero no hay ruta a `1.1.1.1`: AdGuard no es la causa primaria; falta la ruta IPv4 del host.
+
+### Recuperación persistente confirmada
+
+Trabajar desde consola/KVM/OOB o con una segunda sesión SSH. Crear primero el
+snapshot de [`networking.md`](networking.md), incluyendo `/etc/network/interfaces`
+y el estado de `ifup@$IFACE.service`. Editar después `/etc/network/interfaces`
+y comentar únicamente la stanza DHCP de la interfaz física:
+
+```text
+# allow-hotplug <IFACE_CONFIRMADA>
+# iface <IFACE_CONFIRMADA> inet dhcp
+```
+
+No borrar el archivo completo, no purgar `ifupdown` y no usar `pkill` o `kill -9`.
+Detener la unidad instanciada y comprobar que el cliente DHCP desaparece:
+
+```bash
+systemctl stop "ifup@$IFACE.service" 2>&1 || true
+sleep 2
+systemctl is-active "ifup@$IFACE.service" 2>&1 || true
+pgrep -af "dhcpcd.*$IFACE|dhclient.*$IFACE" || true
+```
+
+Si un cliente sigue activo, detener su propietario real identificado por
+cgroup/unidad; no matar PIDs a ciegas. Solo después reaplicar networkd:
+
+```bash
+networkctl reload
+networkctl reconfigure "$IFACE"
+sleep 3
+
+ip -4 addr show dev "$IFACE"
+ip route
+ip route get "$ADGUARD_IP"
+ping -c 3 -W 2 "$ADGUARD_IP"
+ping -c 3 -W 2 1.1.1.1
+dig +time=2 +tries=1 "@$ADGUARD_IP" github.com
+```
+
+No reiniciar hasta que la salida muestre la IP estática, la ruta conectada y la
+ruta por defecto `proto static`, y hasta que no haya cliente DHCP gestionando la
+interfaz. Después del reinicio repetir exactamente la validación y conservar el
+snapshot hasta confirmar una nueva sesión SSH.
+
+## 🧾 Incidente separado: rutas IPv4 desaparecidas durante una reconfiguración DHCPv6
 
 - `systemd-networkd` estaba activo; `networking` y NetworkManager estaban inactivos.
 - `eno1` tenía inicialmente `192.168.1.200/24`, pero perdió la ruta conectada y la ruta por defecto durante reconfiguraciones repetidas asociadas al cliente DHCPv6.
