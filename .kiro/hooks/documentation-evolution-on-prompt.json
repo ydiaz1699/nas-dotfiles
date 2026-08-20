@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Bootstrap de evolución documental en el chat",
+      "trigger": "UserPromptSubmit",
+      "description": "Detecta peticiones de unificación o evolución de herramientas y obliga al chat a cargar la skill y verificar los entrypoints reales antes de responder.",
+      "action": {
+        "type": "agent",
+        "prompt": "Clasifica la petición del usuario antes de responder. Si menciona drafts, fragmentos, unificar, meta-prompt, errores documentales, scanner, gaps, contratos, hooks, herramientas del LLM o evolucionar el framework, aplica este bootstrap: 1) lee `.kiro/skills/documentation-evolution/SKILL.md`; 2) lee `docs/meta-prompt-unificar.md`; 3) según el caso inspecciona `agent/tools/project_scanner.py`, `agent/tools/project_index.py`, `agent/architecture/contracts.json`, `docs/architecture-consistency.md` y `.kiro/hooks/`; 4) distingue herramientas realmente implementadas de documentación manual; 5) antes de afirmar que algo es automático, comprueba su entrypoint. Si la petición no pertenece a ese grupo, no cargues esos documentos y continúa normalmente. No ejecutes operaciones runtime del NAS desde el sandbox."
+      }
+    }
+  ]
+}

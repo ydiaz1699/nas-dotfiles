@@ -165,7 +165,22 @@ ver `references/extend.md`.
 
 ---
 
-## _drafts/ — bandeja de entrada
+## Evolución documental desde el chat
+
+Si la petición menciona `_drafts`, unificación, el meta-prompt, errores documentales,
+scanner, gaps, contratos o evolución de herramientas, la skill específica es:
+
+```text
+.kiro/skills/documentation-evolution/SKILL.md
+```
+
+El hook `.kiro/hooks/documentation-evolution-on-prompt.json` solicita su carga
+automática en el chat. Esa skill obliga a comprobar implementación y entrypoints
+antes de afirmar que una herramienta existe o está conectada.
+
+---
+
+## _drafts_ — bandeja de entrada
 
 Carpeta `$NAS_DOTFILES/_drafts/` es para subir fragmentos, ideas, notas,
 diagnósticos o cualquier documento que el agente debe procesar.
