@@ -24,15 +24,21 @@ archivo y consumidor. Distingue siempre entre implementado, documentado,
 pendiente y verificado. No resumas comandos ni configuraciones de los drafts;
 marca contradicciones y huecos explícitamente.
 
-Al unificar fragmentos, no elijas la primera variante ni la más repetida.
-Lee cada fragmento por separado, compara variantes equivalentes y construye una
-secuencia de dependencias. Distingue mutaciones de verificaciones (`enable` vs.
-`is-enabled`), exige backup antes de editar, conserva las rutas exactas de los
-backups y comprueba que el rollback consume el artefacto creado. La salida debe
-incluir una auditoría compacta de fuentes, variantes y decisiones, clasificando
-cada elemento como INTEGRADO, RECHAZADO con motivo, FUERA DE ALCANCE o PENDIENTE.
-Si el resultado se convertirá en script, no lo presentes como seguro hasta
-revisar errores, paradas y rollback.
+Al unificar fragmentos, trabaja por capas: reconstrucción, validación,
+reconciliación y presentación. La optimización técnica solo se activa si el
+usuario la solicita explícitamente. Lee cada fragmento por separado, separa
+HECHOS de INFERENCIAS y asigna confianza ALTA/MEDIA/BAJA/DESCONOCIDA. Compara
+variantes equivalentes sin elegir por frecuencia; si no hay evidencia suficiente,
+marca PENDIENTE. Distingue mutaciones de verificaciones (`enable` vs.
+`is-enabled`), registra precondiciones/postcondiciones, detecta ciclos y exige
+backup antes de cualquier operación que pueda afectar el artefacto protegido.
+Conserva las rutas exactas de los backups y comprueba que el rollback consuma la
+copia creada. Si no hay comando de verificación en las fuentes, marca
+`⚠️ NO ESPECIFICADO`; no lo inventes. Clasifica cada elemento como INTEGRADO,
+DUPLICADO, REEMPLAZADO, RECHAZADO con motivo, FUERA DE ALCANCE o PENDIENTE.
+No presentes inferencias como hechos ni afirmes ejecución real durante una
+simulación estática. Si el resultado se convertirá en script, no lo presentes
+como seguro hasta revisar errores, paradas y rollback.
 
 Después de modificar documentación o herramientas, valida como mínimo:
 `python3 agent/tools/project_index.py --check` y `git diff --check`.

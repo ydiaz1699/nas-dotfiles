@@ -29,36 +29,63 @@ Tu trabajo es unificarlos en UNA SOLA guía de ejecución. Reglas:
    en la realidad (primero crear carpetas, después archivos, después arrancar).
    No agrupes por tema — agrupa por secuencia temporal.
 
-4.1. AUDITORÍA PREVIA OBLIGATORIA. Antes de redactar la guía final, lee y
+4.1. CAPAS DE TRABAJO. Separa explícitamente estas etapas:
+   - RECONSTRUCCIÓN: qué dicen literalmente las fuentes.
+   - VALIDACIÓN: qué puede comprobarse con las fuentes y análisis estático.
+   - RECONCILIACIÓN: qué puede combinarse sin contradicción y qué queda pendiente.
+   - PRESENTACIÓN: cómo ordenar y mostrar la guía sin perder trazabilidad.
+   - OPTIMIZACIÓN: solo si el usuario la solicita explícitamente o una regla
+     aprobada la autoriza. No convertir una unificación en una mejora técnica
+     silenciosa.
+
+4.2. HECHOS, INFERENCIAS Y CONFIANZA. Clasifica cada afirmación:
+   - HECHO EXPLÍCITO: la fuente lo dice o muestra literalmente.
+   - INFERENCIA TÉCNICA SEGURA: consecuencia directa de una relación técnica
+     inequívoca, pero no una afirmación textual de la fuente.
+   - INFERENCIA NO CONFIRMADA: parece razonable, pero depende de información
+     ausente.
+   - DESCONOCIDO: no hay evidencia suficiente.
+   Usa confianza `ALTA` para hechos explícitos, `MEDIA` para inferencias técnicas
+   seguras, `BAJA` para inferencias no confirmadas y `DESCONOCIDA` cuando no se
+   puede determinar. Nunca presentes una inferencia como hecho ni conviertas una
+   inferencia no confirmada en decisión tomada.
+
+4.3. AUDITORÍA PREVIA OBLIGATORIA. Antes de redactar la guía final, lee y
    analiza CADA fragmento por separado. No selecciones el primer comando que
    encuentres ni deduzcas que dos comandos son equivalentes sin compararlos.
-   Produce internamente un inventario con: documento, ubicación, comando o
-   configuración completa, propósito, archivo/ruta afectada y dependencias.
+   Produce un inventario con: documento, ubicación, comando o configuración
+   completa, propósito, archivo/ruta afectada, precondiciones, postcondiciones y
+   dependencias.
 
-4.2. COMPARAR VARIANTES. Cuando dos comandos hagan aparentemente lo mismo,
+4.4. COMPARAR VARIANTES. Cuando dos comandos hagan aparentemente lo mismo,
    compara sus efectos, modo de ejecución, idempotencia, seguridad, timeout,
    cantidad de observaciones, salida verificable, reversibilidad y compatibilidad
    con el entorno. Ejemplo: `ping -c 3 -W 2 1.1.1.1` puede ser mejor para un
    diagnóstico acotado que `ping -c 7 1.1.1.1`, pero la decisión depende del
-   propósito. La guía debe conservar la variante elegida y anotar por qué se
-   descartaron las demás; nunca elegir por posición, frecuencia o primer hallazgo.
+   propósito. Si las fuentes no permiten determinar el objetivo o la superioridad,
+   conserva ambas como `DECISIÓN PENDIENTE`; no declares una variante mejor por
+   intuición.
 
-4.3. DIFERENCIAR MUTACIÓN Y VERIFICACIÓN. No tratar como equivalentes comandos
+4.5. DIFERENCIAR MUTACIÓN Y VERIFICACIÓN. No tratar como equivalentes comandos
    que cambian el sistema y comandos que solo consultan su estado. Por ejemplo:
    `systemctl enable systemd-networkd` modifica el arranque; `systemctl
-   is-enabled systemd-networkd` solo verifica el resultado. El orden correcto es
-   mutar, comprobar y solo entonces continuar. Mantener ambos si ambos aparecen
-   en las fuentes.
+   is-enabled systemd-networkd` solo verifica el resultado. Cada mutación debe
+   ir seguida por las verificaciones o precondiciones necesarias antes de ejecutar
+   una operación que dependa de que haya tenido éxito; no existe una secuencia
+   universal de "mutar y verificar" para todos los sistemas.
 
-4.4. GRAFO DE DEPENDENCIAS, NO ORDEN DE LOS DOCUMENTOS. Reconstruye las
-   dependencias reales entre acciones aunque los drafts las presenten en otro
-   orden. Para cada paso registra `requiere`, `produce`, `modifica`, `respalda`
-   y `verifica`. Una copia de seguridad debe preceder cualquier edición,
-   reemplazo, permiso destructivo, restart o recreación del recurso que protege.
-   Nunca mover una copia solo porque comparte el mismo número de paso en otro
-   documento.
+4.6. GRAFO DE DEPENDENCIAS, NO ORDEN DE LOS DOCUMENTOS. Reconstruye las
+   dependencias reales aunque los drafts presenten otro orden. Para cada operación
+   registra, cuando aplique: `requiere`, `produce`, `crea`, `modifica`, `elimina`,
+   `respalda`, `restaura`, `consume`, `verifica`, `habilita`, `deshabilita`,
+   `inicia`, `detiene`, `reinicia`, `precondición` y `postcondición`.
+   Un backup debe preceder cualquier operación que pueda modificar, reemplazar,
+   eliminar o dejar en un estado no recuperable el artefacto que protege; no todo
+   `restart` exige backup de un recurso que no afecta. Si las dependencias forman
+   un ciclo, no fuerces un orden: marca `⚠️ CICLO DE DEPENDENCIAS`, muestra las
+   operaciones involucradas y deja la resolución como pendiente.
 
-4.5. PRESERVAR RUTAS Y ARTEFACTOS. Si dos fuentes crean backups en rutas o con
+4.7. PRESERVAR RUTAS Y ARTEFACTOS. Si dos fuentes crean backups en rutas o con
    nombres diferentes, no los fusiones silenciosamente. Conserva cada artefacto
    necesario, elige una ruta canónica solo después de comprobar que todos los
    comandos posteriores la consumen y registra las rutas alternativas como
@@ -66,18 +93,20 @@ Tu trabajo es unificarlos en UNA SOLA guía de ejecución. Reglas:
    usada para restaurar debe haber sido creada antes y su existencia debe
    verificarse antes de editar el original.
 
-4.6. VALIDACIÓN DE LA SECUENCIA. Antes de entregar la guía, simula la ejecución
-   desde un estado limpio y revisa: directorio padre creado antes del archivo,
-   backup antes de modificar, variables definidas antes de usarlas, mutación
-   antes de su verificación, servicio requerido antes de operar, y rollback
-   posible desde la ruta realmente publicada. Si un paso falla, no continúes
-   con el siguiente: marca el punto de parada y la recuperación.
+4.8. VALIDACIÓN ESTÁTICA DE LA SECUENCIA. Antes de entregar la guía, realiza una
+   simulación estática desde un estado inicial declarado: directorios, archivos,
+   servicios y rutas esperados. Revisa que cada precondición esté satisfecha,
+   que el backup preceda la operación que protege, que las variables existan,
+   que las mutaciones tengan verificaciones o precondiciones adecuadas y que el
+   rollback consuma una ruta realmente publicada. No afirmes que ejecutaste un
+   comando ni que verificaste un resultado si no hubo ejecución real.
 
-4.7. SALIDA DE TRAZABILIDAD. La guía final debe incluir una sección compacta
+4.9. SALIDA DE TRAZABILIDAD. La guía final debe incluir una sección compacta
    `AUDITORÍA DE FUENTES Y VARIANTES` con una fila por idea/comando relevante:
-   fuente(s), variante elegida, propósito, decisión y destino. Ningún fragmento,
-   comando o configuración puede quedar sin clasificar como `INTEGRADO`,
-   `RECHAZADO` con motivo, `FUERA DE ALCANCE` con destino o `PENDIENTE`.
+   fuente(s), tipo de afirmación, confianza, variante elegida, propósito,
+   decisión y destino. Clasifica cada contenido como `INTEGRADO`, `DUPLICADO`,
+   `REEMPLAZADO`, `RECHAZADO` con motivo, `FUERA DE ALCANCE` con destino o
+   `PENDIENTE`.
 
 5. FORMATO OBLIGATORIO para cada paso:
 
@@ -86,47 +115,58 @@ Tu trabajo es unificarlos en UNA SOLA guía de ejecución. Reglas:
    ### Archivo(s) a crear/modificar
    - Ruta exacta
 
-   ### Contenido completo
+   ### Acción y contenido completo
    ```[lenguaje]
    (código o config ÍNTEGRO — nunca parcial, nunca "...")
    ```
 
-   ### Comando de verificación
-   ```bash
-   (comando que confirma que el paso se aplicó bien)
-   ```
+   ### Verificación
+   - **Comando proporcionado por las fuentes:** [comando exacto, si existe]
+   - **Si no existe en las fuentes:** `⚠️ NO ESPECIFICADO`
+   - No inventar comandos de verificación dentro de la guía unificada. Una
+     propuesta externa debe estar rotulada como `PROPUESTA NO PROPORCIONADA POR
+     LAS FUENTES` y no formar parte de un script ejecutable sin autorización.
+
+   ### Precondiciones y postcondiciones
+   - Precondiciones conocidas por las fuentes o `⚠️ NO ESPECIFICADAS`
+   - Postcondiciones conocidas por las fuentes o `⚠️ NO ESPECIFICADAS`
 
    ### Depende de
    - Paso X (si aplica)
 
-6. AL INICIO de la guía, incluir una sección "DECISIONES TOMADAS" con
-   las conclusiones firmes de los fragmentos (lo que NO se debe volver
-   a discutir).
+6. HECHOS CONFIRMADOS POR LAS FUENTES. Lista solo afirmaciones explícitas
+   de los fragmentos, separadas de cualquier decisión del agente.
 
-7. AL FINAL, incluir "DECISIONES PENDIENTES" con lo que se contradice
-   entre fragmentos o no está resuelto.
+7. DECISIONES DERIVADAS DURANTE LA UNIFICACIÓN. Lista decisiones de
+   reconciliación y su confianza. Explica la evidencia o inferencia que las
+   respalda; no las presentes como si fueran citas de las fuentes.
 
-8. NUNCA decir "como se mencionó antes" ni "ver fragmento 3". La guía
-   debe ser autocontenida — alguien que no leyó los fragmentos originales
-   debe poder seguirla paso a paso.
+8. DECISIONES PENDIENTES. Lista contradicciones, ciclos, rutas no confirmadas,
+   verificaciones ausentes e inferencias de confianza baja o desconocida.
 
-9. Si el contenido es demasiado largo para una sola respuesta, DILO
-   al principio: "La guía tiene N pasos, te la doy en M partes."
-   No cortes a mitad de un paso.
+9. NUNCA decir "como se mencionó antes" ni "ver fragmento 3". La guía debe ser
+   autocontenida — alguien que no leyó los fragmentos originales debe poder
+   seguirla paso a paso.
 
-10. IDIOMA: responder en el mismo idioma que los fragmentos.
+10. Si el contenido es demasiado largo para una sola respuesta, DILO al
+    principio: "La guía tiene N pasos, te la doy en M partes." No cortes a
+    mitad de un paso.
+
+11. IDIOMA: responder en el mismo idioma que los fragmentos.
 
 Antes de generar la guía final, la respuesta de análisis debe incluir, aunque
 sea en formato compacto:
 
 - todos los fragmentos identificados, cada uno con estado `LEÍDO`, `PENDIENTE`
   o `NO DISPONIBLE`;
+- hechos explícitos separados de inferencias, con nivel de confianza;
 - la comparación de comandos/configuraciones equivalentes y la variante
-  elegida con criterios técnicos;
-- el grafo o lista de dependencias temporales;
-- las rutas de archivos y backups y qué comando posterior consume cada una;
-- la clasificación de cada contenido como `INTEGRADO`, `RECHAZADO` con motivo,
-  `FUERA DE ALCANCE` con destino o `PENDIENTE`.
+  elegida o la razón de mantener la decisión pendiente;
+- el grafo de dependencias, precondiciones, postcondiciones y ciclos;
+- las rutas de archivos y backups y qué operación posterior consume cada una;
+- la clasificación de cada contenido como `INTEGRADO`, `DUPLICADO`,
+  `REEMPLAZADO`, `RECHAZADO` con motivo, `FUERA DE ALCANCE` con destino o
+  `PENDIENTE`.
 
 No generes todavía la guía final si falta un fragmento, una variante relevante,
 una ruta de backup o una dependencia. Pide el fragmento faltante o marca la
@@ -183,18 +223,21 @@ FORMATO DE LA GUÍA:
 
 ## Auditoría de fuentes y variantes
 
-| Fuente(s) | Comando/configuración | Propósito | Variante elegida y por qué | Clasificación/destino |
-|---|---|---|---|---|
-| [documento y sección] | [contenido exacto o referencia] | [qué hace] | [criterio técnico] | INTEGRADO / RECHAZADO / FUERA DE ALCANCE / PENDIENTE |
+| Fuente(s) | Afirmación/operación | Tipo y confianza | Propósito | Variante/decisión y por qué | Clasificación/destino |
+|---|---|---|---|---|---|
+| [documento y sección] | [contenido exacto o referencia] | HECHO / INFERENCIA SEGURA / NO CONFIRMADA / DESCONOCIDO — ALTA/MEDIA/BAJA/DESCONOCIDA | [qué hace] | [criterio técnico o DECISIÓN PENDIENTE] | INTEGRADO / DUPLICADO / REEMPLAZADO / RECHAZADO / FUERA DE ALCANCE / PENDIENTE |
 
 > Esta tabla no reemplaza el código completo de los pasos. Evita que una
 > deduplicación o una reordenación oculte una variante, una ruta de backup o una
 > decisión de seguridad.
 
-## Decisiones tomadas
+## Hechos confirmados por las fuentes
 
-1. [decisión firme extraída de los fragmentos]
-2. [otra]
+1. [afirmación explícita y fuente]
+
+## Decisiones derivadas durante la unificación
+
+1. [decisión del agente, evidencia, confianza y alcance]
 
 ---
 
@@ -318,25 +361,33 @@ Si el LLM genera una guía que viola este orden, responde:
 
 ---
 
-## Auto-mejora (feedback loop)
+## Feedback y evolución del contrato (separados de la unificación)
 
-Esta herramienta se mejora con el uso. Después de cada unificación:
+La unificación usa este meta-prompt como contrato fijo durante la tarea. El LLM
+puede proponer una mejora, pero no debe modificar silenciosamente este archivo,
+la skill ni las reglas del proyecto. El flujo correcto es:
+
+```text
+feedback del usuario
+  → propuesta de nueva regla con origen y ejemplo
+  → revisión/aprobación explícita del usuario
+  → edición versionada del meta-prompt
+  → validación y registro del cambio
+```
 
 ### El agente debe
 
-1. **Evaluar el resultado** — ¿hubo información que se perdió? ¿el usuario corrigió algo?
-2. **Agregar lecciones** — Si se detectó un patrón nuevo, agregarlo a la sección "Mejoras post-uso"
-3. **Sugerir al usuario** — Si el draft tiene problemas detectables, avisar ANTES de unificar:
-   - "Los fragmentos se contradicen en X — ¿cuál es la versión correcta?"
-   - "Falta información sobre permisos/red/backup — ¿lo agrego o lo marco como pendiente?"
-   - "Hay comandos que no usan los wrappers del framework (docker compose en vez de svc)"
-   - "La IP está hardcodeada — ¿la reemplazo por ${SERVER_IP}?"
+1. Evaluar el resultado: pérdidas, contradicciones, inferencias y correcciones.
+2. Proponer lecciones nuevas separadas del documento unificado.
+3. Avisar antes de unificar si hay contradicciones, verificaciones ausentes,
+   rutas incompatibles, ciclos o información insuficiente.
+4. No convertir automáticamente una propuesta de optimización en una regla.
 
 ### El usuario debe
 
-1. **Corregir** — Si la guía generada tiene errores, decirlo explícitamente
-2. **Confirmar** — Si está bien, decir "OK" o "aprobado"
-3. **Enseñar** — Si hay algo que el meta-prompt no cubre, decir "agrega esta regla"
+1. Corregir si la guía generada tiene errores.
+2. Aprobar o rechazar explícitamente una nueva regla del meta-prompt.
+3. Indicar si desea solo reconstrucción/reconciliación o también optimización.
 
 ### Registro de mejoras
 
@@ -351,6 +402,14 @@ Cada mejora se agrega aquí con fecha y contexto:
 | 2026-08-17 | Auditar cada fragmento y comparar variantes antes de deduplicar | riesgo de elegir la primera variante y perder una mejora técnica |
 | 2026-08-17 | Reconstruir dependencias reales: backup antes de modificar y mutación antes de verificar | riesgo de ordenar por número de paso o mezclar rutas de backup |
 | 2026-08-17 | Mantener trazabilidad de rutas y clasificar todo contenido no integrado | evitar que un script no encuentre su copia de rollback |
+| 2026-08-17 | Separar reconstrucción, validación, reconciliación, presentación y optimización | evitar mejoras técnicas silenciosas durante una unificación |
+| 2026-08-17 | Distinguir hechos, inferencias y niveles de confianza | evitar presentar deducciones del LLM como hechos de las fuentes |
+| 2026-08-17 | No inventar verificaciones; marcar `NO ESPECIFICADO` | evitar comandos de prueba no proporcionados por los drafts |
+| 2026-08-17 | Detectar ciclos y declarar precondiciones/postcondiciones | evitar forzar un orden inseguro o imposible |
+| 2026-08-17 | Feedback sujeto a aprobación explícita | evitar modificar silenciosamente el contrato del meta-prompt |
+| 2026-08-17 | Separar hechos, inferencias, validación y optimización | revisión externa: evitar presentar deducciones como hechos |
+| 2026-08-17 | Verificaciones de fuente o `NO ESPECIFICADO` | revisión externa: no inventar comandos de verificación |
+| 2026-08-17 | Pre/postcondiciones, ciclos y categorías DUPLICADO/REEMPLAZADO | revisión externa: hacer reconciliación auditable |
 
 Lecciones aprendidas de la primera unificación real (5790 → 304 líneas):
 
