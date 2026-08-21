@@ -73,12 +73,15 @@ Para plantillas y estructura de carpetas, ver `references/svc.md`.
 
 ### Servicio que usa DataSQL
 
-Antes de configurar PostgreSQL o Redis, leer `docs/services/datasql-guide.md` y
-`agent/catalog/services/datasql/ficha.md`. Usar `db_net` como red externa, crear
-una base/usuario dedicados y no publicar puertos de DB. El compose de la aplicación
-siempre lleva `env_file: [../.env, .env]`, `extends.file: ../_common.yml` y labels
-`homepage.*`. No usar `depends_on` para `datapostgres` si DataSQL está en otro
-compose. SQLite solo es para una prueba aislada; para integración real usar DataSQL.
+Antes de configurar PostgreSQL o Redis, cargar `.kiro/skills/datasql/SKILL.md`,
+leer `docs/services/datasql-guide.md` y `agent/catalog/services/datasql/ficha.md`.
+Usar `db_net` como red externa, crear una base/usuario dedicados mediante la
+Fase 5A de la guía (rol y base en llamadas separadas), y no publicar puertos de
+DB. No asumir `admin/appdb`; leer los valores reales de `$dkco/datasql/.env` sin
+`source`. Pasar `PGPASSWORD`/`REDISCLI_AUTH` explícitamente en `svc exec`, usar
+`datapostgres`/`dataredis` como hostnames y no usar `depends_on` contra
+`datapostgres` si DataSQL está en otro compose. SQLite solo es para una prueba
+aislada; para integración real usar DataSQL.
 
 ---
 

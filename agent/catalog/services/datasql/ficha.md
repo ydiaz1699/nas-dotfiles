@@ -128,8 +128,8 @@ REDIS_PASSWORD=__pega_aqui__
 
 ### Heredadas del global (../.env)
 
-- `SERVER_IP=192.168.1.200` — usado en labels de Homepage
-- `TZ=America/La_Paz` — zona horaria para todos los servicios
+- `SERVER_IP` — usado en labels de Homepage
+- `TZ` — zona horaria para todos los servicios
 
 ### Fijas (en compose, NO requieren .env)
 

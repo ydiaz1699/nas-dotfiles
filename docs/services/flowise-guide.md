@@ -113,49 +113,16 @@ carpeta exista y de que el archivo `.env` haya sido creado.
 
 ---
 
-## 4. Paso 2 — Crear la base y el usuario dedicados
+## 4. Paso 2 — Preparar la integración con DataSQL
 
-### Artefactos
+Flowise usará la base dedicada `flowise_db`, el rol `flowise_user`,
+`datapostgres`, `dataredis` y `db_net`. No se crea otro PostgreSQL ni otro
+Redis. La base y el rol se crean **después** de guardar el password de Flowise
+en su `.env`, usando la receta canónica de la Fase 5A de
+`docs/services/datasql-guide.md`.
 
-- Tipo: usuario PostgreSQL
-- Identificador: `flowise_user`
-- Operación: crear en `datapostgres`
-- Estado esperado: puede autenticarse en `flowise_db`
-- Fuente: configuración canónica y `cla1.md`, `cla3.md`, `cla4.md`
-
-- Tipo: base PostgreSQL
-- Identificador: `flowise_db`
-- Operación: crear con propietario `flowise_user`
-- Estado esperado: existe en `datapostgres`
-
-Entrar al cliente PostgreSQL mediante el wrapper del proyecto:
-
-```bash
-svc exec datasql postgres psql -U admin -d appdb
-```
-
-Antes de crear nada, revisar dentro de `psql` si `flowise_user` y `flowise_db` ya
-existen. Si no existen, ejecutar las sentencias siguientes sustituyendo el
-marcador por una contraseña fuerte y conservar exactamente el mismo valor para
-el archivo local de Flowise:
-
-```sql
-CREATE USER flowise_user WITH PASSWORD 'REEMPLAZAR_CON_PASSWORD_SEGURA';
-CREATE DATABASE flowise_db OWNER flowise_user;
-\q
-```
-
-No repetir `CREATE USER` o `CREATE DATABASE` sin comprobar antes el estado. No
-hacer `source $dkco/datasql/.env`: los secretos pueden contener caracteres que
-modifiquen la interpretación del shell.
-
-Generar una contraseña puede hacerse con:
-
-```bash
-openssl rand -base64 32
-```
-
-El resultado no debe pegarse en el repositorio ni en una conversación.
+No asumir `admin/appdb`, no ejecutar `source $dkco/datasql/.env` y no combinar
+`CREATE ROLE`/`CREATE USER` con `CREATE DATABASE`.
 
 ---
 
@@ -189,7 +156,7 @@ REDIS_PASSWORD=__pega_aqui__
 FLOWISE_USERNAME=admin
 FLOWISE_PASSWORD=__pega_aqui__
 
-# Debe permanecer estable mientras existan credenciales cifradas.
+# Debe permanecer estable para descifrar credenciales existentes.
 FLOWISE_SECRETKEY_OVERWRITE=__pega_aqui__
 
 # Secretos de JWT y sesión. Usar valores diferentes entre sí.
@@ -202,27 +169,15 @@ JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES=129600
 EXPRESS_SESSION_SECRET=__pega_aqui__
 TOKEN_HASH_SECRET=__pega_aqui__
 
-# Acceso directo por HTTP dentro de la LAN durante esta fase.
-# Al poner Flowise detrás de HTTPS, revisar SECURE_COOKIES y TRUST_PROXY.
 TRUST_PROXY=false
 SECURE_COOKIES=false
 NUMBER_OF_PROXIES=0
 ```
 
-`REDIS_PASSWORD` debe copiarse del secreto de DataSQL; no se genera una segunda
-contraseña para Redis. `SERVER_IP` y `TZ` vienen del `$dkco/.env` global mediante
+`FLOWISE_DB_PASSWORD` será la contraseña del rol PostgreSQL. `REDIS_PASSWORD`
+debe copiarse exactamente del secreto de DataSQL; no se genera otra contraseña
+para Redis. `SERVER_IP` y `TZ` vienen del `$dkco/.env` global mediante
 `env_file`; no se duplican en este archivo.
-
-Generar los secretos hexadecimales con comandos separados, sin imprimirlos en
-el repositorio:
-
-```bash
-openssl rand -hex 32
-```
-
-La clave `FLOWISE_SECRETKEY_OVERWRITE` no debe cambiarse después de guardar
-credenciales en Flowise. Si cambia, las credenciales cifradas existentes pueden
-quedar ilegibles.
 
 Aplicar permisos solamente después de crear y editar el archivo:
 
@@ -232,7 +187,25 @@ chmod 600 $dkco/flowise/.env
 
 ---
 
-## 6. Paso 4 — Crear el compose final
+## 6. Paso 4 — Crear el rol y la base dedicados
+
+Con `$dkco/flowise/.env` ya creado, ejecutar la Fase 5A de
+`docs/services/datasql-guide.md` con estos valores:
+
+```text
+APP_DB_USER=flowise_user
+APP_DB_NAME=flowise_db
+APP_DB_PASSWORD=FLOWISE_DB_PASSWORD del .env de Flowise
+```
+
+La receta lee `POSTGRES_USER`, `POSTGRES_DB` y `POSTGRES_PASSWORD` desde
+`$dkco/datasql/.env`, usa `svc exec` con `PGPASSWORD`, crea el rol primero y la
+base después. Verifica también el propietario y prueba la conexión como
+`flowise_user`. No pegar contraseñas en el chat ni en GitHub.
+
+---
+
+## 7. Paso 5 — Crear el compose final
 
 ### Artefactos
 
