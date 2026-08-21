@@ -413,7 +413,7 @@
       ],
       "protected": true,
       "docs_url": "docs/services/flowise-guide.md",
-      "notes": "Flowise usa MODE=queue con PostgreSQL dedicado flowise_db en datapostgres y Redis dataredis mediante la red externa db_net. Main y worker comparten FLOWISE_SECRETKEY_OVERWRITE, el bind ./data y la configuración de queue; el worker se inicia con pnpm run start-worker y valida /healthz en el puerto interno 5566. No se usa depends_on contra DataSQL. El dashboard se publica en LAN en :8100 durante esta fase; no debe exponerse a Internet sin reverse proxy y HTTPS. svc no implementa scale todavía y flowise-worker conserva container_name fijo. El backup requiere los datos de Flowise y un dump de flowise_db.",
+      "notes": "Flowise usa MODE=queue con PostgreSQL dedicado flowise_db en datapostgres y Redis dataredis mediante la red externa db_net. Main y worker comparten FLOWISE_SECRETKEY_OVERWRITE, el bind ./data y la configuración de queue; el worker se inicia con entrypoint sleep 3 + flowise worker, usa NODE_OPTIONS=--max-old-space-size=768 y valida /healthz en el puerto interno 5566. Main y worker tienen límites de 1g y reserva de 256m. No se usa depends_on contra DataSQL. El dashboard se publica en LAN en :8100 durante esta fase; no debe exponerse a Internet sin reverse proxy y HTTPS. svc no implementa scale todavía y flowise-worker conserva container_name fijo. El backup requiere los datos de Flowise y un dump de flowise_db.",
       "networks": [
         "db_net"
       ],

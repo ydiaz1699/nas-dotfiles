@@ -89,6 +89,8 @@ services:
       - ../.env
       - .env
     environment:
+      # Ajuste validado en el NAS para evitar OOM durante el procesamiento de jobs.
+      NODE_OPTIONS: "--max-old-space-size=768"
       # El worker usa el mismo MODE y secretos que el main; solo cambia el proceso.
       PORT: "3000"
       WORKER_PORT: "5566"
@@ -136,11 +138,11 @@ services:
       resources:
         limits:
           cpus: '1'
-          memory: 512M
+          memory: 1G
         reservations:
           cpus: '0.25'
-          memory: 128M
-    command: ["pnpm", "run", "start-worker"]
+          memory: 256M
+    entrypoint: /bin/sh -c "sleep 3; flowise worker"
 
 networks:
   db_net:

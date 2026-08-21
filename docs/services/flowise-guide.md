@@ -44,7 +44,8 @@ persistencia de Flowise queda en un bind mount respaldable.
 - **Base de datos:** PostgreSQL dedicado `flowise_db` dentro de DataSQL.
 - **Cola:** Redis de DataSQL, con `QUEUE_NAME=flowise-queue`.
 - **Procesamiento:** `MODE=queue` en main y worker; el proceso worker se inicia
-  con el comando oficial `pnpm run start-worker`.
+  con `entrypoint: /bin/sh -c "sleep 3; flowise worker"`, variante reportada como
+  funcional en el NAS.
 - **Persistencia:** `$dkco/flowise/data` montado en `/home/node/.flowise` en ambos
   contenedores. Se usa bind mount para que el backup pueda localizar los datos.
 - **Acceso:** `8100:3000` en la LAN durante esta fase.
@@ -81,7 +82,7 @@ Antes de crear archivos:
 Comprobar DataSQL sin publicar PostgreSQL ni Redis en el host:
 
 ```bash
-svc health datasql
+svc health
 svc ps datasql
 svc port datasql 5432
 ```
@@ -335,6 +336,8 @@ services:
       - ../.env
       - .env
     environment:
+      # Ajuste validado en el NAS para evitar OOM durante el procesamiento de jobs.
+      NODE_OPTIONS: "--max-old-space-size=768"
       # Main y worker comparten MODE, cola, DB, Redis y clave de cifrado.
       PORT: "3000"
       WORKER_PORT: "5566"
@@ -382,11 +385,11 @@ services:
       resources:
         limits:
           cpus: '1'
-          memory: 512M
+          memory: 1G
         reservations:
           cpus: '0.25'
-          memory: 128M
-    command: ["pnpm", "run", "start-worker"]
+          memory: 256M
+    entrypoint: /bin/sh -c "sleep 3; flowise worker"
 
 networks:
   db_net:
@@ -396,8 +399,12 @@ networks:
 ### Motivos de las decisiones del compose
 
 - `MODE=queue` se conserva tanto en main como en worker porque la documentación
-  oficial indica compartir la configuración; lo que diferencia al worker es el
-  proceso `pnpm run start-worker`.
+  oficial indica compartir la configuración. En el NAS, el worker operativo usa
+  `entrypoint: /bin/sh -c "sleep 3; flowise worker"`, que deja unos segundos para
+  que el main saludable complete su inicialización antes de procesar trabajos.
+- `NODE_OPTIONS=--max-old-space-size=768` y los límites de `1G`/`256M` del worker
+  son ajustes operativos reportados como funcionales en el NAS para evitar los
+  reinicios por memoria observados durante el procesamiento.
 - `REDIS_HOST`, `REDIS_PORT` y `REDIS_PASSWORD` son variables documentadas por
   Flowise. No se usa `REDIS_USE_ICOMPRESSION`, porque los drafts no demostraban
   que fuese una variable válida para la versión instalada.
@@ -441,7 +448,7 @@ svc up flowise
 ```bash
 svc ps flowise
 svc logs flowise
-svc health datasql
+svc health
 svc stats flowise
 ```
 
@@ -575,8 +582,8 @@ Antes de habilitar réplicas se deben completar, como tarea separada:
 | Síntoma | Revisión y acción |
 |---|---|
 | `flowise` reinicia | `svc logs flowise`; revisar primero DB, Redis y variables requeridas |
-| `flowise-worker` queda `unhealthy` | `svc logs flowise`; confirmar `pnpm run start-worker`, `WORKER_PORT=5566` y `/healthz` |
-| Error de PostgreSQL | `svc health datasql`, `svc ps datasql`, red `db_net`, host `datapostgres`, base y usuario |
+| `flowise-worker` queda `unhealthy` | `svc logs flowise`; confirmar `entrypoint: /bin/sh -c "sleep 3; flowise worker"`, `NODE_OPTIONS=--max-old-space-size=768`, `WORKER_PORT=5566` y `/healthz` |
+| Error de PostgreSQL | `svc health`, `svc ps datasql`, red `db_net`, host `datapostgres`, base y usuario |
 | Error de Redis | confirmar que `REDIS_PASSWORD` local coincide con DataSQL y que el host es `dataredis` |
 | Worker no procesa trabajos | comprobar que main y worker usan `MODE=queue`, `QUEUE_NAME` y `FLOWISE_SECRETKEY_OVERWRITE` iguales |
 | `permission denied` en `/home/node/.flowise` | crear `$dkco/flowise/data`, aplicar `chown -R 1000:1000` y ejecutar `svc recreate flowise` |
@@ -599,7 +606,9 @@ Antes de habilitar réplicas se deben completar, como tarea separada:
 3. Las variables oficiales de queue incluyen `MODE`, `QUEUE_NAME`,
    `WORKER_CONCURRENCY`, `REDIS_HOST`, `REDIS_PORT` y `REDIS_PASSWORD`.
 4. La documentación oficial muestra `pnpm run start-worker` para iniciar el
-   worker y `http://localhost:5566/healthz` para comprobarlo.
+   worker y `http://localhost:5566/healthz` para comprobarlo; el runtime del NAS
+   reportó como funcional la variante `sleep 3; flowise worker`, que es la que
+   queda en el compose canónico.
 5. DataSQL del NAS ya define `datapostgres`, `dataredis` y la red externa `db_net`.
 6. El compose del NAS no debe publicar PostgreSQL ni Redis al host.
 7. El entorno del NAS exige `compose.yml`, `env_file: [../.env, .env]`, labels de
@@ -642,7 +651,7 @@ significa que la decisión aparece en esta guía y en el compose del catálogo.
 | `cla1.md` | Main + worker y storage compartido | Hecho de fuente, compatible con docs | Alta | Se adopta con `/home/node/.flowise` | INTEGRADO |
 | `cla1.md` | `127.0.0.1:3000` | Hecho de fuente | Alta | Se sustituye por `8100:3000` LAN documentado | REEMPLAZADO |
 | `cla1.md` | `depends_on: datapostgres` | Hecho de fuente | Alta | No válido entre composes separados | RECHAZADO |
-| `cla1.md` | `flowise worker` y `MODE=queue` en el worker | Hecho de fuente | Media | Se sustituye por `pnpm run start-worker`, según docs | REEMPLAZADO |
+| `cla1.md` + reporte runtime NAS | `flowise worker` y `MODE=queue` en el worker | Hecho de fuente y reporte runtime NAS | Alta | Se conserva `MODE=queue` y el runtime usa `entrypoint` con `sleep 3; flowise worker` | INTEGRADO |
 | `cla1.md` | `svc scale flowise-worker s=3` | Hecho de fuente | Alta | `svc` no implementa ese comando | RECHAZADO |
 | `cla1.md` | `/root/.flowise` | Hecho de fuente | Alta | No coincide con imagen/configuración canónica del NAS | RECHAZADO |
 | `cla1.md` | `FLOWISE_USERNAME/PASSWORD` y clave persistente | Hecho de fuente | Media | Se integra como compatibilidad legacy y secreto estable | INTEGRADO |
@@ -655,8 +664,9 @@ significa que la decisión aparece en esta guía y en el compose del catálogo.
 | `cla3.md` | Worker con `WORKER_CONCURRENCY=5` | Hecho de fuente | Media | Punto de partida conservador | INTEGRADO |
 | `cla4.md` | JWT, sesión, issuer, audience y token hash | Hecho de fuente, confirmado por docs de autorización | Alta | Se integran los secretos soportados | INTEGRADO |
 | `cla4.md` | CORS/iframe wildcard | Hecho de fuente | Alta | No se integra por ampliar exposición sin necesidad | RECHAZADO |
-| `cla4.md` | `MODE=worker` y `flowise worker` | Hecho de fuente | Media | Se unifica con configuración oficial: `MODE=queue` + `start-worker` | REEMPLAZADO |
+| `cla4.md` | `MODE=worker` | Hecho de fuente | Media | Se mantiene `MODE=queue` en main y worker; el modo `worker` no se usa | REEMPLAZADO |
 | `cla4.md` | Volumen Docker nombrado `flowise_data` | Hecho de fuente | Alta | Se usa bind mount por backup y visibilidad del NAS | REEMPLAZADO |
+| reporte runtime NAS | `NODE_OPTIONS=--max-old-space-size=768`, worker con límite `1G` y reserva `256M` | Reporte operativo | Alta | Se incorpora al compose y se deja explícito que es una configuración validada en el runtime, no una variable secreta | INTEGRADO |
 | `cla4.md` | Hardening, limits y labels | Hecho de fuente y regla del NAS | Alta | Se integran con límites adaptados al NAS | INTEGRADO |
 | `hac1.md` | PostgreSQL y Redis propios | Hecho de fuente | Alta | Duplica DataSQL y contradice la topología del NAS | RECHAZADO |
 | `hac1.md` | Nginx, Certbot, dominio, TLS y rate limiting | Hecho de fuente | Alta | Es una posible fase futura, no parte de esta instalación LAN | FUERA_DE_ALCANCE |
@@ -696,6 +706,8 @@ significa que la decisión aparece en esta guía y en el compose del catálogo.
 - [ ] `$dkco/.env` contiene `SERVER_IP` y `TZ`.
 - [ ] `db_net` existe como red externa.
 - [ ] `compose.yml` usa `env_file: [../.env, .env]`.
+- [ ] El worker usa `NODE_OPTIONS=--max-old-space-size=768`, límite `1G` y reserva `256M`.
+- [ ] El worker inicia con `sleep 3; flowise worker` y mantiene healthcheck en `5566/healthz`.
 - [ ] PostgreSQL y Redis no tienen puertos publicados al host.
 - [ ] `svc config flowise` termina correctamente.
 - [ ] Main y worker aparecen `healthy`.
