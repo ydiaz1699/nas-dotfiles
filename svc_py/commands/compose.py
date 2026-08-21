@@ -5,13 +5,15 @@ compose.py — Comandos de compose: create (wizard) y diff.
 from __future__ import annotations
 
 import subprocess
+import sys
 from datetime import date
 from pathlib import Path
+from typing import Optional
 
 import typer
 from rich.syntax import Syntax
 
-from svc_py.config import DOCKER_BASE
+from svc_py.config import DOCKER_BASE, NAS_DOTFILES
 from svc_py.core.discovery import svc_compose_file
 from svc_py.core.docker import compose_output
 from svc_py.ui import console, error, info, success, warn
@@ -61,7 +63,7 @@ def create(name: str = typer.Argument(None, help="Nombre del servicio")):
     svc_dir.mkdir(parents=True)
     (svc_dir / "data").mkdir()
 
-    # docker-compose.yml
+    # compose.yml
     compose_content = f"""services:
   app:
     image: {image}
@@ -79,7 +81,7 @@ def create(name: str = typer.Argument(None, help="Nombre del servicio")):
     #   timeout: 10s
     #   retries: 3
 """
-    (svc_dir / "docker-compose.yml").write_text(compose_content)
+    (svc_dir / "compose.yml").write_text(compose_content)
 
     # .env
     env_content = f"# Variables de entorno para {name}\n# TZ=America/New_York\n"
@@ -108,17 +110,34 @@ def create(name: str = typer.Argument(None, help="Nombre del servicio")):
 
     console.print(f"\n  [green]✓[/green] Servicio '{name}' creado:")
     console.print(f"    {svc_dir}/")
-    console.print(f"    ├── docker-compose.yml")
+    console.print(f"    ├── compose.yml")
     console.print(f"    ├── .env")
     console.print(f"    ├── README.md")
     console.print(f"    └── data/")
-    console.print(f"\n  [dim]Editar: nano {svc_dir}/docker-compose.yml[/dim]\n")
+    console.print(f"\n  [dim]Editar: nano {svc_dir}/compose.yml[/dim]\n")
 
 
 
 @app.command("diff")
-def diff(service: str):
-    """Comparar compose en disco vs configuración resuelta."""
+def diff(
+    service: Optional[str] = typer.Argument(None, help="Nombre del servicio"),
+    all_services: bool = typer.Option(
+        False, "--all", "-a", help="Comparar todos contra el catálogo"
+    ),
+):
+    """Comparar compose en disco vs configuración resuelta o catálogo."""
+    if all_services:
+        comparator = NAS_DOTFILES / "agent" / "tools" / "compare_tools.py"
+        result = subprocess.run(
+            [sys.executable, str(comparator), "--all"],
+            cwd=NAS_DOTFILES,
+        )
+        raise typer.Exit(result.returncode)
+
+    if not service:
+        error("Debes indicar un servicio o usar --all")
+        raise typer.Exit(1)
+
     cf = svc_compose_file(service)
     if cf is None:
         error(f"Servicio '{service}' no encontrado")

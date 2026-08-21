@@ -13,6 +13,10 @@ Uso como tool del agente:
 
 Uso standalone:
     python -m agent.tools.compare_tools emqx
+    python -m agent.tools.compare_tools --all
+
+El despliegue local acepta compose.yml, compose.yaml, docker-compose.yml y
+ docker-compose.yaml; el catálogo usa compose.yml como formato canónico.
 """
 
 from __future__ import annotations
@@ -31,10 +35,50 @@ NAS_DOTFILES = Path(os.environ.get("NAS_DOTFILES", "/nas-dotfiles"))
 DOCKER_BASE = Path(os.environ.get("DOCKER_BASE", "/docker"))
 CATALOG_DIR = NAS_DOTFILES / "agent" / "catalog" / "services"
 
+# Compose permite estos cuatro nombres. El nombre canónico del proyecto es
+# compose.yml, por eso tiene prioridad cuando hay más de uno.
+COMPOSE_FILENAMES = (
+    "compose.yml",
+    "compose.yaml",
+    "docker-compose.yml",
+    "docker-compose.yaml",
+)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
+
+
+def _compose_candidates(base: Path, service: str) -> List[Path]:
+    """Devuelve todos los compose válidos de un servicio, en orden de prioridad."""
+    service_dir = base / service
+    if not service_dir.is_dir():
+        return []
+    return [service_dir / name for name in COMPOSE_FILENAMES
+            if (service_dir / name).is_file()]
+
+
+def _find_compose(base: Path, service: str) -> Tuple[Optional[Path], List[Path]]:
+    """Resuelve el compose de un servicio y conserva candidatos ambiguos."""
+    candidates = _compose_candidates(base, service)
+    return (candidates[0] if candidates else None), candidates
+
+
+def _discover_services(base: Path, include_ficha: bool = False) -> Set[str]:
+    """Descubre servicios sin depender de un único nombre de compose."""
+    if not base.is_dir():
+        return set()
+
+    services: Set[str] = set()
+    for service_dir in base.iterdir():
+        if not service_dir.is_dir() or service_dir.name.startswith("."):
+            continue
+        if _compose_candidates(base, service_dir.name) or (
+            include_ficha and (service_dir / "ficha.md").is_file()
+        ):
+            services.add(service_dir.name)
+    return services
 
 
 def _extract_ports(content: str) -> Set[str]:
@@ -165,33 +209,43 @@ def _compare(service: str) -> str:
     """Compara compose real vs catálogo y genera reporte de drift."""
     lines: List[str] = []
 
-    # Localizar archivos
-    real_compose = DOCKER_BASE / service / "compose.yml"
-    catalog_compose = CATALOG_DIR / service / "compose.yml"
+    # Localizar archivos. El despliegue puede usar cualquier nombre Compose
+    # soportado; el catálogo normalmente usa el nombre canónico compose.yml.
+    real_compose, real_candidates = _find_compose(DOCKER_BASE, service)
+    catalog_compose, catalog_candidates = _find_compose(CATALOG_DIR, service)
     ficha_path = CATALOG_DIR / service / "ficha.md"
 
-    if not catalog_compose.exists() and not ficha_path.exists():
+    if catalog_compose is None and not ficha_path.exists():
         return f"❌ Servicio '{service}' no tiene entrada en el catálogo.\n   Crear con: svc catalog-sync {service}"
 
     # Leer archivos
-    real_content = ""
-    catalog_content = ""
-
-    if real_compose.exists():
-        real_content = real_compose.read_text(encoding="utf-8")
-    if catalog_compose.exists():
-        catalog_content = catalog_compose.read_text(encoding="utf-8")
-
+    real_content = real_compose.read_text(encoding="utf-8") if real_compose else ""
+    catalog_content = (catalog_compose.read_text(encoding="utf-8")
+                       if catalog_compose else "")
     ficha = _parse_ficha_frontmatter(ficha_path)
 
     lines.append(f"\n  ━━━ 🔍 Comparación: {service} ━━━\n")
 
-    has_drift = False
+    # Una instalación con varios compose es ambigua: se usa el canónico, pero
+    # se informa para que el usuario pueda eliminar o consolidar el duplicado.
+    for role, candidates, selected in (
+        ("real", real_candidates, real_compose),
+        ("catálogo", catalog_candidates, catalog_compose),
+    ):
+        if len(candidates) > 1:
+            names = ", ".join(path.name for path in candidates)
+            lines.append(
+                f"  ⚠️  Múltiples compose en {role}: {names}; "
+                f"se compara {selected.name if selected else 'ninguno'}"
+            )
+
+    has_drift = any(len(candidates) > 1
+                    for candidates in (real_candidates, catalog_candidates))
 
     # ── Si tenemos ambos composes, comparar ────────────────────────────────
     if real_content and catalog_content:
-        lines.append("  📁 Real: $DOCKER_BASE/{}/compose.yml".format(service))
-        lines.append("  📋 Catálogo: agent/catalog/services/{}/compose.yml\n".format(service))
+        lines.append(f"  📁 Real: {real_compose}")
+        lines.append(f"  📋 Catálogo: {catalog_compose}\n")
 
         # Imagen
         real_img = _extract_image(real_content)
@@ -253,7 +307,6 @@ def _compare(service: str) -> str:
 
     elif real_content and not catalog_content:
         lines.append("  ⚠️  Existe en $DOCKER_BASE pero NO en el catálogo")
-        lines.append("     → Ejecutar: svc catalog-sync {}".format(service))
         has_drift = True
 
     elif catalog_content and not real_content:
@@ -279,8 +332,13 @@ def _compare(service: str) -> str:
 
     # ── Resumen ────────────────────────────────────────────────────────────
     lines.append("")
-    if has_drift:
-        lines.append("  🔶 Drift detectado — sincronizar con: svc catalog-sync {}".format(service))
+    if not real_content and catalog_content:
+        lines.append("  ℹ️  Estado: CATALOG_ONLY — existe en el catálogo, no en $DOCKER_BASE")
+    elif real_content and not catalog_content:
+        lines.append("  ⚠️  Estado: LOCAL_ONLY — existe en $DOCKER_BASE, falta en el catálogo")
+        lines.append("     → Para documentarlo: svc catalog-sync {}".format(service))
+    elif has_drift:
+        lines.append("  🔶 Drift detectado — revisar diferencias antes de sincronizar")
     else:
         lines.append("  ✅ Sin drift — real y catálogo están sincronizados")
     lines.append("")
@@ -326,11 +384,13 @@ if __name__ == "__main__":
         print("     python -m agent.tools.compare_tools --all")
         sys.exit(1)
 
-    if sys.argv[1] == "--all":
-        # Comparar todos los servicios del catálogo
-        if CATALOG_DIR.exists():
-            for svc_dir in sorted(CATALOG_DIR.iterdir()):
-                if svc_dir.is_dir() and (svc_dir / "compose.yml").exists():
-                    print(_compare(svc_dir.name))
+    if sys.argv[1] in ("--all", "-a"):
+        # Comparar la unión de servicios locales y del catálogo. No limitarse
+        # al catálogo evita ocultar servicios locales sin ficha todavía.
+        services = _discover_services(DOCKER_BASE) | _discover_services(
+            CATALOG_DIR, include_ficha=True
+        )
+        for svc in sorted(services):
+            print(_compare(svc))
     else:
         print(_compare(sys.argv[1]))
