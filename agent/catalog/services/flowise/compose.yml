@@ -1,5 +1,6 @@
-# Flowise — constructor visual de agentes y flujos LLM
+# Flowise — main + worker en modo queue
 # En el NAS, este archivo se despliega como $dkco/flowise/compose.yml.
+# DataSQL proporciona datapostgres y dataredis mediante la red externa db_net.
 services:
   flowise:
     extends:
@@ -12,6 +13,9 @@ services:
       - .env
     environment:
       PORT: "3000"
+      MODE: queue
+      QUEUE_NAME: flowise-queue
+      QUEUE_REDIS_EVENT_STREAM_MAX_LEN: "1000"
       DATABASE_TYPE: postgres
       DATABASE_PORT: "5432"
       DATABASE_HOST: datapostgres
@@ -19,6 +23,9 @@ services:
       DATABASE_USER: ${FLOWISE_DB_USER}
       DATABASE_PASSWORD: ${FLOWISE_DB_PASSWORD}
       DATABASE_SSL: "false"
+      REDIS_HOST: dataredis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       SECRETKEY_PATH: /home/node/.flowise
       LOG_PATH: /home/node/.flowise/logs
       BLOB_STORAGE_PATH: /home/node/.flowise/storage
@@ -26,12 +33,23 @@ services:
       DISABLE_FLOWISE_TELEMETRY: "true"
       HTTP_SECURITY_CHECK: "true"
       PATH_TRAVERSAL_SAFETY: "true"
+      OAUTH2_SECURITY_CHECK: "true"
       CUSTOM_MCP_SECURITY_CHECK: "true"
+      FLOWISE_USERNAME: ${FLOWISE_USERNAME}
+      FLOWISE_PASSWORD: ${FLOWISE_PASSWORD}
+      APP_URL: http://${SERVER_IP}:8100
+      JWT_AUTH_TOKEN_SECRET: ${JWT_AUTH_TOKEN_SECRET}
+      JWT_REFRESH_TOKEN_SECRET: ${JWT_REFRESH_TOKEN_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      JWT_TOKEN_EXPIRY_IN_MINUTES: ${JWT_TOKEN_EXPIRY_IN_MINUTES}
+      JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES: ${JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES}
+      EXPRESS_SESSION_SECRET: ${EXPRESS_SESSION_SECRET}
+      TOKEN_HASH_SECRET: ${TOKEN_HASH_SECRET}
       FLOWISE_SECRETKEY_OVERWRITE: ${FLOWISE_SECRETKEY_OVERWRITE}
     ports:
       - "8100:3000"
     volumes:
-      # Ruta relativa al compose: $dkco/flowise/data -> /home/node/.flowise
       - type: bind
         source: ./data
         target: /home/node/.flowise
@@ -40,10 +58,10 @@ services:
       - db_net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/ping"]
-      interval: 10s
+      interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 45s
     cap_drop: [ALL]
     labels:
       - homepage.group=IA y Automatización
@@ -60,6 +78,69 @@ services:
           cpus: '0.25'
           memory: 256M
     entrypoint: /bin/sh -c "sleep 3; flowise start"
+
+  flowise-worker:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: flowiseai/flowise:latest
+    container_name: flowise-worker
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      # El worker usa el mismo MODE y secretos que el main; solo cambia el proceso.
+      PORT: "3000"
+      WORKER_PORT: "5566"
+      MODE: queue
+      QUEUE_NAME: flowise-queue
+      WORKER_CONCURRENCY: "5"
+      QUEUE_REDIS_EVENT_STREAM_MAX_LEN: "1000"
+      DATABASE_TYPE: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_HOST: datapostgres
+      DATABASE_NAME: ${FLOWISE_DB_NAME}
+      DATABASE_USER: ${FLOWISE_DB_USER}
+      DATABASE_PASSWORD: ${FLOWISE_DB_PASSWORD}
+      DATABASE_SSL: "false"
+      REDIS_HOST: dataredis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SECRETKEY_PATH: /home/node/.flowise
+      LOG_PATH: /home/node/.flowise/logs
+      BLOB_STORAGE_PATH: /home/node/.flowise/storage
+      LOG_LEVEL: info
+      DISABLE_FLOWISE_TELEMETRY: "true"
+      HTTP_SECURITY_CHECK: "true"
+      PATH_TRAVERSAL_SAFETY: "true"
+      CUSTOM_MCP_SECURITY_CHECK: "true"
+      FLOWISE_SECRETKEY_OVERWRITE: ${FLOWISE_SECRETKEY_OVERWRITE}
+    volumes:
+      - type: bind
+        source: ./data
+        target: /home/node/.flowise
+        read_only: false
+    networks:
+      - db_net
+    depends_on:
+      flowise:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5566/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    command: ["pnpm", "run", "start-worker"]
 
 networks:
   db_net:

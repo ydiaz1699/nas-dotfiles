@@ -1,64 +1,142 @@
-# Flowise — Guía de instalación y operación
+# Guía: Flowise con PostgreSQL, Redis y workers en modo queue
 
-> **Estado:** prueba inicial con PostgreSQL de DataSQL
-> **Puerto LAN:** `8100` → contenedor `3000`
-> **Red:** `db_net`
-> **Base:** `flowise_db`
-> **Imagen:** `flowiseai/flowise:latest`
+## Estado: válida para el NAS — una instancia main y un worker
+## Fecha: 2026-08-21
+## Resumen
 
-## Qué se va a instalar
+Esta guía instala Flowise como un compose independiente en `$dkco/flowise/`, usando
+la infraestructura existente de DataSQL (`datapostgres`, `dataredis` y `db_net`).
+El servidor web/API recibe las peticiones y Redis distribuye las ejecuciones al
+worker. PostgreSQL y Redis no se duplican, no se publican sus puertos al host y la
+persistencia de Flowise queda en un bind mount respaldable.
 
-Flowise se instala como un compose independiente en `$dkco/flowise/`. No se añade
-otro PostgreSQL ni Redis: la aplicación usa la base dedicada `flowise_db` dentro
-del stack DataSQL, a través de la red externa `db_net`.
+> **Alcance real:** esta configuración deja un main y un worker funcionando en el
+> mismo NAS. Flowise soporta varios workers en queue mode, pero el wrapper `svc`
+> de este repositorio todavía no implementa `svc scale`; por eso esta guía no
+> promete un comando de escalado que no existe. El `container_name` fijo del worker
+> también debe resolverse antes de habilitar réplicas.
 
-La imagen oficial usa el puerto interno `3000`, persiste su directorio de datos
-en `/home/node/.flowise` y ofrece el endpoint de salud
-`/api/v1/ping`. Estas decisiones se contrastaron con la documentación y el
-compose oficial de Flowise:
+---
 
-- [Configuración de bases de datos de Flowise](https://docs.flowiseai.com/configuration/databases)
+## 1. Arquitectura final
+
+```text
+                                LAN
+                                 │
+                   http://${SERVER_IP}:8100
+                                 │
+                       flowise :3000 (main)
+                         │              │
+                         │              └── $dkco/flowise/data
+                         │
+                 db_net (red externa existente)
+                    │                         │
+        datapostgres:5432              dataredis:6379
+        flowise_db                    flowise-queue
+                    │                         │
+                    └──────── flowise-worker
+                               :5566 healthz
+                               $dkco/flowise/data
+```
+
+### Decisiones finales
+
+- **Base de datos:** PostgreSQL dedicado `flowise_db` dentro de DataSQL.
+- **Cola:** Redis de DataSQL, con `QUEUE_NAME=flowise-queue`.
+- **Procesamiento:** `MODE=queue` en main y worker; el proceso worker se inicia
+  con el comando oficial `pnpm run start-worker`.
+- **Persistencia:** `$dkco/flowise/data` montado en `/home/node/.flowise` en ambos
+  contenedores. Se usa bind mount para que el backup pueda localizar los datos.
+- **Acceso:** `8100:3000` en la LAN durante esta fase.
+- **Seguridad:** secretos locales con permisos `600`, JWT propios, clave de
+  cifrado persistente, `no-new-privileges` heredado y `cap_drop: [ALL]`.
+- **Fuera de esta guía:** PostgreSQL/Redis propios, Nginx, Certbot, dominio
+  público, TLS y réplicas del main.
+
+La documentación oficial de Flowise recomienda PostgreSQL cuando se trabaja a
+escala y describe queue mode con Redis, main y workers separados:
+
+- [Queue mode de Flowise](https://docs.flowiseai.com/configuration/running-flowise-using-queue)
 - [Ejecución en producción](https://docs.flowiseai.com/configuration/running-in-production)
-- [Compose oficial de Flowise](https://github.com/FlowiseAI/Flowise/blob/main/docker/docker-compose.yml)
+- [Bases de datos](https://docs.flowiseai.com/configuration/databases)
+- [Autorización de aplicación](https://docs.flowiseai.com/configuration/authorization/app-level)
 
-## Requisitos previos
+Contenido externo consultado y reescrito de forma resumida para esta guía; no se
+copian bloques extensos de las fuentes originales.
+
+---
+
+## 2. Requisitos y comprobaciones previas
+
+Antes de crear archivos:
 
 1. DataSQL debe estar instalado y saludable.
 2. La red externa `db_net` debe existir.
 3. `$dkco/.env` debe contener `SERVER_IP` y `TZ`.
-4. Debe existir `$dkco/_common.yml`, porque el compose hereda sus defaults.
+4. `$dkco/_common.yml` debe existir en el NAS.
 5. El puerto `8100` debe estar libre.
+6. El valor de `REDIS_PASSWORD` de Flowise debe ser exactamente el mismo que usa
+   DataSQL.
 
-Comprobar el estado sin tocar el NAS desde otro compose:
+Comprobar DataSQL sin publicar PostgreSQL ni Redis en el host:
 
 ```bash
 svc health datasql
+svc ps datasql
 svc port datasql 5432
 ```
 
-PostgreSQL no debe tener un puerto publicado al host. `svc port datasql 5432`
-puede no mostrar una publicación; la conectividad de Flowise será interna por
-`db_net`.
+`svc port datasql 5432` no debe mostrar un puerto publicado. La conectividad de
+Flowise será interna por `db_net`. El healthcheck del compose de DataSQL valida
+Redis con su propia contraseña; no se debe crear un segundo Redis.
 
-## Instalación manual
+---
 
-### 1. Crear directorios
+## 3. Paso 1 — Crear directorios
+
+### Artefactos
+
+- Tipo: directorio
+- Identificador: `$dkco/flowise/data`
+- Estado inicial: puede no existir
+- Estado esperado: existe antes de crear o levantar el compose
+
+Crear primero la carpeta persistente:
 
 ```bash
 mkdir -p $dkco/flowise/data
 ```
 
-### 2. Crear la base y el usuario dedicados
+No ejecutar todavía `chown`, `chmod` ni `svc up`: esos pasos dependen de que la
+carpeta exista y de que el archivo `.env` haya sido creado.
 
-Entrar al cliente PostgreSQL usando el servicio de DataSQL; no reutilizar el
-usuario administrativo para Flowise:
+---
+
+## 4. Paso 2 — Crear la base y el usuario dedicados
+
+### Artefactos
+
+- Tipo: usuario PostgreSQL
+- Identificador: `flowise_user`
+- Operación: crear en `datapostgres`
+- Estado esperado: puede autenticarse en `flowise_db`
+- Fuente: configuración canónica y `cla1.md`, `cla3.md`, `cla4.md`
+
+- Tipo: base PostgreSQL
+- Identificador: `flowise_db`
+- Operación: crear con propietario `flowise_user`
+- Estado esperado: existe en `datapostgres`
+
+Entrar al cliente PostgreSQL mediante el wrapper del proyecto:
 
 ```bash
 svc exec datasql postgres psql -U admin -d appdb
 ```
 
-Dentro de `psql`, usar una contraseña segura y conservar exactamente la misma en
-el `.env` de Flowise:
+Antes de crear nada, revisar dentro de `psql` si `flowise_user` y `flowise_db` ya
+existen. Si no existen, ejecutar las sentencias siguientes sustituyendo el
+marcador por una contraseña fuerte y conservar exactamente el mismo valor para
+el archivo local de Flowise:
 
 ```sql
 CREATE USER flowise_user WITH PASSWORD 'REEMPLAZAR_CON_PASSWORD_SEGURA';
@@ -66,143 +144,397 @@ CREATE DATABASE flowise_db OWNER flowise_user;
 \q
 ```
 
-Si el usuario o la base ya existen, no ejecutar de nuevo el `CREATE` sin revisar
-primero su estado. No hacer `source $dkco/datasql/.env`: los secretos pueden
-contener caracteres que alteren el shell.
+No repetir `CREATE USER` o `CREATE DATABASE` sin comprobar antes el estado. No
+hacer `source $dkco/datasql/.env`: los secretos pueden contener caracteres que
+modifiquen la interpretación del shell.
 
-### 3. Crear el archivo local de secretos
+Generar una contraseña puede hacerse con:
 
-Crear `$dkco/flowise/.env` con los valores reales:
-
-```env
-FLOWISE_DB_NAME=flowise_db
-FLOWISE_DB_USER=flowise_user
-FLOWISE_DB_PASSWORD=REEMPLAZAR_CON_PASSWORD_SEGURA
-FLOWISE_SECRETKEY_OVERWRITE=REEMPLAZAR_CON_HEX_ALEATORIO
+```bash
+openssl rand -base64 32
 ```
 
-`FLOWISE_SECRETKEY_OVERWRITE` debe conservarse mientras existan credenciales
-cifradas en Flowise. No cambiarlo arbitrariamente después de la instalación.
+El resultado no debe pegarse en el repositorio ni en una conversación.
 
-Aplicar permisos después de crear el archivo:
+---
+
+## 5. Paso 3 — Crear el `.env` local
+
+### Artefactos
+
+- Tipo: archivo de secretos
+- Identificador: `$dkco/flowise/.env`
+- Estado inicial: no existe
+- Estado esperado: contiene los valores reales y después tendrá permisos `600`
+
+Crear el archivo después de haber creado `$dkco/flowise/data`:
+
+```bash
+touch $dkco/flowise/.env
+```
+
+Editar `$dkco/flowise/.env` y colocar este contenido, sustituyendo todos los
+marcadores `__pega_aqui__`:
+
+```env
+# DataSQL: no crear otro PostgreSQL ni otro Redis
+FLOWISE_DB_NAME=flowise_db
+FLOWISE_DB_USER=flowise_user
+FLOWISE_DB_PASSWORD=__pega_aqui__
+REDIS_PASSWORD=__pega_aqui__
+
+# Compatibilidad con el acceso inicial legacy de Flowise.
+# Desde Flowise 3.0.1 la autenticación email/password es el mecanismo preferido.
+FLOWISE_USERNAME=admin
+FLOWISE_PASSWORD=__pega_aqui__
+
+# Debe permanecer estable mientras existan credenciales cifradas.
+FLOWISE_SECRETKEY_OVERWRITE=__pega_aqui__
+
+# Secretos de JWT y sesión. Usar valores diferentes entre sí.
+JWT_AUTH_TOKEN_SECRET=__pega_aqui__
+JWT_REFRESH_TOKEN_SECRET=__pega_aqui__
+JWT_ISSUER=flowise
+JWT_AUDIENCE=flowise
+JWT_TOKEN_EXPIRY_IN_MINUTES=60
+JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES=129600
+EXPRESS_SESSION_SECRET=__pega_aqui__
+TOKEN_HASH_SECRET=__pega_aqui__
+
+# Acceso directo por HTTP dentro de la LAN durante esta fase.
+# Al poner Flowise detrás de HTTPS, revisar SECURE_COOKIES y TRUST_PROXY.
+TRUST_PROXY=false
+SECURE_COOKIES=false
+NUMBER_OF_PROXIES=0
+```
+
+`REDIS_PASSWORD` debe copiarse del secreto de DataSQL; no se genera una segunda
+contraseña para Redis. `SERVER_IP` y `TZ` vienen del `$dkco/.env` global mediante
+`env_file`; no se duplican en este archivo.
+
+Generar los secretos hexadecimales con comandos separados, sin imprimirlos en
+el repositorio:
+
+```bash
+openssl rand -hex 32
+```
+
+La clave `FLOWISE_SECRETKEY_OVERWRITE` no debe cambiarse después de guardar
+credenciales en Flowise. Si cambia, las credenciales cifradas existentes pueden
+quedar ilegibles.
+
+Aplicar permisos solamente después de crear y editar el archivo:
 
 ```bash
 chmod 600 $dkco/flowise/.env
 ```
 
-### 4. Instalar el compose
+---
 
-Copiar el compose de catálogo a `$dkco/flowise/compose.yml` o usar el instalador
-de DebMenux. La versión desplegada debe cambiar únicamente la ruta de
-`extends.file` a `../_common.yml`; el compose del catálogo usa `../../_common.yml`.
+## 6. Paso 4 — Crear el compose final
 
-### 5. Validar y levantar
+### Artefactos
+
+- Tipo: archivo de configuración
+- Identificador: `$dkco/flowise/compose.yml`
+- Estado inicial: no existe o contiene la variante anterior
+- Estado esperado: main + worker, sin bases de datos propias
+
+En el NAS, crear `$dkco/flowise/compose.yml` con el contenido completo siguiente.
+La única diferencia respecto al compose del catálogo es la ruta de `extends`:
+en el NAS es `../_common.yml`; en `agent/catalog/services/flowise/compose.yml`
+es `../../_common.yml`.
+
+```yaml
+# Flowise — main + worker en modo queue
+services:
+  flowise:
+    extends:
+      file: ../_common.yml
+      service: _defaults
+    image: flowiseai/flowise:latest
+    container_name: flowise
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      PORT: "3000"
+      MODE: queue
+      QUEUE_NAME: flowise-queue
+      QUEUE_REDIS_EVENT_STREAM_MAX_LEN: "1000"
+      DATABASE_TYPE: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_HOST: datapostgres
+      DATABASE_NAME: ${FLOWISE_DB_NAME}
+      DATABASE_USER: ${FLOWISE_DB_USER}
+      DATABASE_PASSWORD: ${FLOWISE_DB_PASSWORD}
+      DATABASE_SSL: "false"
+      REDIS_HOST: dataredis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SECRETKEY_PATH: /home/node/.flowise
+      LOG_PATH: /home/node/.flowise/logs
+      BLOB_STORAGE_PATH: /home/node/.flowise/storage
+      LOG_LEVEL: info
+      DISABLE_FLOWISE_TELEMETRY: "true"
+      HTTP_SECURITY_CHECK: "true"
+      PATH_TRAVERSAL_SAFETY: "true"
+      OAUTH2_SECURITY_CHECK: "true"
+      CUSTOM_MCP_SECURITY_CHECK: "true"
+      FLOWISE_USERNAME: ${FLOWISE_USERNAME}
+      FLOWISE_PASSWORD: ${FLOWISE_PASSWORD}
+      APP_URL: http://${SERVER_IP}:8100
+      JWT_AUTH_TOKEN_SECRET: ${JWT_AUTH_TOKEN_SECRET}
+      JWT_REFRESH_TOKEN_SECRET: ${JWT_REFRESH_TOKEN_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      JWT_TOKEN_EXPIRY_IN_MINUTES: ${JWT_TOKEN_EXPIRY_IN_MINUTES}
+      JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES: ${JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES}
+      EXPRESS_SESSION_SECRET: ${EXPRESS_SESSION_SECRET}
+      TOKEN_HASH_SECRET: ${TOKEN_HASH_SECRET}
+      FLOWISE_SECRETKEY_OVERWRITE: ${FLOWISE_SECRETKEY_OVERWRITE}
+    ports:
+      - "8100:3000"
+    volumes:
+      - type: bind
+        source: ./data
+        target: /home/node/.flowise
+        read_only: false
+    networks:
+      - db_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+    cap_drop: [ALL]
+    labels:
+      - homepage.group=IA y Automatización
+      - homepage.name=Flowise
+      - homepage.icon=flowise
+      - homepage.href=http://${SERVER_IP}:8100
+      - homepage.description=Constructor visual de agentes y flujos LLM
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    entrypoint: /bin/sh -c "sleep 3; flowise start"
+
+  flowise-worker:
+    extends:
+      file: ../_common.yml
+      service: _defaults
+    image: flowiseai/flowise:latest
+    container_name: flowise-worker
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      # Main y worker comparten MODE, cola, DB, Redis y clave de cifrado.
+      PORT: "3000"
+      WORKER_PORT: "5566"
+      MODE: queue
+      QUEUE_NAME: flowise-queue
+      WORKER_CONCURRENCY: "5"
+      QUEUE_REDIS_EVENT_STREAM_MAX_LEN: "1000"
+      DATABASE_TYPE: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_HOST: datapostgres
+      DATABASE_NAME: ${FLOWISE_DB_NAME}
+      DATABASE_USER: ${FLOWISE_DB_USER}
+      DATABASE_PASSWORD: ${FLOWISE_DB_PASSWORD}
+      DATABASE_SSL: "false"
+      REDIS_HOST: dataredis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SECRETKEY_PATH: /home/node/.flowise
+      LOG_PATH: /home/node/.flowise/logs
+      BLOB_STORAGE_PATH: /home/node/.flowise/storage
+      LOG_LEVEL: info
+      DISABLE_FLOWISE_TELEMETRY: "true"
+      HTTP_SECURITY_CHECK: "true"
+      PATH_TRAVERSAL_SAFETY: "true"
+      CUSTOM_MCP_SECURITY_CHECK: "true"
+      FLOWISE_SECRETKEY_OVERWRITE: ${FLOWISE_SECRETKEY_OVERWRITE}
+    volumes:
+      - type: bind
+        source: ./data
+        target: /home/node/.flowise
+        read_only: false
+    networks:
+      - db_net
+    depends_on:
+      flowise:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5566/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    cap_drop: [ALL]
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    command: ["pnpm", "run", "start-worker"]
+
+networks:
+  db_net:
+    external: true
+```
+
+### Motivos de las decisiones del compose
+
+- `MODE=queue` se conserva tanto en main como en worker porque la documentación
+  oficial indica compartir la configuración; lo que diferencia al worker es el
+  proceso `pnpm run start-worker`.
+- `REDIS_HOST`, `REDIS_PORT` y `REDIS_PASSWORD` son variables documentadas por
+  Flowise. No se usa `REDIS_USE_ICOMPRESSION`, porque los drafts no demostraban
+  que fuese una variable válida para la versión instalada.
+- `WORKER_CONCURRENCY=5` es un punto de partida conservador tomado de la
+  configuración de queue documentada oficialmente; no es una medición del NAS.
+- El worker usa el mismo bind mount para que vea la clave de cifrado, logs y
+  almacenamiento local. Esta configuración escala únicamente dentro del mismo
+  host; no es un almacenamiento distribuido.
+- `depends_on` solo relaciona al worker con el main del mismo compose y conserva
+  `condition: service_healthy`. No se declara dependencia contra DataSQL, porque
+  DataSQL vive en otro compose.
+- El puerto `5566` solo se usa dentro del contenedor para el healthcheck del
+  worker; no se publica al host.
+- No se añadió `rshared`: Flowise no consume montajes anidados como File Browser.
+
+---
+
+## 7. Paso 5 — Validar y levantar
+
+### Verificación de sintaxis y configuración
+
+Desde la carpeta del servicio:
 
 ```bash
 dk flowise
 svc config flowise
+```
+
+`svc config` debe resolver las variables y mostrar un compose válido. Si aparecen
+variables vacías, detenerse y completar `$dkco/flowise/.env`; no levantar el
+servicio con secretos faltantes.
+
+### Levantar
+
+```bash
 svc up flowise
 ```
 
-### 6. Verificar en orden
+### Verificar en orden
 
 ```bash
 svc ps flowise
 svc logs flowise
+svc health datasql
 svc stats flowise
 ```
 
-La comprobación de salud debe llegar a `healthy` y el panel debe responder en:
+Estados esperados:
 
-```text
-http://${SERVER_IP}:8100
-```
+- `flowise` alcanza `healthy` mediante
+  `http://localhost:3000/api/v1/ping`.
+- `flowise-worker` alcanza `healthy` mediante
+  `http://localhost:5566/healthz`.
+- La aplicación responde en `http://${SERVER_IP}:8100`.
+- No existe una publicación de `5432` ni `6379` en el host.
 
-Si el contenedor reinicia, revisar primero:
+No considerar suficiente que los contenedores estén `running`: el estado
+`healthy`, los logs y la conexión real con PostgreSQL/Redis forman parte de la
+verificación.
 
-```bash
-svc logs flowise
-svc health datasql
-svc ps datasql
-```
+---
 
-No usar `depends_on` contra `datapostgres`: Flowise y DataSQL viven en composes
-separados. La aplicación debe tolerar que DataSQL se levante antes o reintentarse
-manualmente.
+## 8. Persistencia, permisos y recuperación
 
-## Persistencia y permisos
-
-El bind mount usa una ruta relativa al archivo `compose.yml`: `./data` siempre
-se resuelve como `$dkco/flowise/data`, no como una carpeta externa ni como un
-volumen Docker administrado. Por tanto, la estructura persistente queda así:
+La estructura final es:
 
 ```text
 $dkco/flowise/
 ├── compose.yml
-├── .env
-└── data/
+├── .env                    # permisos 600
+└── data/                   # /home/node/.flowise en main y worker
     ├── logs/
     └── storage/
 ```
 
-Dentro del contenedor, esa misma carpeta aparece como `/home/node/.flowise` y
-contiene claves, logs, almacenamiento local y datos auxiliares. El montaje se
-declara como bind explícito y `read_only: false` porque Flowise debe escribir en
-esa carpeta:
-
-```yaml
-volumes:
-  - type: bind
-    source: ./data
-    target: /home/node/.flowise
-    read_only: false
-```
-
-No se añade `bind: propagation: rshared`: Flowise no crea ni consume montajes
-anidados dentro de `data`. Esa opción sí es necesaria en File Browser porque
-los USB se montan posteriormente dentro de `/NAS/USB` y deben propagarse al
-contenedor sin recrearlo.
-
-La imagen actual corre con un usuario no root; si hay errores de escritura,
-crear primero la carpeta y después aplicar:
+Si Flowise informa `permission denied`, crear primero la carpeta (ya se hace en
+el paso 3) y después aplicar el propietario de la imagen:
 
 ```bash
 chown -R 1000:1000 $dkco/flowise/data
 ```
 
-No aplicar `chown` antes de `mkdir`. No montar directorios de `$dkco/datasql/`
-en Flowise.
+Después de cambiar permisos, recrear los contenedores:
 
-## Backup y recuperación
+```bash
+svc recreate flowise
+svc ps flowise
+```
 
-El backup mínimo tiene dos partes:
+### Backup
 
-1. Datos de aplicación:
+El backup tiene dos artefactos distintos y ambos son necesarios:
+
+1. Datos locales de Flowise:
 
    ```bash
    svc backup flowise
    ```
 
-2. Dump de PostgreSQL `flowise_db`, realizado con el procedimiento de backup de
-   DataSQL y guardado en `$dkco/datasql/data/postgres/backups/`.
+2. Dump de la base `flowise_db`, usando el procedimiento de backup de DataSQL y
+   conservándolo en `$dkco/datasql/data/postgres/backups/`.
 
-Para recuperar, detener Flowise, restaurar primero la base dedicada y después el
-contenido de `$dkco/flowise/data`; finalmente levantar y revisar logs. Probar la
-restauración en una base temporal antes de reemplazar la base real.
+No tratar `svc backup flowise` como sustituto del dump PostgreSQL. Antes de una
+actualización o una operación destructiva, comprobar que existen ambos backups.
 
-## Seguridad de la prueba
+### Recuperación
 
-- El panel está publicado en la LAN en el puerto `8100` solo para esta prueba.
-- No publicar `5432` ni `6379` al host.
-- Mantener `no-new-privileges` y `cap_drop: [ALL]`; si la imagen falla con el
-  capability drop, registrar el error y revisar la excepción antes de quitarlo.
-- No exponer Flowise a Internet sin reverse proxy y autenticación.
-- Flowise permite herramientas personalizadas/MCP que pueden ejecutar acciones
-  sensibles; habilitarlas solo para usuarios de confianza y revisar las opciones
-  de seguridad antes de usar el servicio fuera del entorno de prueba.
-- Medir consumo con `svc stats flowise` antes de cambiar los límites provisionales.
+Orden de recuperación:
 
-## Operación habitual
+1. Detener Flowise:
+
+   ```bash
+   svc down flowise
+   ```
+
+2. Restaurar `flowise_db` mediante el procedimiento de DataSQL.
+3. Restaurar el contenido de `$dkco/flowise/data`.
+4. Comprobar que `.env` conserva exactamente `FLOWISE_SECRETKEY_OVERWRITE`.
+5. Levantar:
+
+   ```bash
+   svc up flowise
+   ```
+
+6. Verificar salud y logs:
+
+   ```bash
+   svc ps flowise
+   svc logs flowise
+   ```
+
+La restauración debe probarse primero en una base temporal; no reemplazar la base
+real sin comprobar que el dump puede restaurarse.
+
+---
+
+## 9. Operación habitual
 
 ```bash
 svc restart flowise
@@ -213,23 +545,168 @@ svc recreate flowise
 svc catalog-sync flowise
 ```
 
-Después de cambiar labels o el compose, usar `svc recreate flowise` para que
-Homepage reciba la configuración nueva y consultar `docs/dependency-map.md` para
-la cascada documental.
+Después de cambiar labels, recrear el servicio para que Homepage vuelva a leerlos:
 
-## Diagnóstico rápido
+```bash
+svc recreate flowise
+```
 
-| Síntoma | Revisión |
+No usar `docker compose`, `docker restart` ni `docker exec` directamente en las
+operaciones documentadas para este NAS; los wrappers del proyecto son la interfaz
+operativa válida.
+
+### Escalado futuro
+
+La documentación oficial de Flowise permite uno o más workers, pero este repo no
+contiene todavía `svc scale` y el compose usa `container_name: flowise-worker`.
+Por tanto, no ejecutar `svc scale flowise-worker s=3`: ese comando no existe.
+Antes de habilitar réplicas se deben completar, como tarea separada:
+
+1. eliminar o parametrizar el `container_name` fijo del worker;
+2. implementar soporte de escalado en el wrapper `svc`;
+3. definir cómo se nombran los workers y cómo se muestran en Homepage;
+4. probar que el bind mount local y Redis soportan la carga;
+5. medir CPU, memoria y `WORKER_CONCURRENCY` con `svc stats flowise`.
+
+---
+
+## 10. Diagnóstico
+
+| Síntoma | Revisión y acción |
 |---|---|
-| Flowise no inicia | `svc logs flowise`; revisar variables `FLOWISE_DB_*` |
-| Error de conexión PostgreSQL | `svc health datasql`, `svc ps datasql`, red `db_net`, hostname `datapostgres` |
-| Reinicios por memoria | `svc stats flowise`; revisar el límite provisional de 1G |
-| `permission denied` en `/home/node/.flowise` | crear la carpeta y luego `chown -R 1000:1000` |
+| `flowise` reinicia | `svc logs flowise`; revisar primero DB, Redis y variables requeridas |
+| `flowise-worker` queda `unhealthy` | `svc logs flowise`; confirmar `pnpm run start-worker`, `WORKER_PORT=5566` y `/healthz` |
+| Error de PostgreSQL | `svc health datasql`, `svc ps datasql`, red `db_net`, host `datapostgres`, base y usuario |
+| Error de Redis | confirmar que `REDIS_PASSWORD` local coincide con DataSQL y que el host es `dataredis` |
+| Worker no procesa trabajos | comprobar que main y worker usan `MODE=queue`, `QUEUE_NAME` y `FLOWISE_SECRETKEY_OVERWRITE` iguales |
+| `permission denied` en `/home/node/.flowise` | crear `$dkco/flowise/data`, aplicar `chown -R 1000:1000` y ejecutar `svc recreate flowise` |
+| Se pierden credenciales | restaurar la clave exacta `FLOWISE_SECRETKEY_OVERWRITE` y el bind mount `data` |
+| Reinicios por memoria | revisar `svc stats flowise`; no elevar concurrencia sin mediciones |
 | No aparece en Homepage | verificar labels y ejecutar `svc recreate flowise` |
-| Se pierden credenciales cifradas | comprobar que `FLOWISE_SECRETKEY_OVERWRITE` no cambió y que `./data` persiste |
+| Cookies no funcionan detrás de HTTPS | revisar `SECURE_COOKIES`, `TRUST_PROXY`, `NUMBER_OF_PROXIES`, `APP_URL` y el proxy |
+| Se quiere publicar en Internet | detener la exposición directa; esta guía no incluye reverse proxy ni TLS |
 
-## Referencias
+---
 
-- [Documentación oficial de bases de datos](https://docs.flowiseai.com/configuration/databases)
-- [Documentación oficial de producción](https://docs.flowiseai.com/configuration/running-in-production)
-- [Repositorio oficial y compose](https://github.com/FlowiseAI/Flowise/tree/main/docker)
+## 11. Hechos, inferencias y decisiones
+
+### Hechos confirmados
+
+1. Flowise soporta PostgreSQL y Redis; su documentación recomienda PostgreSQL
+   para despliegues a escala.
+2. Queue mode usa un servidor main que publica trabajos y uno o más workers que
+   los procesan mediante Redis.
+3. Las variables oficiales de queue incluyen `MODE`, `QUEUE_NAME`,
+   `WORKER_CONCURRENCY`, `REDIS_HOST`, `REDIS_PORT` y `REDIS_PASSWORD`.
+4. La documentación oficial muestra `pnpm run start-worker` para iniciar el
+   worker y `http://localhost:5566/healthz` para comprobarlo.
+5. DataSQL del NAS ya define `datapostgres`, `dataredis` y la red externa `db_net`.
+6. El compose del NAS no debe publicar PostgreSQL ni Redis al host.
+7. El entorno del NAS exige `compose.yml`, `env_file: [../.env, .env]`, labels de
+   Homepage en el compose y operaciones mediante `svc`.
+8. El repositorio no contiene una implementación de `svc scale`.
+
+### Inferencias seguras
+
+1. Unir Flowise a `db_net` permite resolver `datapostgres` y `dataredis` desde el
+   compose de Flowise sin recrear esos contenedores.
+2. Main y worker deben compartir `FLOWISE_SECRETKEY_OVERWRITE` porque ambos
+   participan en el mismo despliegue y la clave protege credenciales cifradas.
+3. El bind mount debe existir antes de levantar el servicio para evitar que Docker
+   lo cree con propietario inesperado.
+
+### Inferencias no confirmadas
+
+1. `QUEUE_NAME=flowise-queue` probablemente evita colisiones lógicas entre colas,
+   pero los drafts no demostraban cómo inspecciona las claves la versión exacta
+   instalada; se conserva un nombre dedicado y se deja la validación operacional
+   en los logs y pruebas del servicio.
+2. `WORKER_CONCURRENCY=5` es un punto inicial conservador, no un valor óptimo para
+   este NAS; debe medirse.
+3. `cap_drop: [ALL]` debería funcionar con la imagen actual, pero si Flowise falla
+   por una capability concreta, se debe registrar la evidencia antes de ajustar
+   el hardening.
+
+---
+
+## 12. Auditoría de fuentes y variantes
+
+La siguiente matriz conserva las ideas relevantes de los siete drafts después de
+compararlas con la configuración del NAS y la documentación oficial. `INTEGRADO`
+significa que la decisión aparece en esta guía y en el compose del catálogo.
+
+| Fuente | Idea/configuración relevante | Tipo | Confianza | Decisión final | Clasificación |
+|---|---|---|---|---|---|
+| `cla1.md` | PostgreSQL dedicado `flowise_db` en DataSQL | Hecho de fuente | Alta | Se adopta `datapostgres` + DB dedicada | INTEGRADO |
+| `cla1.md` | Redis compartido `dataredis` y `MODE=queue` | Hecho de fuente, confirmado por docs oficiales | Alta | Se adopta con variables oficiales | INTEGRADO |
+| `cla1.md` | Main + worker y storage compartido | Hecho de fuente, compatible con docs | Alta | Se adopta con `/home/node/.flowise` | INTEGRADO |
+| `cla1.md` | `127.0.0.1:3000` | Hecho de fuente | Alta | Se sustituye por `8100:3000` LAN documentado | REEMPLAZADO |
+| `cla1.md` | `depends_on: datapostgres` | Hecho de fuente | Alta | No válido entre composes separados | RECHAZADO |
+| `cla1.md` | `flowise worker` y `MODE=queue` en el worker | Hecho de fuente | Media | Se sustituye por `pnpm run start-worker`, según docs | REEMPLAZADO |
+| `cla1.md` | `svc scale flowise-worker s=3` | Hecho de fuente | Alta | `svc` no implementa ese comando | RECHAZADO |
+| `cla1.md` | `/root/.flowise` | Hecho de fuente | Alta | No coincide con imagen/configuración canónica del NAS | RECHAZADO |
+| `cla1.md` | `FLOWISE_USERNAME/PASSWORD` y clave persistente | Hecho de fuente | Media | Se integra como compatibilidad legacy y secreto estable | INTEGRADO |
+| `cla2.md` | `QUEUE_NAME` funciona como prefijo aislante de Redis | Inferencia no confirmada | Baja | Se usa nombre dedicado, pero no se afirma aislamiento probado | PENDIENTE |
+| `cla2.md` | Reutilizar la contraseña de Redis de DataSQL | Hecho de fuente | Alta | Flowise usa el mismo secreto de `dataredis` | INTEGRADO |
+| `cla3.md` | `_common.yml`, env global/local y labels Homepage | Hecho de fuente y regla del NAS | Alta | Se conserva | INTEGRADO |
+| `cla3.md` | Healthcheck main en `/api/v1/ping` | Hecho de fuente | Alta | Se conserva y se añade healthcheck oficial del worker | INTEGRADO |
+| `cla3.md` | Worker con `container_name` fijo | Hecho de fuente | Alta | Se conserva una sola réplica; queda escalado pendiente | INTEGRADO / PENDIENTE |
+| `cla3.md` | `depends_on: flowise` plano | Hecho de fuente | Alta | Se mejora a `condition: service_healthy` | REEMPLAZADO |
+| `cla3.md` | Worker con `WORKER_CONCURRENCY=5` | Hecho de fuente | Media | Punto de partida conservador | INTEGRADO |
+| `cla4.md` | JWT, sesión, issuer, audience y token hash | Hecho de fuente, confirmado por docs de autorización | Alta | Se integran los secretos soportados | INTEGRADO |
+| `cla4.md` | CORS/iframe wildcard | Hecho de fuente | Alta | No se integra por ampliar exposición sin necesidad | RECHAZADO |
+| `cla4.md` | `MODE=worker` y `flowise worker` | Hecho de fuente | Media | Se unifica con configuración oficial: `MODE=queue` + `start-worker` | REEMPLAZADO |
+| `cla4.md` | Volumen Docker nombrado `flowise_data` | Hecho de fuente | Alta | Se usa bind mount por backup y visibilidad del NAS | REEMPLAZADO |
+| `cla4.md` | Hardening, limits y labels | Hecho de fuente y regla del NAS | Alta | Se integran con límites adaptados al NAS | INTEGRADO |
+| `hac1.md` | PostgreSQL y Redis propios | Hecho de fuente | Alta | Duplica DataSQL y contradice la topología del NAS | RECHAZADO |
+| `hac1.md` | Nginx, Certbot, dominio, TLS y rate limiting | Hecho de fuente | Alta | Es una posible fase futura, no parte de esta instalación LAN | FUERA_DE_ALCANCE |
+| `hac1.md` | `WORKER_CONCURRENCY=100000` | Hecho de fuente | Alta | Sin medición y desproporcionado para el NAS | RECHAZADO |
+| `hac1.md` | Healthcheck con `<http://localhost>` | Hecho de fuente | Alta | URL inválida; se sustituye por healthchecks oficiales | RECHAZADO |
+| `hac1.md` | Volúmenes propios para Postgres, Redis, Flowise y Certbot | Hecho de fuente | Alta | No corresponden a la infraestructura centralizada | FUERA_DE_ALCANCE |
+| `hac2.md` | Stack propio sin proxy | Hecho de fuente | Alta | Sigue duplicando PostgreSQL/Redis | RECHAZADO |
+| `hac2.md` | `CORS_ORIGINS=*`, `IFRAME_ORIGINS=*`, cookies inseguras | Hecho de fuente | Alta | No se integra en una guía presentada como segura | RECHAZADO |
+| `hac2.md` | `docker compose` directo y `docker-compose.yml` | Hecho de fuente | Alta | Se sustituyen por `svc` y `compose.yml` del NAS | REEMPLAZADO |
+| `hac2.md` | Escalado con `--scale` | Hecho de fuente | Alta | No se documenta mientras `svc` no lo soporte | PENDIENTE |
+| `metaso.md` | PostgreSQL propio sin Redis/queue | Hecho de fuente | Alta | Se reemplaza por DataSQL + queue, que reúne las mejoras verificadas | REEMPLAZADO |
+| `metaso.md` | `/root/.flowise` y `./data/flowise` | Hecho de fuente | Alta | Se conserva la idea de persistencia, no la ruta incompatible | REEMPLAZADO |
+| `metaso.md` | Autenticación y `FLOWISE_SECRETKEY_OVERWRITE` | Hecho de fuente | Media | Se conservan los secretos; JWT se añade con documentación oficial | INTEGRADO |
+| `metaso.md` | Escalar el main horizontalmente contra PostgreSQL | Inferencia no confirmada | Baja | Requiere proxy/load balancer y no forma parte de esta fase | FUERA_DE_ALCANCE |
+
+### Contenido descartado explícitamente
+
+- No se borra la idea de Nginx/TLS: queda registrada como futura guía de proxy,
+  pero no se mezcla con una instalación LAN que no tiene dominio ni certificados.
+- No se borra la idea de PostgreSQL/Redis propios: queda rechazada porque DataSQL
+  ya proporciona ambos servicios y duplicarlos aumenta mantenimiento y backups.
+- No se borra la idea de escalado: queda pendiente porque el código de `svc` no
+  implementa `scale` y el worker mantiene un `container_name` fijo.
+- No se conserva `REDIS_USE_ICOMPRESSION`, JWTs sin evidencia de soporte ni
+  `WORKER_CONCURRENCY=100000`, porque no fueron validados o son inseguros para el
+  hardware conocido.
+
+---
+
+## 13. Checklist final
+
+- [ ] `$dkco/flowise/data` existe antes de levantar.
+- [ ] `flowise_user` y `flowise_db` existen en DataSQL.
+- [ ] `$dkco/flowise/.env` existe y tiene permisos `600`.
+- [ ] `REDIS_PASSWORD` coincide con DataSQL.
+- [ ] `FLOWISE_SECRETKEY_OVERWRITE` está guardada en un lugar seguro.
+- [ ] `$dkco/.env` contiene `SERVER_IP` y `TZ`.
+- [ ] `db_net` existe como red externa.
+- [ ] `compose.yml` usa `env_file: [../.env, .env]`.
+- [ ] PostgreSQL y Redis no tienen puertos publicados al host.
+- [ ] `svc config flowise` termina correctamente.
+- [ ] Main y worker aparecen `healthy`.
+- [ ] `svc stats flowise` fue revisado antes de elevar concurrencia.
+- [ ] Se respaldaron tanto `data` como `flowise_db`.
+
+---
+
+## Referencias del proyecto
+
+- Configuración final del catálogo: `agent/catalog/services/flowise/compose.yml`
+- Variables de ejemplo: `agent/catalog/services/flowise/.env.example`
+- Metadatos: `agent/catalog/services/flowise/ficha.md`
+- Entorno Docker: `docs/docker-entorno.md`
