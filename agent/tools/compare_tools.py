@@ -215,8 +215,12 @@ def _compare(service: str) -> str:
     catalog_compose, catalog_candidates = _find_compose(CATALOG_DIR, service)
     ficha_path = CATALOG_DIR / service / "ficha.md"
 
-    if catalog_compose is None and not ficha_path.exists():
-        return f"❌ Servicio '{service}' no tiene entrada en el catálogo.\n   Crear con: svc catalog-sync {service}"
+    if real_compose is None and catalog_compose is None and not ficha_path.exists():
+        return (
+            f"\n  ━━━ 🔍 Comparación: {service} ━━━\n"
+            f"  ❌ Servicio '{service}' no tiene compose local ni entrada en el catálogo.\n"
+            f"     → Para documentarlo: svc catalog-sync {service}"
+        )
 
     # Leer archivos
     real_content = real_compose.read_text(encoding="utf-8") if real_compose else ""
@@ -306,13 +310,23 @@ def _compare(service: str) -> str:
             has_drift = True
 
     elif real_content and not catalog_content:
+        lines.append(f"  📁 Real: {real_compose}")
+        lines.append("  📋 Catálogo: no encontrado")
         lines.append("  ⚠️  Existe en $DOCKER_BASE pero NO en el catálogo")
         has_drift = True
 
-    elif catalog_content and not real_content:
-        lines.append("  ℹ️  Solo existe en catálogo (no desplegado en $DOCKER_BASE)")
+    elif (catalog_content or ficha_path.exists()) and not real_content:
+        if catalog_content:
+            lines.append("  📁 Real: no encontrado en $DOCKER_BASE")
+            lines.append(f"  📋 Catálogo: {catalog_compose}")
+            lines.append("  ℹ️  Solo existe en catálogo (no desplegado en $DOCKER_BASE)")
+        else:
+            lines.append("  📁 Real: no encontrado en $DOCKER_BASE")
+            lines.append("  📋 Catálogo: ficha sin compose")
+            lines.append("  ℹ️  Solo existe ficha en catálogo (sin compose catalogado)")
 
     # ── Verificar convenciones contra el real ──────────────────────────────
+    convention_issues = False
     source = real_content or catalog_content
     if source:
         lines.append("")
@@ -328,19 +342,24 @@ def _compare(service: str) -> str:
             icon = "✅" if ok else "❌"
             lines.append(f"     {icon} {name}")
             if not ok:
-                has_drift = True
+                convention_issues = True
 
     # ── Resumen ────────────────────────────────────────────────────────────
     lines.append("")
-    if not real_content and catalog_content:
-        lines.append("  ℹ️  Estado: CATALOG_ONLY — existe en el catálogo, no en $DOCKER_BASE")
+    if not real_content and (catalog_content or ficha_path.exists()):
+        if catalog_content:
+            lines.append("  ℹ️  Estado: CATALOG_ONLY — existe en el catálogo, no en $DOCKER_BASE")
+        else:
+            lines.append("  ℹ️  Estado: CATALOG_ONLY — existe ficha, pero falta compose catalogado")
     elif real_content and not catalog_content:
-        lines.append("  ⚠️  Estado: LOCAL_ONLY — existe en $DOCKER_BASE, falta en el catálogo")
+        lines.append("  ⚠️  Estado: LOCAL_ONLY — existe en $DOCKER_BASE, falta compose en el catálogo")
         lines.append("     → Para documentarlo: svc catalog-sync {}".format(service))
     elif has_drift:
-        lines.append("  🔶 Drift detectado — revisar diferencias antes de sincronizar")
+        lines.append("  🔶 Estado: DRIFT — revisar diferencias entre real y catálogo")
+    elif convention_issues:
+        lines.append("  ⚠️  Estado: OK en versión, pero hay convenciones pendientes")
     else:
-        lines.append("  ✅ Sin drift — real y catálogo están sincronizados")
+        lines.append("  ✅ Estado: OK — real y catálogo están sincronizados")
     lines.append("")
 
     return "\n".join(lines)
