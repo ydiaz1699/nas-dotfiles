@@ -15,7 +15,7 @@ svc_list() {
 # Devuelve el path real del compose file de un servicio
 svc_compose_file() {
   local svc="$1"
-  for name in docker-compose.yml docker-compose.yaml compose.yml compose.yaml; do
+  for name in compose.yml compose.yaml docker-compose.yml docker-compose.yaml; do
     if [[ -f "$DOCKER_BASE/$svc/$name" ]]; then
       echo "$DOCKER_BASE/$svc/$name"
       return

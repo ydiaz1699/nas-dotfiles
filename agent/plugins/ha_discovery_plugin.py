@@ -60,12 +60,12 @@ DEVICE_INFO = {
     "sw_version": "1.0",
 }
 
-# Compose filenames válidos
+# Compose filenames válidos (orden de prioridad)
 COMPOSE_NAMES = [
-    "docker-compose.yml",
-    "docker-compose.yaml",
     "compose.yml",
     "compose.yaml",
+    "docker-compose.yml",
+    "docker-compose.yaml",
 ]
 
 

@@ -28,10 +28,13 @@ NAS_CLI=python  # alternativo — usa svc_py/ (Rich + InquirerPy)
 `svc_compose_file()` retorna el path del compose file encontrado.
 
 Orden de búsqueda:
-1. `docker-compose.yml`
-2. `docker-compose.yaml`
-3. `compose.yml`
-4. `compose.yaml`
+1. `compose.yml` (canónico del proyecto)
+2. `compose.yaml`
+3. `docker-compose.yml`
+4. `docker-compose.yaml`
+
+Si existen varios en el mismo servicio, se usa el primero según este orden y
+se debe eliminar o renombrar el resto para evitar ambigüedad.
 
 ---
 
@@ -49,6 +52,7 @@ Orden de búsqueda:
 | `svc watch [N]` | Monitoreo en vivo (CPU/RAM/uptime, cada N seg) |
 | `svc create <nombre>` | Scaffolding: compose + .env + README + data/ |
 | `svc diff <servicio>` | Comparar compose en disco vs config resuelta |
+| `svc diff --all` | Comparar todos los compose locales contra el catálogo, sin entrar en carpetas |
 | `svc menu` | TUI interactivo con preview (requiere fzf) |
 | `svc --help` | Ayuda completa |
 

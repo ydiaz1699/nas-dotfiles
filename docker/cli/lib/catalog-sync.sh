@@ -3,8 +3,9 @@
 # nas-dotfiles — Pipeline de Auto-Documentación en Cascada
 # ==========================================================
 # Archivo: docker/cli/lib/catalog-sync.sh
-# Descripción: Detecta compose.yml nuevos/modificados en $dkco/
-#              y genera automáticamente toda la documentación:
+# Descripción: Detecta archivos Compose válidos en $dkco/
+#              (compose.yml/.yaml y docker-compose.yml/.yaml) y genera
+#              automáticamente toda la documentación:
 #              ficha.md, guía placeholder, entrada en SKILL.md,
 #              script DebMenux placeholder.
 #
@@ -529,27 +530,26 @@ catalog_sync() {
     echo ""
 
     if [[ -n "$target_service" ]]; then
-        # Un solo servicio
-        local compose="${DOCKER_BASE}/${target_service}/compose.yml"
-        if [[ ! -f "$compose" ]]; then
-            _sync_warn "No se encontró ${compose}"
+        # Un solo servicio: resolver cualquiera de los nombres Compose válidos.
+        local compose
+        compose=$(svc_compose_file "$target_service")
+        if [[ -z "$compose" ]]; then
+            _sync_warn "No se encontró compose para ${target_service}"
             return 1
         fi
         _sync_service "$target_service" "$compose"
     else
-        # Todos los servicios
-        for compose in "${DOCKER_BASE}"/*/compose.yml; do
-            [[ -f "$compose" ]] || continue
-            local svc_name
-            svc_name=$(basename "$(dirname "$compose")")
-
-            # Saltar directorios internos
-            [[ "$svc_name" == "backups" ]] && continue
-            [[ "$svc_name" == "cli" ]] && continue
+        # Todos los servicios: svc_list() ya acepta las cuatro variantes.
+        local svc_name compose
+        while IFS= read -r svc_name; do
+            [[ -z "$svc_name" ]] && continue
+            [[ "$svc_name" == "backups" || "$svc_name" == "cli" ]] && continue
+            compose=$(svc_compose_file "$svc_name")
+            [[ -z "$compose" ]] && continue
 
             ((services_found++))
             _sync_service "$svc_name" "$compose"
-        done
+        done < <(svc_list)
     fi
 
     # Actualizar SKILL.md al final
@@ -608,11 +608,12 @@ _catalog_status() {
     printf "  %-16s %-8s %-8s %-8s %-8s %-10s\n" "SERVICIO" "COMPOSE" "FICHA" "GUÍA" "DEBMENU" "HOMEPAGE"
     echo "  ──────────────────────────────────────────────────────────────────"
 
-    for compose in "${DOCKER_BASE}"/*/compose.yml; do
-        [[ -f "$compose" ]] || continue
-        local svc
-        svc=$(basename "$(dirname "$compose")")
+    local svc compose
+    while IFS= read -r svc; do
+        [[ -z "$svc" ]] && continue
         [[ "$svc" == "backups" || "$svc" == "cli" ]] && continue
+        compose=$(svc_compose_file "$svc")
+        [[ -z "$compose" ]] && continue
 
         local has_compose="✅"
         local has_ficha=$(  [[ -f "${CATALOG_DIR}/${svc}/ficha.md" ]]     && echo "✅" || echo "❌")
@@ -621,7 +622,7 @@ _catalog_status() {
         local has_homepage=$(grep -qc 'homepage\.' "$compose" 2>/dev/null  && echo "✅" || echo "❌")
 
         printf "  %-16s %-8s %-8s %-8s %-8s %-10s\n" "$svc" "$has_compose" "$has_ficha" "$has_guide" "$has_debmenu" "$has_homepage"
-    done
+    done < <(svc_list)
 
     echo ""
     echo "  Leyenda: COMPOSE=en \$dkco | FICHA=catálogo agente | GUÍA=docs/ | DEBMENU=/debmenux | HOMEPAGE=labels"
@@ -645,11 +646,12 @@ _regenerate_nas_context() {
 
     # Recolectar servicios activos
     local services_table=""
-    for compose in "${DOCKER_BASE}"/*/compose.yml; do
-        [[ -f "$compose" ]] || continue
-        local svc
-        svc=$(basename "$(dirname "$compose")")
+    local svc compose
+    while IFS= read -r svc; do
+        [[ -z "$svc" ]] && continue
         [[ "$svc" == "backups" || "$svc" == "cli" ]] && continue
+        compose=$(svc_compose_file "$svc")
+        [[ -z "$compose" ]] && continue
 
         # Puerto principal
         local port
@@ -665,7 +667,7 @@ _regenerate_nas_context() {
         grep -q 'homepage\.' "$compose" 2>/dev/null && hp="✅ labels"
 
         services_table="${services_table}| ${svc} | ${port} | ${nets} | Docker | ${hp} |\n"
-    done
+    done < <(svc_list)
 
     # Agregar usb-api (nativo)
     if systemctl is-active --quiet usb-api.service 2>/dev/null; then

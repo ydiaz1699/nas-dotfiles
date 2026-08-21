@@ -30,7 +30,13 @@ case "$cmd" in
   watch)       svc_watch ;        exit 0 ;;
   create)      svc_create "$@" ;  exit 0 ;;
   doctor)      svc_doctor ;       exit 0 ;;
-  diff)        svc_diff "$@" ;    exit 0 ;;
+  diff)
+    if [[ "${1:-}" == "--all" || "${1:-}" == "-a" ]]; then
+      # Comparación catálogo ↔ despliegues locales, sin entrar en cada servicio.
+      python3 "${NAS_DOTFILES:-/nas-dotfiles}/agent/tools/compare_tools.py" --all
+      exit $?
+    fi
+    svc_diff "$@" ; exit $? ;;
   catalog-sync) source "$CLI_DIR/lib/catalog-sync.sh" ; catalog_sync "$@" ; exit 0 ;;
   scan) python3 "${NAS_DOTFILES:-/nas-dotfiles}/agent/tools/project_scanner.py" "$@" ; exit 0 ;;
   backup-all) svc_backup_all "$@" ; exit 0 ;;
