@@ -18,7 +18,7 @@ trigger: >
   - Servicios: Docker, contenedor, compose, imagen, puerto, red, volumen
   - Comandos: dk, adm, nasfk, svc, instal, pipins, gpl, gs, nas, bat
   - Servicios específicos: emqx, ntfy, adguard, filebrowser, esphome,
-    homepage, datasql, pgadmin, redis, flowise, usb-api, spacedrive
+    homepage, datasql, pgadmin, redis, flowise, ioBroker, usb-api, spacedrive
   - Infra: homelab, servidor, backup, cron, systemd, USB, mount
   - IoT: MQTT, broker, ESP32, Home Assistant, alarma, sensor
   - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS
@@ -133,6 +133,7 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 | homepage | 3000 | homepage_net | `docs/services/homepage-guide.md` |
 | ntfy | 8090 | homepage_net | `docs/services/ntfy-guide.md` |
 | node-red | 1880 | iot_net | `docs/services/node-red-guide.md` |
+| iobroker | 8181 (preparado) | iot_net | `docs/services/iobroker-guide.md` |
 | usb-api | 8091 | nativo (systemd) | `agent/catalog/services/usb-api/ficha.md` |
 
 ### Servicios nuevos que dependen de DataSQL
@@ -157,7 +158,7 @@ recuperación en el NAS, preferir PostgreSQL de DataSQL.
 |-----|-----------|-------|
 | `adguard_macvlan_NET` | IP dedicada AdGuard (DNS:53) | Solo macvlan |
 | `db_net` | Apps ↔ DBs (interno) | Nunca exponer puertos al host |
-| `iot_net` | EMQX ↔ ESPHome ↔ HA | Todo IoT aquí |
+| `iot_net` | EMQX ↔ ESPHome ↔ HA ↔ ioBroker | Todo IoT aquí |
 | `homepage_net` | Homepage ↔ servicios (widgets) | Para APIs internas |
 
 ### USB Automount
@@ -256,6 +257,7 @@ Requisitos pendientes:
 | Fragmentos dispersos a unificar | `docs/meta-prompt-unificar.md` (reglas de unificación sin perder contenido) |
 | Usuario sube compose copiado | `docs/docker-entorno.md` (ajustar a convenciones) |
 | Preguntan por un servicio específico | `docs/services/<svc>-guide.md` → `agent/catalog/services/<svc>/ficha.md` |
+| ioBroker, adapters, MQTT, upgrades | `docs/services/iobroker-guide.md` → `agent/catalog/services/iobroker/ficha.md` |
 | Troubleshooting USB / mounts | `docs/services/ntfy-guide.md` §Troubleshooting |
 | Configurar Homepage | `docs/services/homepage-guide.md` |
 | Home Assistant (automatizaciones, ntfy, cámara) | `docs/services/homeassistant-guide.md` |

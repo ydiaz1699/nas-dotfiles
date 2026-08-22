@@ -10,7 +10,7 @@ description: >
   - Servicios: Docker, contenedor, compose, imagen, puerto, red, volumen
   - Comandos del entorno: dk, adm, nasfk, svc, instal, pipins, gpl, gs, nas
   - Servicios específicos: emqx, ntfy, adguard, filebrowser, esphome, homepage,
-    datasql, pgadmin, redis, flowise, usb-api, spacedrive, vaultwarden
+    datasql, pgadmin, redis, flowise, ioBroker, usb-api, spacedrive, vaultwarden
   - Infraestructura: homelab, servidor, backup, cron, systemd, USB, mount
   - IoT/domótica: MQTT, broker, ESP32, Home Assistant, alarma, sensor
   - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS, proxy
@@ -306,6 +306,7 @@ Orden de consulta:
 | **homeassistant** | `docs/services/homeassistant-guide.md` | Automatización, cámara→ntfy, includes, TvOverlay, shell_commands |
 | **node-red** | `docs/services/node-red-guide.md` | Flujos IoT, conexión EMQX/MQTT, no usar cap_drop, backup flows.json |
 | **emqx** | `agent/catalog/services/emqx/ficha.md` | Puertos WS 8083/8084, ulimits, dashboard LAN, iot_net |
+| **ioBroker** | `docs/services/iobroker-guide.md` | Puerto 8181, `/opt/iobroker`, iot_net, MQTT con `emqx:1883`, backup y escalado stateful |
 | **esphome** | `agent/catalog/services/esphome/ficha.md` | Puerto 6052, iot_net |
 
 ### Hechos críticos que NO deben adivinarse:
@@ -317,6 +318,7 @@ Orden de consulta:
 - **Bind mounts**: siempre usar `mount --bind` + fstab, nunca symlinks (Docker no los propaga)
 - **ntfy**: puerto 8090, stateless (cache 24h), auth abierto en LAN, attachments para snapshots de cámaras
 - **usb-api**: puerto 8091, servicio systemd NATIVO (no Docker) — necesita umount real en el host
+- **ioBroker**: una sola instancia stateful con `/opt/iobroker` persistente; usar `emqx:1883` dentro de `iot_net`; no añadir réplicas, `privileged` ni `network_mode: host` sin requerimiento de un adapter
 - **Notificaciones**: usar `ntfy_send()` de `docker/cli/lib/notifications.sh` — nunca `notify-send` (inútil en headless)
 
 ### Herramientas disponibles:
