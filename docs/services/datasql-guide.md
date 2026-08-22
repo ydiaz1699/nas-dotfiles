@@ -237,6 +237,52 @@ chmod 700 $dkco/datasql/data/pgadmin
 chmod 600 $dkco/datasql/.env
 ```
 
+### Migración desde un Compose legacy con IPs estáticas
+
+Si el `compose.yml` existente contiene bloques como:
+
+```yaml
+networks:
+  db_net:
+    ipv4_address: 172.20.0.X
+```
+
+hay que reemplazarlo por la configuración canónica del catálogo. Las IPs
+`172.20.0.3`, `172.20.0.4` y `172.20.0.5` no deben reservarse manualmente:
+`db_net` es compartida por varios servicios y Docker debe asignar las IPs
+dinámicamente. El error resultante de una dirección ya ocupada es:
+`failed to set up container networking: Address already in use`.
+
+La migración desde el checkout local del NAS se ejecuta en este orden:
+
+```bash
+# 1. Guardar una instantánea de la configuración actual
+svc snapshot datasql
+
+# 2. Sustituir el Compose runtime por la versión canónica del catálogo
+cp "$NAS_DOTFILES/agent/catalog/services/datasql/compose.yml" \
+   "$dkco/datasql/compose.yml"
+
+# 3. Validar la configuración nueva sin levantar contenedores
+svc config datasql
+
+# 4. Recrear el stack con la nueva asignación dinámica de IPs
+svc down datasql
+svc up datasql
+
+# 5. Verificar los tres servicios y la red compartida
+svc ps datasql
+svc net
+svc port-map
+```
+
+La versión canónica también elimina la publicación de PostgreSQL (`5432:5432`),
+conserva únicamente `5050:80` para pgAdmin y usa `datapostgres:5432` desde la
+red interna. No eliminar `db_net`: otros servicios activos pueden utilizarla.
+Si el `svc config datasql` sigue mostrando `ipv4_address`, `published: "5432"`,
+`TZ` dentro de `environment` o una IP literal en el label de Homepage, detenerse
+y no ejecutar `svc up`.
+
 ---
 
 ## Fase 5 — Levantar el Stack

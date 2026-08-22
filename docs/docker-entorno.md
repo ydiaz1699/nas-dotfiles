@@ -197,10 +197,11 @@ agregar restricciones si se necesitan.
 ### Reglas de uso
 
 1. **DBs nunca exponen puertos al host** — comunicación solo via `db_net`
-2. **Todo IoT va a `iot_net`** — EMQX, ESPHome, (futuro HA si deja de usar host)
-3. **Homepage widgets internos via `homepage_net`** — ntfy conectado aquí
-4. **`network_mode: host`** — solo para servicios que necesitan mDNS/descubrimiento (HA, ESPHome)
-5. **macvlan** — solo para servicios que necesitan IP propia en la LAN (AdGuard DNS:53)
+2. **No usar `ipv4_address` en redes compartidas** — Docker asigna IPs dinámicas; las aplicaciones deben comunicarse mediante `container_name`/hostname
+3. **Todo IoT va a `iot_net`** — EMQX, ESPHome, (futuro HA si deja de usar host)
+4. **Homepage widgets internos via `homepage_net`** — ntfy conectado aquí
+5. **`network_mode: host`** — solo para servicios que necesitan mDNS/descubrimiento (HA, ESPHome)
+6. **macvlan** — solo para servicios que necesitan IP propia en la LAN (AdGuard DNS:53)
 
 ### Conectar un servicio a una red existente (sin recrear)
 
