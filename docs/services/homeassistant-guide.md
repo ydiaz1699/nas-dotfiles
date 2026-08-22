@@ -4,6 +4,9 @@
 > **Imagen:** ghcr.io/home-assistant/home-assistant:stable  
 > **Red:** host (acceso directo al stack de red del NAS)  
 > **Tipo:** Docker container (privileged)
+> **Base de datos:** `homeassistant_db` en PostgreSQL de DataSQL, mediante `127.0.0.1:5432`
+
+Esta guía incorpora la configuración real compartida en la [guía de Home Assistant del usuario](https://gist.github.com/ydiaz1699/ad4f9c92edd8669d720b8865c82a73ed), adaptada a las reglas actuales de `nas-dotfiles`: operaciones Docker mediante `svc`, credenciales leídas sin `source .env`, acceso LAN mediante `${SERVER_IP}` y publicación PostgreSQL limitada al loopback. La guía compartida mostraba `192.168.0.200` en algunos ejemplos; no se copia esa IP porque el NAS documentado usa `SERVER_IP` (`192.168.1.200` en la configuración actual).
 
 ---
 
@@ -11,11 +14,14 @@
 
 1. [Estructura de archivos](#estructura-de-archivos)
 2. [Compose](#compose)
-3. [Organización con includes](#organización-con-includes)
-4. [Integración con ntfy (notificaciones push)](#integración-con-ntfy)
-5. [Automatización: Cámara → snapshot → ntfy](#automatización-cámara--snapshot--ntfy)
-6. [TvOverlay (notificaciones en TV)](#tvoverlay)
-7. [Troubleshooting](#troubleshooting)
+3. [Primer inicio y onboarding](#primer-inicio-y-onboarding)
+4. [Recorder con PostgreSQL y arranque coordinado](#recorder-con-postgresql-y-arranque-coordinado)
+5. [Verificación y operación diaria](#verificación-y-operación-diaria)
+6. [Organización con includes](#organización-con-includes)
+7. [Integración con ntfy (notificaciones push)](#integración-con-ntfy)
+8. [Automatización: Cámara → snapshot → ntfy](#automatización-cámara--snapshot--ntfy)
+9. [TvOverlay (notificaciones en TV)](#tvoverlay)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -105,6 +111,49 @@ services:
 
 ---
 
+## Primer inicio y onboarding
+
+DataSQL debe estar disponible antes de iniciar Home Assistant. Como los Compose
+son independientes, `depends_on` no puede ordenar esta dependencia. Verificar
+primero el stack con:
+
+```bash
+svc ps datasql
+```
+
+`datapostgres` y `dataredis` deben estar `healthy`; `datapgadmin` debe estar
+`Up` (la imagen canónica no define healthcheck para pgAdmin). Después validar y
+levantar Home Assistant:
+
+```bash
+dk homeassistant
+svc config homeassistant
+svc up homeassistant
+```
+
+Esperar aproximadamente 60 segundos y revisar el estado y los logs con la
+interfaz `svc`:
+
+```bash
+svc ps homeassistant
+svc logs homeassistant
+```
+
+Acceder desde la LAN mediante `http://${SERVER_IP}:8123` y completar el
+onboarding de Home Assistant (cuenta, nombre y ubicación). No editar
+`configuration.yaml` antes de completar ese proceso. Si existe un reverse proxy,
+es posible ver un aviso indicando que se recibió una petición desde un proxy no
+confiable; el servicio puede seguir funcionando y se puede documentar después
+la red del proxy en `trusted_proxies`.
+
+La configuración canónica usa `dns` explícitos, `stop_grace_period: 60s`,
+`privileged: true`, el bind `./data:/config`, healthcheck HTTP y labels de
+Homepage con `${SERVER_IP}`. `network_mode: host` hace innecesario declarar
+`networks`; también explica por qué HA accede al Recorder mediante el loopback
+del NAS y no mediante el hostname Docker `datapostgres`.
+
+---
+
 ## Recorder con PostgreSQL y arranque coordinado
 
 Home Assistant conserva `network_mode: host` para mDNS, descubrimiento IoT,
@@ -122,7 +171,12 @@ recorder:
 
 La contraseña real no debe copiarse a esta guía ni al repositorio. La base
 `homeassistant_db` y el usuario `ha_user` deben crearse previamente con la
-receta de `docs/services/datasql-guide.md`, usando credenciales dedicadas.
+receta de `docs/services/datasql-guide.md`, usando credenciales dedicadas. La
+guía compartida usa `admin/appdb` como ejemplo de acceso administrativo; no se
+debe copiar ese usuario o base: hay que leer `POSTGRES_USER`, `POSTGRES_DB` y
+`POSTGRES_PASSWORD` reales de `$dkco/datasql/.env` sin ejecutar `source`.
+Como PostgreSQL usa `scram-sha-256`, pasar `PGPASSWORD` explícitamente dentro
+de `svc exec datasql postgres`, tal como indica la guía de DataSQL.
 
 DataSQL conserva PostgreSQL en `db_net` con IP dinámica, pero publica su puerto
 **solo en loopback**:
@@ -133,8 +187,10 @@ ports:
 ```
 
 No cambiarlo a `0.0.0.0:5432:5432` ni a `${SERVER_IP}:5432:5432`: Home Assistant
-solo necesita acceso desde el propio NAS. Los consumidores Docker conectados a
-`db_net` usan `datapostgres:5432` directamente.
+solo necesita acceso desde el propio NAS. Usar `127.0.0.1` explícitamente en
+`db_url`, nunca `localhost`: la resolución de `localhost` puede intentar IPv6 y
+producir `connection refused` aunque `127.0.0.1:5432` esté escuchando. Los
+consumidores Docker conectados a `db_net` usan `datapostgres:5432` directamente.
 
 Los Compose están separados, así que `depends_on` no puede ordenar HA respecto
 a DataSQL. El arranque correcto es:
@@ -150,6 +206,51 @@ svc ps homeassistant
 `restart: unless-stopped` permite que HA vuelva a intentar después de un
 reinicio de DataSQL, pero no sustituye esta precondición inicial. El healthcheck
 HTTP de HA confirma la interfaz web, no la salud del Recorder.
+
+---
+
+## Verificación y operación diaria
+
+Después de reiniciar HA y esperar aproximadamente 30 segundos:
+
+```bash
+svc ps homeassistant
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8123
+svc logs homeassistant
+```
+
+Para confirmar que el Recorder está escribiendo datos, esperar a que HA haya
+generado estados y consultar la base usando las credenciales administrativas de
+DataSQL. No usar `docker exec` directo ni `source $dkco/datasql/.env`:
+
+```bash
+PG_ADMIN_USER=$(grep '^POSTGRES_USER=' "$dkco/datasql/.env" | cut -d= -f2-)
+PG_ADMIN_DB=$(grep '^POSTGRES_DB=' "$dkco/datasql/.env" | cut -d= -f2-)
+PG_ADMIN_PASSWORD=$(grep '^POSTGRES_PASSWORD=' "$dkco/datasql/.env" | cut -d= -f2-)
+
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+  psql -U "$PG_ADMIN_USER" -d homeassistant_db \
+  -c "SELECT COUNT(*) FROM states;"
+
+unset PG_ADMIN_USER PG_ADMIN_DB PG_ADMIN_PASSWORD
+```
+
+El resultado esperado es un conteo mayor que cero después de que HA haya
+registrado estados. Las operaciones habituales son:
+
+```bash
+svc ps homeassistant
+svc logs homeassistant
+svc restart homeassistant
+svc update homeassistant
+svc stop homeassistant
+```
+
+El acceso LAN es `http://${SERVER_IP}:8123`; el acceso local para pruebas es
+`http://127.0.0.1:8123`. Si HA reinicia en bucle y los logs no muestran el
+motivo actual, detenerlo con `svc stop homeassistant` y después consultar
+`svc logs homeassistant` para aislar el arranque completo.
 
 ---
 
@@ -515,6 +616,39 @@ action:
 ---
 
 ## Troubleshooting
+
+### `connection refused` del Recorder con `localhost`
+
+Si PostgreSQL está escuchando en `127.0.0.1:5432` pero el Recorder falla con
+`localhost`, cambiar el `db_url` a `127.0.0.1`. En este entorno el cliente puede
+intentar IPv6 primero; `localhost` no es equivalente a la publicación loopback
+IPv4 usada por DataSQL.
+
+### `psql` pide contraseña o `source .env` rompe la shell
+
+No ejecutar `source $dkco/datasql/.env`: los secretos pueden contener caracteres
+especiales. Tampoco usar el ejemplo `admin/appdb` de la guía compartida. Leer las
+variables necesarias con `grep` y pasarlas como `env PGPASSWORD=...` dentro de
+`svc exec datasql postgres`, siguiendo la receta de DataSQL.
+
+### Aviso de reverse proxy
+
+Un mensaje como `A request from a reverse proxy was received` puede aparecer si
+un proxy de la red llega directamente a HA. No impide el funcionamiento inicial;
+si se va a usar proxy, declarar después sus rangos autorizados en
+`trusted_proxies` y validar la configuración antes de reiniciar.
+
+### Home Assistant reinicia en bucle y no aparecen logs nuevos
+
+Aislar el arranque con los comandos del NAS, sin usar Docker directamente:
+
+```bash
+svc stop homeassistant
+svc logs homeassistant
+```
+
+Revisar primero `configuration.yaml`, la URL del Recorder, la disponibilidad de
+DataSQL y los permisos del bind `./data:/config`.
 
 ### `curl: cannot open '/config/www/snapshots/alarma.jpg'`
 
