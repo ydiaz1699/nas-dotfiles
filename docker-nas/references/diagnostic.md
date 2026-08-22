@@ -77,6 +77,47 @@ Solución:
 
 ---
 
+## `Address already in use` al crear la red del contenedor
+
+No todos los mensajes `Address already in use` indican un puerto del host. Si
+el log contiene:
+
+```text
+failed to set up container networking: Address already in use
+```
+
+comprobar si el Compose resuelto conserva `ipv4_address`:
+
+```bash
+svc config datasql
+svc port-map
+ss -ltnp | grep -E ':(5432|5050|5051)\b' || true
+svc net
+```
+
+En DataSQL el incidente real era una IP estática ocupada dentro de la red
+compartida `db_net`; cambiar `5050`/`5432` o usar `svc restart datasql` no podía
+liberar esa IP ni recrear la red. La solución es eliminar `ipv4_address`, dejar
+IPs dinámicas, conservar `db_net` y recrear solo DataSQL:
+
+```bash
+NAS_CLI=bash svc snapshot datasql
+cp "$NAS_DOTFILES/agent/catalog/services/datasql/compose.yml" \
+   "$dkco/datasql/compose.yml"
+svc config datasql
+# DETENERSE si aparece `ipv4_address` o falta `external: true` en `db_net`.
+# Continuar solo si PostgreSQL conserva `127.0.0.1:5432:5432`.
+svc down datasql
+svc up datasql
+svc ps datasql
+```
+
+No usar `docker network prune` ni eliminar manualmente una red externa que
+puede ser utilizada por otros servicios. Ver el procedimiento completo en
+[`docs/services/datasql-guide.md`](../../docs/services/datasql-guide.md).
+
+---
+
 ## Servicio lento / alto consumo
 
 ```bash

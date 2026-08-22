@@ -617,6 +617,49 @@ action:
 
 ## Troubleshooting
 
+### DataSQL no arranca con `Address already in use`
+
+Si el error completo es `failed to set up container networking: Address already
+in use`, no cambies primero el puerto de pgAdmin o PostgreSQL: en este entorno
+la causa fue una IP estática (`ipv4_address`) ocupada en la red compartida
+`db_net`. `svc restart datasql` tampoco recrea esa red ni cambia las IPs.
+
+Mantener `db_net`, retirar las IPs estáticas del Compose y aplicar la versión
+canónica de DataSQL con asignación dinámica. El procedimiento de diagnóstico y
+migración está en [`docs/services/datasql-guide.md`](datasql-guide.md) y en el
+[troubleshooting general](../troubleshooting.md). Después de corregir DataSQL,
+seguir este orden:
+
+```bash
+svc config datasql
+svc down datasql
+svc up datasql
+svc ps datasql
+# continuar solo cuando datapostgres y dataredis estén healthy
+svc up homeassistant
+svc ps homeassistant
+```
+
+No ejecutar `docker network prune` ni cambiar el Recorder a un PostgreSQL
+expuesto en la LAN. HA debe conservar `network_mode: host` y usar
+`127.0.0.1:5432`.
+
+### `svc snapshot` no existe en el CLI Python
+
+Si `svc snapshot datasql` muestra `No such command 'snapshot'`, usar mientras
+se actualiza el NAS:
+
+```bash
+NAS_CLI=bash svc snapshot datasql
+```
+
+Después de actualizar el checkout con `nasfk` + `gpl`, Python registra
+`snapshot` pero delega al mismo Bash. Para rollback, el fallback explícito es:
+
+```bash
+NAS_CLI=bash svc rollback datasql
+```
+
 ### `connection refused` del Recorder con `localhost`
 
 Si PostgreSQL está escuchando en `127.0.0.1:5432` pero el Recorder falla con

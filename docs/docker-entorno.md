@@ -178,6 +178,12 @@ agregar restricciones si se necesitan.
 
 ## Redes Docker
 
+> Los comandos de creación de esta sección son únicamente para el bootstrap
+> inicial o recuperación controlada de una instalación sin redes externas.
+> Durante la operación normal se usa `svc net`; no se eliminan redes compartidas
+> para reparar un servicio y nunca se ejecuta `docker network prune` como
+> solución genérica.
+
 ### Creadas manualmente
 
 | Red | Driver | Propósito | Crear con |

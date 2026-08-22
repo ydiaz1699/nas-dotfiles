@@ -5,6 +5,151 @@ Cada entrada documenta síntoma, causa raíz y solución.
 
 ---
 
+## DataSQL — `failed to set up container networking: Address already in use`
+
+**Síntoma:**
+
+```text
+failed to set up container networking: Address already in use
+```
+
+**Causa raíz:** el Compose legacy fijaba `ipv4_address` para PostgreSQL,
+pgAdmin y Redis (`172.20.0.4`, `172.20.0.3` y `172.20.0.5`) dentro de la red
+externa y compartida `db_net`. El conflicto era de direccionamiento interno de
+Docker, no de un listener TCP del host.
+
+**Por qué cambiar puertos o ejecutar `restart` no lo resolvió:** cambiar
+`5050`, `5051` o `5432` solo cambia una publicación host↔contenedor; no libera
+una IP estática dentro de `db_net`. Además, `svc restart datasql` reinicia los
+contenedores existentes, pero no recrea la red ni reemplaza sus IPs fijas.
+
+**Diagnóstico seguro:**
+
+```bash
+svc config datasql
+svc ps datasql
+svc port-map
+ss -ltnp | grep -E ':(5432|5050|5051)\b' || true
+svc net
+```
+
+Si el error es `bind: address already in use` y `ss` muestra otro proceso,
+es un conflicto de puerto del host. Si los puertos están libres pero el Compose
+resuelto conserva `ipv4_address`, es el conflicto de IP interna descrito aquí.
+
+**Solución canónica:** quitar todos los bloques `ipv4_address` y dejar que
+Docker asigne IPs dinámicas. Mantener `db_net`; no eliminarla ni ejecutar
+`docker network prune`, porque otros servicios pueden usarla. Para aplicar el
+Compose corregido:
+
+```bash
+svc snapshot datasql
+# Si Python todavía responde "No such command 'snapshot'":
+NAS_CLI=bash svc snapshot datasql
+
+cp "$NAS_DOTFILES/agent/catalog/services/datasql/compose.yml" \
+   "$dkco/datasql/compose.yml"
+svc config datasql
+# DETENERSE si la salida muestra `ipv4_address`.
+# Continuar solo si conserva `db_net` como external y PostgreSQL aparece
+# publicado en loopback (`127.0.0.1:5432:5432`), nunca en 0.0.0.0/LAN.
+svc down datasql
+svc up datasql
+svc ps datasql
+svc net
+svc port-map
+```
+
+La configuración final conserva PostgreSQL publicado solo en
+`127.0.0.1:5432:5432` para el Recorder de Home Assistant, y usa
+`datapostgres:5432` para consumidores que sí están en `db_net`. No cambiarlo a
+`0.0.0.0:5432:5432` ni eliminar la publicación loopback.
+
+La guía completa y el Compose canónico están en
+[`docs/services/datasql-guide.md`](services/datasql-guide.md). Home Assistant
+se debe levantar después de que DataSQL esté saludable:
+
+```bash
+svc up datasql
+svc ps datasql
+svc up homeassistant
+svc ps homeassistant
+```
+
+---
+
+## `svc snapshot` — CLI Python sin el comando registrado
+
+**Síntoma:**
+
+```text
+No such command 'snapshot'.
+```
+
+**Causa:** el NAS estaba ejecutando una versión anterior del CLI Python que no
+registraba el subcomando. La implementación de snapshot vive en Bash y guarda
+solo la configuración ligera del servicio (Compose y `.env`), no los datos
+pesados.
+
+**Workaround inmediato, antes de actualizar el checkout del NAS:**
+
+```bash
+NAS_CLI=bash svc snapshot datasql
+```
+
+Para volver atrás desde ese mismo checkout:
+
+```bash
+NAS_CLI=bash svc rollback datasql
+```
+
+**Solución permanente:** actualizar el checkout del NAS con el fix ya integrado
+en `main`:
+
+```bash
+nasfk
+gs
+# Esta secuencia asume que el checkout está en `main` y el árbol está limpio.
+gpl
+NAS_CLI=bash svc --help | grep -E 'snapshot|rollback'
+NAS_CLI=python svc --help | grep snapshot
+svc snapshot datasql
+```
+
+El Python CLI actual registra `snapshot` y delega mediante `bash_bridge.py` a la
+misma implementación Bash; no se debe duplicar `svc_snapshot` en Python.
+`rollback` continúa siendo un comando Bash, por lo que el fallback explícito
+`NAS_CLI=bash svc rollback <servicio>` sigue siendo válido.
+
+---
+
+## Variables globales y locales — bucle de verificación correcto
+
+No usar `for var in for var in ...`: la repetición accidental del encabezado
+convierte el comando en una construcción inválida o hace que se compruebe una
+variable llamada `for`. La forma correcta, sin imprimir secretos, es:
+
+```bash
+for var in SERVER_IP TZ; do
+  if ! grep -q "^${var}=" "$dkco/.env"; then
+    echo "Falta $var en $dkco/.env"
+  fi
+done
+
+for var in POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD \
+           PGADMIN_EMAIL PGADMIN_PASSWORD REDIS_PASSWORD; do
+  if ! grep -q "^${var}=" "$dkco/datasql/.env"; then
+    echo "Falta $var en $dkco/datasql/.env"
+  fi
+done
+```
+
+Si falta una variable, crear primero el archivo/directorio correspondiente,
+completarlo y aplicar permisos; no ejecutar `source .env`, porque las
+contraseñas pueden contener caracteres especiales.
+
+---
+
 ## API/LLM — `Too many requests, please wait before trying again`
 
 **Síntoma:**
@@ -183,7 +328,7 @@ Quieres verificar que una tool funciona sin invocar todo el agente (sin gastar t
 
 **Solución:**
 ```bash
-cd /nas-dotfiles
+nasfk
 
 # Probar una tool directamente con Python
 python3 -c "
