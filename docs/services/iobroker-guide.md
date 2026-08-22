@@ -31,6 +31,33 @@ No se habilitan inicialmente `network_mode: host`, `privileged`, dispositivos US
 `db_net`, PostgreSQL/Redis ni `cap_drop: [ALL]`. Un adapter futuro puede cambiar
 estas decisiones únicamente con una guía y pruebas específicas.
 
+### 1.1 Auditoría de propuestas externas
+
+Se revisaron varias propuestas generadas sin el contexto de este NAS. No se
+incorporan por similitud textual: cada variante se comparó con la imagen oficial,
+las convenciones de `nas-dotfiles`, el catálogo y el funcionamiento real de `svc`.
+
+| Contenido propuesto | Estado | Decisión y motivo |
+|---|---|---|
+| `iobroker/iobroker:latest` | RECHAZADO | La imagen mantenida por buanet/ioBroker es `buanet/iobroker`; `latest` además es mutable. |
+| `buanet/iobroker:v11.1.0` | INTEGRADO | Es la release estable verificada y queda fijada para reproducibilidad. |
+| `/opt/iobroker` completo persistente | INTEGRADO | Es la ruta oficial que contiene configuración, adapters, estados y credenciales. |
+| `IOBROKER_UID`, `IOBROKER_GID`, `USERID`, `GROUPID` | RECHAZADO | No son las variables documentadas por la imagen; se usan `SETUID` y `SETGID`. |
+| `IOB_ADMINPORT`, `PERMISSION_CHECK` | INTEGRADO | Son variables documentadas y necesarias para controlar el puerto y permisos iniciales. |
+| `TZ` repetido en `.env` local o `environment:` | RECHAZADO | Este NAS hereda `TZ` desde `$dkco/.env` mediante `env_file: [../.env, .env]`. |
+| `iobroker_net` privada por servicio | RECHAZADO | ioBroker debe resolver `emqx` en la red externa compartida `iot_net`; no se crea otra red paralela. |
+| `network_mode: host` desde el primer día | FUERA DE ALCANCE | La documentación oficial lo deja como opción según adapters que necesiten multicast/broadcast; MQTT básico no lo requiere. |
+| `curl` contra `localhost:8081` como healthcheck | RECHAZADO | Se usa el script de salud distribuido por la imagen, que comprueba startup o `iobroker.js-controller`. |
+| Carpeta `backup/` montada dentro de `/opt/iobroker` | PENDIENTE | Solo se añadirá si se configura Backitup para escribir allí; `svc backup iobroker` ya respalda el bind mount completo. |
+| Redis para objects/states | PENDIENTE | La imagen soporta `IOB_OBJECTSDB_*`/`IOB_STATESDB_*`, pero requiere diseño, credenciales, pruebas y decidir si se reutiliza `dataredis` de DataSQL. |
+| MariaDB, InfluxDB y Grafana | FUERA DE ALCANCE INICIAL | Son adapters/servicios opcionales. No se agregan bases ni dashboards sin un caso de uso y un contrato de backups. |
+| `IOB_MULTIHOST=master/slave` | PENDIENTE | Es una ruta oficial de crecimiento, pero exige objects/states externos, topología, pruebas de descubrimiento y cambios de operación; no equivale a réplicas Compose. |
+| `restart: always` y comandos Docker directos | RECHAZADO | El NAS usa `unless-stopped` vía `_common.yml` y opera Docker mediante `svc`. |
+
+La referencia primaria para tags, variables, persistencia y redes es la
+[documentación oficial de la imagen](https://docs.buanet.de/iobroker-docker-image/docs)
+y su [README de tags soportados](https://github.com/buanet/ioBroker.docker/blob/main/docs/README_docker_hub_buanet.md).
+
 ## 2. Prerrequisitos en el NAS
 
 No ejecutes estos pasos desde Kiro Web. Hazlos en una sesión SSH del NAS, con el
@@ -197,13 +224,23 @@ que `svc scale` no sea una estrategia válida para esta instancia. Dos container
 con el mismo bind mount pueden corromper configuración y estado; dos directorios
 separados tampoco crean por sí solos un cluster ioBroker coherente.
 
+La imagen documenta una alternativa denominada **multihost**, mediante
+`IOB_MULTIHOST=master` o `IOB_MULTIHOST=slave`, junto con configuración externa de
+objects y states (`IOB_OBJECTSDB_*` y `IOB_STATESDB_*`). Eso no debe confundirse
+con levantar réplicas idénticas de Compose: requiere una topología de datos,
+credenciales, resolución entre nodos, puertos/adapters compatibles y un
+procedimiento probado de backup y recuperación. En este NAS queda como fase
+posterior; inicialmente se mantienen objects y states en JSONL local persistente.
+
 Para evaluar escalado futuro se necesitan, como mínimo:
 
-1. un modo de clustering o coordinación oficialmente soportado por ioBroker;
-2. separación clara entre estado compartido y estado local;
-3. proxy/load balancer y estrategia de sesiones;
-4. cambios en `svc` para despliegue controlado, healthchecks y rollback;
-5. pruebas de adapters, backup y recuperación con el hardware real.
+1. validar el modelo multihost con una instancia master y una slave aisladas;
+2. decidir si el backend será Redis de DataSQL o una topología dedicada, sin
+   exponer `6379` al host;
+3. separar claramente estado compartido, configuración y estado local;
+4. documentar proxy/load balancer, sesiones, healthchecks y rollback;
+5. añadir soporte explícito en `svc` y probar adapters, backup y recuperación con
+   el hardware real.
 
 Hasta entonces, escala verticalmente solo después de observar CPU/RAM y mantén una
 sola instancia con backups verificados.
