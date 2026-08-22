@@ -138,19 +138,17 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 
 ### Servicios nuevos que dependen de DataSQL
 
-Cuando una aplicación necesita PostgreSQL o Redis compartido:
+Antes de crear una aplicación que necesite PostgreSQL o Redis compartido:
 
-1. Cargar `docs/services/datasql-guide.md` y la ficha de DataSQL antes de crear el compose.
-2. Usar la red externa `db_net`; nunca publicar `5432` ni `6379` al host.
-3. Crear una base y usuario dedicados dentro de DataSQL; no reutilizar `admin`.
-4. Incluir en el compose de la aplicación `env_file: [../.env, .env]`,
-   `extends.file: ../_common.yml` y labels `homepage.*`.
-5. No usar `depends_on` contra `datapostgres` si DataSQL vive en otro compose:
-   esa dependencia no controla otro proyecto. Verificar DataSQL con `svc health`.
-6. Conectar usando el hostname del contenedor/servicio en `db_net`, nunca una IP fija.
-
-SQLite solo sirve para un smoke test aislado. Para validar integración, backup y
-recuperación en el NAS, preferir PostgreSQL de DataSQL.
+1. Cargar `.kiro/skills/datasql/SKILL.md`, `docs/services/datasql-guide.md` y la ficha de DataSQL.
+2. Comprobar DataSQL con `svc health` y `svc ps datasql`; `svc health` no recibe el nombre del servicio.
+3. Leer `POSTGRES_USER`, `POSTGRES_DB`, `POSTGRES_PASSWORD` y `REDIS_PASSWORD` desde `$dkco/datasql/.env`; no asumir `admin/appdb` ni ejecutar `source .env`.
+4. Crear una base y usuario dedicados con la Fase 5A de la guía: primero el rol, después la base, en llamadas separadas de `psql`.
+5. Usar `svc exec datasql postgres env PGPASSWORD="..." psql ...` y Redis con `env REDISCLI_AUTH="..." redis-cli ping`; limpiar las variables con `unset`.
+6. Usar la red externa `db_net`; nunca publicar `5432` ni `6379` al host.
+7. Conectar usando `datapostgres` y `dataredis` como hostnames Docker, nunca una IP fija.
+8. No crear otro Redis ni otra contraseña; reutilizar el `REDIS_PASSWORD` de DataSQL.
+9. No usar `depends_on` contra `datapostgres` si DataSQL vive en otro compose.
 
 ### Redes
 

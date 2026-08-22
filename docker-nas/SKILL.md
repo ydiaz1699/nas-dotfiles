@@ -109,12 +109,13 @@ Template en: `agent/catalog/.env.global.example`
 
 Antes de crear un servicio que use PostgreSQL, Redis u otra base compartida:
 
-1. Leer `docs/services/datasql-guide.md` y la ficha de DataSQL.
+1. Activar/cargar `.kiro/skills/datasql/SKILL.md` y leer `docs/services/datasql-guide.md` y la ficha de DataSQL.
 2. Usar la red externa `db_net`; nunca publicar `5432` o `6379` al host.
-3. Crear una base y un usuario dedicados dentro de DataSQL; no reutilizar el usuario administrador.
-4. Configurar `env_file: [../.env, .env]`, `extends.file: ../_common.yml` y labels `homepage.*`.
-5. No usar `depends_on` para un contenedor que pertenece a otro compose; verificar la disponibilidad con `svc health` y logs.
-6. Documentar el host de conexión como el nombre del contenedor/servicio en `db_net`, no como una IP fija.
+3. Crear una base y un usuario dedicados dentro de DataSQL; no reutilizar el usuario administrador. Crear el rol y la base en llamadas separadas de `psql`.
+4. Leer los secretos reales desde `$dkco/datasql/.env`; no asumir `admin/appdb`, no hacer `source .env` y pasar `PGPASSWORD`/`REDISCLI_AUTH` explícitamente a `svc exec`.
+5. Configurar `env_file: [../.env, .env]`, `extends.file: ../_common.yml` y labels `homepage.*`.
+6. No usar `depends_on` para un contenedor que pertenece a otro compose; verificar la disponibilidad con `svc health` y logs.
+7. Documentar el host de conexión como el nombre del contenedor/servicio en `db_net`, no como una IP fija.
 
 SQLite puede usarse solo para una prueba aislada y temporal. Si el objetivo es integrar
 el servicio al NAS y probar recuperación/backup, preferir PostgreSQL de DataSQL.
@@ -299,7 +300,7 @@ Orden de consulta:
 
 | Servicio | Guía | Temas clave documentados |
 |----------|------|--------------------------|
-| **datasql** | `docs/services/datasql-guide.md` | PostgreSQL+pgAdmin+Redis, backups pg_dump, permisos, db_net, 10 fases |
+| **datasql** | `docs/services/datasql-guide.md` + `.kiro/skills/datasql/SKILL.md` | PostgreSQL+pgAdmin+Redis, procedimiento de roles/bases separado, Redis compartido, backups pg_dump, permisos, db_net |
 | **filebrowser** | `docs/services/filebrowser-guide.md` | Bind mounts, `:rshared` para USB, fstab, permisos, mount propagation |
 | **ntfy** | `docs/services/ntfy-guide.md` | Notificaciones push, topics, clientes Android/PWA, alarma+cámara, Homepage |
 | **usb-api** | `docs/services/ntfy-guide.md#usb-api` | API REST para USBs, systemd nativo, Homepage widget, desmontaje seguro |
