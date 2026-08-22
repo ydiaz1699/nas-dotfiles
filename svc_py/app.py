@@ -23,6 +23,7 @@ from svc_py.commands import catalog as catalog_mod
 from svc_py.commands import scanner as scanner_mod
 from svc_py.core.discovery import service_exists, svc_compose_file, svc_list
 from svc_py.core.docker import compose_passthrough, compose_run
+from svc_py.core.bash_bridge import svc_passthrough
 from svc_py.ui import confirm_action, console, error
 
 app = typer.Typer(
@@ -45,6 +46,13 @@ app.command("update-all")(docker_mod.update_all)
 # Backup commands
 app.command("backup")(backup_mod.backup)
 app.command("restore")(backup_mod.restore)
+
+
+@app.command("snapshot")
+def snapshot(service: str):
+    """Guardar un snapshot liviano de la configuración del servicio."""
+    raise typer.Exit(svc_passthrough("snapshot", service))
+
 
 # Info commands
 app.command("port-map")(info_mod.port_map)

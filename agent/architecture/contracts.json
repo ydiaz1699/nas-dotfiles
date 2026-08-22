@@ -91,6 +91,7 @@
       "menu",
       "backup",
       "restore",
+      "snapshot",
       "depends",
       "open",
       "env",
@@ -111,7 +112,6 @@
       "doctor-history",
       "lock",
       "unlock",
-      "snapshot",
       "rollback"
     ],
     "allowed_python_only_commands": [],
