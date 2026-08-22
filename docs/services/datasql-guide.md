@@ -2,6 +2,32 @@
 
 > PostgreSQL · pgAdmin · Redis · Red aislada `db_net` · Datos en `$dkco/datasql`
 
+## Fuente de verdad para aplicaciones consumidoras
+
+Esta guía es la fuente canónica del procedimiento DataSQL. La skill
+`.kiro/skills/datasql/SKILL.md` resume las reglas para el agente, pero no
+reemplaza esta secuencia ni sus verificaciones.
+
+Antes de crear una base, un rol PostgreSQL o configurar Redis para otra
+aplicación, seguir siempre este orden:
+
+1. Comprobar DataSQL con `svc health` y `svc ps datasql`.
+2. Leer las credenciales reales desde `$dkco/datasql/.env`; nunca asumir
+   `admin/appdb` ni ejecutar `source .env`.
+3. Crear el rol y la base PostgreSQL en llamadas separadas.
+4. Validar Redis con `REDISCLI_AUTH` y reutilizar `dataredis`.
+5. Configurar la aplicación en `db_net` con los hostnames `datapostgres` y
+   `dataredis`.
+6. Limpiar las variables temporales con `unset`.
+
+### Regla crítica de PostgreSQL
+
+`CREATE DATABASE` no debe combinarse con `CREATE USER`/`CREATE ROLE` en la
+misma transacción o llamada a `psql`. Si la creación de la base falla, la
+transacción puede revertir también el rol. La receta idempotente y segura está
+en la Fase 5A; usarla para Flowise, Home Assistant, Node-RED o cualquier otro
+consumidor.
+
 ---
 
 ## Fase 1 — Estructura de Directorios
@@ -12,14 +38,8 @@ Crear toda la estructura de una sola vez:
 mkdir -p $dkco/datasql/data/{postgres/{pgdata,backups},pgadmin,redis}
 ```
 
-Aplicar permisos restrictivos:
-
-```bash
-chmod 700 $dkco/datasql/data/postgres/pgdata
-chmod 700 $dkco/datasql/data/postgres/backups
-chmod 700 $dkco/datasql/data/redis
-chmod 700 $dkco/datasql/data/pgadmin
-```
+No aplicar todavía `chmod`/`chown`: primero deben existir los archivos de
+configuración y debe completarse la creación de directorios.
 
 Árbol resultante:
 
@@ -64,25 +84,22 @@ Contenido (reemplazar contraseñas antes de guardar):
 
 ```
 # === PostgreSQL ===
-POSTGRES_DB=appdb
-POSTGRES_USER=admin
-POSTGRES_PASSWORD=cambia_esto_por_algo_seguro_32chars
+POSTGRES_DB=homelab
+POSTGRES_USER=nasadmin
+POSTGRES_PASSWORD=__pega_aqui__
 
 # === pgAdmin ===
 PGADMIN_EMAIL=admin@local.lan
-PGADMIN_PASSWORD=cambia_esto_por_algo_seguro
+PGADMIN_PASSWORD=__pega_aqui__
 
 # === Redis ===
-REDIS_PASSWORD=cambia_esto_por_algo_seguro
+REDIS_PASSWORD=__pega_aqui__
 
 # === TZ y SERVER_IP se heredan de $dkco/.env (global) ===
 ```
 
-Proteger el archivo:
-
-```bash
-chmod 600 .env
-```
+Proteger el archivo `.env` y las carpetas solamente después de crear el
+`compose.yml` en la Fase 4:
 
 > Tip: Generar contraseñas seguras: `openssl rand -base64 32`
 
@@ -210,6 +227,16 @@ networks:
     external: true
 ```
 
+Aplicar permisos después de crear `.env` y `compose.yml`, y antes de levantar:
+
+```bash
+chmod 700 $dkco/datasql/data/postgres/pgdata
+chmod 700 $dkco/datasql/data/postgres/backups
+chmod 700 $dkco/datasql/data/redis
+chmod 700 $dkco/datasql/data/pgadmin
+chmod 600 $dkco/datasql/.env
+```
+
 ---
 
 ## Fase 5 — Levantar el Stack
@@ -234,61 +261,161 @@ svc logs datasql
 
 ---
 
+## Fase 5A — Crear una base y un rol dedicados para una aplicación
+
+Esta es la receta canónica para Flowise y para cualquier otro consumidor de
+DataSQL. Se ejecuta **después** de que DataSQL esté saludable y **antes** de
+levantar la aplicación consumidora.
+
+### 1. Leer las credenciales reales de DataSQL
+
+No asumir que el administrador es `admin` ni que la base es `appdb`: esos
+valores pueden cambiar según la instalación. Tampoco ejecutar `source .env`,
+porque los secretos pueden contener caracteres con significado para el shell.
+
+El ejemplo siguiente usa Flowise. Para otra aplicación, cambia únicamente los
+nombres de aplicación y la variable que contiene su contraseña local.
+
+```bash
+PG_ADMIN_USER=$(grep '^POSTGRES_USER=' "$dkco/datasql/.env" | cut -d= -f2-)
+PG_ADMIN_DB=$(grep '^POSTGRES_DB=' "$dkco/datasql/.env" | cut -d= -f2-)
+PG_ADMIN_PASSWORD=$(grep '^POSTGRES_PASSWORD=' "$dkco/datasql/.env" | cut -d= -f2-)
+
+APP_DB_USER=flowise_user
+APP_DB_NAME=flowise_db
+APP_DB_PASSWORD=$(grep '^FLOWISE_DB_PASSWORD=' "$dkco/flowise/.env" | cut -d= -f2-)
+```
+
+Verificar que las cuatro variables administrativas y la contraseña de la
+aplicación no estén vacías antes de continuar. La contraseña de la aplicación
+debe ser exactamente la que usa su `.env` local; no generar otra durante este
+paso.
+
+### 2. Crear o actualizar el rol, en una llamada separada
+
+La contraseña se pasa como variable de `psql`; no se concatena dentro del SQL.
+El comando es idempotente: crea el rol si no existe y actualiza su contraseña
+si ya existe.
+
+```bash
+ROLE_EXISTS=$(svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" -Atqc \
+  "SELECT 1 FROM pg_roles WHERE rolname='flowise_user';" \
+  | tr -d '[:space:]')
+
+if [[ "$ROLE_EXISTS" == "1" ]]; then
+  svc exec datasql postgres \
+    env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+    psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" \
+    -v ON_ERROR_STOP=1 -v app_password="$APP_DB_PASSWORD" \
+    -c "ALTER ROLE flowise_user WITH LOGIN PASSWORD :'app_password';"
+else
+  svc exec datasql postgres \
+    env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+    psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" \
+    -v ON_ERROR_STOP=1 -v app_password="$APP_DB_PASSWORD" \
+    -c "CREATE ROLE flowise_user LOGIN PASSWORD :'app_password';"
+fi
+```
+
+### 3. Crear la base, en otra llamada y fuera de una transacción
+
+`CREATE DATABASE` no se ejecuta junto con `CREATE ROLE`/`CREATE USER`. Esta
+separación evita que un fallo de la base revierta también el rol.
+
+```bash
+DB_EXISTS=$(svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" -Atqc \
+  "SELECT 1 FROM pg_database WHERE datname='flowise_db';" \
+  | tr -d '[:space:]')
+
+if [[ "$DB_EXISTS" != "1" ]]; then
+  svc exec datasql postgres \
+    env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+    psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" \
+    -v ON_ERROR_STOP=1 \
+    -c "CREATE DATABASE flowise_db OWNER flowise_user;"
+fi
+```
+
+Verificar el propietario antes de cambiarlo. Si la base ya existía con otro
+propietario, no ejecutar `ALTER DATABASE` a ciegas: confirmar primero y luego
+corregirlo explícitamente si la aplicación lo requiere.
+
+```bash
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" -c \
+  "SELECT datname, pg_get_userbyid(datdba) AS owner FROM pg_database WHERE datname='flowise_db';"
+```
+
+### 4. Probar el acceso del consumidor y limpiar secretos temporales
+
+```bash
+svc exec datasql postgres \
+  env PGPASSWORD="$APP_DB_PASSWORD" \
+  psql -U "$APP_DB_USER" -d "$APP_DB_NAME" \
+  -c "SELECT current_user, current_database();"
+
+unset PG_ADMIN_USER PG_ADMIN_DB PG_ADMIN_PASSWORD
+unset APP_DB_USER APP_DB_NAME APP_DB_PASSWORD ROLE_EXISTS DB_EXISTS
+```
+
+> Para otra aplicación, sustituir `flowise_user`, `flowise_db` y la lectura de
+> `FLOWISE_DB_PASSWORD` por el rol, base y variable local correspondientes.
+> Nunca reutilizar el administrador `POSTGRES_USER` como usuario de la aplicación.
+
+---
+
 ## Fase 6 — Verificación
 
 ### PostgreSQL
 
 ```bash
-svc exec datasql postgres psql -U admin -d appdb
-```
+PG_ADMIN_USER=$(grep '^POSTGRES_USER=' "$dkco/datasql/.env" | cut -d= -f2-)
+PG_ADMIN_DB=$(grep '^POSTGRES_DB=' "$dkco/datasql/.env" | cut -d= -f2-)
+PG_ADMIN_PASSWORD=$(grep '^POSTGRES_PASSWORD=' "$dkco/datasql/.env" | cut -d= -f2-)
 
-Dentro del cliente:
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" \
+  -c "SELECT version();"
 
-```sql
-SELECT version();
-
-CREATE TABLE test (id SERIAL PRIMARY KEY, val TEXT);
-INSERT INTO test (val) VALUES ('ok');
-SELECT * FROM test;
-DROP TABLE test;
-
-\q
+unset PG_ADMIN_USER PG_ADMIN_DB PG_ADMIN_PASSWORD
 ```
 
 ### pgAdmin
 
-Acceder desde Windows directamente (sin túnel SSH):
+Acceder desde la LAN mediante:
 
-```
+```text
 http://${SERVER_IP}:5050
 ```
 
-Credenciales: las del `.env` (`PGADMIN_EMAIL` / `PGADMIN_PASSWORD`).
-
-Agregar servidor en pgAdmin:
-
-| Campo | Valor |
-|-------|-------|
-| Name | PostgreSQL |
-| Host | `postgres` |
-| Port | `5432` |
-| Username | `admin` |
-| Password | `<POSTGRES_PASSWORD>` |
-
-> El hostname `postgres` funciona porque ambos contenedores comparten `db_net`.
+Usar `PGADMIN_EMAIL` y `PGADMIN_PASSWORD` del `.env` de DataSQL. Para agregar
+PostgreSQL, usar el hostname Docker `postgres`, el puerto interno `5432`,
+`POSTGRES_USER` y `POSTGRES_PASSWORD` del mismo `.env`.
 
 ### Redis
 
+Redis ya forma parte de DataSQL. No crear otro contenedor, otra contraseña ni
+un usuario Redis adicional para el patrón actual `requirepass`.
+
 ```bash
-svc exec datasql redis redis-cli -a "$REDIS_PASSWORD"
+REDIS_PASSWORD=$(grep '^REDIS_PASSWORD=' "$dkco/datasql/.env" | cut -d= -f2-)
+
+svc exec datasql redis \
+  env REDISCLI_AUTH="$REDIS_PASSWORD" \
+  redis-cli PING
+
+unset REDIS_PASSWORD
 ```
 
-```
-PING   → PONG
-SET k hola
-GET k  → "hola"
-DEL k
-```
+La respuesta esperada es `PONG`. `REDISCLI_AUTH` evita poner la contraseña en
+los argumentos visibles del proceso; no usar `redis-cli -a "$REDIS_PASSWORD"`
+como receta canónica.
 
 ---
 
@@ -384,27 +511,40 @@ nano $dkco/datasql/backup.sh
 ```
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 BASE="$dkco/datasql"
-source "$BASE/.env"
+read_env() {
+    grep "^${1}=" "$BASE/.env" | cut -d= -f2-
+}
+
+POSTGRES_DB=$(read_env POSTGRES_DB)
+POSTGRES_USER=$(read_env POSTGRES_USER)
+POSTGRES_PASSWORD=$(read_env POSTGRES_PASSWORD)
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP="$BASE/data/postgres/backups/appdb_${TIMESTAMP}.sql"
+BACKUP="$BASE/data/postgres/backups/${POSTGRES_DB}_${TIMESTAMP}.sql"
 LOG="$BASE/data/postgres/backups/backup.log"
 RETENTION=7
 
-echo "[$(date)] Iniciando backup..." >> "$LOG"
+printf '[%s] Iniciando backup de %s...\n' "$(date)" "$POSTGRES_DB" >> "$LOG"
 
-docker exec datapostgres \
-  pg_dump -U "${POSTGRES_USER}" "${POSTGRES_DB}" > "$BACKUP"
+svc exec datasql -T -e "PGPASSWORD=${POSTGRES_PASSWORD}" postgres \
+  pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" > "$BACKUP"
 
 gzip "$BACKUP"
-echo "[$(date)] Completado: ${BACKUP}.gz" >> "$LOG"
+printf '[%s] Completado: %s.gz\n' "$(date)" "$BACKUP" >> "$LOG"
+find "$BASE/data/postgres/backups" -name "*.sql.gz" -mtime +"$RETENTION" -delete
+printf '[%s] Limpieza: retención %s días\n' "$(date)" "$RETENTION" >> "$LOG"
 
-find "$BASE/data/postgres/backups" -name "*.sql.gz" -mtime +${RETENTION} -delete
-echo "[$(date)] Limpieza: retención ${RETENTION} días" >> "$LOG"
+unset POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD
 ```
+
+Este script lee solo las variables necesarias, no hace `source .env` y no
+asume `admin/appdb`. El entorno de cron debe tener disponible el comando `svc`;
+si no, cargar el framework del NAS en la entrada de cron antes de ejecutar el
+script. Probar primero manualmente y comprobar que el `.sql.gz` existe antes
+de confiar en la tarea programada.
 
 ```bash
 chmod +x $dkco/datasql/backup.sh
@@ -424,11 +564,19 @@ crontab -e
 
 ```bash
 # Ver backups disponibles
-ls -lh $dkco/datasql/data/postgres/backups/*.sql.gz
+ls -lh "$dkco/datasql/data/postgres/backups"/*.sql.gz
 
-# Restaurar
-gunzip -c /ruta/al/backup.sql.gz | \
-  docker exec -i datapostgres psql -U admin -d appdb
+# Seleccionar un archivo real antes de restaurar.
+BACKUP="$dkco/datasql/data/postgres/backups/archivo.sql.gz"
+PG_ADMIN_USER=$(grep '^POSTGRES_USER=' "$dkco/datasql/.env" | cut -d= -f2-)
+PG_ADMIN_DB=$(grep '^POSTGRES_DB=' "$dkco/datasql/.env" | cut -d= -f2-)
+PG_ADMIN_PASSWORD=$(grep '^POSTGRES_PASSWORD=' "$dkco/datasql/.env" | cut -d= -f2-)
+
+gunzip -c "$BACKUP" | \
+  svc exec datasql -T -e "PGPASSWORD=${PG_ADMIN_PASSWORD}" postgres \
+  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB"
+
+unset BACKUP PG_ADMIN_USER PG_ADMIN_DB PG_ADMIN_PASSWORD
 ```
 
 ---
@@ -480,16 +628,9 @@ networks:
 
 ### Crear usuario y DB al instalar cada servicio
 
-```bash
-svc exec datasql postgres psql -U admin
-```
-
-```sql
--- Ejemplo para Home Assistant (repetir el patrón para cada servicio)
-CREATE USER ha_user WITH PASSWORD 'password_definitivo';
-CREATE DATABASE homeassistant_db OWNER ha_user;
-\q
-```
+Usar siempre la **Fase 5A**. No copiar una variante que ejecute
+`CREATE USER`/`CREATE ROLE` y `CREATE DATABASE` en la misma sesión o llamada.
+El patrón mantiene un usuario y una base dedicados por aplicación.
 
 | Servicio | DB sugerida | Cómo se configura |
 |----------|-------------|-------------------|

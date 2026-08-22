@@ -18,8 +18,7 @@ services:
       - ./data/postgres/pgdata:/var/lib/postgresql/data/pgdata
       - ./data/postgres/backups:/backups
     networks:
-      db_net:
-        ipv4_address: 172.20.0.4
+      - db_net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -58,8 +57,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      db_net:
-        ipv4_address: 172.20.0.3
+      - db_net
     labels:
       - homepage.group=Bases de datos
       - homepage.name=pgAdmin
@@ -87,8 +85,7 @@ services:
     volumes:
       - ./data/redis:/data
     networks:
-      db_net:
-        ipv4_address: 172.20.0.5
+      - db_net
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s

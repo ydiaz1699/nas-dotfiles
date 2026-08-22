@@ -203,7 +203,8 @@ svc diff <svc>             # Compose en disco vs resuelta (interpolada)
 | Mapa canónico de arquitectura, gaps y criterios | `docs/framework-knowledge-compilation.md` |
 | Contratos arquitectónicos | `agent/architecture/contracts.json` |
 | Homepage (labels, widgets, config) | `docs/services/homepage-guide.md` |
-| DataSQL y servicios con PostgreSQL | `docs/services/datasql-guide.md` |
+| Skill específica DataSQL | `.kiro/skills/datasql/SKILL.md` |
+| Guía DataSQL y servicios con PostgreSQL | `docs/services/datasql-guide.md` |
 | Flowise (prueba con DataSQL) | `docs/services/flowise-guide.md` |
 | Troubleshooting | `docs/troubleshooting.md` |
 | Skill completa (para LLMs) | `docker-nas/references/nas-context.md` |
