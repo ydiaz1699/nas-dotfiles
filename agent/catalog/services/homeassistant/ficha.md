@@ -16,15 +16,14 @@ volumes:
   - "/run/dbus:/run/dbus:ro"
 env_required:
   - HOMEASSISTANT_TOKEN
-env_optional:
-  - TZ=America/La_Paz
+env_optional: []
 healthcheck: '["CMD", "curl", "-f", "http://localhost:8123"]'
 backup_critical: true
 backup_paths:
   - "./data"
 protected: true
 docs_url: "docs/services/homeassistant-guide.md"
-notes: "Usa network_mode: host (acceso directo a LAN para mDNS, descubrimiento IoT, USB y Bluetooth). Privileged: true (USB, Bluetooth, dbus). El Recorder usa PostgreSQL externo en homeassistant_db mediante 127.0.0.1:5432; DataSQL debe estar saludable antes de iniciar HA. No usa db_net ni debe conectarse a datapostgres por DNS mientras conserve host networking. Config organizada con !include en carpeta includes/. Integración ntfy para push notifications con imagen (via shell_command, no ntfy.publish — este último no soporta attachments aún). TvOverlay configurado como rest_command."
+notes: "Usa network_mode: host (acceso directo a LAN para mDNS, descubrimiento IoT, USB y Bluetooth), stop_grace_period: 60s y DNS explícitos. Privileged: true es requerido por las integraciones de hardware; no agregar cap_drop/cap_add. El Recorder usa PostgreSQL externo en homeassistant_db mediante 127.0.0.1:5432 (nunca localhost); DataSQL debe estar saludable antes de iniciar HA. No usa db_net ni debe conectarse a datapostgres por DNS mientras conserve host networking. Completar el onboarding antes de editar configuration.yaml. Config organizada con !include en carpeta includes/. Integración ntfy para push notifications con imagen vía shell_command + curl, no ntfy.publish. TvOverlay configurado como rest_command. SERVER_IP y TZ se heredan del env_file global; HOMEASSISTANT_TOKEN es local para el widget de Homepage."
 networks: []
 ports:
   http: 8123
@@ -61,11 +60,24 @@ $dkco/homeassistant/
     └── www/snapshots/      ← imágenes de cámara
 ```
 
+## Configuración operacional
+
+- `network_mode: host` y `privileged: true` se mantienen para mDNS, descubrimiento
+  IoT, USB, Bluetooth y dbus.
+- El compose define `stop_grace_period: 60s`, DNS explícitos, healthcheck HTTP y
+  límites de 2 CPU/2 GiB (reserva 0.5 CPU/512 MiB).
+- El onboarding debe completarse antes de editar `configuration.yaml`.
+- El Recorder usa `homeassistant_db` con `ha_user` mediante
+  `127.0.0.1:5432`; DataSQL se inicia y verifica primero.
+- `SERVER_IP` y `TZ` vienen de `$dkco/.env`; `HOMEASSISTANT_TOKEN` permanece en
+  el `.env` local para el widget de Homepage.
+
 ## Integraciones configuradas
 
 - **ntfy** — integración oficial (texto) + shell_command (imágenes)
 - **TvOverlay** — rest_command para notificaciones en Android TV
-- **EMQX** — broker MQTT (via iot_net, accesible por network_mode:host)
+- **EMQX** — broker MQTT accesible desde HA por la red del host; no se agrega
+  `network_mode: host` a `iot_net` ni se declara una red Docker en este compose.
 - **ESPHome** — dispositivos ESP32/ESP8266
 
 ## Entidades clave
