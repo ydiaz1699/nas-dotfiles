@@ -73,7 +73,7 @@ backup_paths:
   - "./data/redis"
 protected: false
 docs_url: "docs/services/datasql-guide.md"
-notes: "PostgreSQL y Redis NO exponen puertos al host — acceso solo via db_net. pgAdmin expuesto en LAN (:5050). PGDATA y TZ son variables fijas/globales (no requieren .env local). Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del global."
+notes: "PostgreSQL y Redis NO exponen puertos al host — acceso solo via db_net. pgAdmin expuesto en LAN (:5050). No usar ipv4_address en db_net: es una red compartida y Docker asigna IPs dinámicas. PGDATA y TZ son variables fijas/globales (no requieren .env local). Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del global."
 networks:
   - db_net
 security_extra:
