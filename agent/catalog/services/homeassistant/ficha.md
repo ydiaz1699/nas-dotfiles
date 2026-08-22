@@ -8,8 +8,8 @@ port_internal: 8123
 port_default: 8123
 protocol: "http"
 needs_proxy: false
-needs_db: false
-db_type: "sqlite (interno)"
+needs_db: true
+db_type: "postgresql (externo via 127.0.0.1:5432)"
 volumes:
   - "./data:/config"
   - "/etc/localtime:/etc/localtime:ro"
@@ -24,7 +24,7 @@ backup_paths:
   - "./data"
 protected: true
 docs_url: "docs/services/homeassistant-guide.md"
-notes: "Usa network_mode: host (acceso directo a LAN para mDNS, descubrimiento IoT). Privileged: true (USB, Bluetooth, dbus). Config organizada con !include en carpeta includes/. Integración ntfy para push notifications con imagen (via shell_command, no ntfy.publish — este último no soporta attachments aún). TvOverlay configurado como rest_command."
+notes: "Usa network_mode: host (acceso directo a LAN para mDNS, descubrimiento IoT, USB y Bluetooth). Privileged: true (USB, Bluetooth, dbus). El Recorder usa PostgreSQL externo en homeassistant_db mediante 127.0.0.1:5432; DataSQL debe estar saludable antes de iniciar HA. No usa db_net ni debe conectarse a datapostgres por DNS mientras conserve host networking. Config organizada con !include en carpeta includes/. Integración ntfy para push notifications con imagen (via shell_command, no ntfy.publish — este último no soporta attachments aún). TvOverlay configurado como rest_command."
 networks: []
 ports:
   http: 8123

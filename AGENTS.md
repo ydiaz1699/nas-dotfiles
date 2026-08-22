@@ -111,7 +111,7 @@ nas                 →  dashboard del servidor
 
 | Red | Uso | Regla |
 |-----|-----|-------|
-| `db_net` | Apps ↔ DBs (postgres, pgadmin, redis) | Nunca exponer puertos DB al host |
+| `db_net` | Apps ↔ DBs (postgres, pgadmin, redis) | No publicar DBs en la LAN; PostgreSQL puede usar `127.0.0.1:5432` solo para Home Assistant host-network |
 | `iot_net` | IoT (EMQX, ESPHome, HA futuro, ioBroker) | Todo IoT aquí |
 | `homepage_net` | Homepage ↔ ntfy (widgets internos) | Para APIs internas |
 | `adguard_macvlan_NET` | AdGuard IP propia (192.168.1.201) | Solo macvlan, parent: eno1 |
@@ -139,9 +139,11 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 8. `svc catalog-sync <svc>` — genera ficha, guía, script DebMenux
 
 Si necesita PostgreSQL o Redis, leer primero `docs/services/datasql-guide.md` y la
-ficha de DataSQL; usar `db_net`, crear DB/usuario dedicados, no exponer puertos de
-DB y no usar `depends_on` contra DataSQL si está en otro compose. SQLite queda para
-smoke tests aislados; para integración real usar DataSQL.
+ficha de DataSQL; usar `db_net`, crear DB/usuario dedicados, no publicar DBs en la
+LAN y no usar `depends_on` contra DataSQL si está en otro compose. La excepción
+host-only `127.0.0.1:5432:5432` de PostgreSQL solo aplica al Recorder de Home
+Assistant cuando usa `network_mode: host`. SQLite queda para smoke tests aislados;
+para integración real usar DataSQL.
 
 ## Homepage
 

@@ -92,7 +92,7 @@ backup/recuperación, troubleshooting.
 
 - [x] datasql/ficha.md: quitar PGDATA de env_required ← **YA ESTABA HECHO** (sesión anterior)
 - [x] datasql/ficha.md: quitar TZ de env_required (hereda del global) ← **2026-08-17**
-- [x] datasql/compose.yml: quitar ports "5432:5432" de postgres ← **YA ESTABA HECHO** (sesión anterior)
+- [x] datasql/compose.yml: limitar PostgreSQL a `127.0.0.1:5432:5432` para Home Assistant ← **Opción A en PR #56**
 - [x] datasql/compose.yml: cambiar `env_file: .env` → `env_file: [../.env, .env]` ← **2026-08-17**
 - [x] datasql/compose.yml: quitar `TZ: ${TZ}` de environment postgres (hereda del global) ← **2026-08-17**
 - [x] datasql/compose.yml: IP hardcodeada `192.168.1.200` → `${SERVER_IP}` en label pgadmin ← **2026-08-17**

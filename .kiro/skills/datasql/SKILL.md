@@ -34,9 +34,11 @@ docs/services/datasql-guide.md
 6. Redis ya existe como `dataredis` en `db_net`. No crear otro Redis ni otra
    contraseña. Validar con `REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli ping`, no
    con `-a` ni con una variable que no haya sido cargada explícitamente.
-7. Las aplicaciones usan `datapostgres` y `dataredis` como hosts, se conectan
-   a la red externa `db_net`, no publican `5432`/`6379` y no declaran
-   `depends_on` contra DataSQL cuando viven en otro compose.
+7. Las aplicaciones Docker usan `datapostgres` y `dataredis` como hosts, se
+   conectan a la red externa `db_net`, no publican `5432`/`6379` y no declaran
+   `depends_on` contra DataSQL cuando viven en otro compose. La única excepción
+   es Home Assistant con `network_mode: host`: su Recorder usa PostgreSQL
+   publicado exclusivamente como `127.0.0.1:5432:5432`, nunca una dirección LAN.
 8. Después de usar credenciales en variables temporales, ejecutar `unset`.
 
 ## Contrato de configuración de una aplicación

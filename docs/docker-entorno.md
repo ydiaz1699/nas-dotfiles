@@ -151,7 +151,7 @@ services:
 |--------|--------|
 | `TZ=America/La_Paz` en `environment:` | Heredar de `../.env` via `env_file:` |
 | IP hardcodeada `192.168.1.200` en labels | `${SERVER_IP}` (interpolado desde .env) |
-| Puertos de DB expuestos al host (`5432:5432`) | Solo accesibles via red interna (`db_net`) |
+| Puertos de DB expuestos a la LAN (`0.0.0.0:5432`) | Consumidores Docker usan `db_net`; excepción host-only documentada: `127.0.0.1:5432:5432` para Home Assistant en `network_mode: host` |
 | `docker-compose.yml` como nombre | `compose.yml` |
 | Sin healthcheck | Siempre agregar healthcheck |
 
@@ -196,7 +196,7 @@ agregar restricciones si se necesitan.
 
 ### Reglas de uso
 
-1. **DBs nunca exponen puertos al host** — comunicación solo via `db_net`
+1. **DBs nunca se exponen a la LAN** — los consumidores Docker usan `db_net`; la única excepción host-only documentada es PostgreSQL en `127.0.0.1:5432` para Home Assistant con `network_mode: host`
 2. **No usar `ipv4_address` en redes compartidas** — Docker asigna IPs dinámicas; las aplicaciones deben comunicarse mediante `container_name`/hostname
 3. **Todo IoT va a `iot_net`** — EMQX, ESPHome, (futuro HA si deja de usar host)
 4. **Homepage widgets internos via `homepage_net`** — ntfy conectado aquí
@@ -374,5 +374,5 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 - [ ] ¿Tiene `security_opt: [no-new-privileges:true]`?
 - [ ] ¿`cap_drop: [ALL]` es apropiado para ESTE servicio? (no aplicar ciegamente)
 - [ ] ¿Resource limits son apropiados? (no poner si no se sabe el consumo real)
-- [ ] ¿Los puertos de DBs NO están expuestos al host?
+- [ ] ¿Los puertos de DBs están cerrados a la LAN? Si Home Assistant usa `network_mode: host`, documentar y limitar PostgreSQL a `127.0.0.1:5432:5432`.
 - [ ] ¿Después del cambio ejecuté `svc catalog-sync <svc>`?

@@ -7,8 +7,9 @@
 Esta guía instala Flowise como un compose independiente en `$dkco/flowise/`, usando
 la infraestructura existente de DataSQL (`datapostgres`, `dataredis` y `db_net`).
 El servidor web/API recibe las peticiones y Redis distribuye las ejecuciones al
-worker. PostgreSQL y Redis no se duplican, no se publican sus puertos al host y la
-persistencia de Flowise queda en un bind mount respaldable.
+worker. PostgreSQL no se expone a la LAN: el binding `127.0.0.1:5432` existe
+únicamente para Home Assistant en `network_mode: host`; Redis no publica `6379`.
+La persistencia de Flowise queda en un bind mount respaldable.
 
 > **Alcance real:** esta configuración deja un main y un worker funcionando en el
 > mismo NAS. Flowise soporta varios workers en queue mode, pero el wrapper `svc`
@@ -79,7 +80,7 @@ Antes de crear archivos:
 6. El valor de `REDIS_PASSWORD` de Flowise debe ser exactamente el mismo que usa
    DataSQL.
 
-Comprobar DataSQL sin publicar PostgreSQL ni Redis en el host:
+Comprobar DataSQL y confirmar la excepción loopback de PostgreSQL:
 
 ```bash
 svc health
@@ -87,7 +88,8 @@ svc ps datasql
 svc port datasql 5432
 ```
 
-`svc port datasql 5432` no debe mostrar un puerto publicado. La conectividad de
+`svc port datasql 5432` debe mostrar únicamente el binding `127.0.0.1:5432`;
+no debe mostrar una publicación en `0.0.0.0` ni `[::]`. La conectividad de
 Flowise será interna por `db_net`. El healthcheck del compose de DataSQL valida
 Redis con su propia contraseña; no se debe crear un segundo Redis.
 
@@ -432,7 +434,7 @@ Estados esperados:
 - `flowise-worker` alcanza `healthy` mediante
   `http://localhost:5566/healthz`.
 - La aplicación responde en `http://${SERVER_IP}:8100`.
-- No existe una publicación de `5432` ni `6379` en el host.
+- PostgreSQL no está expuesto a la LAN; el binding `127.0.0.1:5432` existe únicamente para Home Assistant en `network_mode: host`. Redis no publica `6379` en el host.
 
 No considerar suficiente que los contenedores estén `running`: el estado
 `healthy`, los logs y la conexión real con PostgreSQL/Redis forman parte de la
@@ -583,7 +585,9 @@ Antes de habilitar réplicas se deben completar, como tarea separada:
    reportó como funcional la variante `sleep 3; flowise worker`, que es la que
    queda en el compose canónico.
 5. DataSQL del NAS ya define `datapostgres`, `dataredis` y la red externa `db_net`.
-6. El compose del NAS no debe publicar PostgreSQL ni Redis al host.
+6. El compose de Flowise no publica PostgreSQL ni Redis a la LAN; el binding
+   `127.0.0.1:5432` del compose de DataSQL existe únicamente para Home Assistant
+   con `network_mode: host`.
 7. El entorno del NAS exige `compose.yml`, `env_file: [../.env, .env]`, labels de
    Homepage en el compose y operaciones mediante `svc`.
 8. El repositorio no contiene una implementación de `svc scale`.
@@ -681,7 +685,7 @@ significa que la decisión aparece en esta guía y en el compose del catálogo.
 - [ ] `compose.yml` usa `env_file: [../.env, .env]`.
 - [ ] El worker usa `NODE_OPTIONS=--max-old-space-size=768`, límite `1G` y reserva `256M`.
 - [ ] El worker inicia con `sleep 3; flowise worker` y mantiene healthcheck en `5566/healthz`.
-- [ ] PostgreSQL y Redis no tienen puertos publicados al host.
+- [ ] El compose de Flowise no publica PostgreSQL ni Redis a la LAN; el binding `127.0.0.1:5432` de DataSQL se reserva para Home Assistant host-network.
 - [ ] `svc config flowise` termina correctamente.
 - [ ] Main y worker aparecen `healthy`.
 - [ ] `svc stats flowise` fue revisado antes de elevar concurrencia.

@@ -24,8 +24,8 @@
           "image": "postgres:16-alpine",
           "container_name": "datapostgres",
           "port_internal": 5432,
-          "port_default": null,
-          "exposure": "internal",
+          "port_default": 5432,
+          "exposure": "loopback",
           "healthcheck": "[\"CMD-SHELL\", \"pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}\"]",
           "volumes": [
             "./data/postgres/pgdata:/var/lib/postgresql/data/pgdata",
@@ -90,7 +90,7 @@
       ],
       "protected": false,
       "docs_url": "docs/services/datasql-guide.md",
-      "notes": "PostgreSQL y Redis NO exponen puertos al host — acceso solo via db_net. pgAdmin expuesto en LAN (:5050). PGDATA y TZ son variables fijas/globales (no requieren .env local). Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del global.",
+      "notes": "PostgreSQL no se expone a la LAN: publica únicamente 127.0.0.1:5432 para el Recorder de Home Assistant en network_mode: host. Los consumidores Docker usan datapostgres:5432 por db_net. Redis no expone puerto al host. pgAdmin expuesto en LAN (:5050). No usar ipv4_address en db_net: es una red compartida y Docker asigna IPs dinámicas. PGDATA y TZ son variables fijas/globales (no requieren .env local). Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del global.",
       "networks": [
         "db_net"
       ],
@@ -182,8 +182,8 @@
       "port_default": 8123,
       "protocol": "http",
       "needs_proxy": false,
-      "needs_db": false,
-      "db_type": "sqlite (interno)",
+      "needs_db": true,
+      "db_type": "postgresql (externo via 127.0.0.1:5432)",
       "volumes": [
         "./data:/config",
         "/etc/localtime:/etc/localtime:ro",
@@ -202,7 +202,7 @@
       ],
       "protected": true,
       "docs_url": "docs/services/homeassistant-guide.md",
-      "notes": "Usa network_mode: host (acceso directo a LAN para mDNS, descubrimiento IoT). Privileged: true (USB, Bluetooth, dbus). Config organizada con !include en carpeta includes/. Integración ntfy para push notifications con imagen (via shell_command, no ntfy.publish — este último no soporta attachments aún). TvOverlay configurado como rest_command.",
+      "notes": "Usa network_mode: host (acceso directo a LAN para mDNS, descubrimiento IoT, USB y Bluetooth). Privileged: true (USB, Bluetooth, dbus). El Recorder usa PostgreSQL externo en homeassistant_db mediante 127.0.0.1:5432; DataSQL debe estar saludable antes de iniciar HA. No usa db_net ni debe conectarse a datapostgres por DNS mientras conserve host networking. Config organizada con !include en carpeta includes/. Integración ntfy para push notifications con imagen (via shell_command, no ntfy.publish — este último no soporta attachments aún). TvOverlay configurado como rest_command.",
       "networks": [],
       "ports": {
         "http": 8123

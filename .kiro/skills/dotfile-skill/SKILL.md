@@ -76,12 +76,16 @@ Para plantillas y estructura de carpetas, ver `references/svc.md`.
 Antes de configurar PostgreSQL o Redis, cargar `.kiro/skills/datasql/SKILL.md`,
 leer `docs/services/datasql-guide.md` y `agent/catalog/services/datasql/ficha.md`.
 Usar `db_net` como red externa, crear una base/usuario dedicados mediante la
-Fase 5A de la guía (rol y base en llamadas separadas), y no publicar puertos de
-DB. No asumir `admin/appdb`; leer los valores reales de `$dkco/datasql/.env` sin
-`source`. Pasar `PGPASSWORD`/`REDISCLI_AUTH` explícitamente en `svc exec`, usar
-`datapostgres`/`dataredis` como hostnames y no usar `depends_on` contra
-`datapostgres` si DataSQL está en otro compose. SQLite solo es para una prueba
-aislada; para integración real usar DataSQL.
+Fase 5A de la guía (rol y base en llamadas separadas), y no publicar bases a la
+LAN. Home Assistant es una excepción documentada: si usa `network_mode: host` y
+su Recorder apunta a `127.0.0.1:5432`, PostgreSQL puede publicar únicamente
+`127.0.0.1:5432:5432`; nunca `0.0.0.0:5432`. No asumir `admin/appdb`; leer los
+valores reales de `$dkco/datasql/.env` sin `source`. Pasar
+`PGPASSWORD`/`REDISCLI_AUTH` explícitamente en `svc exec`, usar
+`datapostgres`/`dataredis` como hostnames para consumidores en `db_net` y no
+usar `depends_on` contra `datapostgres` si DataSQL está en otro compose. SQLite
+queda reservado para smoke tests aislados; para integración, backup y
+recuperación usar DataSQL.
 
 ---
 

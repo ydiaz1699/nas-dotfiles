@@ -165,8 +165,10 @@ No duplicar `TZ` en `environment:`. Si el compose se guarda en el catálogo,
 `../../_common.yml`; el pipeline la transforma al desplegar al NAS.
 
 Para una aplicación que usa DataSQL, leer antes `docs/services/datasql-guide.md`,
-usar `db_net`, crear una DB/usuario dedicados y no publicar los puertos 5432/6379.
-No usar `depends_on` contra `datapostgres` si DataSQL está en otro compose.
+usar `db_net`, crear una DB/usuario dedicados y no publicar bases a la LAN.
+Home Assistant es una excepción: al usar `network_mode: host`, su Recorder necesita
+PostgreSQL limitado a `127.0.0.1:5432:5432`. No usar `depends_on` contra
+`datapostgres` si DataSQL está en otro compose.
 
 ---
 
