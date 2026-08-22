@@ -22,6 +22,21 @@ NAS_CLI=bash    # default — usa docker/cli/svc.sh
 NAS_CLI=python  # alternativo — usa svc_py/ (Rich + InquirerPy)
 ```
 
+`svc snapshot` está disponible en las dos entradas: el comando Python lo
+registra y delega al Bash CLI mediante `bash_bridge.py`, que es la fuente única
+de la lógica. `rollback` sigue siendo Bash-only. Si el NAS todavía tiene un
+checkout anterior y Python responde `No such command 'snapshot'`, usar el
+fallback temporal:
+
+```bash
+NAS_CLI=bash svc snapshot <svc>
+NAS_CLI=bash svc rollback <svc>
+```
+
+Después de actualizar el checkout del framework con `nasfk` + `gpl`, comprobar
+el comando antes de usarlo. No implementar una segunda versión de la lógica de
+snapshots en Python.
+
 ## Detección de servicios
 
 `svc_list()` busca en `$DOCKER_BASE/*/` archivos compose (depth 2).
@@ -44,7 +59,7 @@ se debe eliminar o renombrar el resto para evitar ambigüedad.
 |---------|--------|
 | `svc lista` | Lista servicios con estado ●/○ |
 | `svc health` | Dashboard: health, uptime, restart count por servicio |
-| `svc doctor` | Chequeo 6 puntos: disco, memoria, servicios, puertos reservados, restarts, Docker storage |
+| `svc doctor` | Chequeo 8 puntos: disco, memoria, servicios, puertos reservados, restarts, Docker storage, secretos y permisos .env |
 | `svc update-all [-y]` | Pull + recrear todos (con confirmación, -y para skip) |
 | `svc port-map` | Mapa global de puertos + detecta conflictos |
 | `svc size` | Disco por servicio (imágenes, volúmenes, dir) |
@@ -65,6 +80,8 @@ se debe eliminar o renombrar el resto para evitar ambigüedad.
 | `svc update <svc>` | Pull + recrear contenedores (--remove-orphans) |
 | `svc backup <svc>` | Backup volúmenes nombrados + bind mounts a tar.gz |
 | `svc restore <svc> [f]` | Restaurar desde backup (selector interactivo con fzf) |
+| `svc snapshot <svc>` | Guardar solo `compose.yml` y `.env` en `.snapshots/` (rotación 10) |
+| `svc rollback <svc>` | Restaurar una configuración snapshot (selector + confirmación) |
 | `svc depends <svc>` | Ver servicios definidos + depends_on |
 | `svc env <svc> [edit]` | Ver/editar variables de entorno (.env + inline) |
 | `svc open <svc>` | Mostrar URL + QR + clipboard (auto-detecta puerto) |
@@ -186,7 +203,9 @@ Reglas:
 - Servicios IoT → `iot_net`
 - Bases de datos internas → `db_net`, NUNCA en `proxy`
 - Si `reverse_proxy.enabled: false` → no agregar red `proxy`
-- Crear red si no existe: `docker network create <nombre>`
+- Las redes externas compartidas se verifican con `svc net`. Para una
+  instalación nueva, seguir el procedimiento de bootstrap de networking; no
+  borrar/recrear `db_net` durante una reparación de DataSQL.
 - Comunicación entre servicios: usar `container_name` como hostname (no IP)
 
 ---
@@ -333,6 +352,27 @@ svc restore <svc>
 
 # Rotación automática: conserva últimos $BACKUP_KEEP (default: 5)
 ```
+
+### Snapshot y rollback de configuración
+
+`svc snapshot <svc>` no reemplaza a `svc backup`: guarda un tar.gz pequeño con
+el `compose.yml`, `.env` y archivos YAML de configuración en
+`$dkco/backups/.snapshots/`. Sirve para volver atrás rápidamente antes de
+cambiar un Compose o una variable. Se conservan los últimos 10 snapshots por
+servicio.
+
+```bash
+svc snapshot datasql
+# editar/aplicar cambios y validar
+svc config datasql
+svc rollback datasql
+```
+
+`rollback` es interactivo y requiere confirmar la instantánea elegida. No
+restaura los datos persistentes; para eso se usa `svc backup`/`svc restore` o el
+backup específico de PostgreSQL. Si el CLI Python no reconoce `snapshot`, usar
+`NAS_CLI=bash svc snapshot <svc>` hasta actualizar el checkout del NAS.
+
 
 ---
 

@@ -89,6 +89,11 @@ nas                 →  dashboard del servidor
 | `svc env <svc>` | Ver/editar variables |
 | `svc config <svc>` | Configuración resuelta |
 
+`svc snapshot` se registra en el CLI Python actual y delega a la implementación
+Bash mediante `bash_bridge.py`; `rollback` sigue siendo Bash-only. Si el NAS
+todavía ejecuta un checkout anterior y aparece `No such command 'snapshot'`, usar
+`NAS_CLI=bash svc snapshot <svc>` hasta actualizarlo con `nasfk` + `gpl`.
+
 ## Servicios Docker activos o preparados
 
 | Servicio | Puerto | Red | Homepage |

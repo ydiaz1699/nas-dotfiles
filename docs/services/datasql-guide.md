@@ -62,17 +62,17 @@ $dkco/datasql/
 
 ## Fase 2 — Red Docker
 
-Crear la red una sola vez:
+`db_net` es una red externa compartida. Verificarla sin modificarla:
 
 ```bash
-docker network create db_net
+svc net
 ```
 
-Verificar:
-
-```bash
-dnet | grep db_net
-```
+Si la red no existe en una instalación nueva, detenerse y seguir la sección
+[Redes Docker de `docs/docker-entorno.md`](../../docs/docker-entorno.md#redes-docker),
+que define el bootstrap inicial. Esa creación es una operación de instalación,
+no una reparación normal: no crear o eliminar redes compartidas durante una
+migración de DataSQL y nunca usar `docker network prune` como solución genérica.
 
 ---
 
@@ -290,6 +290,60 @@ servicios activos pueden utilizarla. Si el `svc config datasql` sigue mostrando
 `environment` o una IP literal en el label de Homepage, detenerse y no ejecutar
 `svc up`.
 
+Si el NAS responde `No such command 'snapshot'`, el checkout todavía está
+entrando por el CLI Python anterior. Guardar el snapshot mediante la
+implementación Bash, sin duplicar la lógica ni operar Docker directamente:
+
+```bash
+NAS_CLI=bash svc snapshot datasql
+```
+
+El fix del CLI Python ya está integrado en `main`: `svc snapshot datasql`
+queda registrado en Python y delega al mismo `svc_snapshot` Bash mediante
+`bash_bridge.py`. En un NAS que todavía tenga un checkout anterior, usar
+explícitamente `NAS_CLI=bash` también para el rollback:
+
+```bash
+NAS_CLI=bash svc rollback datasql
+```
+
+### Qué significa `Address already in use` en este incidente
+
+El mensaje real fue:
+
+```text
+failed to set up container networking: Address already in use
+```
+
+Aquí `address` era una **IP interna de Docker** ocupada en `db_net`, no un
+puerto TCP del host. El Compose legacy fijaba `172.20.0.3`, `172.20.0.4` y
+`172.20.0.5` mediante `ipv4_address`; como `db_net` es compartida, otra
+asignación podía ocupar una de esas IPs. Por eso cambiar `5050`, `5051` o
+`5432`, aun cuando esos puertos estuvieran libres, no corregía la causa.
+
+`svc restart datasql` tampoco resuelve esta variante: reinicia contenedores,
+pero no recrea la red ni reemplaza las IPs estáticas. La corrección es retirar
+los bloques `ipv4_address`, validar el Compose y recrear únicamente el stack
+con `svc down datasql` seguido de `svc up datasql`. No ejecutar
+`docker network prune` ni eliminar manualmente `db_net`: otros servicios pueden
+depender de esa red externa.
+
+Para distinguir ambos tipos de error antes de cambiar un puerto:
+
+```bash
+svc config datasql
+svc ps datasql
+svc port-map
+ss -ltnp | grep -E ':(5432|5050|5051)\b' || true
+svc net
+```
+
+Si `ss` no muestra un listener en el puerto sospechoso, pero `svc config` aún
+muestra `ipv4_address`, el problema es de direccionamiento Docker. Si el
+mensaje dice `bind: address already in use` y `ss` identifica otro proceso,
+entonces sí es un conflicto de puerto del host y se investiga con la guía de
+troubleshooting.
+
 ---
 
 ## Fase 5 — Levantar el Stack
@@ -500,17 +554,19 @@ Registro de los problemas reales encontrados durante la instalación.
 
 ### Error 2: Indentación incorrecta en `compose.yml`
 
-**Síntoma:** `docker compose config` devolvía error de parsing YAML.
+**Síntoma:** una validación del Compose devolvía error de parsing YAML.
 
 **Causa:** al editar con `nano`, la línea `pgadmin:` quedó sin los 2 espacios de sangría requeridos.
 
 **Solución:** verificar antes de levantar:
 
 ```bash
-docker compose config --quiet && echo "OK"
+svc config datasql
 ```
 
-Si no dice `OK`, abrir `nano` y asegurarse de que `postgres:`, `pgadmin:` y `redis:` tengan exactamente 2 espacios de indentación.
+Si la configuración no se resuelve, abrir `compose.yml` y asegurarse de que
+`postgres:`, `pgadmin:` y `redis:` tengan exactamente 2 espacios de
+indentación.
 
 ---
 
@@ -518,12 +574,12 @@ Si no dice `OK`, abrir `nano` y asegurarse de que `postgres:`, `pgadmin:` y `red
 
 **Síntoma:** el contenedor arrancaba pero pgAdmin mostraba errores de permisos en los logs.
 
-**Causa:** la carpeta `/docker/datasql/data/pgadmin` fue creada por `root`, pero el contenedor corre como usuario `pgadmin` (uid `5050`).
+**Causa:** la carpeta `$dkco/datasql/data/pgadmin` fue creada por `root`, pero el contenedor corre como usuario `pgadmin` (uid `5050`).
 
 **Solución:**
 
 ```bash
-chown -R 5050:5050 /docker/datasql/data/pgadmin
+chown -R 5050:5050 "$dkco/datasql/data/pgadmin"
 svc restart datasql
 ```
 
@@ -535,15 +591,16 @@ svc restart datasql
 
 **Causa:** intentos previos fallidos dejaron la base de datos SQLite de pgAdmin en estado inconsistente.
 
-**Solución:** borrar todo y dejar que pgAdmin recree desde cero:
+**Solución:** detener primero el stack y borrar únicamente los datos de pgAdmin,
+no el resto de DataSQL:
 
 ```bash
-docker rm -f datapgadmin
-rm -rf /docker/datasql/data/pgadmin
-mkdir -p /docker/datasql/data/pgadmin
-chown -R 5050:5050 /docker/datasql/data/pgadmin
+svc down datasql
+rm -rf "$dkco/datasql/data/pgadmin"
+mkdir -p "$dkco/datasql/data/pgadmin"
+chown -R 5050:5050 "$dkco/datasql/data/pgadmin"
 svc up datasql
-sleep 15 && docker logs datapgadmin 2>&1 | tail -10
+svc logs datasql pgadmin
 ```
 
 > Logs correctos: solo debe aparecer `Booting gunicorn` sin errores de permisos.
@@ -659,21 +716,20 @@ svc update datasql        # pull de imágenes + recrear
 svc backup datasql        # backup de volúmenes
 ```
 
-Inspeccionar la red:
+Inspeccionar la red mediante la interfaz del NAS:
 
 ```bash
-docker network inspect db_net
+svc net
 ```
 
 ---
 
 ## Fase 10 — Expansión IoT
 
-Cuando agregues Home Assistant, Node-RED, EMQX, etc.:
-
-```bash
-docker network create iot_net
-```
+Cuando agregues Home Assistant, Node-RED, EMQX, etc., verifica el inventario
+con `svc net`. Si falta una red externa en una instalación nueva, usa el
+procedimiento de bootstrap de networking; no la borres ni la recrees durante
+la migración de DataSQL.
 
 En el `compose.yml` de cada servicio IoT que necesite DB:
 

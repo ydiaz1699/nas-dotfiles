@@ -230,13 +230,17 @@ Redes creadas manualmente para segmentación de servicios.
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Crear redes (si se reinstala Docker)
+### Verificar redes compartidas
 
 ```bash
-docker network create db_net
-docker network create iot_net
-# macvlan requiere config especial — ver docker-nas/references/networking.md
+svc net
 ```
+
+Las redes externas (`db_net`, `iot_net`, `homepage_net` y macvlan) se crean o
+recuperan siguiendo la sección [Redes Docker de `docs/docker-entorno.md`](docker-entorno.md#redes-docker),
+que define el bootstrap inicial. Esa creación es una operación de instalación,
+no una reparación normal: no eliminar `db_net` ni ejecutar `docker network prune`
+durante la operación normal: otros servicios pueden depender de ella.
 
 ### Reglas de uso
 
@@ -318,7 +322,7 @@ DOCKER_BASE=/docker
 | **emqx** | Docker | 1883, 8883, 8083, 8084, 18083 | iot_net | Broker MQTT IoT |
 | **esphome** | Docker | 6052 | iot_net | Firmware ESP32/ESP8266 |
 | **homeassistant** | Docker (host) | 8123 | host | Automatización del hogar |
-| **datasql** | Docker (multi) | 5050 (pgadmin) | db_net | PostgreSQL + pgAdmin + Redis |
+| **datasql** | Docker (multi) | 5050 (pgAdmin), 5432 (solo loopback) | db_net | PostgreSQL + pgAdmin + Redis |
 | **filebrowser** | Docker | 8085 | filebrowser_default | Explorador archivos web |
 | **homepage** | Docker | 3000 | homepage_net | Dashboard de servicios |
 | **ntfy** | Docker | 8090 | bridge + homepage_net | Notificaciones push |
@@ -339,7 +343,8 @@ DOCKER_BASE=/docker
 | 1883 | EMQX | TCP | MQTT sin TLS |
 | 3000 | AdGuard | TCP | Asistente primer arranque |
 | 3000 | Homepage | TCP | Dashboard de servicios |
-| 5050 | pgAdmin | TCP | Solo vía db_net |
+| 5050 | pgAdmin | TCP | Acceso desde la LAN (`5050:80`) |
+| 5432 | PostgreSQL | TCP | Solo loopback del NAS (`127.0.0.1:5432:5432`) para Home Assistant |
 | 6052 | ESPHome | TCP | Dashboard ESPHome |
 | 8123 | Home Assistant | TCP | Automatización del hogar |
 | 8083 | EMQX | TCP | WebSocket MQTT |
@@ -464,18 +469,64 @@ ntfy_send "topic" "Título" "Mensaje" "prioridad" "tags"
 |-------|------------|---------|
 | Actualizar servicios | Semanal | `svc update-all` |
 | Verificar salud | Diario | `svc health` / `svc doctor` |
-| Limpiar Docker | Mensual | `docker system prune -a --volumes` |
+| Limpiar Docker | Solo tras revisar | `svc doctor` y limpieza específica; no usar `docker system prune` automáticamente |
 | Backups BD | Diario (cron) | `svc backup datasql` |
 | Limpiar USBs huérfanos | Automático (timer) | `usb-automount-cleanup.timer` |
 | Revisar logs | Según alertas | `svc logs <svc>` / `journalctl` |
-| Actualizar framework | Cuando haya cambios | `cd $NAS_DOTFILES && git pull && source ~/.bashrc` |
+| Actualizar framework | Cuando haya cambios | `nasfk` → `gs` → `gpl` → recargar shell si cambió la configuración |
 
-### Monitoreo rápido
+#### Aplicar cambios publicados desde GitHub en el NAS
+
+Kiro no opera el NAS. Para desplegar en el NAS cambios ya fusionados en
+GitHub, hacerlo desde una sesión SSH y actualizar primero el checkout del
+framework:
+
+```bash
+nasfk
+gs
+```
+
+Si `gs` muestra archivos modificados localmente, detenerse y decidir qué hacer
+con ellos; no sobrescribirlos automáticamente. Esta receta asume que el
+checkout sigue la rama `main`; si `gs` muestra otra rama, detenerse antes de
+hacer `gpl`. Cuando el árbol esté limpio:
+
+```bash
+gpl
+```
+
+Después verificar que el checkout contiene el comando o la guía esperada y
+recargar el shell solo si se modificaron aliases o módulos de carga:
+
+```bash
+gs
+_SHELL_RELOAD=1 source ~/.bashrc
+```
+
+Para el fix de `svc snapshot`, la secuencia de transición es:
+
+```bash
+NAS_CLI=bash svc snapshot datasql
+# actualizar el checkout si todavía no contiene el fix
+gpl
+NAS_CLI=bash svc --help | grep -E 'snapshot|rollback'
+NAS_CLI=python svc --help | grep snapshot
+svc snapshot datasql
+```
+
+Si el CLI Python todavía muestra `No such command 'snapshot'`, conservar el
+workaround `NAS_CLI=bash svc snapshot datasql`; no cambiar puertos ni ejecutar
+operaciones Docker directas para resolver ese error de CLI. La guía de DataSQL
+documenta además el snapshot previo y la migración segura de `db_net`.
+
+---
+
+## Monitoreo rápido
 
 ```bash
 nas             # Dashboard completo (uptime, RAM, disco, Docker, temp)
 svc health      # Estado de todos los servicios
-svc doctor      # Chequeo de 6 puntos
+svc doctor      # Chequeo de 8 puntos
 disk            # Uso de disco
 netinfo         # Interfaces + puertos en uso
 svc port-map    # Mapa de puertos (detecta conflictos)
@@ -511,7 +562,7 @@ svc port-map    # Mapa de puertos (detecta conflictos)
 1. `mkdir -p $dkco/<svc>/{data,config}` — crear carpetas
 2. Crear `compose.yml`, `.env`, configs — crear archivos
 3. `chmod 600 .env` — aplicar permisos
-4. `docker network create <red>` — crear red si necesaria
+4. Verificar redes externas con `svc net` y seguir el procedimiento de bootstrap si falta alguna
 5. `svc up <svc>` — levantar
 
 ### Documentación
@@ -535,11 +586,10 @@ svc port-map    # Mapa de puertos (detecta conflictos)
 ## Cómo actualizar este documento
 
 ```bash
-# Regenerar info automática
-echo "=== Hardware ===" && lscpu | head -5 && free -h && lsblk
-echo "=== Red ===" && ip -br addr && ip route | head -3
-echo "=== Docker ===" && docker network ls && docker ps --format "table {{.Names}}\t{{.Ports}}"
-echo "=== Puertos ===" && svc port-map
+# Verificación operativa mediante las interfaces del NAS
+svc net
+svc lista
+svc port-map
 ```
 
 Copiar la salida y actualizar las secciones marcadas con `_completar_`.

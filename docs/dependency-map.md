@@ -336,7 +336,8 @@ Usuario escribe: svc <comando>
 | `cron` | ✅ | ❌ | Solo bash |
 | `doctor-history` | ✅ | ❌ | Solo bash |
 | `lock` / `unlock` | ✅ | ❌ | Solo bash |
-| `snapshot` / `rollback` | ✅ | ❌ | Solo bash — nuevo (2026-08-17) |
+| `snapshot` | ✅ | ✅ | Python registra el comando y delega a Bash mediante `bash_bridge.py` |
+| `rollback` | ✅ | ❌ | Bash; usar `NAS_CLI=bash svc rollback <svc>` desde Python mientras no tenga wrapper |
 | `depends` | ✅ | ✅ | Ambos |
 | `open` | ✅ | ✅ | Ambos |
 | `env` | ✅ | ✅ | Ambos |
