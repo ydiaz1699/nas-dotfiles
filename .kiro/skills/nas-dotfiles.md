@@ -42,10 +42,12 @@ validación → levantar → catalog-sync`. El `compose.yml` debe incluir:
 - healthcheck específico y volumen persistente si guarda datos.
 
 Si necesita PostgreSQL o Redis, cargar primero `docs/services/datasql-guide.md` y
-la ficha de DataSQL. Usar `db_net`, crear una base/usuario dedicados, no exponer
-puertos de DB y no usar `depends_on` contra un contenedor de otro compose. SQLite
-queda reservado para smoke tests aislados; para integración, backup y recuperación
-usar DataSQL.
+la ficha de DataSQL. Usar `db_net`, crear una base/usuario dedicados y no publicar
+DBs en la LAN. Excepción: si Home Assistant usa `network_mode: host` y su Recorder
+apunta a `127.0.0.1:5432`, PostgreSQL puede publicar únicamente
+`127.0.0.1:5432:5432`; nunca `0.0.0.0:5432`. No usar `depends_on` contra un
+contenedor de otro compose. SQLite queda reservado para smoke tests aislados;
+para integración, backup y recuperación usar DataSQL.
 
 ---
 

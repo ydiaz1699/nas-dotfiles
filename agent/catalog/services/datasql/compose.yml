@@ -7,7 +7,10 @@ services:
     env_file:
       - ../.env
       - .env
-    # No exponer puerto al host — acceso solo via db_net
+    # Excepción host-only para Home Assistant (network_mode: host):
+    # nunca publicar en 0.0.0.0 ni en la LAN.
+    ports:
+      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}

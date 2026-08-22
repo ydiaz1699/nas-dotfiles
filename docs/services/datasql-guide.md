@@ -1,6 +1,9 @@
 # Stack DataSQL — Guía Completa para NAS Debian
 
-> PostgreSQL · pgAdmin · Redis · Red aislada `db_net` · Datos en `$dkco/datasql`
+> PostgreSQL y Redis no se exponen a la LAN. PostgreSQL mantiene una excepción
+> host-only (`127.0.0.1:5432:5432`) porque Home Assistant usa `network_mode: host`
+> y su Recorder conecta al loopback del NAS. Los consumidores Docker usan
+> `datapostgres:5432` y `dataredis:6379` por `db_net`.
 
 ## Fuente de verdad para aplicaciones consumidoras
 
@@ -122,12 +125,14 @@ services:
     env_file:
       - ../.env
       - .env
+    # PostgreSQL se publica solo en loopback para Home Assistant host-network.
+    ports:
+      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
-      # TZ se hereda de ../.env; no duplicar en environment
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     volumes:
       - ./data/postgres/pgdata:/var/lib/postgresql/data/pgdata
@@ -276,12 +281,14 @@ svc net
 svc port-map
 ```
 
-La versión canónica también elimina la publicación de PostgreSQL (`5432:5432`),
-conserva únicamente `5050:80` para pgAdmin y usa `datapostgres:5432` desde la
-red interna. No eliminar `db_net`: otros servicios activos pueden utilizarla.
-Si el `svc config datasql` sigue mostrando `ipv4_address`, `published: "5432"`,
-`TZ` dentro de `environment` o una IP literal en el label de Homepage, detenerse
-y no ejecutar `svc up`.
+La versión canónica conserva una publicación **solo en loopback** para el
+Recorder de Home Assistant (`127.0.0.1:5432:5432`): no es accesible desde la
+LAN y no debe cambiarse a `0.0.0.0:5432:5432`. Los consumidores conectados a
+`db_net` siguen usando `datapostgres:5432`. No eliminar `db_net`: otros
+servicios activos pueden utilizarla. Si el `svc config datasql` sigue mostrando
+`ipv4_address`, `published: "5432"` sin `127.0.0.1`, `TZ` dentro de
+`environment` o una IP literal en el label de Homepage, detenerse y no ejecutar
+`svc up`.
 
 ---
 
@@ -431,6 +438,16 @@ svc exec datasql postgres \
 
 unset PG_ADMIN_USER PG_ADMIN_DB PG_ADMIN_PASSWORD
 ```
+
+El endpoint para Home Assistant debe estar limitado al loopback del NAS:
+
+```bash
+ss -ltnp | grep ':5432'
+```
+
+La salida esperada contiene `127.0.0.1:5432`; si aparece `0.0.0.0:5432` o
+`[::]:5432`, PostgreSQL quedó expuesto a la LAN y hay que detenerse antes de
+continuar.
 
 ### pgAdmin
 

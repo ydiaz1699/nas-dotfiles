@@ -110,7 +110,9 @@ Template en: `agent/catalog/.env.global.example`
 Antes de crear un servicio que use PostgreSQL, Redis u otra base compartida:
 
 1. Activar/cargar `.kiro/skills/datasql/SKILL.md` y leer `docs/services/datasql-guide.md` y la ficha de DataSQL.
-2. Usar la red externa `db_net`; nunca publicar `5432` o `6379` al host.
+2. Usar la red externa `db_net`; no publicar bases de datos a la LAN. La única
+   excepción es PostgreSQL en `127.0.0.1:5432:5432` para Home Assistant cuando
+   usa `network_mode: host`; Redis (`6379`) permanece interno.
 3. Crear una base y un usuario dedicados dentro de DataSQL; no reutilizar el usuario administrador. Crear el rol y la base en llamadas separadas de `psql`.
 4. Leer los secretos reales desde `$dkco/datasql/.env`; no asumir `admin/appdb`, no hacer `source .env` y pasar `PGPASSWORD`/`REDISCLI_AUTH` explícitamente a `svc exec`.
 5. Configurar `env_file: [../.env, .env]`, `extends.file: ../_common.yml` y labels `homepage.*`.
@@ -313,7 +315,7 @@ Orden de consulta:
 ### Hechos críticos que NO deben adivinarse:
 
 - **File Browser**: usa un bind `/NAS` → `/srv` con `bind.propagation: rshared` — sin `rshared` los USBs montados después no son visibles
-- **DataSQL**: PostgreSQL NUNCA expone puerto al host — solo via db_net
+- **DataSQL**: PostgreSQL no se expone a la LAN; `127.0.0.1:5432:5432` solo se usa para el Recorder de Home Assistant con `network_mode: host`; los consumidores Docker usan `db_net`
 - **EMQX**: requiere ulimits nofile 1048576, dashboard en LAN (excepción documentada)
 - **USB Automount**: monta en `/NAS/USB/usb-<dev>` — File Browser lo ve por `bind.propagation: rshared`
 - **Bind mounts**: siempre usar `mount --bind` + fstab, nunca symlinks (Docker no los propaga)

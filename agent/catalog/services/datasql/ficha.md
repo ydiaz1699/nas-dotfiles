@@ -19,8 +19,8 @@ services:
     image: "postgres:16-alpine"
     container_name: "datapostgres"
     port_internal: 5432
-    port_default: null
-    exposure: "internal"
+    port_default: 5432
+    exposure: "loopback"
     healthcheck: '["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]'
     volumes:
       - "./data/postgres/pgdata:/var/lib/postgresql/data/pgdata"
@@ -73,7 +73,7 @@ backup_paths:
   - "./data/redis"
 protected: false
 docs_url: "docs/services/datasql-guide.md"
-notes: "PostgreSQL y Redis NO exponen puertos al host — acceso solo via db_net. pgAdmin expuesto en LAN (:5050). No usar ipv4_address en db_net: es una red compartida y Docker asigna IPs dinámicas. PGDATA y TZ son variables fijas/globales (no requieren .env local). Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del global."
+notes: "PostgreSQL no se expone a la LAN: publica únicamente 127.0.0.1:5432 para el Recorder de Home Assistant en network_mode: host. Los consumidores Docker usan datapostgres:5432 por db_net. Redis no expone puerto al host. pgAdmin expuesto en LAN (:5050). No usar ipv4_address en db_net: es una red compartida y Docker asigna IPs dinámicas. PGDATA y TZ son variables fijas/globales (no requieren .env local). Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del global."
 networks:
   - db_net
 security_extra:
@@ -109,7 +109,7 @@ del homelab que necesiten persistencia se conectan a este stack via `db_net`.
 
 | Servicio   | Imagen              | Puerto host | Red     | Acceso   |
 |-----------|---------------------|-------------|---------|----------|
-| postgres  | postgres:16-alpine  | —           | db_net  | internal |
+| postgres  | postgres:16-alpine  | 127.0.0.1:5432 | db_net  | loopback |
 | pgadmin   | dpage/pgadmin4      | 5050        | db_net  | LAN      |
 | redis     | redis:7-alpine      | —           | db_net  | internal |
 
@@ -143,7 +143,9 @@ REDIS_PASSWORD=__pega_aqui__
 
 ## Seguridad
 
-- PostgreSQL y Redis **nunca** exponen puertos al host
+- PostgreSQL publica únicamente `127.0.0.1:5432:5432` para Home Assistant en
+  `network_mode: host`; no se expone a la LAN
+- Redis no expone puerto al host
 - Todos los contenedores: `no-new-privileges`, `cap_drop: ALL`, caps mínimas
 - Resource limits configurados por servicio
 - scram-sha-256 para autenticación PostgreSQL

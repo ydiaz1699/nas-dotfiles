@@ -240,7 +240,7 @@ docker network create iot_net
 
 ### Reglas de uso
 
-- **db_net**: Solo para comunicación app↔DB. Nunca publicar puertos de postgres/redis al host.
+- **db_net**: Solo para comunicación app↔DB. No publicar postgres/redis a la LAN; PostgreSQL puede usar únicamente `127.0.0.1:5432:5432` para Home Assistant con `network_mode: host`.
 - **iot_net**: Todos los servicios IoT se conectan aquí para comunicarse entre sí vía MQTT, incluido ioBroker cuando se despliegue.
 - **macvlan**: Solo para servicios que necesitan IP propia en la LAN (actualmente solo AdGuard para DNS:53).
 - **bridge default**: Servicios que solo necesitan un puerto publicado y no hablan entre sí.
@@ -495,7 +495,7 @@ svc port-map    # Mapa de puertos (detecta conflictos)
 ### Redes
 
 - Crear red personalizada SOLO si dos servicios necesitan hablar internamente
-- Nunca publicar puertos de bases de datos al host (usar red interna)
+- No publicar puertos de bases de datos a la LAN (usar red interna); si Home Assistant conserva `network_mode: host`, PostgreSQL puede usar únicamente `127.0.0.1:5432:5432` y debe documentarse como excepción
 - Dashboard admin en LAN (no localhost) = documentar excepción en ficha
 
 ### Seguridad

@@ -105,6 +105,54 @@ services:
 
 ---
 
+## Recorder con PostgreSQL y arranque coordinado
+
+Home Assistant conserva `network_mode: host` para mDNS, descubrimiento IoT,
+USB y Bluetooth. Por eso no pertenece a `db_net` y no puede usar
+`datapostgres` como hostname Docker. Su Recorder debe conectar al endpoint local
+de PostgreSQL:
+
+```yaml
+recorder:
+  db_url: postgresql://ha_user:CONTRASEÑA@127.0.0.1:5432/homeassistant_db
+  purge_keep_days: 10
+  auto_purge: true
+  commit_interval: 1
+```
+
+La contraseña real no debe copiarse a esta guía ni al repositorio. La base
+`homeassistant_db` y el usuario `ha_user` deben crearse previamente con la
+receta de `docs/services/datasql-guide.md`, usando credenciales dedicadas.
+
+DataSQL conserva PostgreSQL en `db_net` con IP dinámica, pero publica su puerto
+**solo en loopback**:
+
+```yaml
+ports:
+  - "127.0.0.1:5432:5432"
+```
+
+No cambiarlo a `0.0.0.0:5432:5432` ni a `${SERVER_IP}:5432:5432`: Home Assistant
+solo necesita acceso desde el propio NAS. Los consumidores Docker conectados a
+`db_net` usan `datapostgres:5432` directamente.
+
+Los Compose están separados, así que `depends_on` no puede ordenar HA respecto
+a DataSQL. El arranque correcto es:
+
+```bash
+svc up datasql
+svc ps datasql
+# continuar cuando datapostgres y dataredis estén healthy
+svc up homeassistant
+svc ps homeassistant
+```
+
+`restart: unless-stopped` permite que HA vuelva a intentar después de un
+reinicio de DataSQL, pero no sustituye esta precondición inicial. El healthcheck
+HTTP de HA confirma la interfaz web, no la salud del Recorder.
+
+---
+
 ## Organización con includes
 
 En vez de meter todo en `configuration.yaml` (que se vuelve enorme), usar `!include`:

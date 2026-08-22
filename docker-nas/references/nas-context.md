@@ -145,7 +145,9 @@ Antes de crear una aplicación que necesite PostgreSQL o Redis compartido:
 3. Leer `POSTGRES_USER`, `POSTGRES_DB`, `POSTGRES_PASSWORD` y `REDIS_PASSWORD` desde `$dkco/datasql/.env`; no asumir `admin/appdb` ni ejecutar `source .env`.
 4. Crear una base y usuario dedicados con la Fase 5A de la guía: primero el rol, después la base, en llamadas separadas de `psql`.
 5. Usar `svc exec datasql postgres env PGPASSWORD="..." psql ...` y Redis con `env REDISCLI_AUTH="..." redis-cli ping`; limpiar las variables con `unset`.
-6. Usar la red externa `db_net`; nunca publicar `5432` ni `6379` al host.
+6. Usar la red externa `db_net`; no publicar bases de datos a la LAN. La única
+   excepción es PostgreSQL en `127.0.0.1:5432:5432` para el Recorder de Home
+   Assistant con `network_mode: host`; Redis (`6379`) permanece interno.
 7. Conectar usando `datapostgres` y `dataredis` como hostnames Docker, nunca una IP fija.
 8. No crear otro Redis ni otra contraseña; reutilizar el `REDIS_PASSWORD` de DataSQL.
 9. No usar `depends_on` contra `datapostgres` si DataSQL vive en otro compose.
@@ -155,7 +157,7 @@ Antes de crear una aplicación que necesite PostgreSQL o Redis compartido:
 | Red | Propósito | Regla |
 |-----|-----------|-------|
 | `adguard_macvlan_NET` | IP dedicada AdGuard (DNS:53) | Solo macvlan |
-| `db_net` | Apps ↔ DBs (interno) | Nunca exponer puertos al host |
+| `db_net` | Apps ↔ DBs (interno) | No exponer bases a la LAN; PostgreSQL puede usar `127.0.0.1:5432:5432` solo para Home Assistant host-network |
 | `iot_net` | EMQX ↔ ESPHome ↔ HA ↔ ioBroker | Todo IoT aquí |
 | `homepage_net` | Homepage ↔ servicios (widgets) | Para APIs internas |
 
