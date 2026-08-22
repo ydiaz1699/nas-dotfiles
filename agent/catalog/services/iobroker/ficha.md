@@ -29,7 +29,7 @@ backup_paths:
   - "./data"
 protected: true
 docs_url: "docs/services/iobroker-guide.md"
-notes: "Instancia única stateful: la configuración, adapters, estados y credenciales viven en ./data. Acceso LAN en :8181. Conectado a iot_net para resolver emqx:1883. La escalabilidad inicial es vertical; no ejecutar réplicas con el mismo bind mount. La imagen está fijada en v11.1.0 y se actualiza solo con backup previo."
+notes: "Instancia única stateful: la configuración, adapters, estados y credenciales viven en ./data. Acceso LAN en :8181. Conectado a iot_net para resolver emqx:1883. La escalabilidad inicial es vertical; no ejecutar réplicas con el mismo bind mount. La imagen está fijada en v11.1.0 y se actualiza solo con backup previo. La imagen soporta multihost mediante IOB_MULTIHOST y backends externos de objects/states, pero queda pendiente de diseño y pruebas con DataSQL Redis."
 networks:
   - iot_net
 ports:
