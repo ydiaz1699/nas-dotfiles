@@ -46,6 +46,10 @@
 │   ├── .env
 │   ├── config/server.yml
 │   └── data/
+├── iobroker/
+│   ├── compose.yml
+│   ├── .env
+│   └── data/                       ← /opt/iobroker dentro del contenedor
 ├── spacedrive/
 │   └── compose.yml
 └── backups/                        ← destino de svc backup
@@ -284,6 +288,7 @@ volumes:
 | ntfy | `mkdir -p $dkco/ntfy/{config,data/cache,data/lib,data/attachments}` |
 | emqx | `mkdir -p $dkco/emqx/data/{data,log}` |
 | homeassistant | `mkdir -p $dkco/homeassistant/data/www/snapshots` |
+| iobroker | `mkdir -p $dkco/iobroker/data` |
 | homeassistant | `mkdir -p $dkco/homeassistant/data/includes` |
 | datasql | `mkdir -p $dkco/datasql/data/{postgres/pgdata,postgres/backups,pgadmin,redis}` |
 

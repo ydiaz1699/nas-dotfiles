@@ -89,7 +89,7 @@ nas                 →  dashboard del servidor
 | `svc env <svc>` | Ver/editar variables |
 | `svc config <svc>` | Configuración resuelta |
 
-## Servicios Docker activos
+## Servicios Docker activos o preparados
 
 | Servicio | Puerto | Red | Homepage |
 |----------|--------|-----|----------|
@@ -101,6 +101,7 @@ nas                 →  dashboard del servidor
 | homepage | 3000 | homepage_net | — (es el dashboard) |
 | ntfy | 8090 | homepage_net | ✅ labels |
 | node-red | 1880 | iot_net | ✅ labels |
+| iobroker | 8181 (preparado) | iot_net | ✅ labels |
 | usb-api (systemd) | 8091 | nativo | services.yaml |
 | spacedrive | — | spacedrive_default | — |
 
@@ -111,7 +112,7 @@ nas                 →  dashboard del servidor
 | Red | Uso | Regla |
 |-----|-----|-------|
 | `db_net` | Apps ↔ DBs (postgres, pgadmin, redis) | Nunca exponer puertos DB al host |
-| `iot_net` | IoT (EMQX, ESPHome, HA futuro) | Todo IoT aquí |
+| `iot_net` | IoT (EMQX, ESPHome, HA futuro, ioBroker) | Todo IoT aquí |
 | `homepage_net` | Homepage ↔ ntfy (widgets internos) | Para APIs internas |
 | `adguard_macvlan_NET` | AdGuard IP propia (192.168.1.201) | Solo macvlan, parent: eno1 |
 | `filebrowser_default` | File Browser | Creada por compose |
@@ -203,8 +204,8 @@ svc diff <svc>             # Compose en disco vs resuelta (interpolada)
 | Mapa canónico de arquitectura, gaps y criterios | `docs/framework-knowledge-compilation.md` |
 | Contratos arquitectónicos | `agent/architecture/contracts.json` |
 | Homepage (labels, widgets, config) | `docs/services/homepage-guide.md` |
-| Skill específica DataSQL | `.kiro/skills/datasql/SKILL.md` |
-| Guía DataSQL y servicios con PostgreSQL | `docs/services/datasql-guide.md` |
+| ioBroker (IoT, MQTT, backups, upgrades) | `docs/services/iobroker-guide.md` |
+| DataSQL y servicios con PostgreSQL | `docs/services/datasql-guide.md` |
 | Flowise (prueba con DataSQL) | `docs/services/flowise-guide.md` |
 | Troubleshooting | `docs/troubleshooting.md` |
 | Skill completa (para LLMs) | `docker-nas/references/nas-context.md` |

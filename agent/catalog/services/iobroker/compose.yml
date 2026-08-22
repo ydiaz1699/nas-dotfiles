@@ -1,0 +1,49 @@
+# Catálogo: agent/catalog/services/iobroker/compose.yml
+# Al desplegarlo en $dkco/iobroker/compose.yml, transforma
+# extends.file ../../_common.yml → ../_common.yml.
+services:
+  iobroker:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: buanet/iobroker:v11.1.0
+    container_name: iobroker
+    hostname: iobroker
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      SETUID: "1000"
+      SETGID: "1000"
+      PERMISSION_CHECK: "true"
+      IOB_ADMINPORT: "8081"
+    volumes:
+      - ./data:/opt/iobroker
+    ports:
+      - "8181:8081"
+    healthcheck:
+      test: ["CMD", "/bin/bash", "-c", "/opt/scripts/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    labels:
+      - homepage.group=IoT
+      - homepage.name=ioBroker
+      - homepage.icon=iobroker
+      - homepage.href=http://${SERVER_IP}:8181
+      - homepage.description=Automatización IoT y domótica
+    networks:
+      - iot_net
+
+networks:
+  iot_net:
+    external: true

@@ -190,7 +190,7 @@ Redes creadas manualmente para segmentación de servicios.
 |-----|--------|-----------|---------------------|
 | `adguard_macvlan_NET` | macvlan | IP dedicada para AdGuard (DNS:53 sin conflicto) | adguard |
 | `db_net` | bridge | Comunicación interna entre apps y bases de datos | datasql (postgres, pgadmin, redis) |
-| `iot_net` | bridge | Servicios IoT/domótica | emqx, esphome, homeassistant |
+| `iot_net` | bridge | Servicios IoT/domótica | emqx, esphome, homeassistant, ioBroker (preparado) |
 | `bridge` | bridge | Default Docker (servicios sin red especial) | ntfy, filebrowser, etc. |
 | `homepage_net` | bridge | Dashboard Homepage ↔ servicios internos | homepage, ntfy |
 | `host` | host | Acceso directo al stack de red del host | (casos especiales) |
@@ -213,7 +213,8 @@ Redes creadas manualmente para segmentación de servicios.
 │  │  ┌─ iot_net (172.x.x.0/16) ─┐  ┌─ db_net (172.y.y.0/16) ──┐  │    │
 │  │  │ emqx (:1883,:18083)      │  │ postgres (interno)         │  │    │
 │  │  │ esphome (:6052)          │  │ pgadmin (:5050)            │  │    │
-│  │  │ homeassistant (:8123)    │  │ redis (interno)            │  │    │
+│  │  │ homeassistant (:8123)    │  │ redis (interno)            │  │
+│  │  │ iobroker (:8181, prep.)  │  │                              │  │    │
 │  │  └──────────────────────────┘  └────────────────────────────┘  │    │
 │  │                                                                  │    │
 │  │  ┌─ bridge (default) ────────────────────────────────────────┐  │    │
@@ -240,7 +241,7 @@ docker network create iot_net
 ### Reglas de uso
 
 - **db_net**: Solo para comunicación app↔DB. Nunca publicar puertos de postgres/redis al host.
-- **iot_net**: Todos los servicios IoT se conectan aquí para comunicarse entre sí vía MQTT.
+- **iot_net**: Todos los servicios IoT se conectan aquí para comunicarse entre sí vía MQTT, incluido ioBroker cuando se despliegue.
 - **macvlan**: Solo para servicios que necesitan IP propia en la LAN (actualmente solo AdGuard para DNS:53).
 - **bridge default**: Servicios que solo necesitan un puerto publicado y no hablan entre sí.
 
@@ -277,6 +278,10 @@ docker network create iot_net
 │   ├── .env
 │   ├── config/server.yml
 │   └── data/
+├── iobroker/
+│   ├── compose.yml
+│   ├── .env
+│   └── data/                    ← /opt/iobroker
 ├── spacedrive/
 │   └── compose.yml
 └── backups/                      ← Backups de svc backup
@@ -317,6 +322,7 @@ DOCKER_BASE=/docker
 | **filebrowser** | Docker | 8085 | filebrowser_default | Explorador archivos web |
 | **homepage** | Docker | 3000 | homepage_net | Dashboard de servicios |
 | **ntfy** | Docker | 8090 | bridge + homepage_net | Notificaciones push |
+| **iobroker** | Docker (preparado) | 8181 | iot_net | Automatización IoT y domótica |
 | **spacedrive** | Docker | _(ver compose)_ | spacedrive_default | Gestor de archivos |
 | **usb-api** | Nativo (systemd) | 8091 | — | API REST para USBs |
 
@@ -342,6 +348,7 @@ DOCKER_BASE=/docker
 | 8090 | ntfy | TCP | Notificaciones push |
 | 8091 | usb-api | TCP | API REST USB (nativo) |
 | 8100 | Flowise (prueba pendiente) | TCP | Reservado para la prueba; no confirmado activo |
+| 8181 | ioBroker (preparado) | TCP | Panel web, pendiente de despliegue y verificación en NAS |
 | 8883 | EMQX | TCP | MQTT con TLS |
 | 18083 | EMQX | TCP | Dashboard EMQX |
 
