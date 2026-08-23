@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # =============================================================================
 # Instalación de Docker Engine en Debian
 # Fuente: https://docs.docker.com/engine/install/debian/
 # =============================================================================
 
-set -e
+set -Eeuo pipefail
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -14,6 +14,72 @@ NC='\033[0m'
 echo_info()    { echo -e "${GREEN}[INFO]${NC} $1"; }
 echo_warn()    { echo -e "${YELLOW}[WARN]${NC} $1"; }
 echo_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
+
+# Usuario que recibirá acceso al grupo docker.
+# Prioridad de detección: usuario que invocó sudo, login actual y USER.
+detect_docker_user() {
+  local candidate
+  local login_user=""
+
+  login_user=$(logname 2>/dev/null || true)
+
+  for candidate in "${SUDO_USER:-}" "$login_user" "${USER:-}"; do
+    [[ -z "$candidate" || "$candidate" == "root" ]] && continue
+    if getent passwd "$candidate" >/dev/null 2>&1; then
+      printf '%s' "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+select_docker_user() {
+  local detected=""
+  local answer=""
+  local selected=""
+
+  detected=$(detect_docker_user || true)
+
+  if [[ -n "$detected" && -t 0 ]]; then
+    read -r -p "Usuario detectado '$detected'. ¿Agregarlo al grupo docker? [Y/n]: " answer
+    if [[ ! "$answer" =~ ^[nN]$ ]]; then
+      DOCKER_USER="$detected"
+      return 0
+    fi
+  elif [[ -n "$detected" ]]; then
+    # En ejecuciones no interactivas, usar el usuario detectado.
+    DOCKER_USER="$detected"
+    echo_info "Usuario detectado automáticamente: $DOCKER_USER"
+    return 0
+  fi
+
+  if [[ ! -t 0 ]]; then
+    echo_warn "No se pudo seleccionar un usuario en modo no interactivo."
+    return 0
+  fi
+
+  while true; do
+    read -r -p "Escribe el usuario que usará Docker (Enter para omitir): " selected
+
+    if [[ -z "$selected" ]]; then
+      echo_warn "No se agregará ningún usuario al grupo docker."
+      return 0
+    fi
+
+    if [[ "$selected" == "root" ]]; then
+      echo_warn "root no necesita pertenecer al grupo docker."
+      return 0
+    fi
+
+    if getent passwd "$selected" >/dev/null 2>&1; then
+      DOCKER_USER="$selected"
+      return 0
+    fi
+
+    echo_error "El usuario '$selected' no existe en este sistema."
+  done
+}
 
 # 1. Verificar root
 if [ "$EUID" -ne 0 ]; then
@@ -52,7 +118,7 @@ echo_info "Eliminando paquetes conflictivos si existen..."
 CONFLICT_PACKAGES="docker.io docker-compose docker-doc podman-docker containerd runc"
 
 for pkg in $CONFLICT_PACKAGES; do
-  if dpkg -l "$pkg" &>/dev/null; then
+  if dpkg -s "$pkg" &>/dev/null; then
     echo_warn "Eliminando paquete conflictivo: $pkg"
     apt remove -y "$pkg" || true
   fi
@@ -102,11 +168,25 @@ systemctl start docker
 echo_info "Verificando la instalación con la imagen hello-world..."
 docker run --rm hello-world
 
-# 9. Agregar usuario al grupo docker
-if [ -n "$SUDO_USER" ]; then
-  echo_info "Agregando el usuario '$SUDO_USER' al grupo 'docker'..."
-  usermod -aG docker "$SUDO_USER"
-  echo_warn "Cierra sesión y vuelve a iniciarla para que el cambio surta efecto."
+# 9. Agregar el usuario seleccionado al grupo docker
+DOCKER_USER=""
+select_docker_user
+
+if [[ -n "$DOCKER_USER" ]]; then
+  echo_warn "El grupo docker permite administrar Docker con privilegios equivalentes a root en este host."
+
+  if id -nG "$DOCKER_USER" | tr ' ' '\n' | grep -qx docker; then
+    echo_info "El usuario '$DOCKER_USER' ya pertenece al grupo 'docker'."
+    echo_info "Si la sesión actual aún no lo reconoce, ejecuta: newgrp docker"
+  else
+    echo_info "Agregando el usuario '$DOCKER_USER' al grupo 'docker'..."
+    usermod -aG docker "$DOCKER_USER"
+    echo_warn "Cierra la sesión de '$DOCKER_USER' y vuelve a iniciarla para aplicar el cambio."
+    echo_warn "Alternativamente, '$DOCKER_USER' puede ejecutar ahora: newgrp docker"
+  fi
+else
+  echo_warn "Docker quedó instalado, pero ningún usuario recibió acceso al grupo docker."
+  echo_warn "Un usuario administrador puede agregarlo después con: usermod -aG docker <usuario>"
 fi
 
 # 10. Resumen
