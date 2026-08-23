@@ -74,6 +74,22 @@ run_installer() {
     bash "$INSTALLER" --dry-run "$@"
 }
 
+run_installer_from_env() {
+  local os_release="$1"
+  local sources_dir="$2"
+  local keyrings_dir="$3"
+  local log_file="$4"
+  shift 4
+
+  DOCKER_INSTALL_DRY_RUN=1 \
+  DOCKER_INSTALL_ASSUME_DOCKER_ABSENT=1 \
+  DOCKER_INSTALL_OS_RELEASE="$os_release" \
+  DOCKER_INSTALL_APT_SOURCES_DIR="$sources_dir" \
+  DOCKER_INSTALL_APT_KEYRINGS_DIR="$keyrings_dir" \
+  DOCKER_INSTALL_LOG="$log_file" \
+    bash "$INSTALLER" "$@"
+}
+
 test_help() {
   local output
   output=$(bash "$INSTALLER" --help)
@@ -105,6 +121,8 @@ test_valid_debian() {
   assert_contains "$output" "apt install" "La simulación muestra la instalación prevista"
   assert_contains "$output" "docker run --rm hello-world" "La simulación muestra la prueba hello-world"
   assert_contains "$output" "Simulación terminada sin cambios" "La salida incluye el resumen simulado"
+  assert_contains "$output" "tee $sources_dir/docker.sources" "La salida muestra la escritura simulada de docker.sources"
+  assert_contains "$output" "Types: deb" "La salida muestra el contenido deb822 del repositorio"
 
   if [[ -f "$sources_dir/docker.list" && ! -e "$sources_dir/docker.sources" ]]; then
     pass "El modo simulación no modifica el repositorio legacy ni crea docker.sources"
@@ -117,6 +135,24 @@ test_valid_debian() {
   else
     fail "La simulación no generó el archivo de log"
   fi
+}
+
+test_dry_run_env() {
+  local case_dir="$TEST_ROOT/dry-run-env"
+  local os_release="$case_dir/os-release"
+  local output
+
+  mkdir -p "$case_dir"
+  write_os_release "$os_release" debian bookworm
+
+  if output=$(run_installer_from_env "$os_release" "$case_dir/sources" \
+      "$case_dir/keyrings" "$case_dir/install.log" 2>&1); then
+    pass "DOCKER_INSTALL_DRY_RUN=1 activa la simulación"
+  else
+    fail "DOCKER_INSTALL_DRY_RUN=1 no pudo activar la simulación"
+  fi
+
+  assert_contains "$output" "Modo simulación" "La variable de entorno activa el modo seguro"
 }
 
 test_invalid_os() {
@@ -178,6 +214,7 @@ test_explicit_user() {
 
 test_help
 test_valid_debian
+test_dry_run_env
 test_invalid_os
 test_invalid_codename
 test_explicit_user
