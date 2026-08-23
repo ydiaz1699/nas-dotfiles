@@ -148,6 +148,33 @@ Mismo wizard pero con interfaz bash basica (read/echo). Hace exactamente lo mism
 
 ---
 
+## Simular el instalador de Docker sin modificar el sistema
+
+Antes de instalar Docker en un equipo real, puedes ejecutar el simulador incluido
+con el repositorio:
+
+```bash
+bash tests/simulate_install_docker.sh
+```
+
+El simulador prueba Debian soportado, Ubuntu, un codename no soportado, selección
+de usuario, logging, repositorio legacy y el modo `--dry-run`. No ejecuta
+`apt`, `systemctl`, `usermod`, `docker` ni modifica `/etc`.
+
+Para revisar manualmente las acciones que se ejecutarían en un Debian real:
+
+```bash
+bash shell/scripts/install_docker.sh --dry-run \
+  --log-file /tmp/docker-install-dry-run.log
+```
+
+El instalador real escribe por defecto en `/var/log/docker-install.log`. Si
+`docker-ce` ya está instalado, omite la reinstalación de paquetes y conserva la
+configuración existente; aun así verifica el servicio y el acceso mediante
+`hello-world`.
+
+---
+
 ## Instalacion manual (sin wizard)
 
 Si prefieres control total:
