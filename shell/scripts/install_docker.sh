@@ -23,6 +23,7 @@ APT_SOURCES_DIR="${DOCKER_INSTALL_APT_SOURCES_DIR:-/etc/apt/sources.list.d}"
 APT_KEYRINGS_DIR="${DOCKER_INSTALL_APT_KEYRINGS_DIR:-/etc/apt/keyrings}"
 LOG_FILE="${DOCKER_INSTALL_LOG:-}"
 DOCKER_ALREADY_INSTALLED=false
+SUPPORTED_CODENAMES=(bullseye bookworm trixie)
 
 usage() {
   cat <<'EOF'
@@ -40,6 +41,7 @@ Variables útiles para pruebas/simulación:
   DOCKER_INSTALL_APT_SOURCES_DIR  Directorio alternativo de sources.list.d.
   DOCKER_INSTALL_APT_KEYRINGS_DIR Directorio alternativo de keyrings.
   DOCKER_INSTALL_USER              Usuario a seleccionar sin prompt.
+  DOCKER_INSTALL_DRY_RUN=1         Activa la simulación sin usar --dry-run.
   DOCKER_INSTALL_ASSUME_DOCKER_ABSENT Fuerza la ruta de instalación en pruebas.
   DOCKER_INSTALL_LOG               Ruta del log.
 EOF
@@ -211,6 +213,14 @@ package_installed() {
   dpkg -s "$1" >/dev/null 2>&1
 }
 
+supported_codename() {
+  local candidate
+  for candidate in "${SUPPORTED_CODENAMES[@]}"; do
+    [[ "$candidate" == "$1" ]] && return 0
+  done
+  return 1
+}
+
 validate_operating_system() {
   local os=""
   local codename=""
@@ -233,20 +243,17 @@ validate_operating_system() {
     return 1
   fi
 
-  case "$codename" in
-    bullseye|bookworm|trixie)
-      ;;
-    "")
-      echo_error "No se pudo detectar VERSION_CODENAME en $OS_RELEASE_FILE"
-      echo_error "Versiones soportadas: bullseye (11), bookworm (12), trixie (13)"
-      return 1
-      ;;
-    *)
-      echo_error "Codename de Debian no soportado: $codename"
-      echo_error "Versiones soportadas: bullseye (11), bookworm (12), trixie (13)"
-      return 1
-      ;;
-  esac
+  if supported_codename "$codename"; then
+    :
+  elif [[ -z "$codename" ]]; then
+    echo_error "No se pudo detectar VERSION_CODENAME en $OS_RELEASE_FILE"
+    echo_error "Versiones soportadas: ${SUPPORTED_CODENAMES[*]}"
+    return 1
+  else
+    echo_error "Codename de Debian no soportado: $codename"
+    echo_error "Versiones soportadas: ${SUPPORTED_CODENAMES[*]}"
+    return 1
+  fi
 
   OS="$os"
   VERSION_CODENAME="$codename"
@@ -254,7 +261,19 @@ validate_operating_system() {
   echo_info "Sistema detectado: $PRETTY_NAME ($VERSION_CODENAME)"
 }
 
+ensure_curl() {
+  if command -v curl >/dev/null 2>&1 && package_installed ca-certificates; then
+    return 0
+  fi
+
+  echo_warn "curl o ca-certificates no están disponibles; se instalarán antes de comprobar la conectividad."
+  run_command apt update
+  run_command apt install -y ca-certificates curl
+}
+
 check_connectivity() {
+  ensure_curl
+
   if [[ "$DRY_RUN" == true ]]; then
     print_command curl -fsSLI --max-time 10 https://download.docker.com/linux/debian/
     return 0
@@ -285,21 +304,26 @@ disable_legacy_repo() {
   run_command mv "$legacy_repo" "$disabled_repo"
 }
 
-write_docker_repo() {
-  local repo_file="$APT_SOURCES_DIR/docker.sources"
-
-  if [[ "$DRY_RUN" == true ]]; then
-    echo_info "Se escribiría $repo_file con el repositorio Docker deb822 para $VERSION_CODENAME."
-    return 0
-  fi
-
-  cat > "$repo_file" <<EOF
+docker_repo_contents() {
+  cat <<EOF
 Types: deb
 URIs: https://download.docker.com/linux/debian
 Suites: ${VERSION_CODENAME}
 Components: stable
 Signed-By: ${APT_KEYRINGS_DIR}/docker.asc
 EOF
+}
+
+write_docker_repo() {
+  local repo_file="$APT_SOURCES_DIR/docker.sources"
+
+  if [[ "$DRY_RUN" == true ]]; then
+    print_command tee "$repo_file"
+    docker_repo_contents | sed 's/^/    /'
+    return 0
+  fi
+
+  docker_repo_contents > "$repo_file"
 }
 
 install_docker() {
@@ -339,7 +363,6 @@ install_docker() {
 
   echo_info "Actualizando lista de paquetes e instalando dependencias..."
   run_command apt update
-  run_command apt install -y ca-certificates curl
 
   echo_info "Configurando repositorio oficial de Docker..."
   run_command install -m 0755 -d "$APT_KEYRINGS_DIR" "$APT_SOURCES_DIR"
@@ -434,10 +457,6 @@ main() {
 
   setup_logging
   validate_operating_system
-
-  if package_installed docker-ce; then
-    DOCKER_ALREADY_INSTALLED=true
-  fi
 
   install_docker
   start_and_verify_docker
