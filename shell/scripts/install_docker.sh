@@ -23,6 +23,7 @@ APT_SOURCES_DIR="${DOCKER_INSTALL_APT_SOURCES_DIR:-/etc/apt/sources.list.d}"
 APT_KEYRINGS_DIR="${DOCKER_INSTALL_APT_KEYRINGS_DIR:-/etc/apt/keyrings}"
 LOG_FILE="${DOCKER_INSTALL_LOG:-}"
 DOCKER_ALREADY_INSTALLED=false
+APT_UPDATED=false
 SUPPORTED_CODENAMES=(bullseye bookworm trixie)
 
 usage() {
@@ -124,6 +125,18 @@ run_optional_command() {
   elif ! "$@"; then
     echo_warn "El comando falló, pero se continuará: $*"
   fi
+}
+
+apt_update_once() {
+  local force="${1:-false}"
+
+  if [[ "$force" != true && "$APT_UPDATED" == true ]]; then
+    echo_info "apt update ya se ejecutó; se omite la actualización redundante."
+    return 0
+  fi
+
+  run_command apt update
+  APT_UPDATED=true
 }
 
 # Usuario que recibirá acceso al grupo docker.
@@ -267,7 +280,7 @@ ensure_curl() {
   fi
 
   echo_warn "curl o ca-certificates no están disponibles; se instalarán antes de comprobar la conectividad."
-  run_command apt update
+  apt_update_once
   run_command apt install -y ca-certificates curl
 }
 
@@ -275,12 +288,12 @@ check_connectivity() {
   ensure_curl
 
   if [[ "$DRY_RUN" == true ]]; then
-    print_command curl -fsSLI --max-time 10 https://download.docker.com/linux/debian/
+    print_command curl -fsSL --max-time 10 -o /dev/null https://download.docker.com/linux/debian/
     return 0
   fi
 
   echo_info "Comprobando conectividad con download.docker.com..."
-  if ! curl -fsSLI --max-time 10 https://download.docker.com/linux/debian/ >/dev/null; then
+  if ! curl -fsSL --max-time 10 -o /dev/null https://download.docker.com/linux/debian/; then
     echo_error "No hay conectividad con download.docker.com"
     echo_error "Verifica DNS, red, proxy o firewall antes de continuar."
     return 1
@@ -288,20 +301,25 @@ check_connectivity() {
 }
 
 disable_legacy_repo() {
-  local legacy_repo="$APT_SOURCES_DIR/docker.list"
+  local legacy_repo=""
   local disabled_repo=""
+  local -a legacy_repos=()
 
-  [[ -f "$legacy_repo" ]] || return 0
+  shopt -s nullglob
+  legacy_repos=("$APT_SOURCES_DIR"/docker*.list)
+  shopt -u nullglob
 
-  if ! grep -Eq 'download\.docker\.com/linux/debian|docker-ce' "$legacy_repo"; then
-    echo_info "Se conserva $legacy_repo: no parece ser el repositorio de Docker oficial."
-    return 0
-  fi
+  for legacy_repo in "${legacy_repos[@]}"; do
+    if ! grep -Eiq 'download\.docker\.com/linux/debian|(^|[^[:alnum:]_-])docker-ce([^[:alnum:]_-]|$)' "$legacy_repo"; then
+      echo_info "Se conserva $legacy_repo: no parece ser el repositorio de Docker oficial."
+      continue
+    fi
 
-  disabled_repo="${legacy_repo}.disabled.$(date +%Y%m%d_%H%M%S)"
-  echo_warn "Repositorio Docker legacy detectado: $legacy_repo"
-  echo_info "Se desactivará como: $disabled_repo"
-  run_command mv "$legacy_repo" "$disabled_repo"
+    disabled_repo="${legacy_repo}.disabled.$(date +%Y%m%d_%H%M%S)"
+    echo_warn "Repositorio Docker legacy detectado: $legacy_repo"
+    echo_info "Se desactivará como: $disabled_repo"
+    run_command mv "$legacy_repo" "$disabled_repo"
+  done
 }
 
 docker_repo_contents() {
@@ -361,8 +379,7 @@ install_docker() {
     fi
   done
 
-  echo_info "Actualizando lista de paquetes e instalando dependencias..."
-  run_command apt update
+  apt_update_once
 
   echo_info "Configurando repositorio oficial de Docker..."
   run_command install -m 0755 -d "$APT_KEYRINGS_DIR" "$APT_SOURCES_DIR"
@@ -371,7 +388,7 @@ install_docker() {
   write_docker_repo
 
   echo_info "Actualizando lista de paquetes con el repositorio oficial..."
-  run_command apt update
+  apt_update_once true
 
   echo_info "Instalando Docker Engine, CLI, containerd y plugins..."
   run_command apt install -y "${docker_packages[@]}"
