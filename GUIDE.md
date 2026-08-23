@@ -69,6 +69,8 @@ nas-dotfiles/
             prompt.sh           Prompt con docker + disco + git
             git.sh              Aliases de git
             completions.sh      Completions adicionales
+    tests/
+        simulate_install_docker.sh  Simulador seguro del instalador Docker
     docker/cli/
         svc.sh                  CLI principal de servicios Docker
         lib/
