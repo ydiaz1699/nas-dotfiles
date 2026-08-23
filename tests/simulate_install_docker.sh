@@ -109,6 +109,10 @@ test_valid_debian() {
   write_os_release "$os_release" debian trixie
   printf '%s\n' 'deb https://download.docker.com/linux/debian trixie stable' \
     > "$sources_dir/docker.list"
+  printf '%s\n' 'deb https://download.docker.com/linux/debian trixie stable # docker-ce' \
+    > "$sources_dir/docker-ce.list"
+  printf '%s\n' 'deb https://example.invalid/debian trixie stable' \
+    > "$sources_dir/docker-engine.list"
 
   if output=$(run_installer "$os_release" "$sources_dir" "$keyrings_dir" "$log_file" 2>&1); then
     pass "La simulación de Debian trixie termina correctamente"
@@ -116,16 +120,28 @@ test_valid_debian() {
     fail "La simulación de Debian trixie falló"
   fi
 
-  assert_contains "$output" "Modo simulación" "La salida indica que no se ejecutan cambios"
-  assert_contains "$output" "curl -fsSLI" "La simulación muestra la comprobación de conectividad"
-  assert_contains "$output" "apt install" "La simulación muestra la instalación prevista"
+  assert_contains "$output" "curl -fsSL --max-time 10 -o /dev/null" \
+    "La simulación muestra una descarga GET real para comprobar la conectividad"
+  assert_contains "$output" "apt update" "La simulación muestra las actualizaciones APT previstas"
+  assert_contains "$output" "mv $sources_dir/docker.list" \
+    "La simulación detecta el repositorio legacy docker.list"
+  assert_contains "$output" "mv $sources_dir/docker-ce.list" \
+    "La simulación detecta el repositorio legacy docker-ce.list"
+  assert_contains "$output" "Se conserva $sources_dir/docker-engine.list" \
+    "La simulación conserva un archivo docker*.list no relacionado"
+  local apt_update_count
+  apt_update_count=$(grep -Fc -- "  + apt update" <<< "$output" || true)
+  assert_status 2 "$apt_update_count" \
+    "La simulación ejecuta una actualización inicial y otra forzada tras docker.sources"
   assert_contains "$output" "docker run --rm hello-world" "La simulación muestra la prueba hello-world"
   assert_contains "$output" "Simulación terminada sin cambios" "La salida incluye el resumen simulado"
   assert_contains "$output" "tee $sources_dir/docker.sources" "La salida muestra la escritura simulada de docker.sources"
   assert_contains "$output" "Types: deb" "La salida muestra el contenido deb822 del repositorio"
 
-  if [[ -f "$sources_dir/docker.list" && ! -e "$sources_dir/docker.sources" ]]; then
-    pass "El modo simulación no modifica el repositorio legacy ni crea docker.sources"
+  if [[ -f "$sources_dir/docker.list" && -f "$sources_dir/docker-ce.list" \
+      && -f "$sources_dir/docker-engine.list" \
+      && ! -e "$sources_dir/docker.sources" ]]; then
+    pass "El modo simulación no modifica ningún repositorio legacy ni crea docker.sources"
   else
     fail "El modo simulación modificó los archivos de repositorio"
   fi
