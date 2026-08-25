@@ -100,14 +100,26 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 
 ### Nuevo servicio (orden obligatorio)
 
+Para instalar un servicio nuevo, cargar primero la sección **Protocolo obligatorio
+para instalar un servicio nuevo** de `docker-nas/SKILL.md`. Esta tabla es solo un
+recordatorio y no autoriza a inventar configuración.
+
 ```
-1. mkdir -p $dkco/<svc>/data
-2. Crear compose.yml + .env
-3. chmod 600 .env
-4. Agregar labels homepage.* en compose
-5. dk <svc> && svc up <svc>
-6. svc catalog-sync <svc>  → genera toda la documentación
+0. Leer docs/docker-entorno.md, references/svc.md y documentación oficial de la imagen
+1. Comprobar svc lista, svc port-map y svc net
+2. mkdir -p $dkco/<svc>/<carpetas-confirmadas>
+3. Crear compose.yml con extends, env_file global/local, labels y healthcheck confirmados
+4. Crear .env local solo si hay secretos; chmod 600 después de crearlo
+5. dk <svc> && svc config <svc>
+6. svc pull <svc>
+7. svc up <svc>
+8. Verificar svc ps, svc logs, svc health, svc stats y acceso funcional
+9. svc catalog-sync <svc> && svc scan
 ```
+
+Nunca afirmar "instalado" o "funcionando" si los pasos de validación no se
+han ejecutado correctamente. No crear `data/`, SQLite, variables, puertos,
+volúmenes ni redes conjeturadas; confirmarlos primero en la fuente oficial.
 
 ### Homepage
 

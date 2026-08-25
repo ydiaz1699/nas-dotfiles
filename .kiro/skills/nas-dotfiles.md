@@ -33,21 +33,46 @@ $DOCKER_BASE/           ← SOLO datos de servicios Docker (default /docker)
 
 ## Regla para servicios nuevos y bases compartidas
 
+> **Fuente canónica para instalar servicios:** antes de actuar, cargar
+> `$NAS_DOTFILES/docker-nas/SKILL.md` y seguir su sección **Protocolo obligatorio
+> para instalar un servicio nuevo**. Esta skill resumida no reemplaza esa guía.
+
 Al crear un servicio Docker, usar el orden `mkdir → .env/compose → permisos →
-validación → levantar → catalog-sync`. El `compose.yml` debe incluir:
+validación → pull → levantar → verificar → catalog-sync`. Nunca presentar una
+propuesta o un compose no probado como "instalado" o "funcionando".
+
+Antes de escribir archivos, leer `docs/docker-entorno.md` y
+`docker-nas/references/svc.md`; si el servicio ya existe, consultar además su
+guía, ficha y compose en ese orden. Para servicios nuevos, confirmar en la
+fuente oficial la imagen versionada, variables admitidas, puerto interno,
+rutas persistentes, autenticación, healthcheck y requisitos de recursos. No
+inventar variables como `OPENAI_API_KEY` o `ACCESS_CODE`, ni rutas como
+`./data:/app/data`, ni afirmar SQLite sin esa evidencia.
+
+El `compose.yml` debe incluir:
 
 - `env_file: [../.env, .env]` para heredar `SERVER_IP` y `TZ` y cargar secretos locales.
 - `extends: {file: ../_common.yml, service: _defaults}` para heredar defaults globales.
+- `TZ` únicamente en `$dkco/.env`; no repetirlo en `environment:`.
 - labels `homepage.*` dentro del servicio Docker, no solo en `services.yaml`.
-- healthcheck específico y volumen persistente si guarda datos.
+- healthcheck basado en el protocolo real, no una ruta inventada.
+- una red externa existente apropiada, o ninguna si no la necesita; no crear una
+  bridge aislada por servicio sin justificación.
+- un puerto externo libre, verificado con `svc port-map`, normalmente dentro de
+  `8100-8999`; el puerto externo no tiene por qué coincidir con el interno.
 
 Si necesita PostgreSQL o Redis, cargar primero `docs/services/datasql-guide.md` y
-la ficha de DataSQL. Usar `db_net`, crear una base/usuario dedicados y no publicar
-DBs en la LAN. Excepción: si Home Assistant usa `network_mode: host` y su Recorder
-apunta a `127.0.0.1:5432`, PostgreSQL puede publicar únicamente
+la ficha de DataSQL. Usar `db_net`, crear una base/usuario dedicados y no
+publicar DBs en la LAN. Excepción: si Home Assistant usa `network_mode: host` y
+su Recorder apunta a `127.0.0.1:5432`, PostgreSQL puede publicar únicamente
 `127.0.0.1:5432:5432`; nunca `0.0.0.0:5432`. No usar `depends_on` contra un
 contenedor de otro compose. SQLite queda reservado para smoke tests aislados;
 para integración, backup y recuperación usar DataSQL.
+
+Después de verificar `svc config`, `svc pull`, `svc ps`, `svc logs`, `svc health`,
+`svc stats` y el acceso funcional, ejecutar `svc catalog-sync <svc>`, revisar el
+placeholder y completar la guía operativa. El pipeline no convierte por sí solo
+un servicio no probado en una instalación correcta.
 
 ---
 

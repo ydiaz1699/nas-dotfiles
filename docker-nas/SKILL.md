@@ -86,6 +86,123 @@ Entrega siempre en este orden exacto:
 6. `svc up <svc>` y verificar salud, logs y consumo
 7. `svc catalog-sync <svc>` después de confirmar que funciona
 
+### Protocolo obligatorio para instalar un servicio nuevo
+
+Estas reglas evitan que el agente entregue un compose plausible pero incorrecto.
+Se aplican especialmente cuando el servicio no existe todavía en el catálogo.
+
+#### 0. Distinguir propuesta de instalación real
+
+- Si no se ejecutaron los comandos en el NAS, decir **"propuesta"** o
+  **"archivos preparados"**, nunca **"instalado"**, **"funcionando"** o
+  **"setup completo"**.
+- No afirmar que una imagen, variable, puerto, ruta interna, motor de base de
+  datos o volumen es compatible sin evidencia de la documentación oficial de la
+  imagen/proyecto o de una comprobación en el contenedor.
+- Si falta información crítica, detenerse y preguntar; no rellenar con valores
+  inventados solo para producir un compose.
+
+#### 1. Investigar antes de escribir archivos
+
+1. Leer obligatoriamente `docs/docker-entorno.md` y `references/svc.md`.
+2. Si el servicio ya existe, leer en este orden: `docs/services/<svc>-guide.md`,
+   `agent/catalog/services/<svc>/ficha.md` y
+   `agent/catalog/services/<svc>/compose.yml`. La guía tiene prioridad.
+3. Comprobar el estado actual antes de reservar recursos:
+   `svc lista`, `svc port-map`, `svc net` y, si tiene dependencias, `svc health`.
+4. Para un servicio nuevo, confirmar en fuente oficial la imagen, una etiqueta
+   versionada (no usar `latest` por defecto), variables admitidas, puerto
+   interno, ruta de persistencia, mecanismo de autenticación, healthcheck y
+   requisitos de CPU/RAM/red. `OPENAI_API_KEY`, `ACCESS_CODE`, `./data:/app/data`
+   y cualquier otra variable o volumen son inválidos hasta estar confirmados.
+5. No confundir el nombre del proyecto con la imagen oficial: documentar la
+   fuente consultada y, si hay varias imágenes, justificar la elegida.
+
+#### 2. Ajustar el servicio a la arquitectura del NAS
+
+- El compose real debe usar `extends.file: ../_common.yml` y
+  `env_file: [../.env, .env]`. El compose copiado al catálogo usa
+  `../../_common.yml` y no se ejecuta directamente desde allí.
+- `SERVER_IP` y `TZ` se heredan del `.env` global. Nunca repetir `TZ` en
+  `environment:` ni hardcodear la IP en labels; usar `${SERVER_IP}`.
+- Los secretos reales van únicamente en el `.env` local, con `chmod 600`; los
+  ejemplos usan placeholders (`__pega_aqui__`) y nunca claves ficticias que
+  parezcan listas para producción.
+- No crear una red `bridge` aislada con el nombre del producto solo por
+  costumbre. Usar una red externa existente según la función (`iot_net`,
+  `db_net`, `homepage_net`, `proxy` si está habilitada), o documentar por qué
+  no necesita una red adicional. La comunicación entre contenedores usa
+  hostnames Docker, nunca IPs fijas.
+- Los labels `homepage.*` van en `compose.yml`. `services.yaml` se reserva para
+  servicios nativos de systemd.
+- Verificar conflictos con `svc port-map` y respetar el rango de servicios
+  nuevos `8100-8999`, salvo una excepción explícita y documentada. El puerto
+  interno debe provenir de la documentación de la imagen; no asumir que el
+  puerto externo debe ser igual.
+- Un panel web no se expone automáticamente a toda la LAN: definir el alcance
+  de acceso, aplicar el bind apropiado y documentar en la ficha cualquier
+  excepción de exposición LAN.
+
+#### 3. Persistencia, bases de datos y seguridad
+
+- No crear `data/`, un bind mount o una base SQLite solo porque el servicio
+  parece necesitarlos. Crear únicamente las carpetas y mounts confirmados por
+  la imagen; si no hay persistencia confirmada, declararlo como pendiente.
+- SQLite solo se permite para smoke tests aislados y temporales. Para una
+  integración persistente del NAS, preferir DataSQL y cargar además
+  `.kiro/skills/datasql/SKILL.md` y `docs/services/datasql-guide.md`.
+- No inventar credenciales, nombres de variables ni promesas como "SQLite +
+  almacenamiento local". Confirmar también qué datos deben respaldarse y cómo
+  se recuperan.
+- Añadir `healthcheck` específico al protocolo real de la aplicación; no usar
+  `curl /health` ni una ruta inventada. Mantener los defaults de seguridad y
+  recursos del compose base, ajustándolos solo con evidencia.
+
+#### 4. Verificar en el orden real
+
+Después de crear directorios, archivos y permisos, y antes de declarar éxito:
+
+```bash
+# La ubicación ya debe existir antes de aplicar permisos o levantar
+mkdir -p $dkco/<svc>/<carpetas-confirmadas>
+# Crear .env solo si hay secretos; después aplicar permisos:
+chmod 600 $dkco/<svc>/.env  # solo si el servicio tiene .env local
+
+dk <svc> && svc config <svc>
+svc port-map
+svc pull <svc>
+svc up <svc>
+svc ps <svc>
+svc logs <svc>
+svc health
+svc stats <svc>
+```
+
+- Si `svc config`, `svc pull`, el healthcheck, los logs o la prueba de acceso
+  fallan, no continuar como si estuviera instalado: diagnosticar, corregir y
+  volver a verificar.
+- `svc pull` comprueba disponibilidad de la imagen, pero no demuestra que la
+  configuración sea correcta. La afirmación de éxito requiere configuración
+  resuelta, contenedor estable, healthcheck aprobado y acceso funcional.
+- No usar `svc down`, `rm`, `kill`, `prune` ni modificar un servicio existente
+  sin la confirmación requerida por las reglas de seguridad.
+
+#### 5. Documentar después de verificar
+
+Solo tras una instalación comprobada ejecutar:
+
+```bash
+svc catalog-sync <svc>
+svc catalog-sync --status
+svc scan
+```
+
+Revisar y completar manualmente `docs/services/<svc>-guide.md`: el placeholder
+no es una guía operativa terminada. Confirmar también la ficha, el compose
+portable, `.env.example`, los datos críticos de backup y, si aplica, la entrada
+DebMenux. No afirmar que la documentación está completa si solo se generó el
+placeholder automático.
+
 ### .env global (`$dkco/.env`)
 
 Variables compartidas por TODOS los servicios. Cambiar aquí = aplica a todos al reiniciar:
