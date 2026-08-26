@@ -149,8 +149,19 @@ Si `db_net` no existe, detenerse y seguir el bootstrap documentado en
 ### 1. Crear directorios
 
 ```bash
+mkdir -p $dkco/aipostgres/data/postgres/{pgdata,backups} $dkco/aipostgres/data/{pgadmin,redis}
+```
+
+```bash
 mkdir -p $dkco/aipostgres/data/postgres/{pgdata,backups}
 mkdir -p $dkco/aipostgres/data/{pgadmin,redis}
+```
+o
+
+```bash
+mkdir -p \
+  $dkco/aipostgres/data/postgres/{pgdata,backups} \
+  $dkco/aipostgres/data/{pgadmin,redis}
 ```
 
 ### 2. Copiar los archivos
