@@ -177,39 +177,73 @@ sed -i \
 
 No copiar el `.env` real al repositorio.
 
-### 5.3 Completar el `.env`
+### 5.3 Generar el `.env` sin copiar secretos de DataSQL
 
-Abrirlo únicamente después de crear directorios y archivos:
+Para este stack se generan tres secretos nuevos e independientes:
+
+- `POSTGRES_PASSWORD`: administrador del PostgreSQL IA.
+- `PGADMIN_PASSWORD`: acceso al pgAdmin IA.
+- `REDIS_PASSWORD`: contraseña del nuevo `airedis`.
+
+**No copiar `REDIS_PASSWORD` desde `$dkco/datasql/.env`**. Esa contraseña
+solo debe reutilizarse cuando un consumidor continúa conectado al Redis antiguo
+`dataredis`, como Flowise antes de su migración. El Redis nuevo `airedis` debe
+tener una credencial propia.
+
+La siguiente receta usa el patrón de generar valores en variables y escribir el
+archivo mediante un heredoc. Los valores reales no se escriben literalmente en
+el comando ni se guardan en Git. `openssl rand -hex 32` evita caracteres de
+shell problemáticos y produce secretos de 64 caracteres hexadecimales.
+
+Ejecutarla después de crear los directorios y copiar los archivos:
 
 ```bash
 dk aipostgres
-nano .env
-```
 
-Contenido mínimo:
+ENV_FILE="$dkco/aipostgres/.env"
 
-```env
+if [[ -f "$ENV_FILE" ]] && ! grep -q '__pega_aqui__' "$ENV_FILE"; then
+  printf 'El archivo %s ya contiene valores reales; no se sobrescribe.\n' "$ENV_FILE"
+else
+  (
+    umask 077
+    set +x
+
+    POSTGRES_PASS=$(openssl rand -hex 32)
+    PGADMIN_PASS=$(openssl rand -hex 32)
+    REDIS_PASS=$(openssl rand -hex 32)
+
+    cat > "$ENV_FILE" <<EOF
+# Secretos locales de aipostgres — no copiar al repositorio.
 POSTGRES_DB=aipostgres
 POSTGRES_USER=aiadmin
-POSTGRES_PASSWORD=__pega_aqui__
+POSTGRES_PASSWORD=${POSTGRES_PASS}
 
 PGADMIN_EMAIL=admin@local.lan
-PGADMIN_PASSWORD=__pega_aqui__
+PGADMIN_PASSWORD=${PGADMIN_PASS}
 
-REDIS_PASSWORD=__pega_aqui__
+REDIS_PASSWORD=${REDIS_PASS}
 
+# Puertos temporales mientras DataSQL siga activo.
 AIPG_POSTGRES_HOST_PORT=5433
 AIPGADMIN_PORT=5051
+EOF
+
+    chmod 600 "$ENV_FILE"
+    unset POSTGRES_PASS PGADMIN_PASS REDIS_PASS
+    printf 'Generado %s con permisos 600.\n' "$ENV_FILE"
+  )
+fi
+unset ENV_FILE
 ```
 
-Generar secretos independientes de DataSQL:
+La condición evita sobrescribir un `.env` que ya contiene secretos reales. Si
+el archivo todavía es el `.env.example` con `__pega_aqui__`, lo reemplaza por
+valores nuevos. No ejecutar `source .env`, no imprimir las variables y no usar
+`set -x` durante este procedimiento.
 
-```bash
-openssl rand -base64 32
-```
-
-No poner `SERVER_IP` ni `TZ` en este `.env`; se heredan desde el global
-mediante `env_file: [../.env, .env]`.
+No poner `SERVER_IP` ni `TZ` en este `.env`; se heredan desde el global mediante
+`env_file: [../.env, .env]`.
 
 ### 5.4 Aplicar permisos después de crear todo
 

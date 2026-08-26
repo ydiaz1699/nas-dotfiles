@@ -101,7 +101,7 @@
       ],
       "protected": false,
       "docs_url": "docs/services/aipostgres-guide.md",
-      "notes": "Stack completo sucesor de DataSQL: postgres es aipostgres, pgAdmin es aipgadmin y Redis es airedis. Durante la coexistencia PostgreSQL se publica solo en 127.0.0.1:5433 para preparar la migración de Home Assistant, pgAdmin en LAN :5051 y Redis permanece interno. Los consumidores Docker deben usar aipostgres:5432 y airedis:6379. La imagen ParadeDB 0.25.4-pg17 incluye pgvector y pg_search; pg_search se carga mediante shared_preload_libraries. No incluye RustFS: RustFS es un servicio S3 independiente y solo se instala cuando existe LobeHub u otro consumidor de objetos. En el catálogo extends.file es ../../_common.yml; el compose desplegado usa ../_common.yml.",
+      "notes": "Stack completo sucesor de DataSQL: postgres es aipostgres, pgAdmin es aipgadmin y Redis es airedis. Durante la coexistencia PostgreSQL se publica solo en 127.0.0.1:5433 para preparar la migración de Home Assistant, pgAdmin en LAN :5051 y Redis permanece interno. Los consumidores Docker deben usar aipostgres:5432 y airedis:6379. La imagen ParadeDB 0.25.4-pg17 incluye pgvector y pg_search; pg_search se carga mediante shared_preload_libraries. El REDIS_PASSWORD de airedis se genera nuevo y no se copia desde DataSQL; solo consumidores aún conectados a dataredis conservan la credencial antigua. No incluye RustFS: RustFS es un servicio S3 independiente y solo se instala cuando existe LobeHub u otro consumidor de objetos. En el catálogo extends.file es ../../_common.yml; el compose desplegado usa ../_common.yml.",
       "networks": [
         "db_net"
       ],
