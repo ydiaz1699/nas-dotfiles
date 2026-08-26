@@ -38,7 +38,7 @@ services:
       cpus_limit: "1.5"
       cpus_reservation: "0.25"
   pgadmin:
-    image: "dpage/pgadmin4:latest"
+    image: "dpage/pgadmin4:9.17"
     container_name: "aipgadmin"
     port_internal: 80
     port_default: 5051

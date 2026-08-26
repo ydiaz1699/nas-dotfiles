@@ -413,6 +413,49 @@ La salida esperada es `aipgadmin Up` y los logs ya no deben mostrar el error de
 los síntomas específicos de corrupción SQLite documentados en la guía de
 DataSQL. No ejecutes `svc down datasql`.
 
+### Error de migración inicial de pgAdmin (`EOFError`)
+
+Si, después de corregir el ownership, los logs muestran:
+
+```text
+Configuring authentication for SERVER mode.
+Enter the email address and password to use for the initial pgAdmin user account:
+EOFError: EOF when reading a line
+RuntimeError: Migration failed
+```
+
+la carpeta contiene una base `pgadmin4.db` creada durante un arranque parcial.
+El contenedor está intentando migrarla y pedir el usuario inicial de forma
+interactiva, pero `svc up` no proporciona una terminal. En una instalación
+nueva en la que todavía no se configuraron servidores en pgAdmin, aparta la
+carpeta completa en vez de borrarla:
+
+```bash
+svc down aipostgres
+
+TS="$(date +%Y%m%d-%H%M%S)"
+mv "$dkco/aipostgres/data/pgadmin" \\
+  "$dkco/aipostgres/data/pgadmin.partial-$TS"
+mkdir -p "$dkco/aipostgres/data/pgadmin"
+chown -R 5050:5050 "$dkco/aipostgres/data/pgadmin"
+chmod 700 "$dkco/aipostgres/data/pgadmin"
+unset TS
+
+svc up aipostgres
+svc ps aipostgres
+svc logs aipostgres
+```
+
+Esto elimina solo los contenedores del stack `aipostgres` y conserva la carpeta
+anterior como respaldo. No afecta PostgreSQL, Redis ni DataSQL. Si ya habías
+configurado servidores o conexiones en pgAdmin, no apartes la carpeta: detente
+y conserva ese directorio para una recuperación específica.
+
+La imagen de pgAdmin está fijada a `9.17` para evitar que el tag mutable
+`latest` avance la base SQLite sin una actualización coordinada. Las variables
+`PGADMIN_DEFAULT_EMAIL` y `PGADMIN_DEFAULT_PASSWORD` deben seguir presentes en
+el `.env`; son las que crean la cuenta inicial en un directorio limpio.
+
 ## Avisos del preflight actual
 
 ### `tasmoadmin unhealthy`
