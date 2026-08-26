@@ -81,6 +81,8 @@ No usar nombres temporales (`aipgadmin`, `airedis`), puertos `5433`/`5051`,
 - La contraseña de Redis es la misma de `$dkco/datasql/.env`, leída sin
   mostrarla y pasada con el mecanismo de autenticación de la imagen
 
-La guía es la fuente de verdad para instalación, renombrado, permisos,
-recreación, recuperación y verificación. Esta skill solo contiene las reglas
-de decisión para un consumidor.
+La guía es la fuente de verdad para instalación, migración, permisos,
+recreación, recuperación y verificación. Para crear una base y un rol desde
+terminal, usar la ruta rápida de `docs/services/datasql-guide.md` §5.1.1; no es
+necesario usar pgAdmin para aprovisionar nuevos servicios. Esta skill solo
+contiene las reglas de decisión para un consumidor.

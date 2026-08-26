@@ -605,6 +605,69 @@ if [[ -z "$PG_ADMIN_PASSWORD" || -z "$PG_ADMIN_USER" || -z "$PG_ADMIN_DB" ]]; th
 fi
 ```
 
+### 5.1.1 Ruta rápida por terminal — Home Assistant
+
+Para un servicio nuevo, no es necesario usar pgAdmin para crear el rol y la
+base. Esta es la ruta recomendada en el NAS: usa `svc exec`, no `docker exec`,
+no hace `source .env` y no escribe la contraseña en el SQL.
+
+Las variables administrativas de la sección anterior ya están cargadas. Crea el
+rol en una sesión interactiva:
+
+```bash
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB"
+```
+
+En `psql` ejecuta:
+
+```sql
+CREATE ROLE ha_user LOGIN;
+\password ha_user
+```
+
+Introduce dos veces la contraseña dedicada de Home Assistant y sal:
+
+```text
+\q
+```
+
+Crea la base en una llamada separada. Así `CREATE DATABASE` no queda atrapado
+en una transacción:
+
+```bash
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" \
+  -c 'CREATE DATABASE homeassistant_db OWNER ha_user;'
+```
+
+Verifica propietario y conexión con el usuario dedicado. Después de salir de
+`psql`, vuelve a introducir temporalmente la misma contraseña en la terminal
+para probar el login; no la escribas en esta guía ni en el chat:
+
+```bash
+read -r -s -p 'Contraseña de ha_user para verificar: ' HA_DB_PASSWORD
+printf '\n'
+
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" \
+  -c "SELECT datname, pg_get_userbyid(datdba) AS owner FROM pg_database WHERE datname='homeassistant_db';"
+
+svc exec datasql postgres \
+  env PGPASSWORD="$HA_DB_PASSWORD" \
+  psql -U ha_user -d homeassistant_db \
+  -c 'SELECT current_user, current_database();'
+
+unset PG_ADMIN_PASSWORD PG_ADMIN_USER PG_ADMIN_DB HA_DB_PASSWORD
+```
+
+El resultado esperado es `homeassistant_db | ha_user` y después
+`ha_user | homeassistant_db`. Para Home Assistant, el `db_url` usa
+`127.0.0.1:5432`, no `datapostgres` ni una IP fija de Docker.
+
 ### 5.2 Definir nombres y leer la contraseña del consumidor
 
 Sustituye únicamente los valores confirmados por el compose del nuevo
