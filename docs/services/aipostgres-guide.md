@@ -69,7 +69,8 @@ La imagen `paradedb/paradedb:0.25.4-pg17` es PostgreSQL 17 empaquetado por
 ParadeDB con estas extensiones disponibles:
 
 - `pg_cron`: tareas programadas dentro de PostgreSQL; la imagen la intenta
-  habilitar durante su bootstrap.
+  habilitar durante su bootstrap y usa `cron.database_name` para elegir la base
+  donde se almacenan sus trabajos.
 
 - `vector` (`pgvector`): embeddings, tipos vectoriales, operadores e índices
   para memoria semántica y RAG.
@@ -295,6 +296,7 @@ La configuración resuelta debe mostrar:
 - pgAdmin en `5051:80`.
 - Redis sin `ports`.
 - `shared_preload_libraries=pg_search,pg_cron`.
+- `cron.database_name=${POSTGRES_DB}`.
 - Volúmenes persistentes en `./data/postgres`, `./data/pgadmin` y
   `./data/redis`.
 - `env_file` global y local.
@@ -354,17 +356,18 @@ HINT:  Add pg_cron to the shared_preload_libraries configuration variable
 ```
 
 la imagen de ParadeDB sí encontró `pg_search`, pero su script de bootstrap
-`10_bootstrap_paradedb.sh` también intenta crear la extensión `pg_cron`. El
-compose debe precargar ambas bibliotecas:
+`10_bootstrap_paradedb.sh` también intenta crear la extensión `pg_cron`. El compose debe precargar ambas bibliotecas y configurar la base de trabajos de
+pg_cron:
 
 ```text
 shared_preload_libraries=pg_search,pg_cron
+cron.database_name=aipostgres
 ```
 
-No borres `./data/postgres/pgdata`: el primer intento puede haber creado ya el
-clúster y dejar datos válidos aunque el bootstrap de la extensión haya fallado.
-Después de sincronizar el compose corregido, valida y recrea únicamente el
-stack sucesor:
+En el compose se usa `${POSTGRES_DB}` en lugar de fijar el nombre de la base.
+No borres `./data/postgres/pgdata`: el clúster ya está inicializado y solo falta
+registrar `pg_cron` en la base configurada. Después de sincronizar el compose
+corregido, valida y recrea únicamente el stack sucesor:
 
 ```bash
 dk aipostgres
@@ -382,6 +385,8 @@ SELECT name, default_version, installed_version
 FROM pg_available_extensions
 WHERE name IN ('vector', 'pg_search', 'pg_cron')
 ORDER BY name;
+
+SHOW cron.database_name;
 
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 ```

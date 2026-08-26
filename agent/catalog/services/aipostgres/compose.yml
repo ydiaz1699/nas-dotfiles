@@ -26,11 +26,13 @@ services:
     ports:
       - "127.0.0.1:${AIPG_POSTGRES_HOST_PORT:-5433}:5432"
     # ParadeDB inicializa pg_search y pg_cron durante el primer arranque.
-    # Las dos bibliotecas deben precargarse para que el bootstrap termine.
+    # Las dos bibliotecas deben precargarse y pg_cron debe usar la base del stack.
     command:
       - postgres
       - "-c"
       - shared_preload_libraries=pg_search,pg_cron
+      - "-c"
+      - "cron.database_name=${POSTGRES_DB}"
     volumes:
       - ./data/postgres/pgdata:/var/lib/postgresql/data/pgdata
       - ./data/postgres/backups:/backups
