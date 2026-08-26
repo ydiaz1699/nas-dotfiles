@@ -146,14 +146,14 @@ Si `db_net` no existe, detenerse y seguir el bootstrap documentado en
 
 ## 5. Instalación del stack sucesor
 
-### 5.1 Crear primero todas las carpetas
+### 1. Crear directorios
 
 ```bash
 mkdir -p $dkco/aipostgres/data/postgres/{pgdata,backups}
 mkdir -p $dkco/aipostgres/data/{pgadmin,redis}
 ```
 
-### 5.2 Crear los archivos
+### 2. Copiar los archivos
 
 ```bash
 cp "$NAS_DOTFILES/agent/catalog/services/aipostgres/compose.yml" \
@@ -177,7 +177,7 @@ sed -i \
 
 No copiar el `.env` real al repositorio.
 
-### 5.3 Generar el `.env` sin copiar secretos de DataSQL
+### 3. Generar los secretos
 
 Para este stack se generan tres secretos nuevos e independientes:
 
@@ -245,7 +245,7 @@ valores nuevos. No ejecutar `source .env`, no imprimir las variables y no usar
 No poner `SERVER_IP` ni `TZ` en este `.env`; se heredan desde el global mediante
 `env_file: [../.env, .env]`.
 
-### 5.4 Aplicar permisos después de crear todo
+### 4. Aplicar permisos
 
 ```bash
 chmod 700 "$dkco/aipostgres/data/postgres/pgdata"
@@ -258,7 +258,7 @@ chmod 600 "$dkco/aipostgres/.env"
 No aplicar `chown` a un UID supuesto antes de probar la imagen. Si aparecen
 errores de permisos, conservar los logs y determinar el UID real del contenedor.
 
-### 5.5 Validar antes de levantar
+### 5. Validar sin levantar todavía
 
 ```bash
 dk aipostgres
@@ -282,19 +282,77 @@ La configuración resuelta debe mostrar:
 No continuar si `svc config` muestra `0.0.0.0:5432`, una IP fija de Docker, otra
 red o una ruta incorrecta de `_common.yml`.
 
-### 5.6 Descargar y levantar
+### 6. Levantar el nuevo stack
 
 ```bash
 svc pull aipostgres
 svc up aipostgres
 svc ps aipostgres
+```
+
+Después revisa los logs:
+
+```bash
 svc logs aipostgres
 ```
 
-Los tres contenedores deben quedar activos; PostgreSQL y Redis deben quedar
-saludables. Ctrl-C en `svc logs` solo termina la vista de logs.
+Ctrl-C en `svc logs` solo termina la vista de logs; no detiene los contenedores.
 
-## 6. Verificar los tres componentes
+## Lo que espero ver
+
+Los tres contenedores deben quedar activos:
+
+```text
+aipostgres  Up (healthy)
+aipgadmin   Up
+airedis     Up (healthy)
+```
+
+Después verifica el estado global y la exposición de puertos:
+
+```bash
+svc health
+svc ps aipostgres
+svc net
+svc port-map
+```
+
+En `svc port-map` deberían aparecer `5051` y posiblemente `5433` como
+loopback. No debe aparecer `6379`.
+
+No continúes si PostgreSQL o Redis no están saludables; conserva la salida de
+`svc ps aipostgres` y `svc logs aipostgres` para diagnosticar antes de cambiar
+permisos o eliminar datos.
+
+## Avisos del preflight actual
+
+### `tasmoadmin unhealthy`
+
+No bloquea la instalación de `aipostgres`. No reinicies ni modifiques
+`tasmoadmin` como parte de esta instalación; se investigará separadamente,
+leyendo primero su guía y su composición.
+
+### Error de `nas`
+
+Si aparece:
+
+```text
+-bash: 3,9Gi: valor demasiado grande para la base
+```
+
+alguna función del dashboard está intentando convertir el tamaño localizado
+`3,9Gi` como si fuera un número. Es un bug del comando `nas`, no un problema de
+almacenamiento. El dato útil del diagnóstico es, por ejemplo:
+
+```text
+/ usado: 32G de 285G
+Uso: 12%
+```
+
+Este error tampoco bloquea la instalación mientras `disk` confirme espacio
+suficiente.
+
+## 7. Verificar los tres componentes
 
 ### PostgreSQL y extensiones
 
@@ -389,7 +447,7 @@ DataSQL debe continuar intacto. La única publicación adicional esperada es
 `127.0.0.1:5433` y el panel LAN `5051`; Redis no debe aparecer en el mapa de
 puertos.
 
-## 7. Plan de migración y retiro de DataSQL
+## 8. Plan de migración y retiro de DataSQL
 
 No migrar todo en el mismo cambio.
 
@@ -447,7 +505,7 @@ El stack `aipostgres` puede continuar con sus nombres propios. No es necesario
 renombrar `aipostgres` a `datapostgres`, ni `airedis` a `dataredis`; cambiar los
 endpoints de los consumidores es más claro y evita ambigüedades.
 
-## 8. RustFS y LobeHub: fase posterior
+## 9. RustFS y LobeHub: fase posterior
 
 Cuando se decida instalar LobeHub:
 
@@ -462,7 +520,7 @@ Cuando se decida instalar LobeHub:
 RustFS también podría servir en el futuro para documentos, adjuntos o artefactos
 del agente NAS, pero no se instala por anticipado mientras no exista ese flujo.
 
-## 9. Backups y operación
+## 10. Backups y operación
 
 Después de verificar el stack vacío:
 
