@@ -18,7 +18,7 @@ trigger: >
   - Servicios: Docker, contenedor, compose, imagen, puerto, red, volumen
   - Comandos: dk, adm, nasfk, svc, instal, pipins, gpl, gs, nas, bat
   - Servicios específicos: emqx, ntfy, adguard, filebrowser, esphome,
-    homepage, datasql, aipostgres, aipgadmin, airedis, pgadmin, redis, flowise, ioBroker, usb-api, spacedrive, rustfs
+    homepage, datasql, aipostgres, datapostgres, datapgadmin, dataredis, pgadmin, redis, flowise, ioBroker, usb-api, spacedrive, rustfs
   - Infra: homelab, servidor, backup, cron, systemd, USB, mount
   - IoT: MQTT, broker, ESP32, Home Assistant, alarma, sensor
   - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS
@@ -138,8 +138,8 @@ volúmenes ni redes conjeturadas; confirmarlos primero en la fuente oficial.
 | adguard | 53,80 (IP: .201) | macvlan | `agent/catalog/services/adguard/` |
 | emqx | 1883,18083 | iot_net, db_net | `agent/catalog/services/emqx/ficha.md` |
 | esphome | 6052 | host | `agent/catalog/services/esphome/ficha.md` |
-| datasql | 5050 | db_net | `docs/services/datasql-guide.md` |
-| aipostgres | 5433, 5051 | db_net | `docs/services/aipostgres-guide.md` (sucesor gradual de DataSQL) |
+| datasql | 5432 (loopback), 5050 | db_net | `docs/services/aipostgres-guide.md` |
+| aipostgres | alias de datasql | db_net | `docs/services/aipostgres-guide.md` (base administrativa/alias histórico) |
 | flowise | 8100 | db_net | `docs/services/flowise-guide.md` |
 | n8n | 5678 | db_net | compose/runtime pendiente de catalogar |
 | filebrowser | 8085 | default | `docs/services/filebrowser-guide.md` |
@@ -160,24 +160,23 @@ Antes de crear una aplicación que necesite PostgreSQL o Redis compartido:
 4. Crear una base y usuario dedicados con la Fase 5A de la guía: primero el rol, después la base, en llamadas separadas de `psql`.
 5. Usar `svc exec datasql postgres env PGPASSWORD="..." psql ...` y Redis con `env REDISCLI_AUTH="..." redis-cli ping`; limpiar las variables con `unset`. Con el CLI Python, abrir `psql` interactivo y no enviar SQL por pipe porque `svc exec` conserva TTY.
 6. Usar la red externa `db_net`; no publicar bases de datos a la LAN. La única
-   excepción es PostgreSQL en loopback para el Recorder de Home Assistant;
-   durante la coexistencia DataSQL usa `127.0.0.1:5432` y aipostgres usa
-   `127.0.0.1:5433`. Redis (`6379`) permanece interno.
-7. El stack sucesor `aipostgres` contiene `aipostgres`, `aipgadmin` y `airedis`.
-   Sus consumidores Docker usan `aipostgres:5432` y `airedis:6379`; no se
-   elimina DataSQL hasta migrar y verificar todos sus consumidores.
-8. Durante la coexistencia, DataSQL conserva `datapostgres`/`dataredis`; los
-   consumidores aún no migrados deben seguir usando esos hostnames.
+   excepción host-only es PostgreSQL en `127.0.0.1:5432` para Home Assistant;
+   pgAdmin se publica como dashboard LAN en `5050` y Redis (`6379`) permanece
+   interno.
+7. El único stack operativo contiene `datapostgres`, `datapgadmin` y
+   `dataredis`. Los consumidores Docker usan `datapostgres:5432` y
+   `dataredis:6379`; `aipostgres` es la base administrativa y un alias histórico,
+   no un segundo stack.
+8. La instalación inicial limpia elimina el DataSQL antiguo sin backup cuando
+   el usuario lo solicita; después se crean bases y roles vacíos para los
+   consumidores verificados.
 9. RustFS no forma parte de PostgreSQL IA. Instalarlo como servicio S3 separado
    solo cuando LobeHub u otro consumidor real necesite almacenamiento de objetos.
 10. No usar `depends_on` contra una base que vive en otro compose; verificar la
     disponibilidad con `svc health` y logs.
 11. El inventario confirmado es Flowise → `flowise_db` + Redis, Home Assistant →
     `homeassistant_db`, y `n8n_db` existente pendiente de auditar en el compose
-    real. Una base existente no demuestra que el servicio actual la use.
-12. El DataSQL actual usa `postgres:16-alpine` sin `pgvector` ni `pg_search`.
-    `aipostgres` usa ParadeDB PostgreSQL 17 con ambas extensiones y además
-    reemplaza gradualmente pgAdmin y Redis.
+    real.
 
 ### Redes
 

@@ -1,22 +1,34 @@
 ---
 id: "datasql"
-name: "DataSQL"
-description: "Stack de bases de datos: PostgreSQL 16, pgAdmin 4 y Redis 7 para persistencia de servicios del NAS"
+name: "ParadeDB PostgreSQL (datasql)"
+description: "Stack final de ParadeDB PostgreSQL 17 con pgvector, pg_search y pg_cron, pgAdmin 9.17 y Redis 7"
 aliases:
+  - datasql
+  - datapostgres
+  - datapgadmin
+  - dataredis
+  - aipostgres
+  - ai-postgres
+  - postgres-ia
   - postgres
   - pgadmin
   - redis
-  - db
-  - database
-image: "postgres:16-alpine"
+  - paradedb
+  - pgvector
+  - pg_search
+  - vector-db
+  - semantic-search
+image: "paradedb/paradedb:0.25.4-pg17"
 category: "base-datos"
+port_internal: 5432
+port_default: 5432
 protocol: "tcp"
 needs_proxy: false
 needs_db: false
-db_type: ""
+db_type: "postgres"
 services:
   postgres:
-    image: "postgres:16-alpine"
+    image: "paradedb/paradedb:0.25.4-pg17"
     container_name: "datapostgres"
     port_internal: 5432
     port_default: 5432
@@ -26,12 +38,12 @@ services:
       - "./data/postgres/pgdata:/var/lib/postgresql/data/pgdata"
       - "./data/postgres/backups:/backups"
     resources:
-      memory_limit: "2G"
-      memory_reservation: "512M"
-      cpus_limit: "2"
-      cpus_reservation: "0.5"
+      memory_limit: "1536M"
+      memory_reservation: "256M"
+      cpus_limit: "1.5"
+      cpus_reservation: "0.25"
   pgadmin:
-    image: "dpage/pgadmin4:latest"
+    image: "dpage/pgadmin4:9.17"
     container_name: "datapgadmin"
     port_internal: 80
     port_default: 5050
@@ -65,94 +77,35 @@ env_required:
   - PGADMIN_EMAIL
   - PGADMIN_PASSWORD
   - REDIS_PASSWORD
-env_optional: []
+env_optional:
+  - AIPG_POSTGRES_HOST_PORT=5432
+  - AIPGADMIN_PORT=5050
 backup_critical: true
 backup_paths:
   - "./data/postgres/backups"
+  - "./data/postgres/pgdata"
   - "./data/pgadmin"
   - "./data/redis"
 protected: false
-docs_url: "docs/services/datasql-guide.md"
-notes: "PostgreSQL no se expone a la LAN: publica únicamente 127.0.0.1:5432 para el Recorder de Home Assistant en network_mode: host. Los consumidores Docker usan datapostgres:5432 por db_net. Redis no expone puerto al host. pgAdmin expuesto en LAN (:5050). No usar ipv4_address en db_net: es una red compartida y Docker asigna IPs dinámicas. PGDATA y TZ son variables fijas/globales (no requieren .env local). Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del global."
+docs_url: "docs/services/aipostgres-guide.md"
+notes: "Servicio operativo final en $dkco/datasql. ParadeDB usa datapostgres y publica PostgreSQL solo en 127.0.0.1:5432 para Home Assistant host-network; los consumidores Docker usan datapostgres:5432 en db_net. pgAdmin usa datapgadmin y se expone como dashboard LAN en :5050, excepción documentada. Redis usa dataredis:6379 solo en db_net y no publica ports. La base administrativa de PostgreSQL se llama aipostgres y el usuario es aiadmin. El compose precarga pg_search y pg_cron, configura cron.database_name con POSTGRES_DB, hereda SERVER_IP/TZ desde ../.env y no fija ipv4_address. La guía canónica contiene la instalación limpia, el renombrado inicial y la verificación."
 networks:
   - db_net
+ports:
+  postgres_loopback: 5432
+  pgadmin: 5050
 security_extra:
-  all_services:
+  postgres: {}
+  pgadmin:
+    note: "Dashboard LAN aprobado en :5050; no heredar security_opt/cap_drop porque pgAdmin usa sudo internamente."
+  redis:
     security_opt: ["no-new-privileges:true"]
     cap_drop: ["ALL"]
     cap_add: ["CHOWN", "DAC_OVERRIDE", "SETUID", "SETGID"]
 ---
 
-# DataSQL
+## Referencia del agente
 
-## Qué es
-
-Stack de bases de datos del NAS: PostgreSQL 16 (DB relacional principal),
-pgAdmin 4 (administración web) y Redis 7 (caché/colas). Todos los servicios
-del homelab que necesiten persistencia se conectan a este stack via `db_net`.
-
-## Estructura
-
-```
-/docker/datasql/
-├── compose.yml
-├── .env                    ← secretos (permisos 600)
-└── data/
-    ├── postgres/
-    │   ├── pgdata/         ← datos PostgreSQL
-    │   └── backups/        ← dumps pg_dump
-    ├── pgadmin/            ← configuración pgAdmin
-    └── redis/              ← AOF persistence
-```
-
-## Servicios
-
-| Servicio   | Imagen              | Puerto host | Red     | Acceso   |
-|-----------|---------------------|-------------|---------|----------|
-| postgres  | postgres:16-alpine  | 127.0.0.1:5432 | db_net  | loopback |
-| pgadmin   | dpage/pgadmin4      | 5050        | db_net  | LAN      |
-| redis     | redis:7-alpine      | —           | db_net  | internal |
-
-## Variables de entorno
-
-### Requeridas (.env local)
-
-```bash
-POSTGRES_DB=homelab
-POSTGRES_USER=nasadmin
-POSTGRES_PASSWORD=__pega_aqui__
-PGADMIN_EMAIL=admin@local.lan
-PGADMIN_PASSWORD=__pega_aqui__
-REDIS_PASSWORD=__pega_aqui__
-```
-
-### Heredadas del global (../.env)
-
-- `SERVER_IP` — usado en labels de Homepage
-- `TZ` — zona horaria para todos los servicios
-
-### Fijas (en compose, NO requieren .env)
-
-- `PGDATA=/var/lib/postgresql/data/pgdata`
-- `POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256 --auth-local=scram-sha-256"`
-- `PGADMIN_CONFIG_SERVER_MODE=True`
-
-## Redes
-
-- `db_net` (external: true): Red compartida por todos los servicios que necesitan DB
-
-## Seguridad
-
-- PostgreSQL publica únicamente `127.0.0.1:5432:5432` para Home Assistant en
-  `network_mode: host`; no se expone a la LAN
-- Redis no expone puerto al host
-- Todos los contenedores: `no-new-privileges`, `cap_drop: ALL`, caps mínimas
-- Resource limits configurados por servicio
-- scram-sha-256 para autenticación PostgreSQL
-
-## Notas
-
-- pgAdmin accesible desde LAN en :5050 (documentado como excepción)
-- Redis usa `--appendonly yes` + `--requirepass`
-- Backups: `pg_dump` via crontab a `./data/postgres/backups/`
-- Guía completa de operación: `docs/services/datasql-guide.md`
+La ficha describe el stack que el agente debe descubrir en el compose; no
+repite el procedimiento operativo. Para instalación, renombrado, permisos,
+recreación y comprobación inicial, cargar `docs/services/aipostgres-guide.md`.

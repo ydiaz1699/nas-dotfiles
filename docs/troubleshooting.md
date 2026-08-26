@@ -19,8 +19,8 @@ externa y compartida `db_net`. El conflicto era de direccionamiento interno de
 Docker, no de un listener TCP del host.
 
 **Por qué cambiar puertos o ejecutar `restart` no lo resolvió:** cambiar
-`5050`, `5051` o `5432` solo cambia una publicación host↔contenedor; no libera
-una IP estática dentro de `db_net`. Además, `svc restart datasql` reinicia los
+`5050` o `5432` solo cambia una publicación host↔contenedor; no libera una IP
+estática dentro de `db_net`. Además, `svc restart datasql` reinicia los
 contenedores existentes, pero no recrea la red ni reemplaza sus IPs fijas.
 
 **Diagnóstico seguro:**
@@ -29,7 +29,7 @@ contenedores existentes, pero no recrea la red ni reemplaza sus IPs fijas.
 svc config datasql
 svc ps datasql
 svc port-map
-ss -ltnp | grep -E ':(5432|5050|5051)\b' || true
+ss -ltnp | grep -E ':(5432|5050)\b' || true
 svc net
 ```
 
@@ -66,7 +66,7 @@ La configuración final conserva PostgreSQL publicado solo en
 `0.0.0.0:5432:5432` ni eliminar la publicación loopback.
 
 La guía completa y el Compose canónico están en
-[`docs/services/datasql-guide.md`](services/datasql-guide.md). Home Assistant
+[`docs/services/aipostgres-guide.md`](services/aipostgres-guide.md). Home Assistant
 se debe levantar después de que DataSQL esté saludable:
 
 ```bash
