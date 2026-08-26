@@ -114,37 +114,20 @@ services:
 ## Primer inicio y onboarding
 
 DataSQL debe estar disponible antes de iniciar Home Assistant. Como los Compose
-son independientes, `depends_on` no puede ordenar esta dependencia. Verificar
-primero el stack con:
+son independientes, `depends_on` no puede ordenar esta dependencia.
+
+Primero comprueba el stack, pero **no levantes HA desde esta sección**:
 
 ```bash
+svc health
 svc ps datasql
 ```
 
-`datapostgres` y `dataredis` deben estar `healthy`; `datapgadmin` debe estar
-`Up` (la imagen canónica no define healthcheck para pgAdmin). Después validar y
-levantar Home Assistant:
-
-```bash
-dk homeassistant
-svc config homeassistant
-svc up homeassistant
-```
-
-Esperar aproximadamente 60 segundos y revisar el estado y los logs con la
-interfaz `svc`:
-
-```bash
-svc ps homeassistant
-svc logs homeassistant
-```
-
-Acceder desde la LAN mediante `http://${SERVER_IP}:8123` y completar el
-onboarding de Home Assistant (cuenta, nombre y ubicación). No editar
-`configuration.yaml` antes de completar ese proceso. Si existe un reverse proxy,
-es posible ver un aviso indicando que se recibió una petición desde un proxy no
-confiable; el servicio puede seguir funcionando y se puede documentar después
-la red del proxy en `trusted_proxies`.
+Continúa en la sección `Conectar Home Assistant a DataSQL — procedimiento
+completo`. Su orden canónico es: comprobar DataSQL, crear y verificar
+`homeassistant_db`/`ha_user`, iniciar HA, completar el onboarding, configurar el
+Recorder y reiniciar para verificarlo. Así se evita iniciar HA con una base
+inexistente o configurar el Recorder antes de que HA cree su configuración.
 
 La configuración canónica usa `dns` explícitos, `stop_grace_period: 60s`,
 `privileged: true`, el bind `./data:/config`, healthcheck HTTP y labels de
@@ -154,54 +137,249 @@ del NAS y no mediante el hostname Docker `datapostgres`.
 
 ---
 
-## Recorder con PostgreSQL y arranque coordinado
+## Conectar Home Assistant a DataSQL — procedimiento completo
 
-Home Assistant conserva `network_mode: host` para mDNS, descubrimiento IoT,
-USB y Bluetooth. Por eso no pertenece a `db_net` y no puede usar
-`datapostgres` como hostname Docker. Su Recorder debe conectar al endpoint local
-de PostgreSQL:
+Esta sección une la información de Home Assistant y DataSQL en un único flujo.
+No es necesario usar pgAdmin para crear la base ni el usuario: la ruta
+principal es la terminal del NAS con `svc exec`.
+
+### 1. Contexto de conexión
+
+Home Assistant usa `network_mode: host`. Por eso:
+
+- No pertenece a `db_net`.
+- No puede usar `datapostgres` como hostname Docker.
+- No debe usar la IP histórica `172.20.0.4`.
+- Debe usar `127.0.0.1` y el puerto publicado realmente por DataSQL.
+
+El catálogo actual usa `127.0.0.1:5432:5432` por defecto, pero el `.env` y el
+compose instalados en el NAS son la autoridad. Comprueba el puerto antes de
+escribir `db_url`:
+
+```bash
+dk datasql
+
+HA_PG_PORT="$(awk -F= '$1=="AIPG_POSTGRES_HOST_PORT"{print $2}' "$dkco/datasql/.env")"
+HA_PG_PORT="${HA_PG_PORT:-5432}"
+printf 'Puerto PostgreSQL para Home Assistant: 127.0.0.1:%s\n' "$HA_PG_PORT"
+
+if ! ss -ltn | grep -Eq "127\.0\.0\.1:${HA_PG_PORT}([[:space:]]|:)"; then
+  printf 'No se detecta PostgreSQL escuchando en 127.0.0.1:%s.\n' "$HA_PG_PORT" >&2
+  unset HA_PG_PORT
+  exit 1
+fi
+```
+
+Si el resultado es `5432`, el `db_url` usará `127.0.0.1:5432`. Si el NAS
+mantiene una coexistencia histórica en `5433`, usa `127.0.0.1:5433`; no
+sustituyas el valor por intuición.
+
+### 2. Comprobar DataSQL
+
+```bash
+svc health
+svc ps datasql
+svc net
+```
+
+Continúa solo si `datapostgres` está `healthy` y `db_net` existe. No levantes
+Home Assistant todavía si PostgreSQL no está saludable.
+
+### 3. Cargar las credenciales administrativas
+
+```bash
+PG_ADMIN_PASSWORD="$(awk -F= '$1=="POSTGRES_PASSWORD"{print substr($0,index($0,"=")+1)}' "$dkco/datasql/.env")"
+PG_ADMIN_USER="$(awk -F= '$1=="POSTGRES_USER"{print substr($0,index($0,"=")+1)}' "$dkco/datasql/.env")"
+PG_ADMIN_DB="$(awk -F= '$1=="POSTGRES_DB"{print substr($0,index($0,"=")+1)}' "$dkco/datasql/.env")"
+
+if [[ -z "$PG_ADMIN_PASSWORD" || -z "$PG_ADMIN_USER" || -z "$PG_ADMIN_DB" ]]; then
+  printf 'Falta una variable administrativa en %s/.env.\n' "$dkco/datasql" >&2
+  unset PG_ADMIN_PASSWORD PG_ADMIN_USER PG_ADMIN_DB HA_PG_PORT
+  exit 1
+fi
+```
+
+No ejecutes `source .env`, no uses `docker exec` y no pegues estas variables en
+el chat.
+
+### 4. Crear el rol dedicado de Home Assistant
+
+Genera una contraseña URL-safe en el terminal y consérvala localmente para
+introducirla en `\password` y después en `data/secrets.yaml`:
+
+```bash
+openssl rand -hex 32
+```
+
+No pegues ese valor en el chat, en el repositorio ni en el historial. Si
+`openssl` no está disponible, detente y usa el gestor de secretos habitual para
+generar una contraseña hexadecimal equivalente.
+
+```bash
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB"
+```
+
+Dentro de `psql` ejecuta:
+
+```sql
+CREATE ROLE ha_user LOGIN;
+\password ha_user
+```
+
+Introduce dos veces la contraseña dedicada de Home Assistant. Después sal:
+
+```text
+\q
+```
+
+`\password` evita escribir la contraseña en el SQL o en el historial del
+comando. Si `ha_user` ya existe, no ejecutes `CREATE ROLE` de nuevo: consulta
+primero su configuración y confirma la contraseña efectiva.
+
+### 5. Crear la base en una llamada separada
+
+`CREATE DATABASE` se ejecuta aparte porque no puede ejecutarse dentro de una
+transacción:
+
+```bash
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" \
+  -c 'CREATE DATABASE homeassistant_db OWNER ha_user;'
+```
+
+### 6. Verificar propietario y login
+
+```bash
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" \
+  -c "SELECT datname, pg_get_userbyid(datdba) AS owner FROM pg_database WHERE datname='homeassistant_db';"
+```
+
+Debe aparecer `homeassistant_db | ha_user`. Después prueba la conexión como
+`ha_user`, no como `aiadmin`:
+
+```bash
+read -r -s -p 'Contraseña de ha_user para verificar: ' HA_DB_PASSWORD
+printf '\n'
+
+svc exec datasql postgres \
+  env PGPASSWORD="$HA_DB_PASSWORD" \
+  psql -U ha_user -d homeassistant_db \
+  -c 'SELECT current_user, current_database();'
+```
+
+El resultado esperado es `ha_user | homeassistant_db`. Conserva la contraseña
+para el Recorder y no la compartas. Todavía no hagas `unset HA_DB_PASSWORD`
+porque la necesitarás al crear el secreto local de Home Assistant.
+
+### 7. Iniciar Home Assistant y completar el onboarding
+
+La primera ejecución debe crear la configuración inicial de HA antes de editar
+el Recorder:
+
+```bash
+dk homeassistant
+svc config homeassistant
+svc up homeassistant
+svc ps homeassistant
+svc logs homeassistant
+```
+
+Abre `http://${SERVER_IP}:8123` y completa el onboarding. No edites
+`configuration.yaml` antes de terminarlo.
+
+### 8. Configurar el Recorder después del onboarding
+
+Comprueba que exista el directorio antes de crear o proteger archivos:
+
+```bash
+dk homeassistant
+mkdir -p data
+touch data/secrets.yaml
+chmod 600 data/secrets.yaml
+```
+
+Edita `data/secrets.yaml` y agrega el valor real localmente. Sustituye
+`CONTRASEÑA_HEX` por la contraseña de `ha_user` y `PUERTO_HOST` por el valor
+real de `HA_PG_PORT` (`5432` en la instalación final documentada):
+
+```yaml
+recorder_db_url: postgresql://ha_user:CONTRASEÑA_HEX@127.0.0.1:PUERTO_HOST/homeassistant_db
+```
+
+El formato hexadecimal evita caracteres que necesiten URL encoding. Si la
+contraseña elegida contiene caracteres reservados (`@`, `:`, `/`, `#`, `%`),
+debe codificarse antes de colocarla en la URI.
+
+En `data/configuration.yaml`, agrega el bloque solo si no existe ya otra clave
+`recorder:`:
 
 ```yaml
 recorder:
-  db_url: postgresql://ha_user:CONTRASEÑA@127.0.0.1:5432/homeassistant_db
+  db_url: !secret recorder_db_url
   purge_keep_days: 10
   auto_purge: true
   commit_interval: 1
 ```
 
-La contraseña real no debe copiarse a esta guía ni al repositorio. La base `homeassistant_db` y el usuario `ha_user` deben crearse previamente con la receta de la sección 5 de `docs/services/datasql-guide.md`, usando credenciales dedicadas. Esa misma guía cubre la instalación y recuperación del stack. Lee `POSTGRES_USER`, `POSTGRES_DB` y `POSTGRES_PASSWORD` reales de
-`$dkco/datasql/.env` sin ejecutar `source`. Como PostgreSQL usa
-`scram-sha-256`, pasar `PGPASSWORD` explícitamente dentro de
-`svc exec datasql postgres`, tal como indica `docs/services/datasql-guide.md`.
+No dupliques `recorder:` si ya existe una configuración del Recorder. En ese
+caso, modifica el bloque existente conservando una sola definición.
 
-DataSQL conserva PostgreSQL en `db_net` con IP dinámica, pero publica su puerto
-**solo en loopback**:
-
-```yaml
-ports:
-  - "127.0.0.1:5432:5432"
-```
-
-No cambiarlo a `0.0.0.0:5432:5432` ni a `${SERVER_IP}:5432:5432`: Home Assistant
-solo necesita acceso desde el propio NAS. Usar `127.0.0.1` explícitamente en
-`db_url`, nunca `localhost`: la resolución de `localhost` puede intentar IPv6 y
-producir `connection refused` aunque `127.0.0.1:5432` esté escuchando. Los
-consumidores Docker conectados a `db_net` usan `datapostgres:5432` directamente.
-
-Los Compose están separados, así que `depends_on` no puede ordenar HA respecto
-a DataSQL. El arranque correcto es:
+Después de guardar los archivos, elimina las contraseñas temporales y reinicia:
 
 ```bash
-svc up datasql
-svc ps datasql
-# continuar cuando datapostgres y dataredis estén healthy
-svc up homeassistant
+unset PG_ADMIN_PASSWORD PG_ADMIN_USER PG_ADMIN_DB HA_DB_PASSWORD HA_PG_PORT
+svc restart homeassistant
 svc ps homeassistant
+svc logs homeassistant
 ```
 
-`restart: unless-stopped` permite que HA vuelva a intentar después de un
-reinicio de DataSQL, pero no sustituye esta precondición inicial. El healthcheck
-HTTP de HA confirma la interfaz web, no la salud del Recorder.
+El contenedor oficial de Home Assistant debe proporcionar el soporte necesario
+para PostgreSQL. No instales paquetes dentro del contenedor sin que los logs
+muestren explícitamente un error de driver; si aparece, detén el cambio y
+registra el mensaje exacto.
+
+### 9. Verificar la conexión desde Home Assistant
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' "http://${SERVER_IP}:8123"
+svc ps homeassistant
+svc logs homeassistant
+```
+
+Cuando HA haya generado estados, consulta la base con la cuenta administrativa:
+
+```bash
+PG_ADMIN_PASSWORD="$(awk -F= '$1=="POSTGRES_PASSWORD"{print substr($0,index($0,"=")+1)}' "$dkco/datasql/.env")"
+PG_ADMIN_USER="$(awk -F= '$1=="POSTGRES_USER"{print substr($0,index($0,"=")+1)}' "$dkco/datasql/.env")"
+
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+  psql -U "$PG_ADMIN_USER" -d homeassistant_db \
+  -c 'SELECT COUNT(*) AS states_count FROM states;'
+
+unset PG_ADMIN_PASSWORD PG_ADMIN_USER
+```
+
+Un resultado mayor que cero confirma que el Recorder está escribiendo estados.
+El healthcheck HTTP por sí solo no confirma la conexión a PostgreSQL.
+
+---
+
+### Detalles técnicos del Recorder
+
+Home Assistant conserva `network_mode: host` para mDNS, descubrimiento IoT,
+USB y Bluetooth. Por eso no pertenece a `db_net` y debe usar el puerto loopback
+real de DataSQL. Los consumidores Docker sí usan `datapostgres:5432` dentro de
+`db_net`.
+
+Los Compose son independientes: no uses `depends_on` para ordenar HA respecto a
+DataSQL. El orden operativo es DataSQL saludable → base/rol dedicados →
+onboarding de HA → Recorder → reinicio y verificación funcional.
 
 ---
 
