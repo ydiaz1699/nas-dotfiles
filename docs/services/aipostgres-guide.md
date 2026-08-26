@@ -1,84 +1,128 @@
-# PostgreSQL IA — Guía de instalación y operación gradual
+# PostgreSQL IA — Stack sucesor de DataSQL y migración gradual
 
-> Servicio separado de DataSQL para preparar PostgreSQL 17 con `pgvector` y
-> `pg_search`, sin modificar ni migrar todavía Flowise, Home Assistant o n8n.
+> Este servicio no es solo un contenedor PostgreSQL. Es el stack sucesor de
+> DataSQL: PostgreSQL 17 + `pgvector` + `pg_search`, pgAdmin 4 y Redis 7.
 >
-> Estado de esta guía: scaffolding y primera instalación aislada. No afirma que
-> el servicio ya esté instalado en el NAS.
+> RustFS queda fuera del stack porque es almacenamiento de objetos S3, no una
+> parte de PostgreSQL. Se instalará únicamente con LobeHub u otro consumidor
+> real de objetos.
+>
+> Estado: scaffolding para instalar y verificar el stack. Esta guía no afirma
+> que el NAS ya haya sido modificado.
 
-## Decisión de arquitectura
+## 1. Arquitectura decidida
 
-El NAS conserva dos clústeres durante la migración gradual:
-
-```text
-DataSQL existente (datapostgres)
-├── Flowise       → flowise_db
-├── Home Assistant → homeassistant_db
-├── n8n           → n8n_db (configuración aún por auditar)
-└── otros consumidores actuales
-
-PostgreSQL IA (aipostgres)
-├── sin bases de consumidores al instalar
-├── LobeHub       → futura lobehub_db
-└── agente/Hermes → futura nas_agent_db
-```
-
-Esta separación evita cambiar la imagen de PostgreSQL que ya utiliza DataSQL.
-También evita que una prueba de búsqueda vectorial o full-text compita
-inmediatamente con el Recorder de Home Assistant. El coste es mantener un
-segundo proceso PostgreSQL y un segundo conjunto de datos/respaldos.
-
-En un servidor nuevo sin datos, un único clúster compatible podría reducir el
-consumo base y simplificar los respaldos. En este NAS existente no se toma esa
-opción todavía: DataSQL tiene consumidores activos, aunque Flowise y n8n aún
-contengan pocos datos.
-
-## Qué aporta la imagen
-
-`paradedb/paradedb:0.25.4-pg17` es una versión fijada de ParadeDB sobre
-PostgreSQL 17. La imagen incluye:
-
-- `pgvector` (`vector`): tipos, operadores e índices para almacenar y buscar
-  embeddings, útil para memoria semántica y RAG.
-- `pg_search` (`pg_search`): búsqueda full-text con ranking BM25 y capacidades
-  de búsqueda híbrida junto a los datos PostgreSQL.
-
-Las extensiones están disponibles en el clúster, pero deben habilitarse en cada
-base que las necesite. La instalación inicial solo comprueba el clúster y las
-habilita en la base administrativa `aipostgres` como smoke test; no crea bases
-para LobeHub ni para un agente futuro.
-
-La opción `shared_preload_libraries=pg_search` está incluida porque la guía de
-LobeHub la usa explícitamente para la imagen ParadeDB. `pgvector` no necesita
-esa precarga.
-
-## Estructura del servicio
+### DataSQL actual durante la coexistencia
 
 ```text
-$dkco/aipostgres/
-├── compose.yml
-├── .env                  ← crear en el NAS, permisos 600; no va a Git
-└── data/                 ← clúster PostgreSQL; backup crítico
+DataSQL ($dkco/datasql)
+├── datapostgres  → postgres:16-alpine, loopback 5432
+├── datapgadmin   → pgAdmin, LAN :5050
+└── dataredis     → Redis 7, interno
 ```
 
-El catálogo contiene:
+Consumidores actuales que todavía dependen de este stack:
+
+- Flowise → `flowise_db` y `dataredis`.
+- Home Assistant → `homeassistant_db` mediante `127.0.0.1:5432`.
+- n8n → existe `n8n_db`; su compose/runtime debe auditarse antes de migrarlo.
+
+### Stack sucesor
 
 ```text
-agent/catalog/services/aipostgres/
-├── compose.yml
-├── .env.example
-└── ficha.md
+PostgreSQL IA ($dkco/aipostgres)
+├── aipostgres  → PostgreSQL 17 + pgvector + pg_search
+├── aipgadmin   → pgAdmin 4
+└── airedis     → Redis 7
 ```
 
-El `compose.yml` del catálogo usa `../../_common.yml` porque está dos niveles
-por debajo de `agent/catalog/`. Al copiarlo al NAS, la ruta correcta pasa a
-ser `../_common.yml`. La secuencia de instalación de esta guía hace esa
-adaptación explícitamente.
+Durante la coexistencia se usan nombres distintos para que ambos stacks puedan
+levantarse sin conflicto:
 
-## Preflight: no modificar nada todavía
+| Componente | DataSQL actual | Stack sucesor | Acceso inicial |
+|---|---|---|---|
+| PostgreSQL | `datapostgres` | `aipostgres` | `127.0.0.1:5433` y `aipostgres:5432` en `db_net` |
+| pgAdmin | `datapgadmin` | `aipgadmin` | `${SERVER_IP}:5051` |
+| Redis | `dataredis` | `airedis` | `airedis:6379` en `db_net` |
 
-Ejecutar primero los diagnósticos y confirmar que `db_net` existe. Estos
-comandos son de lectura y no detienen ni recrean servicios:
+La publicación en `5433` es solo loopback y existe para poder migrar Home
+Assistant mientras DataSQL conserva `5432`. No se expone PostgreSQL a la LAN.
+
+### Qué significa “sucesor”
+
+Levantar `aipostgres` y comprobar sus extensiones **no autoriza todavía a
+borrar DataSQL**. DataSQL solo se retira después de:
+
+1. Migrar y verificar cada base y cada consumidor.
+2. Cambiar los endpoints de PostgreSQL y Redis de las aplicaciones.
+3. Migrar Home Assistant desde `127.0.0.1:5432` a `127.0.0.1:5433`.
+4. Auditar n8n y confirmar que ya no usa `datapostgres` ni `dataredis`.
+5. Ejecutar backups y una prueba de recuperación.
+6. Confirmar que ningún servicio activo depende de los contenedores antiguos.
+
+Por tanto, el stack nuevo reemplaza funcionalmente a DataSQL por etapas; no se
+elimina DataSQL inmediatamente después del primer `svc up`.
+
+## 2. Qué contiene PostgreSQL IA
+
+La imagen `paradedb/paradedb:0.25.4-pg17` es PostgreSQL 17 empaquetado por
+ParadeDB con estas extensiones disponibles:
+
+- `vector` (`pgvector`): embeddings, tipos vectoriales, operadores e índices
+  para memoria semántica y RAG.
+- `pg_search`: búsqueda full-text con ranking BM25 y búsqueda híbrida.
+
+Además, el compose contiene:
+
+- **pgAdmin 4**, para administrar el nuevo clúster.
+- **Redis 7**, para reemplazar gradualmente `dataredis` en consumidores que lo
+  necesiten.
+
+Las extensiones se habilitan por base, no globalmente en todas las bases:
+
+```sql
+CREATE EXTENSION vector;
+CREATE EXTENSION pg_search;
+```
+
+La primera prueba las habilita solo en la base administrativa `aipostgres`.
+No crea todavía `lobehub_db`, `nas_agent_db`, ni bases de migración.
+
+## 3. Por qué RustFS no se incluye aquí
+
+RustFS no es una extensión, una base de datos ni un componente interno de
+PostgreSQL. Es un servidor de almacenamiento de objetos compatible con S3.
+Debe tener su propio contenedor, datos, credenciales, backups y ciclo de
+actualización.
+
+LobeHub sí necesita un almacenamiento S3 compatible para imágenes, archivos y
+la base de conocimiento cuando se usa su modalidad server. RustFS es una
+opción local para ese papel. Sin embargo:
+
+- `pgvector` y `pg_search` funcionan sin RustFS.
+- La memoria semántica de un agente puede vivir en PostgreSQL sin RustFS.
+- Si no se instala LobeHub, Hermes ni otro consumidor de archivos/objetos, no
+  hay beneficio inmediato en instalar RustFS.
+- Instalarlo antes añade consumo de RAM, espacio, credenciales, buckets y otra
+  rutina de backup.
+
+La decisión es:
+
+```text
+PostgreSQL IA → ahora, como sucesor completo de DataSQL
+RustFS       → después, como servicio separado cuando exista LobeHub/S3
+```
+
+No se debe incrustar RustFS dentro del compose de `aipostgres`. Cuando se elija
+LobeHub se creará `$dkco/rustfs/` con su propio `compose.yml`, y LobeHub se
+conectará mediante S3. La documentación de LobeHub advierte que el endpoint S3
+no debe ser solamente `http://rustfs:9000` si el navegador necesita descargar
+objetos; debe existir un endpoint accesible y resoluble por los clientes. Para
+RustFS también se debe habilitar el modo path-style que LobeHub documenta.
+
+## 4. Preflight de la instalación
+
+Estos comandos solo leen el estado actual:
 
 ```bash
 svc health
@@ -89,30 +133,27 @@ nas
 disk
 ```
 
-Criterios para continuar:
+Continuar solo si:
 
-- DataSQL permanece saludable; no se cambia su compose ni su imagen.
-- `db_net` aparece como red existente.
-- No se necesita un puerto libre del host: `aipostgres` no publica `5432`.
-- Hay espacio suficiente para la imagen y el directorio persistente.
-- Si `db_net` no existe, detenerse y resolver el bootstrap de redes según
-  `docs/docker-entorno.md`; no crear una red alternativa con otro nombre.
+- DataSQL está saludable.
+- Existe `db_net`.
+- `5433` y `5051` no están ocupados.
+- Hay espacio suficiente para un segundo clúster PostgreSQL temporal.
+- No se pretende detener ni modificar DataSQL en esta fase.
 
-## Instalación inicial
+Si `db_net` no existe, detenerse y seguir el bootstrap documentado en
+`docs/docker-entorno.md`. No crear otra red con un nombre alternativo.
 
-### 1. Crear el directorio de datos
+## 5. Instalación del stack sucesor
 
-Crear carpetas antes de copiar archivos o aplicar permisos:
+### 5.1 Crear primero todas las carpetas
 
 ```bash
-mkdir -p $dkco/aipostgres/data
+mkdir -p $dkco/aipostgres/data/postgres/{pgdata,backups}
+mkdir -p $dkco/aipostgres/data/{pgadmin,redis}
 ```
 
-### 2. Copiar el compose y el ejemplo de entorno
-
-Esta copia parte del checkout local de `nas-dotfiles`. El primer comando copia
-el compose versionado; el segundo crea el `.env` local solo si aún no existe,
-para no sobrescribir secretos en una reinstalación:
+### 5.2 Crear los archivos
 
 ```bash
 cp "$NAS_DOTFILES/agent/catalog/services/aipostgres/compose.yml" \
@@ -124,22 +165,21 @@ if [[ ! -f "$dkco/aipostgres/.env" ]]; then
 fi
 ```
 
-El compose del catálogo necesita una adaptación de ruta para ejecutarse desde
-`$dkco/aipostgres/`:
+El archivo del catálogo está dos niveles debajo de `agent/catalog/` y usa
+`../../_common.yml`; el archivo desplegado desde `$dkco/aipostgres/` necesita
+`../_common.yml`:
 
 ```bash
 sed -i \
-  's#file: ../../_common.yml#file: ../_common.yml#' \
+  's#file: ../../_common.yml#file: ../_common.yml#g' \
   "$dkco/aipostgres/compose.yml"
 ```
 
-No copiar `.env` al repositorio. El archivo real del NAS contiene la contraseña
-administrativa del clúster.
+No copiar el `.env` real al repositorio.
 
-### 3. Completar el `.env` local
+### 5.3 Completar el `.env`
 
-Abrir el archivo recién creado después de que el directorio y el archivo
-existan:
+Abrirlo únicamente después de crear directorios y archivos:
 
 ```bash
 dk aipostgres
@@ -152,88 +192,77 @@ Contenido mínimo:
 POSTGRES_DB=aipostgres
 POSTGRES_USER=aiadmin
 POSTGRES_PASSWORD=__pega_aqui__
+
+PGADMIN_EMAIL=admin@local.lan
+PGADMIN_PASSWORD=__pega_aqui__
+
+REDIS_PASSWORD=__pega_aqui__
+
+AIPG_POSTGRES_HOST_PORT=5433
+AIPGADMIN_PORT=5051
 ```
 
-Reemplazar `__pega_aqui__` por una contraseña fuerte. No reutilizar la
-contraseña de DataSQL ni de Redis. Puede generarse una antes de editar:
+Generar secretos independientes de DataSQL:
 
 ```bash
 openssl rand -base64 32
 ```
 
-No agregar `TZ` al `.env` local: llega desde `$dkco/.env` mediante
-`env_file: [../.env, .env]`.
+No poner `SERVER_IP` ni `TZ` en este `.env`; se heredan desde el global
+mediante `env_file: [../.env, .env]`.
 
-### 4. Aplicar permisos después de crear los archivos
+### 5.4 Aplicar permisos después de crear todo
 
 ```bash
-chmod 700 "$dkco/aipostgres/data"
+chmod 700 "$dkco/aipostgres/data/postgres/pgdata"
+chmod 700 "$dkco/aipostgres/data/postgres/backups"
+chmod 700 "$dkco/aipostgres/data/pgadmin"
+chmod 700 "$dkco/aipostgres/data/redis"
 chmod 600 "$dkco/aipostgres/.env"
 ```
 
-No ejecutar `chown` a un UID supuesto antes de probar la imagen. El entrypoint
-de PostgreSQL debe preparar el directorio persistente; si los logs muestran un
-error de permisos, se diagnostica el UID real de esta imagen antes de corregirlo.
+No aplicar `chown` a un UID supuesto antes de probar la imagen. Si aparecen
+errores de permisos, conservar los logs y determinar el UID real del contenedor.
 
-### 5. Validar el compose resuelto
+### 5.5 Validar antes de levantar
 
 ```bash
 dk aipostgres
 svc config aipostgres
 ```
 
-Antes de levantar, comprobar visualmente que la configuración resuelta cumple
-lo siguiente:
+La configuración resuelta debe mostrar:
 
-- imagen `paradedb/paradedb:0.25.4-pg17`;
-- contenedor `aipostgres`;
-- volumen `./data:/var/lib/postgresql/data`;
-- red externa `db_net`;
-- `shared_preload_libraries=pg_search`;
-- healthcheck `pg_isready`;
-- ningún bloque `ports:` ni publicación de `5432`;
-- `env_file` global y local;
-- límite de `1536M` y `1.5` CPU;
-- `security_opt: no-new-privileges:true` heredado desde `../_common.yml`;
-- no hay `cap_drop: ALL` durante esta primera prueba.
+- `paradedb/paradedb:0.25.4-pg17`.
+- Servicios `postgres`, `pgadmin` y `redis`.
+- Contenedores `aipostgres`, `aipgadmin` y `airedis`.
+- `db_net` externa.
+- PostgreSQL en `127.0.0.1:5433:5432`.
+- pgAdmin en `5051:80`.
+- Redis sin `ports`.
+- `shared_preload_libraries=pg_search`.
+- Volúmenes persistentes en `./data/postgres`, `./data/pgadmin` y
+  `./data/redis`.
+- `env_file` global y local.
 
-Si `svc config aipostgres` falla, no ejecutar `svc up`; corregir primero la
-ruta de `extends` o la sintaxis YAML.
+No continuar si `svc config` muestra `0.0.0.0:5432`, una IP fija de Docker, otra
+red o una ruta incorrecta de `_common.yml`.
 
-### 6. Descargar y levantar solo PostgreSQL IA
+### 5.6 Descargar y levantar
 
 ```bash
 svc pull aipostgres
 svc up aipostgres
-```
-
-Esto no detiene, recrea ni modifica DataSQL.
-
-### 7. Comprobar estado y logs
-
-```bash
 svc ps aipostgres
 svc logs aipostgres
 ```
 
-`svc logs` puede quedar siguiendo la salida; pulsar Ctrl-C solo cierra la
-visualización, no detiene el contenedor.
+Los tres contenedores deben quedar activos; PostgreSQL y Redis deben quedar
+saludables. Ctrl-C en `svc logs` solo termina la vista de logs.
 
-El contenedor debe quedar `Up (healthy)`. Si no está saludable, detener el
-procedimiento y conservar los logs completos antes de cambiar permisos,
-comandos o límites.
+## 6. Verificar los tres componentes
 
-## Verificación de PostgreSQL y extensiones
-
-La implementación de `svc exec` del NAS abre una sesión TTY por defecto. Para
-esta primera comprobación se usa `psql` interactivo, sin pipe. Así se evita el
-error:
-
-```text
-cannot attach stdin to a TTY-enabled container because stdin is not a terminal
-```
-
-Desde `dk aipostgres`, leer las variables sin hacer `source .env`:
+### PostgreSQL y extensiones
 
 ```bash
 POSTGRES_DB="$(awk -F= '$1=="POSTGRES_DB"{print substr($0,index($0,"=")+1)}' .env)"
@@ -247,41 +276,29 @@ svc exec aipostgres postgres env \
   psql
 ```
 
-En el prompt de `psql`, ejecutar primero las consultas de disponibilidad:
+En `psql`:
 
 ```sql
 SELECT version();
 
-SELECT name,
-       default_version,
-       installed_version
+SELECT name, default_version, installed_version
 FROM pg_available_extensions
 WHERE name IN ('vector', 'pg_search')
 ORDER BY name;
-```
 
-La consulta debe mostrar `vector` y `pg_search`. `installed_version` puede estar
-vacía: significa que la extensión está disponible en la imagen, pero todavía
-no fue creada en la base seleccionada.
-
-Para probar que ambas extensiones pueden habilitarse en la base administrativa
-vacía, ejecutar en la misma sesión:
-
-```sql
 CREATE EXTENSION IF NOT EXISTS vector;
 CREATE EXTENSION IF NOT EXISTS pg_search;
 
-SELECT extname,
-       extversion
+SELECT extname, extversion
 FROM pg_extension
 WHERE extname IN ('vector', 'pg_search')
 ORDER BY extname;
 ```
 
-La salida esperada contiene dos filas: `vector` y `pg_search`. Esto solo afecta
-la base `aipostgres`; no toca ninguna base de DataSQL.
+Las dos últimas extensiones deben aparecer en `pg_extension`. Esto solo afecta
+la base `aipostgres` del nuevo clúster.
 
-Salir y limpiar las variables temporales:
+Salir y limpiar:
 
 ```text
 \q
@@ -291,82 +308,156 @@ Salir y limpiar las variables temporales:
 unset POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD
 ```
 
-Si `pg_available_extensions` no muestra una extensión, o `CREATE EXTENSION`
-falla, no crear bases de consumidores ni migrar nada. Guardar el error y
-revisar primero la versión efectiva de la imagen y el `shared_preload_libraries`.
-
-## Verificaciones de aislamiento y recursos
-
-Confirmar que el nuevo servicio está en la red compartida sin publicar el
-puerto PostgreSQL:
+### Redis
 
 ```bash
+REDIS_PASSWORD="$(awk -F= '$1=="REDIS_PASSWORD"{print substr($0,index($0,"=")+1)}' .env)"
+svc exec aipostgres redis env \
+  REDISCLI_AUTH="$REDIS_PASSWORD" \
+  redis-cli PING
+unset REDIS_PASSWORD
+```
+
+La respuesta esperada es `PONG`.
+
+### pgAdmin
+
+Abrir desde la LAN:
+
+```text
+http://${SERVER_IP}:5051
+```
+
+En la conexión al servidor PostgreSQL usar:
+
+```text
+Host: aipostgres
+Port: 5432
+Usuario: aiadmin
+Base inicial: aipostgres
+```
+
+No usar `127.0.0.1` dentro de pgAdmin: pgAdmin está en otro contenedor y debe
+resolver PostgreSQL por `db_net`.
+
+### Aislamiento y recursos
+
+```bash
+svc health
+svc ps datasql
+svc ps aipostgres
 svc net
 svc port-map
-svc ps aipostgres
 svc stats aipostgres
 ```
 
-`svc stats` es una vista continua; pulsar Ctrl-C para salir. En `svc port-map`
-no debe aparecer `5432` para `aipostgres`. La comunicación futura será interna
-por `db_net` usando el hostname `aipostgres:5432`.
+DataSQL debe continuar intacto. La única publicación adicional esperada es
+`127.0.0.1:5433` y el panel LAN `5051`; Redis no debe aparecer en el mapa de
+puertos.
 
-Durante esta primera fase observar especialmente:
+## 7. Plan de migración y retiro de DataSQL
 
-- memoria real frente al límite de `1536M`;
-- CPU durante arranque y creación de índices;
-- tiempo del healthcheck;
-- espacio ocupado en `$dkco/aipostgres/data`;
-- ausencia de reinicios en `svc ps aipostgres`.
+No migrar todo en el mismo cambio.
 
-No agregar todavía `cap_drop: ALL`. Primero confirmar que la imagen funciona y
-que el entrypoint puede inicializar y actualizar el clúster; después se puede
-hacer un cambio de endurecimiento separado y verificable.
+### Fase A — Stack sucesor vacío
 
-## Lo que no se hace en esta fase
+Instalar y verificar los tres componentes como en esta guía. No crear aún
+`lobehub_db` ni `nas_agent_db`.
 
-No ejecutar aún ninguna de estas acciones:
+### Fase B — Consumidor de bajo riesgo
 
-- no detener ni recrear `datasql`;
-- no cambiar `postgres:16-alpine` de DataSQL;
-- no crear `lobehub_db`;
-- no crear `nas_agent_db`;
-- no migrar Flowise;
-- no migrar Home Assistant;
-- no migrar n8n hasta auditar su compose y runtime;
-- no crear otro Redis;
-- no publicar `5432` al host o a la LAN;
-- no configurar LobeHub ni RustFS como parte de este scaffolding.
+Elegir un consumidor y auditar su compose/runtime antes de migrarlo. Para cada
+servicio:
 
-Cuando exista el primer consumidor real, se debe crear un rol y una base
-separados dentro de `aipostgres`. Por ejemplo, LobeHub tendrá su propia
-`lobehub_db` y su propio usuario; no debe usar `aiadmin`.
+1. Ejecutar `svc snapshot <servicio>` y guardar un backup lógico.
+2. Crear un rol y una base dedicados en `aipostgres`.
+3. Restaurar el dump en la base nueva, si la base ya tiene datos.
+4. Cambiar el host PostgreSQL a `aipostgres:5432`.
+5. Cambiar Redis a `airedis:6379` solo si el servicio lo utiliza.
+6. Levantar y verificar logs, health y operación funcional.
+7. Mantener DataSQL intacto hasta completar la observación.
 
-## Backup y recuperación
+Para Flowise, conservar `flowise_db` y `flowise_user`; no reutilizar `aiadmin`.
+Para n8n, auditar primero si su contenedor usa PostgreSQL o SQLite. No asumirlo
+por la existencia de `n8n_db`.
 
-Aunque el clúster empieza sin datos de consumidores, `./data` se vuelve crítico
-inmediatamente después de crear extensiones, roles o bases. Antes de migrar el
-primer servicio:
+### Fase C — Home Assistant
+
+Home Assistant usa `network_mode: host`, por lo que no puede usar el hostname
+Docker `aipostgres` como lo hacen los consumidores en `db_net`. La migración
+requiere:
+
+1. Crear/restaurar `homeassistant_db` y `ha_user` en `aipostgres`.
+2. Comprobar PostgreSQL con `127.0.0.1:5433` desde el NAS.
+3. Cambiar el `recorder.db_url` de HA a `127.0.0.1:5433`.
+4. Reiniciar HA y verificar que el Recorder escribe correctamente.
+5. Observar antes de retirar DataSQL.
+
+### Fase D — Retirar DataSQL
+
+Solo después de verificar todos los consumidores:
+
+```bash
+svc health
+svc net
+svc port-map
+svc ps datasql
+```
+
+Confirmar que ningún compose o configuración usa `datapostgres`, `datapgadmin`
+o `dataredis`. La detención/eliminación de DataSQL requiere confirmación
+explícita y backup previo; no ejecutar `svc down datasql` como parte de esta
+primera instalación.
+
+El stack `aipostgres` puede continuar con sus nombres propios. No es necesario
+renombrar `aipostgres` a `datapostgres`, ni `airedis` a `dataredis`; cambiar los
+endpoints de los consumidores es más claro y evita ambigüedades.
+
+## 8. RustFS y LobeHub: fase posterior
+
+Cuando se decida instalar LobeHub:
+
+1. Mantener PostgreSQL IA como proveedor externo y crear `lobehub_db`/usuario.
+2. Crear RustFS como servicio independiente en `$dkco/rustfs/`.
+3. Crear un bucket dedicado para LobeHub.
+4. Usar credenciales S3 específicas, no las credenciales root para otros usos.
+5. Configurar `S3_ENDPOINT`, bucket, claves y path-style en LobeHub.
+6. Verificar que el endpoint S3 sea accesible por el navegador y por LobeHub.
+7. Respaldar PostgreSQL y RustFS por separado.
+
+RustFS también podría servir en el futuro para documentos, adjuntos o artefactos
+del agente NAS, pero no se instala por anticipado mientras no exista ese flujo.
+
+## 9. Backups y operación
+
+Después de verificar el stack vacío:
 
 ```bash
 svc backup aipostgres
+svc stats aipostgres
+svc logs aipostgres
 ```
 
-Comprobar que el backup terminó correctamente y que contiene el directorio del
-servicio. Para un backup lógico de una base concreta, usar la misma receta de
-credenciales sin `source .env` y ejecutar `pg_dump` mediante `svc exec`; no
-mezclar ese procedimiento con la migración hasta documentar el consumidor.
+Datos críticos:
 
-No borrar `./data` para resolver un fallo de arranque. Primero conservar logs,
-validar permisos, comprobar el compose resuelto y confirmar si existe un backup.
-Una recuperación que sobrescriba datos requiere confirmación explícita.
+- `$dkco/aipostgres/data/postgres/pgdata/` — clúster PostgreSQL.
+- `$dkco/aipostgres/data/postgres/backups/` — dumps.
+- `$dkco/aipostgres/data/pgadmin/` — configuración pgAdmin.
+- `$dkco/aipostgres/data/redis/` — AOF de Redis.
+- `$dkco/aipostgres/.env` — credenciales, nunca versionar.
+
+No borrar estos directorios para solucionar un fallo de arranque. Primero
+conservar logs, revisar `svc config`, comprobar permisos y confirmar el backup.
 
 ## Referencias oficiales
 
-- [ParadeDB — instalación de extensiones de terceros](https://docs.paradedb.com/deploy/third-party-extensions): confirma que la imagen de ParadeDB incluye `pg_search` y `pgvector`, y explica cuándo se usa `shared_preload_libraries`.
-- [ParadeDB — instalación](https://docs.paradedb.com/documentation/getting-started/install): indica que ParadeDB soporta PostgreSQL 15 o superior y que los tags permiten fijar la versión de PostgreSQL.
-- [Docker Hub — `paradedb/paradedb:0.25.4-pg17`](https://hub.docker.com/v2/repositories/paradedb/paradedb/tags/0.25.4-pg17): confirma el tag fijado y sus imágenes amd64/arm64.
-- [LobeHub — despliegue de su base con Docker](https://lobehub.com/docs/self-hosting/platform/docker): documenta `shared_preload_libraries=pg_search`, PostgreSQL 17 y el uso de pgvector/pg_search para RAG y búsqueda de conocimiento.
+- [ParadeDB — extensiones de terceros](https://docs.paradedb.com/deploy/third-party-extensions): la imagen incluye `pg_search` y `pgvector`.
+- [Docker Hub — tag fijado](https://hub.docker.com/v2/repositories/paradedb/paradedb/tags/0.25.4-pg17): confirma `0.25.4-pg17` para amd64/arm64.
+- [LobeHub — base PostgreSQL](https://lobehub.com/docs/self-hosting/platform/docker): usa ParadeDB y `shared_preload_libraries=pg_search`.
+- [LobeHub — Docker Compose](https://lobehub.com/docs/self-hosting/platform/docker-compose): documenta PostgreSQL con PGVector y almacenamiento S3/RustFS como servicios separados.
+- [LobeHub — S3](https://lobehub.com/docs/self-hosting/advanced/s3): explica que RustFS sirve para archivos/base de conocimiento y requiere path-style.
+- [RustFS — Docker](https://docs.rustfs.com/en/installation/container/docker): documenta la instancia persistente y sus puertos API/consola.
+- [RustFS — API S3](https://docs.rustfs.com/en/administration/protocols/s3): documenta S3, credenciales, path-style y límites de compatibilidad.
 
-El contenido operativo anterior fue reexpresado y adaptado a las convenciones de
-este NAS; las fuentes enlazadas son la referencia técnica original.
+El contenido operativo fue adaptado a las convenciones de este NAS; las fuentes
+enlazadas son la referencia técnica original.
