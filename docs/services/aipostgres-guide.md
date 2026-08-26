@@ -537,23 +537,20 @@ suficiente.
 
 ### PostgreSQL y extensiones
 
-**Bash y SQL son contextos distintos.** Las líneas `POSTGRES_DB=...` y
-`svc exec ...` se ejecutan en Bash. Las consultas `SELECT`, `SHOW` y `CREATE`
-se ejecutan solo después de abrir `psql`, cuando el prompt muestra
+**Bash y SQL son contextos distintos.** Las líneas `PGPASS=...`, `PGUSER=...`,
+`PGDB=...` y `svc exec ...` se ejecutan en Bash. Las consultas `SELECT`, `SHOW`
+y `CREATE` se ejecutan solo después de abrir `psql`, cuando el prompt muestra
 `aipostgres=#`. No copies el prompt (`root@Nas ... #` o `aipostgres=#`) como si
 fuera parte del comando y pega cada comando en una línea separada; evita
 concatenaciones accidentales como `svc health svc health`.
 
 ```bash
-POSTGRES_DB="$(awk -F= '$1=="POSTGRES_DB"{print substr($0,index($0,"=")+1)}' .env)"
-POSTGRES_USER="$(awk -F= '$1=="POSTGRES_USER"{print substr($0,index($0,"=")+1)}' .env)"
-POSTGRES_PASSWORD="$(awk -F= '$1=="POSTGRES_PASSWORD"{print substr($0,index($0,"=")+1)}' .env)"
+PGPASS=$(grep '^POSTGRES_PASSWORD=' "$dkco/aipostgres/.env" | cut -d= -f2-)
+PGUSER=$(grep '^POSTGRES_USER=' "$dkco/aipostgres/.env" | cut -d= -f2-)
+PGDB=$(grep '^POSTGRES_DB=' "$dkco/aipostgres/.env" | cut -d= -f2-)
 
-svc exec aipostgres postgres env \
-  PGPASSWORD="$POSTGRES_PASSWORD" \
-  PGUSER="$POSTGRES_USER" \
-  PGDATABASE="$POSTGRES_DB" \
-  psql
+svc exec aipostgres postgres bash -c \
+  "PGPASSWORD='$PGPASS' psql -U '$PGUSER' -d '$PGDB'"
 ```
 
 En el prompt `aipostgres=#`, ejecuta el SQL siguiente. Primero se verifica la
@@ -597,38 +594,33 @@ Salir y limpiar:
 ```
 
 ```bash
-unset POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD
+unset PGPASS PGUSER PGDB
 ```
 
-`svc exec` procesa sus propias opciones antes de entregar el comando al
-contenedor. No pongas opciones de `psql` sin separar el comando del parser de
-`svc`: una forma como `svc exec aipostgres postgres env ... psql -v ...`
-puede terminar en `No such option: -v`, aunque `-v` aparezca después de
-`psql`. Para la comprobación normal usa el modo interactivo anterior. Si
-necesitas un modo no interactivo, coloca `--` inmediatamente después del
-servicio; así todo lo que sigue se entrega al contenedor:
+La variante canónica de esta guía es la sesión interactiva anterior: permite
+pegar el SQL en el prompt `aipostgres=#` y evita que las opciones de `psql`
+sean interpretadas por `svc`. No usar una forma como:
 
 ```bash
-POSTGRES_DB="$(awk -F= '$1=="POSTGRES_DB"{print substr($0,index($0,"=")+1)}' .env)"
-POSTGRES_USER="$(awk -F= '$1=="POSTGRES_USER"{print substr($0,index($0,"=")+1)}' .env)"
-POSTGRES_PASSWORD="$(awk -F= '$1=="POSTGRES_PASSWORD"{print substr($0,index($0,"=")+1)}' .env)"
-
-svc exec aipostgres -- postgres env \
-  PGPASSWORD="$POSTGRES_PASSWORD" \
-  PGUSER="$POSTGRES_USER" \
-  PGDATABASE="$POSTGRES_DB" \
-  psql \
-  -v ON_ERROR_STOP=1 \
-  -At \
-  -F '|' \
-  -c 'SELECT current_user, current_database();'
-
-unset POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD
+svc exec aipostgres -v ...
 ```
 
-La salida esperada de la consulta es `aiadmin|aipostgres` (el formato puede
-variar según las opciones de salida). No uses `PGADMIN_PASSWORD` para esta
-conexión: esa variable pertenece al login web de pgAdmin.
+ni colocar opciones de `psql` en una posición que el parser de `svc` pueda
+interpretar. Ese uso produce el error:
+
+```text
+No such option: -v
+```
+
+Si se necesita automatizar una consulta no interactiva, debe probarse y
+validarse como una variante separada; la guía operativa canónica mantiene el
+modo interactivo para evitar errores de quoting y de separación entre Bash y
+SQL.
+
+La comprobación de identidad debe devolver `aiadmin|aipostgres` cuando se
+consulte con las credenciales administrativas del stack. No uses
+`PGADMIN_PASSWORD` para esta conexión: esa variable pertenece al login web de
+pgAdmin.
 
 ### Redis
 
