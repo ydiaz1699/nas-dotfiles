@@ -66,7 +66,7 @@ La configuración final conserva PostgreSQL publicado solo en
 `0.0.0.0:5432:5432` ni eliminar la publicación loopback.
 
 La guía completa y el Compose canónico están en
-[`docs/services/aipostgres-guide.md`](services/aipostgres-guide.md). Home Assistant
+[`docs/services/datasql-guide.md`](services/datasql-guide.md). Home Assistant
 se debe levantar después de que DataSQL esté saludable:
 
 ```bash

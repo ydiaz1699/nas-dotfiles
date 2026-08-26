@@ -169,9 +169,7 @@ recorder:
   commit_interval: 1
 ```
 
-La contraseña real no debe copiarse a esta guía ni al repositorio. La base `homeassistant_db` y el usuario `ha_user` deben crearse previamente con la
-receta de `docs/services/datasql-guide.md`, usando credenciales dedicadas. La
-instalación y recuperación del stack están en `docs/services/aipostgres-guide.md`. La receta lee `POSTGRES_USER`, `POSTGRES_DB` y `POSTGRES_PASSWORD` reales de
+La contraseña real no debe copiarse a esta guía ni al repositorio. La base `homeassistant_db` y el usuario `ha_user` deben crearse previamente con la receta de la sección 5 de `docs/services/datasql-guide.md`, usando credenciales dedicadas. Esa misma guía cubre la instalación y recuperación del stack. Lee `POSTGRES_USER`, `POSTGRES_DB` y `POSTGRES_PASSWORD` reales de
 `$dkco/datasql/.env` sin ejecutar `source`. Como PostgreSQL usa
 `scram-sha-256`, pasar `PGPASSWORD` explícitamente dentro de
 `svc exec datasql postgres`, tal como indica `docs/services/datasql-guide.md`.
@@ -623,8 +621,9 @@ la causa fue una IP estática (`ipv4_address`) ocupada en la red compartida
 `db_net`. `svc restart datasql` tampoco recrea esa red ni cambia las IPs.
 
 Mantener `db_net`, retirar las IPs estáticas del Compose y aplicar la versión
-canónica de DataSQL con asignación dinámica. El procedimiento de diagnóstico y
-migración está en [`docs/services/aipostgres-guide.md`](aipostgres-guide.md) y en el
+canónica de DataSQL con asignación dinámica. El procedimiento completo de
+instalación, diagnóstico y migración está en
+[`docs/services/datasql-guide.md`](datasql-guide.md) y en el
 [troubleshooting general](../troubleshooting.md). Después de corregir DataSQL,
 seguir este orden:
 
