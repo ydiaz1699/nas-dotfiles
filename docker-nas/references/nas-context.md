@@ -154,7 +154,7 @@ volúmenes ni redes conjeturadas; confirmarlos primero en la fuente oficial.
 
 Antes de crear una aplicación que necesite PostgreSQL o Redis compartido:
 
-1. Cargar `.kiro/skills/datasql/SKILL.md`, `docs/services/datasql-guide.md` y la ficha de DataSQL.
+1. Cargar `.kiro/skills/datasql/SKILL.md`, `docs/services/aipostgres-guide.md` y la ficha de DataSQL.
 2. Comprobar DataSQL con `svc health` y `svc ps datasql`; `svc health` no recibe el nombre del servicio.
 3. Leer `POSTGRES_USER`, `POSTGRES_DB`, `POSTGRES_PASSWORD` y `REDIS_PASSWORD` desde `$dkco/datasql/.env`; no asumir `admin/appdb` ni ejecutar `source .env`.
 4. Crear una base y usuario dedicados con la Fase 5A de la guía: primero el rol, después la base, en llamadas separadas de `psql`.
@@ -340,7 +340,7 @@ Formato: `[fecha] corrección`.
 [2026-08-17] compare_catalog(service) implementado: tool del agente que detecta drift entre compose real ($DOCKER_BASE) y catálogo (imagen, puertos, redes, volúmenes, env_file, healthcheck, security).
 [2026-08-17] svc snapshot/rollback implementado: guardar compose+.env antes de cambios (liviano, rotación 10). `svc snapshot X` antes de editar, `svc rollback X` para revertir.
 [2026-08-17] Catálogo pre-cargado: al arrancar, el agente inyecta resumen de todos los servicios en el prompt (sin llamar tools). El agente ya sabe qué servicios existen.
-[2026-08-17] Para aplicaciones nuevas con PostgreSQL/Redis, cargar datasql-guide.md; usar db_net, usuario/DB dedicados, env_file dual, extends ../_common.yml y labels Homepage. SQLite queda solo para smoke tests.
+[2026-08-17] Para aplicaciones nuevas con PostgreSQL/Redis, cargar aipostgres-guide.md; usar db_net, usuario/DB dedicados, env_file dual, extends ../_common.yml y labels Homepage. SQLite queda solo para smoke tests.
 [2026-08-17] El scanner incremental actual detecta cambios con Git y filtra issues, pero todavía no registra por archivo si fue leído, procesado, falló o quedó pendiente. La idea original requiere un ledger persistente `processed/pending/failed`.
 ```
 

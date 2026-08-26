@@ -121,7 +121,7 @@ Flowise usará la base dedicada `flowise_db`, el rol `flowise_user`,
 `datapostgres`, `dataredis` y `db_net`. No se crea otro PostgreSQL ni otro
 Redis. La base y el rol se crean **después** de guardar el password de Flowise
 en su `.env`, usando la receta canónica de la Fase 5A de
-`docs/services/datasql-guide.md`.
+`docs/services/aipostgres-guide.md`.
 
 No asumir `admin/appdb`, no ejecutar `source $dkco/datasql/.env` y no combinar
 `CREATE ROLE`/`CREATE USER` con `CREATE DATABASE`.
@@ -192,7 +192,7 @@ chmod 600 $dkco/flowise/.env
 ## 6. Paso 4 — Crear el rol y la base dedicados
 
 Con `$dkco/flowise/.env` ya creado, ejecutar la Fase 5A de
-`docs/services/datasql-guide.md` con estos valores:
+`docs/services/aipostgres-guide.md` con estos valores:
 
 ```text
 APP_DB_USER=flowise_user

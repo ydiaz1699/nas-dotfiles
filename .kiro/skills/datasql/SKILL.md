@@ -15,8 +15,7 @@ completa es:
 docs/services/aipostgres-guide.md
 ```
 
-La guía `docs/services/datasql-guide.md` es la referencia corta para
-consumidores y apunta al mismo estado final.
+La guía `docs/services/aipostgres-guide.md` contiene tanto la operación del stack como la receta para consumidores.
 
 ## Estado final obligatorio
 

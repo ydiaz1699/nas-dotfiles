@@ -147,10 +147,7 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 7. `svc up <svc>` y verificar health, logs y consumo
 8. `svc catalog-sync <svc>` — genera ficha, guía, script DebMenux
 
-Si necesita PostgreSQL o Redis, leer primero `docs/services/datasql-guide.md` y la
-ficha de DataSQL o `docs/services/aipostgres-guide.md` según el clúster activo;
-usar `db_net`, crear DB/usuario dedicados, no publicar DBs en la LAN y no usar
-`depends_on` contra un compose externo. `db_net` no prueba que una aplicación
+Si necesita PostgreSQL o Redis, leer primero `docs/services/aipostgres-guide.md` y la ficha de DataSQL; usar `db_net`, crear DB/usuario dedicados, no publicar DBs en la LAN y no usar `depends_on` contra un compose externo. `db_net` no prueba que una aplicación
 use una base: confirmar compose, configuración y runtime. Consumidores confirmados: Flowise (`flowise_db` + `dataredis`) y Home Assistant
 (`homeassistant_db` por `127.0.0.1:5432`); `n8n_db` existe, pero su compose real
 debe auditarse. El stack operativo único es `datasql`, con ParadeDB PostgreSQL
@@ -224,7 +221,7 @@ svc diff <svc>             # Compose en disco vs resuelta (interpolada)
 | Contratos arquitectónicos | `agent/architecture/contracts.json` |
 | Homepage (labels, widgets, config) | `docs/services/homepage-guide.md` |
 | ioBroker (IoT, MQTT, backups, upgrades) | `docs/services/iobroker-guide.md` |
-| DataSQL y servicios con PostgreSQL | `docs/services/datasql-guide.md` |
+| DataSQL y servicios con PostgreSQL | `docs/services/aipostgres-guide.md` |
 | Flowise (prueba con DataSQL) | `docs/services/flowise-guide.md` |
 | Troubleshooting | `docs/troubleshooting.md` |
 | Skill completa (para LLMs) | `docker-nas/references/nas-context.md` |
