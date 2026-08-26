@@ -46,7 +46,7 @@
           }
         },
         "pgadmin": {
-          "image": "dpage/pgadmin4:latest",
+          "image": "dpage/pgadmin4:9.17",
           "container_name": "aipgadmin",
           "port_internal": 80,
           "port_default": 5051,
@@ -165,7 +165,7 @@
           }
         },
         "pgadmin": {
-          "image": "dpage/pgadmin4:latest",
+          "image": "dpage/pgadmin4:9.17",
           "container_name": "datapgadmin",
           "port_internal": 80,
           "port_default": 5050,

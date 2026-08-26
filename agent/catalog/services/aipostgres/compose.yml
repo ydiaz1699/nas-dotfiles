@@ -56,7 +56,7 @@ services:
   pgadmin:
     # Excepción documentada: pgAdmin usa sudo internamente y no debe heredar
     # security_opt/no-new-privileges ni cap_drop desde _common.yml.
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4:9.17
     container_name: aipgadmin
     restart: unless-stopped
     logging:
