@@ -1,27 +1,32 @@
 {
   "version": "1.0",
-  "services_count": 10,
+  "services_count": 9,
   "services": {
-    "aipostgres": {
-      "id": "aipostgres",
-      "name": "PostgreSQL IA",
-      "description": "Stack sucesor de DataSQL: PostgreSQL 17 con pgvector/pg_search, pgAdmin 4 y Redis 7",
+    "datasql": {
+      "id": "datasql",
+      "name": "ParadeDB PostgreSQL (datasql)",
+      "description": "Stack final de ParadeDB PostgreSQL 17 con pgvector, pg_search y pg_cron, pgAdmin 9.17 y Redis 7",
       "aliases": [
+        "datasql",
+        "datapostgres",
+        "datapgadmin",
+        "dataredis",
         "aipostgres",
         "ai-postgres",
         "postgres-ia",
+        "postgres",
+        "pgadmin",
+        "redis",
         "paradedb",
         "pgvector",
         "pg_search",
         "vector-db",
-        "semantic-search",
-        "pgadmin-ia",
-        "redis-ia"
+        "semantic-search"
       ],
       "image": "paradedb/paradedb:0.25.4-pg17",
       "category": "base-datos",
       "port_internal": 5432,
-      "port_default": 5433,
+      "port_default": 5432,
       "protocol": "tcp",
       "needs_proxy": false,
       "needs_db": false,
@@ -29,9 +34,9 @@
       "services": {
         "postgres": {
           "image": "paradedb/paradedb:0.25.4-pg17",
-          "container_name": "aipostgres",
+          "container_name": "datapostgres",
           "port_internal": 5432,
-          "port_default": 5433,
+          "port_default": 5432,
           "exposure": "loopback",
           "healthcheck": "[\"CMD-SHELL\", \"pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}\"]",
           "volumes": [
@@ -43,125 +48,6 @@
             "memory_reservation": "256M",
             "cpus_limit": "1.5",
             "cpus_reservation": "0.25"
-          }
-        },
-        "pgadmin": {
-          "image": "dpage/pgadmin4:9.17",
-          "container_name": "aipgadmin",
-          "port_internal": 80,
-          "port_default": 5051,
-          "exposure": "lan",
-          "healthcheck": null,
-          "volumes": [
-            "./data/pgadmin:/var/lib/pgadmin"
-          ],
-          "resources": {
-            "memory_limit": "512M",
-            "memory_reservation": "128M",
-            "cpus_limit": "1",
-            "cpus_reservation": "0.25"
-          }
-        },
-        "redis": {
-          "image": "redis:7-alpine",
-          "container_name": "airedis",
-          "port_internal": 6379,
-          "port_default": null,
-          "exposure": "internal",
-          "healthcheck": "[\"CMD\", \"redis-cli\", \"-a\", \"${REDIS_PASSWORD}\", \"ping\"]",
-          "volumes": [
-            "./data/redis:/data"
-          ],
-          "resources": {
-            "memory_limit": "256M",
-            "memory_reservation": "64M",
-            "cpus_limit": "0.5",
-            "cpus_reservation": "0.1"
-          }
-        }
-      },
-      "env_required": [
-        "POSTGRES_DB",
-        "POSTGRES_USER",
-        "POSTGRES_PASSWORD",
-        "PGADMIN_EMAIL",
-        "PGADMIN_PASSWORD",
-        "REDIS_PASSWORD"
-      ],
-      "env_optional": [
-        "AIPG_POSTGRES_HOST_PORT=5433",
-        "AIPGADMIN_PORT=5051"
-      ],
-      "backup_critical": true,
-      "backup_paths": [
-        "./data/postgres/backups",
-        "./data/postgres/pgdata",
-        "./data/pgadmin",
-        "./data/redis"
-      ],
-      "protected": false,
-      "docs_url": "docs/services/aipostgres-guide.md",
-      "notes": "Stack completo sucesor de DataSQL: postgres es aipostgres, pgAdmin es aipgadmin y Redis es airedis. Durante la coexistencia PostgreSQL se publica solo en 127.0.0.1:5433 para preparar la migración de Home Assistant, pgAdmin en LAN :5051 y Redis permanece interno. Los consumidores Docker deben usar aipostgres:5432 y airedis:6379. La imagen ParadeDB 0.25.4-pg17 incluye pgvector, pg_search y pg_cron; pg_search y pg_cron se cargan mediante shared_preload_libraries y `cron.database_name` se establece con `POSTGRES_DB`. El REDIS_PASSWORD de airedis se genera nuevo y no se copia desde DataSQL; solo consumidores aún conectados a dataredis conservan la credencial antigua. No incluye RustFS: RustFS es un servicio S3 independiente y solo se instala cuando existe LobeHub u otro consumidor de objetos. En el catálogo extends.file es ../../_common.yml; el compose desplegado usa ../_common.yml.",
-      "networks": [
-        "db_net"
-      ],
-      "ports": {
-        "postgres_loopback": 5433,
-        "pgadmin": 5051
-      },
-      "security_extra": {
-        "postgres": {},
-        "pgadmin": {},
-        "redis": {
-          "security_opt": [
-            "no-new-privileges:true"
-          ],
-          "cap_drop": [
-            "ALL"
-          ],
-          "cap_add": [
-            "CHOWN",
-            "DAC_OVERRIDE",
-            "SETUID",
-            "SETGID"
-          ]
-        }
-      }
-    },
-    "datasql": {
-      "id": "datasql",
-      "name": "DataSQL",
-      "description": "Stack de bases de datos: PostgreSQL 16, pgAdmin 4 y Redis 7 para persistencia de servicios del NAS",
-      "aliases": [
-        "postgres",
-        "pgadmin",
-        "redis",
-        "db",
-        "database"
-      ],
-      "image": "postgres:16-alpine",
-      "category": "base-datos",
-      "protocol": "tcp",
-      "needs_proxy": false,
-      "needs_db": false,
-      "db_type": "",
-      "services": {
-        "postgres": {
-          "image": "postgres:16-alpine",
-          "container_name": "datapostgres",
-          "port_internal": 5432,
-          "port_default": 5432,
-          "exposure": "loopback",
-          "healthcheck": "[\"CMD-SHELL\", \"pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}\"]",
-          "volumes": [
-            "./data/postgres/pgdata:/var/lib/postgresql/data/pgdata",
-            "./data/postgres/backups:/backups"
-          ],
-          "resources": {
-            "memory_limit": "2G",
-            "memory_reservation": "512M",
-            "cpus_limit": "2",
-            "cpus_reservation": "0.5"
           }
         },
         "pgadmin": {
@@ -207,21 +93,33 @@
         "PGADMIN_PASSWORD",
         "REDIS_PASSWORD"
       ],
-      "env_optional": [],
+      "env_optional": [
+        "AIPG_POSTGRES_HOST_PORT=5432",
+        "AIPGADMIN_PORT=5050"
+      ],
       "backup_critical": true,
       "backup_paths": [
         "./data/postgres/backups",
+        "./data/postgres/pgdata",
         "./data/pgadmin",
         "./data/redis"
       ],
       "protected": false,
-      "docs_url": "docs/services/datasql-guide.md",
-      "notes": "PostgreSQL no se expone a la LAN: publica únicamente 127.0.0.1:5432 para el Recorder de Home Assistant en network_mode: host. Los consumidores Docker usan datapostgres:5432 por db_net. Redis no expone puerto al host. pgAdmin expuesto en LAN (:5050). No usar ipv4_address en db_net: es una red compartida y Docker asigna IPs dinámicas. PGDATA y TZ son variables fijas/globales (no requieren .env local). Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del global.",
+      "docs_url": "docs/services/aipostgres-guide.md",
+      "notes": "Servicio operativo final en $dkco/datasql. ParadeDB usa datapostgres y publica PostgreSQL solo en 127.0.0.1:5432 para Home Assistant host-network; los consumidores Docker usan datapostgres:5432 en db_net. pgAdmin usa datapgadmin y se expone como dashboard LAN en :5050, excepción documentada. Redis usa dataredis:6379 solo en db_net y no publica ports. La base administrativa de PostgreSQL se llama aipostgres y el usuario es aiadmin. El compose precarga pg_search y pg_cron, configura cron.database_name con POSTGRES_DB, hereda SERVER_IP/TZ desde ../.env y no fija ipv4_address. La guía canónica contiene la instalación limpia, el renombrado inicial y la verificación.",
       "networks": [
         "db_net"
       ],
+      "ports": {
+        "postgres_loopback": 5432,
+        "pgadmin": 5050
+      },
       "security_extra": {
-        "all_services": {
+        "postgres": {},
+        "pgadmin": {
+          "note": "Dashboard LAN aprobado en :5050; no heredar security_opt/cap_drop porque pgAdmin usa sudo internamente."
+        },
+        "redis": {
           "security_opt": [
             "no-new-privileges:true"
           ],
@@ -650,7 +548,6 @@
   },
   "by_category": {
     "base-datos": [
-      "aipostgres",
       "datasql"
     ],
     "domótica": [
@@ -670,7 +567,6 @@
   },
   "by_network": {
     "db_net": [
-      "aipostgres",
       "datasql",
       "emqx",
       "flowise"

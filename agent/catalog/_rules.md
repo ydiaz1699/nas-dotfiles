@@ -39,30 +39,24 @@ Cada servicio en /docker/ DEBE tener:
 
 ```
 /docker/<nombre>/
-├── compose.yml (o docker-compose.yml)   ← ambos nombres son válidos;
-│                                            find_compose() y validate_compose()
-│                                            deben reconocer los dos
-├── .env                  ← SIEMPRE (aunque esté vacío), permisos 600
-└── README.md             ← Mínimo: qué es, puerto, datos críticos
+├── compose.yml             ← nombre preferido (se acepta el legacy docker-compose.yml)
+├── .env                    ← cuando el servicio necesita secretos, permisos 600
+└── README.md               ← Mínimo: qué es, puerto, datos críticos
 ```
 
 ## Formato del compose
 
-1. SIEMPRE consultar `_compose_base.md` para la estructura estándar de anchors
-2. SIEMPRE usar `services:` como top-level (nunca `version:` — deprecated)
-3. SIEMPRE incluir `container_name:` explícito (= nombre del directorio)
-4. El archivo puede llamarse `compose.yml` o `docker-compose.yml` — ambos
-   son válidos y deben ser reconocidos por las herramientas del agente
-5. SIEMPRE `restart: unless-stopped`
-6. SIEMPRE incluir los anchors base: `x-security-defaults`, `x-healthcheck-defaults`,
-   `x-logging-defaults`, `x-resource-defaults` (ver `_compose_base.md`)
-7. SIEMPRE aplicar `<<: [*security-defaults, *resource-defaults]` al servicio
-8. SIEMPRE healthcheck si el servicio expone HTTP/API o protocolo con CLI de status
+3. SIEMPRE incluir `container_name:` explícito y único por servicio. En un stack multi-contenedor puede diferir del nombre del directorio; no renombrar automáticamente los servicios hijos al nombre del stack
+4. El nombre preferido es `compose.yml`; las herramientas también deben reconocer el legacy `docker-compose.yml`
+5. SIEMPRE `restart: unless-stopped` mediante `$dkco/_common.yml` o de forma local
+6. Usar los defaults actuales de `$dkco/_common.yml` mediante `extends`; los anchors YAML locales de `_compose_base.md` son legacy y no son un requisito
+7. Aplicar seguridad, logging y recursos por servicio, con excepciones documentadas cuando la imagen sea incompatible
+8. SIEMPRE healthcheck si el servicio expone HTTP/API o tiene una orden CLI de estado; registrar explícitamente `healthcheck: null` cuando la imagen no ofrezca una comprobación segura
 9. NUNCA asignar puertos reservados (22, 53, 80, 443) como puerto externo
-10. Puertos externos: usar rango 8100-8999 (verificar disponibilidad antes)
+10. Puertos externos nuevos: usar rango 8100-8999 (verificar disponibilidad antes)
 11. Volúmenes: preferir bind mounts en `./data/` sobre volumes nombrados
 12. Variables sensibles → SIEMPRE en .env, NUNCA inline en el compose
-13. SIEMPRE incluir `TZ=${TZ:-America/La_Paz}` en environment via `*common-env`
+13. Usar `env_file: [../.env, .env]` para heredar `SERVER_IP` y `TZ`; no duplicar `TZ` en `environment:`
 
 ## Red y Proxy
 
@@ -74,13 +68,10 @@ Cada servicio en /docker/ DEBE tener:
 
 - Por defecto, todo dashboard/panel admin se bindea a `127.0.0.1:<puerto>`
   (no accesible fuera del NAS)
-- Si un servicio requiere acceso desde LAN (ej. panel de uso frecuente),
-  esto debe:
-  1. Indicarse explícitamente al crear el servicio (parámetro `is_dashboard`
-     + flag de exposición LAN)
-  2. Documentarse en la ficha del catálogo (`notes:`) con la justificación
-  3. Idealmente ir detrás de reverse proxy con auth si se expone más allá
-     de la LAN local
+- Si un servicio necesita acceso desde LAN (ej. pgAdmin en `5050` o el panel de EMQX), esto debe:
+  1. Indicarse explícitamente al crear el servicio (`is_dashboard` + exposición LAN)
+  2. Documentarse en la ficha del catálogo (`notes:`) y en su guía
+  3. Idealmente ir detrás de reverse proxy con auth si se expone más allá de la LAN local
 - Ver `_compose_base.md` para el detalle de implementación
 
 ## Seguridad
@@ -88,13 +79,18 @@ Cada servicio en /docker/ DEBE tener:
 - Credenciales: generar placeholder con `# CAMBIAR:` como prefijo en .env
 - Si el servicio tiene panel admin → desactivar signup/registro por defecto
 - Si hay opción de deshabilitar registro público → activarla
-- NUNCA exponer bases de datos al host (solo red interna Docker)
+- NUNCA exponer bases de datos a la LAN. Se permite una excepción host-only
+  explícitamente documentada, como PostgreSQL en `127.0.0.1:5432` para Home
+  Assistant con `network_mode: host`.
+- Un dashboard existente puede exponerse a la LAN si la ficha explica la
+  necesidad; pgAdmin `5050:80` de `datasql` es una excepción aprobada.
 - Si el servicio necesita docker.sock → advertir en README.md
 
 ## Naming
 
 - Directorio: nombre corto, minúsculas, sin espacios (ej: vaultwarden)
-- container_name: igual al directorio
+- container_name: explícito, único y estable por servicio; en stacks de varios
+  contenedores no tiene que coincidir con el directorio
 - Volúmenes bind mount: `./data/` para datos persistentes
 - Si necesita múltiples directorios: `./data/`, `./config/`, `./logs/`
 

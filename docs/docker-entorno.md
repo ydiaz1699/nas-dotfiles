@@ -188,7 +188,7 @@ agregar restricciones si se necesitan.
 
 | Red | Driver | Propósito | Crear con |
 |-----|--------|-----------|-----------|
-| `db_net` | bridge | Apps ↔ Bases de datos (interno) | `docker network create db_net` |
+| `db_net` | bridge | Apps ↔ Bases de datos (interno) | `docker network create db_net` únicamente durante el bootstrap inicial; en operación normal usar `svc net` y no recrear la red |
 | `iot_net` | bridge | IoT: EMQX ↔ ESPHome ↔ HA | `docker network create iot_net` |
 | `homepage_net` | bridge | Homepage ↔ servicios (widgets) | `docker network create homepage_net` |
 | `adguard_macvlan_NET` | macvlan | AdGuard con IP propia (DNS:53) | Config especial (ver networking.md) |
@@ -203,11 +203,12 @@ agregar restricciones si se necesitan.
 ### Reglas de uso
 
 1. **DBs nunca se exponen a la LAN** — los consumidores Docker usan `db_net`; la única excepción host-only documentada es PostgreSQL en `127.0.0.1:5432` para Home Assistant con `network_mode: host`
-2. **No usar `ipv4_address` en redes compartidas** — Docker asigna IPs dinámicas; las aplicaciones deben comunicarse mediante `container_name`/hostname
-3. **Todo IoT va a `iot_net`** — EMQX, ESPHome, (futuro HA si deja de usar host)
-4. **Homepage widgets internos via `homepage_net`** — ntfy conectado aquí
-5. **`network_mode: host`** — solo para servicios que necesitan mDNS/descubrimiento (HA, ESPHome)
-6. **macvlan** — solo para servicios que necesitan IP propia en la LAN (AdGuard DNS:53)
+2. **pgAdmin es una excepción de dashboard** — `datasql` publica `5050:80` para administración desde la LAN; la ficha y la guía documentan esta exposición. No implica publicar PostgreSQL ni Redis
+3. **No usar `ipv4_address` en redes compartidas** — Docker asigna IPs dinámicas; las aplicaciones deben comunicarse mediante `container_name`/hostname
+4. **Todo IoT va a `iot_net`** — EMQX, ESPHome, (futuro HA si deja de usar host)
+5. **Homepage widgets internos via `homepage_net`** — ntfy conectado aquí
+6. **`network_mode: host`** — solo para servicios que necesitan mDNS/descubrimiento (HA, ESPHome)
+7. **macvlan** — solo para servicios que necesitan IP propia en la LAN (AdGuard DNS:53)
 
 ### Conectar un servicio a una red existente (sin recrear)
 

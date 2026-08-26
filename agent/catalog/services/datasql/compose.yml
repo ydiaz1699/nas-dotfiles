@@ -1,22 +1,32 @@
-# $dkco/datasql/compose.yml
+# Despliegue final en $dkco/datasql/compose.yml.
+# En el catálogo, extends usa ../../_common.yml; en el NAS usa ../_common.yml.
+# ParadeDB reemplaza al PostgreSQL antiguo y conserva los nombres operativos
+# datapostgres, datapgadmin y dataredis.
 services:
   postgres:
-    image: postgres:16-alpine
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: paradedb/paradedb:0.25.4-pg17
     container_name: datapostgres
-    restart: unless-stopped
     env_file:
       - ../.env
       - .env
-    # Excepción host-only para Home Assistant (network_mode: host):
-    # nunca publicar en 0.0.0.0 ni en la LAN.
-    ports:
-      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    # PostgreSQL solo se publica en loopback para Home Assistant host-network.
+    ports:
+      - "127.0.0.1:${AIPG_POSTGRES_HOST_PORT:-5432}:5432"
+    command:
+      - postgres
+      - "-c"
+      - shared_preload_libraries=pg_search,pg_cron
+      - "-c"
+      - "cron.database_name=${POSTGRES_DB}"
     volumes:
       - ./data/postgres/pgdata:/var/lib/postgresql/data/pgdata
       - ./data/postgres/backups:/backups
@@ -26,24 +36,27 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 6
       start_period: 30s
-    security_opt:
-      - no-new-privileges:true
-    cap_drop: [ALL]
-    cap_add: [CHOWN, DAC_OVERRIDE, SETUID, SETGID]
     deploy:
       resources:
         limits:
-          cpus: '2'
-          memory: 2G
+          cpus: '1.5'
+          memory: 1536M
         reservations:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '0.25'
+          memory: 256M
+
   pgadmin:
-    image: dpage/pgadmin4:latest
+    # pgAdmin usa sudo internamente; no heredar security_opt/cap_drop.
+    image: dpage/pgadmin4:9.17
     container_name: datapgadmin
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     env_file:
       - ../.env
       - .env
@@ -55,7 +68,7 @@ services:
     volumes:
       - ./data/pgadmin:/var/lib/pgadmin
     ports:
-      - "5050:80"
+      - "${AIPGADMIN_PORT:-5050}:80"
     depends_on:
       postgres:
         condition: service_healthy
@@ -65,8 +78,8 @@ services:
       - homepage.group=Bases de datos
       - homepage.name=pgAdmin
       - homepage.icon=pgadmin
-      - homepage.href=http://${SERVER_IP}:5050
-      - homepage.description=Administración de PostgreSQL (datasql)
+      - homepage.href=http://${SERVER_IP}:${AIPGADMIN_PORT:-5050}
+      - homepage.description=Administración de PostgreSQL IA
     deploy:
       resources:
         limits:
@@ -75,10 +88,16 @@ services:
         reservations:
           cpus: '0.25'
           memory: 128M
+
   redis:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
     image: redis:7-alpine
     container_name: dataredis
-    restart: unless-stopped
+    env_file:
+      - ../.env
+      - .env
     command:
       - redis-server
       - --appendonly
@@ -95,8 +114,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    security_opt:
-      - no-new-privileges:true
     cap_drop: [ALL]
     cap_add: [CHOWN, DAC_OVERRIDE, SETUID, SETGID]
     deploy:
@@ -107,6 +124,7 @@ services:
         reservations:
           cpus: '0.1'
           memory: 64M
+
 networks:
   db_net:
     external: true

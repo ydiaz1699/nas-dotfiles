@@ -188,6 +188,10 @@ ports:
 
 `validate_compose()` advierte (no bloquea) cuando detecta un puerto de
 dashboard sin bind a `127.0.0.1`, para forzar la revisión de esta decisión.
+La excepción ya aprobada para este catálogo es pgAdmin de `datasql` en
+`5050:80`, documentada en `agent/catalog/services/datasql/ficha.md` y en su
+guía operativa; no debe tomarse como permiso general para publicar bases de
+datos.
 
 ## .env base
 

@@ -91,7 +91,7 @@ comprobar si el Compose resuelto conserva `ipv4_address`:
 ```bash
 svc config datasql
 svc port-map
-ss -ltnp | grep -E ':(5432|5050|5051)\b' || true
+ss -ltnp | grep -E ':(5432|5050)\b' || true
 svc net
 ```
 
