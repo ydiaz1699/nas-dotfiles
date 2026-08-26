@@ -7,8 +7,7 @@
 > parte de PostgreSQL. Se instalará únicamente con LobeHub u otro consumidor
 > real de objetos.
 >
-> Estado: scaffolding para instalar y verificar el stack. Esta guía no afirma
-> que el NAS ya haya sido modificado.
+> Estado: stack operativo verificado en el NAS. Esta guía conserva el procedimiento de instalación, las recuperaciones reversibles y los incidentes reales encontrados durante el arranque y la verificación. DataSQL permanece intacto.
 
 ## 1. Arquitectura decidida
 
@@ -153,19 +152,11 @@ Si `db_net` no existe, detenerse y seguir el bootstrap documentado en
 ### 1. Crear directorios
 
 ```bash
-mkdir -p $dkco/aipostgres/data/postgres/{pgdata,backups} $dkco/aipostgres/data/{pgadmin,redis}
-```
-
-```bash
-mkdir -p $dkco/aipostgres/data/postgres/{pgdata,backups}
-mkdir -p $dkco/aipostgres/data/{pgadmin,redis}
-```
-o
-
-```bash
 mkdir -p \
-  $dkco/aipostgres/data/postgres/{pgdata,backups} \
-  $dkco/aipostgres/data/{pgadmin,redis}
+  "$dkco/aipostgres/data/postgres/pgdata" \
+  "$dkco/aipostgres/data/postgres/backups" \
+  "$dkco/aipostgres/data/pgadmin" \
+  "$dkco/aipostgres/data/redis"
 ```
 
 ### 2. Copiar los archivos
@@ -262,7 +253,7 @@ No poner `SERVER_IP` ni `TZ` en este `.env`; se heredan desde el global mediante
 
 ### 4. Aplicar permisos
 
-La imagen `dpage/pgadmin4:latest` ejecuta pgAdmin con UID/GID `5050:5050`.
+La imagen `dpage/pgadmin4:9.17` ejecuta pgAdmin con UID/GID `5050:5050`.
 El `bind mount` completo debe pertenecer a ese usuario; `chmod 700` por sí solo
 no basta si la carpeta fue creada por `root`.
 
@@ -279,12 +270,22 @@ El `chown` recursivo también corrige archivos creados por intentos anteriores,
 como `pgadmin4.db` o `sessions`. No usar `chmod -R 777` ni aplicar este
 ownership a los datos de PostgreSQL, Redis o DataSQL.
 
+El servicio `redis` hereda `security_opt: no-new-privileges:true` desde
+`$dkco/_common.yml` mediante `extends`. No añadir otra clave `security_opt` local
+a Redis: declarar la misma opción dos veces puede producir el error de Compose
+`services.redis.security_opt items at 0 and 1 are equal`. Redis puede conservar
+sus capacidades explícitas (`cap_drop`/`cap_add`) sin repetir la lista heredada.
+
 ### 5. Validar sin levantar todavía
 
 ```bash
 dk aipostgres
 svc config aipostgres
 ```
+
+`svc config` resuelve la interpolación y puede mostrar secretos del `.env`.
+No pegues su salida completa en chats, issues ni PRs; úsala solo para revisar
+localmente las claves necesarias.
 
 La configuración resuelta debe mostrar:
 
@@ -296,10 +297,12 @@ La configuración resuelta debe mostrar:
 - pgAdmin en `5051:80`.
 - Redis sin `ports`.
 - `shared_preload_libraries=pg_search,pg_cron`.
-- `cron.database_name=${POSTGRES_DB}`.
+- `cron.database_name=aipostgres` en la configuración resuelta (el compose de
+  catálogo lo expresa como `cron.database_name=${POSTGRES_DB}`).
 - Volúmenes persistentes en `./data/postgres`, `./data/pgadmin` y
   `./data/redis`.
 - `env_file` global y local.
+- Redis hereda una sola `security_opt: no-new-privileges:true` desde `_common.yml`; no hay una lista `security_opt` local duplicada.
 
 No continuar si `svc config` muestra `0.0.0.0:5432`, una IP fija de Docker, otra
 red o una ruta incorrecta de `_common.yml`.
@@ -339,8 +342,9 @@ svc net
 svc port-map
 ```
 
-En `svc port-map` deberían aparecer `5051` y posiblemente `5433` como
-loopback. No debe aparecer `6379`.
+En `svc port-map` debería aparecer `5051`; `5433` puede no aparecer por ser
+loopback. Confírmalo con `svc ps aipostgres`, que debe mostrar
+`127.0.0.1:5433->5432/tcp`. Nunca debe aparecer `6379`.
 
 No continúes si PostgreSQL o Redis no están saludables; conserva la salida de
 `svc ps aipostgres` y `svc logs aipostgres` para diagnosticar antes de cambiar
@@ -393,6 +397,27 @@ CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 No detengas ni modifiques DataSQL como parte de esta recuperación.
 
+Si al crear la extensión aparece:
+
+```text
+ERROR:  can only create extension in database postgres
+DETAIL:  Jobs must be scheduled from the database configured in cron.database_name
+```
+
+la instancia no tiene `cron.database_name` apuntando a la base del stack. No
+intentes repetir `CREATE EXTENSION` hasta corregir la configuración y reiniciar
+PostgreSQL. La comprobación canónica se ejecuta dentro de `psql`, en este orden:
+
+```sql
+SHOW cron.database_name;
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+```
+
+El resultado de `SHOW` debe ser `aipostgres` (el valor de `POSTGRES_DB`). Si el
+compose ya contiene `cron.database_name=${POSTGRES_DB}`, sincroniza el archivo
+real, vuelve a levantar `aipostgres` y repite la comprobación. No borres
+`data/postgres/pgdata` ni reinicies DataSQL.
+
 ### Error de permisos en pgAdmin
 
 Si los logs de `aipgadmin` muestran:
@@ -439,7 +464,7 @@ carpeta completa en vez de borrarla:
 svc down aipostgres
 
 TS="$(date +%Y%m%d-%H%M%S)"
-mv "$dkco/aipostgres/data/pgadmin" \\
+mv "$dkco/aipostgres/data/pgadmin" \
   "$dkco/aipostgres/data/pgadmin.partial-$TS"
 mkdir -p "$dkco/aipostgres/data/pgadmin"
 chown -R 5050:5050 "$dkco/aipostgres/data/pgadmin"
@@ -456,8 +481,8 @@ anterior como respaldo. No afecta PostgreSQL, Redis ni DataSQL. Si ya habías
 configurado servidores o conexiones en pgAdmin, no apartes la carpeta: detente
 y conserva ese directorio para una recuperación específica.
 
-La imagen de pgAdmin está fijada a `9.17` para evitar que el tag mutable
-`latest` avance la base SQLite sin una actualización coordinada. Las variables
+La imagen de pgAdmin está fijada a `9.17` para evitar que un tag mutable
+avance la base SQLite sin una actualización coordinada. Las variables
 `PGADMIN_DEFAULT_EMAIL` y `PGADMIN_DEFAULT_PASSWORD` deben seguir presentes en
 el `.env`; son las que crean la cuenta inicial en un directorio limpio.
 
@@ -468,6 +493,25 @@ el `.env`; son las que crean la cuenta inicial en un directorio limpio.
 No bloquea la instalación de `aipostgres`. No reinicies ni modifiques
 `tasmoadmin` como parte de esta instalación; se investigará separadamente,
 leyendo primero su guía y su composición.
+
+### Warning de Redis: `vm.overcommit_memory`
+
+Redis puede registrar:
+
+```text
+WARNING Memory overcommit must be enabled!
+```
+
+En esta instalación es un warning del host, no un fallo de `airedis`: el
+healthcheck debe seguir confirmando `healthy` y `redis-cli PING` debe responder
+`PONG`. La corrección opcional en el host es:
+
+```bash
+sysctl vm.overcommit_memory=1
+```
+
+No convertir este cambio temporal en requisito bloqueante ni escribirlo en
+`/etc/sysctl.conf` sin un procedimiento de persistencia y una decisión aparte.
 
 ### Error de `nas`
 
@@ -493,6 +537,13 @@ suficiente.
 
 ### PostgreSQL y extensiones
 
+**Bash y SQL son contextos distintos.** Las líneas `POSTGRES_DB=...` y
+`svc exec ...` se ejecutan en Bash. Las consultas `SELECT`, `SHOW` y `CREATE`
+se ejecutan solo después de abrir `psql`, cuando el prompt muestra
+`aipostgres=#`. No copies el prompt (`root@Nas ... #` o `aipostgres=#`) como si
+fuera parte del comando y pega cada comando en una línea separada; evita
+concatenaciones accidentales como `svc health svc health`.
+
 ```bash
 POSTGRES_DB="$(awk -F= '$1=="POSTGRES_DB"{print substr($0,index($0,"=")+1)}' .env)"
 POSTGRES_USER="$(awk -F= '$1=="POSTGRES_USER"{print substr($0,index($0,"=")+1)}' .env)"
@@ -505,10 +556,14 @@ svc exec aipostgres postgres env \
   psql
 ```
 
-En `psql`:
+En el prompt `aipostgres=#`, ejecuta el SQL siguiente. Primero se verifica la
+base configurada para pg_cron; después se crean las extensiones y finalmente se
+comprueba la versión instalada:
 
 ```sql
 SELECT version();
+
+SHOW cron.database_name;
 
 SELECT name, default_version, installed_version
 FROM pg_available_extensions
@@ -525,8 +580,15 @@ WHERE extname IN ('vector', 'pg_search', 'pg_cron')
 ORDER BY extname;
 ```
 
-Las extensiones requeridas deben aparecer en `pg_extension`. Esto solo afecta
-la base `aipostgres` del nuevo clúster.
+`SHOW cron.database_name` debe devolver `aipostgres`. Las tres extensiones
+`vector`, `pg_search` y `pg_cron` deben aparecer en `pg_extension`. Esto solo
+afecta la base `aipostgres` del nuevo clúster. En la verificación runtime de
+esta instalación se observaron `pg_cron 1.6`, `pg_search 0.25.4` y `vector 0.8.4`;
+si una imagen posterior cambia la versión de una extensión, la condición
+importante sigue siendo que las tres aparezcan instaladas y operativas.
+
+No ejecutes este SQL directamente en Bash: un error como
+`SELECT: orden no encontrada` indica que se pegó en el intérprete equivocado.
 
 Salir y limpiar:
 
@@ -537,6 +599,36 @@ Salir y limpiar:
 ```bash
 unset POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD
 ```
+
+`svc exec` procesa sus propias opciones antes de entregar el comando al
+contenedor. No pongas opciones de `psql` sin separar el comando del parser de
+`svc`: una forma como `svc exec aipostgres postgres env ... psql -v ...`
+puede terminar en `No such option: -v`, aunque `-v` aparezca después de
+`psql`. Para la comprobación normal usa el modo interactivo anterior. Si
+necesitas un modo no interactivo, coloca `--` inmediatamente después del
+servicio; así todo lo que sigue se entrega al contenedor:
+
+```bash
+POSTGRES_DB="$(awk -F= '$1=="POSTGRES_DB"{print substr($0,index($0,"=")+1)}' .env)"
+POSTGRES_USER="$(awk -F= '$1=="POSTGRES_USER"{print substr($0,index($0,"=")+1)}' .env)"
+POSTGRES_PASSWORD="$(awk -F= '$1=="POSTGRES_PASSWORD"{print substr($0,index($0,"=")+1)}' .env)"
+
+svc exec aipostgres -- postgres env \
+  PGPASSWORD="$POSTGRES_PASSWORD" \
+  PGUSER="$POSTGRES_USER" \
+  PGDATABASE="$POSTGRES_DB" \
+  psql \
+  -v ON_ERROR_STOP=1 \
+  -At \
+  -F '|' \
+  -c 'SELECT current_user, current_database();'
+
+unset POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD
+```
+
+La salida esperada de la consulta es `aiadmin|aipostgres` (el formato puede
+variar según las opciones de salida). No uses `PGADMIN_PASSWORD` para esta
+conexión: esa variable pertenece al login web de pgAdmin.
 
 ### Redis
 
@@ -558,17 +650,39 @@ Abrir desde la LAN:
 http://${SERVER_IP}:5051
 ```
 
+Las credenciales pertenecen a contextos distintos y no se deben intercambiar:
+
+| Uso | Usuario/email | Contraseña | Dónde se usa |
+|---|---|---|---|
+| Login web de pgAdmin | `admin@local.lan` | `PGADMIN_PASSWORD` | Pantalla de inicio de pgAdmin |
+| Conexión PostgreSQL | `aiadmin` | `POSTGRES_PASSWORD` | Formulario de conexión al servidor |
+| Redis | — | `REDIS_PASSWORD` | `redis-cli` y clientes de `airedis` |
+
 En la conexión al servidor PostgreSQL usar:
 
 ```text
 Host: aipostgres
 Port: 5432
-Usuario: aiadmin
-Base inicial: aipostgres
+Maintenance DB: aipostgres
+Username: aiadmin
+Password: POSTGRES_PASSWORD
 ```
 
-No usar `127.0.0.1` dentro de pgAdmin: pgAdmin está en otro contenedor y debe
-resolver PostgreSQL por `db_net`.
+No usar `PGADMIN_PASSWORD` para autenticar `aiadmin` y no usar
+`127.0.0.1:5433` desde pgAdmin: pgAdmin está en otro contenedor y debe
+resolver PostgreSQL por `db_net`. El `127.0.0.1:5433` se reserva para
+consumidores con `network_mode: host`, como Home Assistant.
+
+Si pgAdmin muestra:
+
+```text
+The CSRF session token is missing. You need to refresh the page.
+```
+
+es una sesión web caducada o un formulario antiguo, no un fallo de PostgreSQL.
+Cierra el formulario, haz una recarga completa con `Ctrl+Shift+R`, cierra sesión
+y vuelve a entrar. No cambies contraseñas ni el servidor PostgreSQL para
+resolver este mensaje.
 
 ### Aislamiento y recursos
 
@@ -583,7 +697,15 @@ svc stats aipostgres
 
 DataSQL debe continuar intacto. La única publicación adicional esperada es
 `127.0.0.1:5433` y el panel LAN `5051`; Redis no debe aparecer en el mapa de
-puertos.
+puertos. `svc port-map` puede omitir `5433` porque es un bind de loopback; la
+confirmación autoritativa está en `svc ps aipostgres`, donde debe aparecer
+`127.0.0.1:5433->5432/tcp`.
+
+En stacks con varios contenedores, `svc health` puede mostrar `Health --` para
+`aipostgres` aunque `svc ps aipostgres` muestre PostgreSQL y Redis como
+`healthy` y pgAdmin como `Up`. Para este stack, `svc ps aipostgres` es la
+verificación individual autoritativa: deben estar los tres contenedores y no
+haber reinicios inesperados.
 
 ## 8. Plan de migración y retiro de DataSQL
 
@@ -678,6 +800,40 @@ Datos críticos:
 
 No borrar estos directorios para solucionar un fallo de arranque. Primero
 conservar logs, revisar `svc config`, comprobar permisos y confirmar el backup.
+
+## 11. Auditoría de fuentes y variantes
+
+Esta tabla conserva el origen y la decisión de cada corrección del chat. Las
+variantes que tienen el mismo efecto sobre los mismos artefactos se consolidan
+en un procedimiento canónico; las que cambian el contexto o la reversibilidad
+no se tratan como duplicados.
+
+| Fuente(s) | Afirmación/operación | Tipo | Confianza | Variante elegida y motivo | Clasificación |
+|---|---|---|---|---|---|
+| Conversación operativa; compose de catálogo | Redis heredaba `security_opt` y una lista local duplicada rompía Compose | HECHO | ALTA | Mantener la herencia desde `_common.yml`; conservar solo `cap_drop`/`cap_add` locales | INTEGRADO |
+| Conversación operativa; compose de catálogo | ParadeDB requiere `pg_search,pg_cron` en `shared_preload_libraries` | HECHO | ALTA | Precargar ambas bibliotecas en `command` | INTEGRADO |
+| Conversación operativa; compose de catálogo | pg_cron necesita `cron.database_name=${POSTGRES_DB}` | HECHO | ALTA | Verificar `SHOW` antes de `CREATE EXTENSION` | INTEGRADO |
+| Conversación operativa | pgAdmin falla con UID/GID y permisos incorrectos | HECHO | ALTA | Crear directorios antes, luego `chown`, luego `chmod`; no usar 777 | INTEGRADO |
+| Conversación operativa | Migración SQLite parcial produce `EOFError` | HECHO | ALTA | Mover `data/pgadmin` a `pgadmin.partial-$TS`, recrear y conservar rollback | INTEGRADO |
+| Conversación operativa; compose de catálogo | pgAdmin debe permanecer fijado en `9.17` | HECHO | ALTA | Eliminar la referencia de tag mutable; mantener `dpage/pgadmin4:9.17` | REEMPLAZADO |
+| Conversación operativa | CSRF expirado se resuelve en la sesión web | HECHO | ALTA | Recarga completa y nuevo login; no tocar PostgreSQL | INTEGRADO |
+| Conversación operativa | Contraseñas de pgAdmin, PostgreSQL y Redis son distintas | HECHO | ALTA | Tabla explícita por contexto y usuario | INTEGRADO |
+| Conversación operativa; implementación de `svc` | `-v` después de `svc exec <stack>` lo interpreta el wrapper | HECHO | ALTA | Usar psql interactivo o poner `psql` antes de sus opciones | INTEGRADO |
+| Conversación operativa | Warning de Redis sobre `vm.overcommit_memory` no impide `healthy` | HECHO | ALTA | Clasificar como warning opcional del host; `PONG` y healthcheck son la prueba | INTEGRADO |
+| Conversación operativa | `svc health` puede mostrar `--` en stack mult contenedor | HECHO | ALTA | Usar `svc ps aipostgres` como verificación individual | INTEGRADO |
+| Conversación operativa | `svc port-map` puede omitir loopback 5433 | HECHO | ALTA | Confirmar el bind con `svc ps`; exigir que no aparezca 6379 | INTEGRADO |
+| Conversación operativa | Prompt de shell pegado junto al comando genera concatenaciones | HECHO | ALTA | Advertir que el prompt no forma parte del comando y separar líneas | INTEGRADO |
+| Guía anterior | Tres variantes equivalentes de `mkdir` | HECHO | ALTA | Una sola variante con cuatro rutas explícitas, en orden previo a archivos | DUPLICADO |
+| Guía anterior; política Docker | DataSQL debe coexistir sin cambios | HECHO | ALTA | Mantener `svc down/restart` limitado a `aipostgres`; migración futura separada | FUERA_DE_ALCANCE: migración |
+| Decisión de arquitectura; compose/ficha | RustFS es S3 separado | HECHO | ALTA | Mantenerlo fuera de este compose y documentarlo como fase posterior | FUERA_DE_ALCANCE: RustFS |
+
+## 12. Decisiones pendientes y bloqueados
+
+- La persistencia de `vm.overcommit_memory=1` en la configuración del host no
+  forma parte de esta guía; queda pendiente de una decisión específica del NAS.
+- La migración y el retiro de DataSQL quedan fuera de esta instalación hasta
+  auditar todos sus consumidores y ejecutar backups/pruebas de recuperación.
+- No hay bloqueos para instalar, recuperar o verificar el stack descrito aquí.
 
 ## Referencias oficiales
 
