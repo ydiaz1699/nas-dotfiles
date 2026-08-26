@@ -101,7 +101,9 @@ todavía ejecuta un checkout anterior y aparece `No such command 'snapshot'`, us
 | adguard | 53, 80 (IP: 192.168.1.201) | adguard_macvlan_NET | ✅ labels |
 | emqx | 1883, 8883, 8083, 8084, 18083 | iot_net, db_net | ✅ labels |
 | esphome | 6052 | host | ✅ labels |
-| datasql | 5050 (pgadmin) | db_net | ✅ labels (pgadmin) |
+| datasql | 5050 (pgAdmin) | db_net | ✅ labels (pgAdmin) |
+| flowise | 8100 | db_net | ✅ labels |
+| n8n | 5678 | db_net | ✅ labels (backend pendiente de auditar) |
 | filebrowser | 8085 | filebrowser_default | ✅ labels |
 | homepage | 3000 | homepage_net | — (es el dashboard) |
 | ntfy | 8090 | homepage_net | ✅ labels |
@@ -110,7 +112,9 @@ todavía ejecuta un checkout anterior y aparece `No such command 'snapshot'`, us
 | usb-api (systemd) | 8091 | nativo | services.yaml |
 | spacedrive | — | spacedrive_default | — |
 
-> Flowise tiene compose, ficha, guía y script preparados para la prueba, pero no se marca como servicio activo hasta verificar la instalación en el NAS.
+> Flowise está activo en el NAS y usa `flowise_db` + `dataredis`; n8n está activo
+> y tiene `n8n_db`, pero su compose/runtime debe auditarse porque todavía no está
+> catalogado en este repositorio.
 
 ## Redes Docker
 
@@ -144,11 +148,21 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 8. `svc catalog-sync <svc>` — genera ficha, guía, script DebMenux
 
 Si necesita PostgreSQL o Redis, leer primero `docs/services/datasql-guide.md` y la
-ficha de DataSQL; usar `db_net`, crear DB/usuario dedicados, no publicar DBs en la
-LAN y no usar `depends_on` contra DataSQL si está en otro compose. La excepción
-host-only `127.0.0.1:5432:5432` de PostgreSQL solo aplica al Recorder de Home
-Assistant cuando usa `network_mode: host`. SQLite queda para smoke tests aislados;
-para integración real usar DataSQL.
+ficha de DataSQL; usar `db_net`, crear DB/usuario dedicados, no publicar DBs en
+la LAN y no usar `depends_on` contra DataSQL si está en otro compose. `db_net`
+no prueba que una aplicación use una base: confirmar compose, configuración y
+runtime. Consumidores confirmados: Flowise (`flowise_db` + `dataredis`) y Home
+Assistant (`homeassistant_db` por `127.0.0.1:5432`); `n8n_db` existe, pero su
+compose real debe auditarse. La excepción host-only `127.0.0.1:5432:5432` solo
+aplica al Recorder de Home Assistant cuando usa `network_mode: host`.
+
+El DataSQL actual usa `postgres:16-alpine` sin `pgvector` ni `pg_search`; no
+cambiarlo mientras existan consumidores activos. En este NAS, LobeHub o una
+memoria semántica futura deben usar un PostgreSQL compatible separado. En un
+servidor nuevo sin datos, sí puede usarse un único clúster compatible desde el
+inicio: las extensiones solo se habilitan en las bases que las necesitan y no
+obligan a instalar LobeHub, Hermes ni el agente. SQLite queda para smoke tests
+aislados; para integración real usar el backend documentado por cada servicio.
 
 ## Homepage
 

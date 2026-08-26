@@ -110,17 +110,25 @@ Template en: `agent/catalog/.env.global.example`
 Antes de crear un servicio que use PostgreSQL, Redis u otra base compartida:
 
 1. Activar/cargar `.kiro/skills/datasql/SKILL.md` y leer `docs/services/datasql-guide.md` y la ficha de DataSQL.
-2. Usar la red externa `db_net`; no publicar bases de datos a la LAN. La única
+2. Confirmar que el servicio realmente usa DB: `db_net` por sí sola solo permite comunicación; revisar compose, configuración y runtime.
+3. Usar la red externa `db_net`; no publicar bases de datos a la LAN. La única
    excepción es PostgreSQL en `127.0.0.1:5432:5432` para Home Assistant cuando
    usa `network_mode: host`; Redis (`6379`) permanece interno.
-3. Crear una base y un usuario dedicados dentro de DataSQL; no reutilizar el usuario administrador. Crear el rol y la base en llamadas separadas de `psql`.
-4. Leer los secretos reales desde `$dkco/datasql/.env`; no asumir `admin/appdb`, no hacer `source .env` y pasar `PGPASSWORD`/`REDISCLI_AUTH` explícitamente a `svc exec`.
-5. Configurar `env_file: [../.env, .env]`, `extends.file: ../_common.yml` y labels `homepage.*`.
-6. No usar `depends_on` para un contenedor que pertenece a otro compose; verificar la disponibilidad con `svc health` y logs.
-7. Documentar el host de conexión como el nombre del contenedor/servicio en `db_net`, no como una IP fija.
+4. Crear una base y un usuario dedicados dentro de DataSQL; no reutilizar el usuario administrador. Crear el rol y la base en llamadas separadas de `psql`.
+5. Leer los secretos reales desde `$dkco/datasql/.env`; no asumir `admin/appdb`, no hacer `source .env` y pasar `PGPASSWORD`/`REDISCLI_AUTH` explícitamente a `svc exec`.
+6. Configurar `env_file: [../.env, .env]`, `extends.file: ../_common.yml` y labels `homepage.*`.
+7. No usar `depends_on` para un contenedor que pertenece a otro compose; verificar la disponibilidad con `svc health` y logs.
+8. Documentar el host de conexión como el nombre del contenedor/servicio en `db_net`, no como una IP fija.
+9. Estado confirmado: Flowise usa `flowise_db` + `dataredis`; Home Assistant usa
+   `homeassistant_db`; `n8n_db` existe, pero su compose real debe auditarse.
+10. El DataSQL actual es `postgres:16-alpine` sin `pgvector` ni `pg_search`.
+    No cambiarlo mientras haya consumidores activos. Para LobeHub o memoria
+    semántica futura, usar PostgreSQL compatible separado en este NAS.
 
-SQLite puede usarse solo para una prueba aislada y temporal. Si el objetivo es integrar
-el servicio al NAS y probar recuperación/backup, preferir PostgreSQL de DataSQL.
+SQLite puede usarse solo para una prueba aislada y temporal. En un servidor nuevo
+sin datos, un único clúster PostgreSQL compatible con `pgvector` y `pg_search`
+puede ser DataSQL común; habilitar las extensiones solo en las bases que las
+necesiten. Preparar ese clúster no obliga a instalar LobeHub, Hermes ni el agente.
 
 
 ---

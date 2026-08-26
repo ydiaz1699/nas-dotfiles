@@ -1,7 +1,67 @@
 {
   "version": "1.0",
-  "services_count": 9,
+  "services_count": 10,
   "services": {
+    "aipostgres": {
+      "id": "aipostgres",
+      "name": "PostgreSQL IA",
+      "description": "Clúster PostgreSQL 17 separado basado en ParadeDB, preparado para búsqueda vectorial y full-text con pgvector y pg_search",
+      "aliases": [
+        "aipostgres",
+        "ai-postgres",
+        "postgres-ia",
+        "paradedb",
+        "pgvector",
+        "pg_search",
+        "vector-db",
+        "semantic-search"
+      ],
+      "image": "paradedb/paradedb:0.25.4-pg17",
+      "category": "base-datos",
+      "port_internal": 5432,
+      "port_default": null,
+      "protocol": "tcp",
+      "needs_proxy": false,
+      "needs_db": false,
+      "db_type": "postgres",
+      "services": {
+        "aipostgres": {
+          "image": "paradedb/paradedb:0.25.4-pg17",
+          "container_name": "aipostgres",
+          "port_internal": 5432,
+          "port_default": null,
+          "exposure": "internal",
+          "healthcheck": "[\"CMD-SHELL\", \"pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}\"]",
+          "volumes": [
+            "./data:/var/lib/postgresql/data"
+          ],
+          "resources": {
+            "memory_limit": "1536M",
+            "memory_reservation": "256M",
+            "cpus_limit": "1.5",
+            "cpus_reservation": "0.25"
+          }
+        }
+      },
+      "env_required": [
+        "POSTGRES_DB",
+        "POSTGRES_USER",
+        "POSTGRES_PASSWORD"
+      ],
+      "env_optional": [],
+      "backup_critical": true,
+      "backup_paths": [
+        "./data"
+      ],
+      "protected": false,
+      "docs_url": "docs/services/aipostgres-guide.md",
+      "notes": "Servicio interno separado de DataSQL. Usa db_net externa y no publica 5432 al host. La imagen ParadeDB 0.25.4-pg17 incluye pgvector y pg_search; el compose carga pg_search mediante shared_preload_libraries. No crear todavía lobehub_db ni nas_agent_db: cada consumidor futuro debe tener una base y un rol dedicados. La primera instalación omite cap_drop: ALL hasta validar compatibilidad de la imagen. En el catálogo extends.file es ../../_common.yml; el compose desplegado usa ../_common.yml.",
+      "networks": [
+        "db_net"
+      ],
+      "ports": {},
+      "security_extra": {}
+    },
     "datasql": {
       "id": "datasql",
       "name": "DataSQL",
@@ -146,7 +206,7 @@
         "./data/data"
       ],
       "protected": false,
-      "docs_url": "https://docs.emqx.com/en/emqx/latest/",
+      "docs_url": "docs/services/emqx-guide.md",
       "notes": "Requiere ulimits nofile alto (1048576). Dashboard en puerto 18083, expuesto en LAN (no restringido a localhost pese a la regla general de _compose_base.md); ver justificación en README del servicio. Usa env_file: [../.env, .env] para heredar SERVER_IP y TZ del .env global.",
       "networks": [
         "iot_net",
@@ -171,189 +231,6 @@
           }
         }
       }
-    },
-    "homeassistant": {
-      "id": "homeassistant",
-      "name": "Home Assistant",
-      "description": "Plataforma de automatización del hogar con integraciones IoT",
-      "image": "ghcr.io/home-assistant/home-assistant:stable",
-      "category": "domótica",
-      "port_internal": 8123,
-      "port_default": 8123,
-      "protocol": "http",
-      "needs_proxy": false,
-      "needs_db": true,
-      "db_type": "postgresql (externo via 127.0.0.1:5432)",
-      "volumes": [
-        "./data:/config",
-        "/etc/localtime:/etc/localtime:ro",
-        "/run/dbus:/run/dbus:ro"
-      ],
-      "env_required": [
-        "HOMEASSISTANT_TOKEN"
-      ],
-      "env_optional": [],
-      "healthcheck": "[\"CMD\", \"curl\", \"-f\", \"http://localhost:8123\"]",
-      "backup_critical": true,
-      "backup_paths": [
-        "./data"
-      ],
-      "protected": true,
-      "docs_url": "docs/services/homeassistant-guide.md",
-      "notes": "Usa network_mode: host (acceso directo a LAN para mDNS, descubrimiento IoT, USB y Bluetooth), stop_grace_period: 60s y DNS explícitos. Privileged: true es requerido por las integraciones de hardware; no agregar cap_drop/cap_add. El Recorder usa PostgreSQL externo en homeassistant_db mediante 127.0.0.1:5432 (nunca localhost); DataSQL debe estar saludable antes de iniciar HA. No usa db_net ni debe conectarse a datapostgres por DNS mientras conserve host networking. Completar el onboarding antes de editar configuration.yaml. Config organizada con !include en carpeta includes/. Integración ntfy para push notifications con imagen vía shell_command + curl, no ntfy.publish. TvOverlay configurado como rest_command. SERVER_IP y TZ se heredan del env_file global; HOMEASSISTANT_TOKEN es local para el widget de Homepage.",
-      "networks": [],
-      "ports": {
-        "http": 8123
-      },
-      "resources": {
-        "memory_limit": "2g",
-        "memory_reservation": "512m"
-      },
-      "aliases": [
-        "homeassistant",
-        "home-assistant",
-        "ha",
-        "domótica",
-        "automatización"
-      ]
-    },
-    "homepage": {
-      "id": "homepage",
-      "name": "Homepage",
-      "description": "Dashboard de servicios del NAS con widgets personalizados",
-      "image": "ghcr.io/gethomepage/homepage:latest",
-      "category": "sistema",
-      "port_internal": 3000,
-      "port_default": 3000,
-      "protocol": "http",
-      "needs_proxy": false,
-      "needs_db": false,
-      "db_type": "",
-      "volumes": [
-        "./config:/app/config",
-        "/var/run/docker.sock:/var/run/docker.sock:ro"
-      ],
-      "env_required": [
-        "TZ"
-      ],
-      "env_optional": [
-        "HOMEPAGE_ALLOWED_HOSTS=*"
-      ],
-      "healthcheck": "GET http://localhost:3000",
-      "backup_critical": true,
-      "backup_paths": [
-        "./config"
-      ],
-      "protected": false,
-      "docs_url": "docs/services/homepage-guide.md",
-      "notes": "Usa Docker socket (read-only) para auto-descubrir contenedores via labels. Los servicios que quieran aparecer automáticamente deben estar en homepage_net y tener labels homepage.*. La config YAML en ./config/ se edita en caliente (no requiere reiniciar). Para servicios nativos (usb-api) usar widget customapi con IP del host.",
-      "networks": [
-        "homepage_net"
-      ],
-      "ports": {
-        "http": 3000
-      },
-      "resources": {
-        "memory_limit": "256m",
-        "memory_reservation": "64m"
-      },
-      "aliases": [
-        "homepage",
-        "dashboard",
-        "panel"
-      ]
-    },
-    "node-red": {
-      "id": "node-red",
-      "name": "Node-RED",
-      "description": "Plataforma visual de automatización de flujos IoT",
-      "image": "nodered/node-red:latest",
-      "category": "domótica",
-      "port_internal": 1880,
-      "port_default": 1880,
-      "protocol": "http",
-      "needs_proxy": false,
-      "needs_db": false,
-      "db_type": "",
-      "volumes": [
-        "./data:/data"
-      ],
-      "env_required": [],
-      "env_optional": [],
-      "healthcheck": "[\"CMD\", \"curl\", \"-f\", \"http://localhost:1880\"]",
-      "backup_critical": true,
-      "backup_paths": [
-        "./data"
-      ],
-      "protected": false,
-      "docs_url": "docs/services/node-red-guide.md",
-      "notes": "Conectado a iot_net para comunicación con EMQX (MQTT), ESPHome, y HA. NO usar cap_drop:[ALL] — Node-RED instala paquetes npm en runtime y necesita permisos flexibles. Los flujos se guardan en ./data/flows.json.",
-      "networks": [
-        "iot_net"
-      ],
-      "ports": {
-        "http": 1880
-      },
-      "resources": {
-        "memory_limit": "sin definir (medir con docker stats primero)"
-      },
-      "aliases": [
-        "node-red",
-        "nodered",
-        "flujos",
-        "flows"
-      ]
-    },
-    "ntfy": {
-      "id": "ntfy",
-      "name": "ntfy",
-      "description": "Servidor de notificaciones push HTTP pub-sub self-hosted",
-      "image": "binwiederhier/ntfy:latest",
-      "category": "sistema",
-      "port_internal": 80,
-      "port_default": 8090,
-      "protocol": "http",
-      "needs_proxy": false,
-      "needs_db": false,
-      "db_type": "",
-      "volumes": [
-        "./config:/etc/ntfy",
-        "./data/cache:/var/cache/ntfy",
-        "./data/lib:/var/lib/ntfy",
-        "./data/attachments:/var/cache/ntfy/attachments"
-      ],
-      "env_required": [
-        "TZ",
-        "SERVER_IP"
-      ],
-      "env_optional": [
-        "NTFY_AUTH_DEFAULT_ACCESS=read-write"
-      ],
-      "healthcheck": "[\"CMD\", \"wget\", \"--no-verbose\", \"--tries=1\", \"--spider\", \"http://localhost:80/v1/health\"]",
-      "backup_critical": false,
-      "backup_paths": [
-        "./data/lib",
-        "./config"
-      ],
-      "protected": false,
-      "docs_url": "docs/services/ntfy-guide.md",
-      "notes": "Stateless cache — los mensajes se guardan 24h y luego se purgan. Los attachments (imágenes de cámaras) expiran en 24h. Auth por defecto abierto (LAN only). Para exponer a internet: cambiar auth-default-access a deny-all y crear usuarios con ntfy user add.",
-      "networks": [
-        "homepage_net"
-      ],
-      "ports": {
-        "http": 8090
-      },
-      "resources": {
-        "memory_limit": "256m",
-        "memory_reservation": "64m"
-      },
-      "aliases": [
-        "ntfy",
-        "notificaciones",
-        "push",
-        "alertas"
-      ]
     },
     "flowise": {
       "id": "flowise",
@@ -428,46 +305,93 @@
         ]
       }
     },
-    "usb-api": {
-      "id": "usb-api",
-      "name": "USB API",
-      "description": "Mini API REST para listar y desmontar USBs desde web (Homepage widget)",
-      "image": null,
-      "category": "sistema",
-      "port_internal": 8091,
-      "port_default": 8091,
+    "homeassistant": {
+      "id": "homeassistant",
+      "name": "Home Assistant",
+      "description": "Plataforma de automatización del hogar con integraciones IoT",
+      "image": "ghcr.io/home-assistant/home-assistant:stable",
+      "category": "domótica",
+      "port_internal": 8123,
+      "port_default": 8123,
       "protocol": "http",
-      "native": true,
+      "needs_proxy": false,
+      "needs_db": true,
+      "db_type": "postgresql (externo via 127.0.0.1:5432)",
+      "volumes": [
+        "./data:/config",
+        "/etc/localtime:/etc/localtime:ro",
+        "/run/dbus:/run/dbus:ro"
+      ],
+      "env_required": [
+        "HOMEASSISTANT_TOKEN"
+      ],
+      "env_optional": [],
+      "healthcheck": "[\"CMD\", \"curl\", \"-f\", \"http://localhost:8123\"]",
+      "backup_critical": true,
+      "backup_paths": [
+        "./data"
+      ],
+      "protected": true,
+      "docs_url": "docs/services/homeassistant-guide.md",
+      "notes": "Usa network_mode: host (acceso directo a LAN para mDNS, descubrimiento IoT, USB y Bluetooth), stop_grace_period: 60s y DNS explícitos. Privileged: true es requerido por las integraciones de hardware; no agregar cap_drop/cap_add. El Recorder usa PostgreSQL externo en homeassistant_db mediante 127.0.0.1:5432 (nunca localhost); DataSQL debe estar saludable antes de iniciar HA. No usa db_net ni debe conectarse a datapostgres por DNS mientras conserve host networking. Completar el onboarding antes de editar configuration.yaml. Config organizada con !include en carpeta includes/. Integración ntfy para push notifications con imagen vía shell_command + curl, no ntfy.publish. TvOverlay configurado como rest_command. SERVER_IP y TZ se heredan del env_file global; HOMEASSISTANT_TOKEN es local para el widget de Homepage.",
+      "networks": [],
+      "ports": {
+        "http": 8123
+      },
+      "resources": {
+        "memory_limit": "2g",
+        "memory_reservation": "512m"
+      },
+      "aliases": [
+        "homeassistant",
+        "home-assistant",
+        "ha",
+        "domótica",
+        "automatización"
+      ]
+    },
+    "homepage": {
+      "id": "homepage",
+      "name": "Homepage",
+      "description": "Dashboard de servicios del NAS con widgets personalizados",
+      "image": "ghcr.io/gethomepage/homepage:latest",
+      "category": "sistema",
+      "port_internal": 3000,
+      "port_default": 3000,
+      "protocol": "http",
       "needs_proxy": false,
       "needs_db": false,
       "db_type": "",
-      "volumes": [],
-      "env_required": [
-        "USB_API_PORT",
-        "MOUNT_BASE",
-        "NTFY_URL"
+      "volumes": [
+        "./config:/app/config",
+        "/var/run/docker.sock:/var/run/docker.sock:ro"
       ],
+      "env_required": [],
       "env_optional": [
-        "USB_API_BIND=0.0.0.0"
+        "HOMEPAGE_ALLOWED_HOSTS=*"
       ],
-      "healthcheck": "GET /health",
-      "backup_critical": false,
-      "backup_paths": [],
+      "healthcheck": "GET http://localhost:3000",
+      "backup_critical": true,
+      "backup_paths": [
+        "./config"
+      ],
       "protected": false,
-      "docs_url": "docs/services/ntfy-guide.md",
-      "notes": "Servicio NATIVO (systemd, NO Docker) porque necesita ejecutar umount en el host. Instalado por DebMenux scripts/services/usb-api.sh. El script Python está en /usr/local/lib/usb-api/server.py. Unit file en /etc/systemd/system/usb-api.service. Requiere acceso a MOUNT_BASE (/NAS/USB). Envía notificación a ntfy al desmontar. CORS habilitado para Homepage widgets.",
-      "networks": [],
+      "docs_url": "docs/services/homepage-guide.md",
+      "notes": "Usa Docker socket (read-only) para auto-descubrir contenedores via labels. Los servicios que quieran aparecer automáticamente deben tener labels homepage.* en su compose. La config YAML en ./config/ se edita en caliente (no requiere reiniciar). Para servicios nativos (usb-api) usar widget customapi con IP del host. Usa env_file: [../.env, .env] para heredar TZ y SERVER_IP del global.",
+      "networks": [
+        "homepage_net"
+      ],
       "ports": {
-        "http": 8091
+        "http": 3000
       },
       "resources": {
-        "memory_limit": "32m"
+        "memory_limit": "256m",
+        "memory_reservation": "64m"
       },
       "aliases": [
-        "usb-api",
-        "usb",
-        "usb-manager",
-        "eject"
+        "homepage",
+        "dashboard",
+        "panel"
       ]
     },
     "iobroker": {
@@ -523,10 +447,144 @@
           "no-new-privileges:true"
         ]
       }
+    },
+    "node-red": {
+      "id": "node-red",
+      "name": "Node-RED",
+      "description": "Plataforma visual de automatización de flujos IoT",
+      "image": "nodered/node-red:latest",
+      "category": "domótica",
+      "port_internal": 1880,
+      "port_default": 1880,
+      "protocol": "http",
+      "needs_proxy": false,
+      "needs_db": false,
+      "db_type": "",
+      "volumes": [
+        "./data:/data"
+      ],
+      "env_required": [],
+      "env_optional": [],
+      "healthcheck": "[\"CMD\", \"curl\", \"-f\", \"http://localhost:1880\"]",
+      "backup_critical": true,
+      "backup_paths": [
+        "./data"
+      ],
+      "protected": false,
+      "docs_url": "docs/services/node-red-guide.md",
+      "notes": "Conectado a iot_net para comunicación con EMQX (MQTT), ESPHome, y HA. NO usar cap_drop:[ALL] — Node-RED instala paquetes npm en runtime y necesita permisos flexibles. Los flujos se guardan en ./data/flows.json.",
+      "networks": [
+        "iot_net"
+      ],
+      "ports": {
+        "http": 1880
+      },
+      "resources": {
+        "memory_limit": "sin definir (medir con docker stats primero)"
+      },
+      "aliases": [
+        "node-red",
+        "nodered",
+        "flujos",
+        "flows"
+      ]
+    },
+    "ntfy": {
+      "id": "ntfy",
+      "name": "ntfy",
+      "description": "Servidor de notificaciones push HTTP pub-sub self-hosted",
+      "image": "binwiederhier/ntfy:latest",
+      "category": "sistema",
+      "port_internal": 80,
+      "port_default": 8090,
+      "protocol": "http",
+      "needs_proxy": false,
+      "needs_db": false,
+      "db_type": "",
+      "volumes": [
+        "./config:/etc/ntfy",
+        "./data/cache:/var/cache/ntfy",
+        "./data/lib:/var/lib/ntfy",
+        "./data/attachments:/var/cache/ntfy/attachments"
+      ],
+      "env_required": [
+        "SERVER_IP"
+      ],
+      "env_optional": [
+        "NTFY_AUTH_DEFAULT_ACCESS=read-write"
+      ],
+      "healthcheck": "[\"CMD\", \"wget\", \"--no-verbose\", \"--tries=1\", \"--spider\", \"http://localhost:80/v1/health\"]",
+      "backup_critical": false,
+      "backup_paths": [
+        "./data/lib",
+        "./config"
+      ],
+      "protected": false,
+      "docs_url": "docs/services/ntfy-guide.md",
+      "notes": "Stateless cache — los mensajes se guardan 24h y luego se purgan. Los attachments (imágenes de cámaras) expiran en 24h. Auth por defecto abierto (LAN only). Para exponer a internet: cambiar auth-default-access a deny-all y crear usuarios con ntfy user add.",
+      "networks": [
+        "homepage_net"
+      ],
+      "ports": {
+        "http": 8090
+      },
+      "resources": {
+        "memory_limit": "256m",
+        "memory_reservation": "64m"
+      },
+      "aliases": [
+        "ntfy",
+        "notificaciones",
+        "push",
+        "alertas"
+      ]
+    },
+    "usb-api": {
+      "id": "usb-api",
+      "name": "USB API",
+      "description": "Mini API REST para listar y desmontar USBs desde web (Homepage widget)",
+      "image": null,
+      "category": "sistema",
+      "port_internal": 8091,
+      "port_default": 8091,
+      "protocol": "http",
+      "native": true,
+      "needs_proxy": false,
+      "needs_db": false,
+      "db_type": "",
+      "volumes": [],
+      "env_required": [
+        "USB_API_PORT",
+        "MOUNT_BASE",
+        "NTFY_URL"
+      ],
+      "env_optional": [
+        "USB_API_BIND=0.0.0.0"
+      ],
+      "healthcheck": "GET /health",
+      "backup_critical": false,
+      "backup_paths": [],
+      "protected": false,
+      "docs_url": "docs/services/ntfy-guide.md",
+      "notes": "Servicio NATIVO (systemd, NO Docker) porque necesita ejecutar umount en el host. Instalado por DebMenux scripts/services/usb-api.sh. El script Python está en /usr/local/lib/usb-api/server.py. Unit file en /etc/systemd/system/usb-api.service. Requiere acceso a MOUNT_BASE (/NAS/USB). Envía notificación a ntfy al desmontar. CORS habilitado para Homepage widgets.",
+      "networks": [],
+      "ports": {
+        "http": 8091
+      },
+      "resources": {
+        "memory_limit": "32m"
+      },
+      "aliases": [
+        "usb-api",
+        "usb",
+        "usb-manager",
+        "eject"
+      ]
     }
   },
   "by_category": {
     "base-datos": [
+      "aipostgres",
       "datasql"
     ],
     "domótica": [
@@ -546,6 +604,7 @@
   },
   "by_network": {
     "db_net": [
+      "aipostgres",
       "datasql",
       "emqx",
       "flowise"

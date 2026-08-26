@@ -1,0 +1,47 @@
+# Catálogo: agent/catalog/services/aipostgres/compose.yml
+# Al desplegarlo en $dkco/aipostgres/compose.yml, la ruta de extends
+# se transforma de ../../_common.yml a ../_common.yml.
+services:
+  aipostgres:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: paradedb/paradedb:0.25.4-pg17
+    container_name: aipostgres
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # pg_search debe cargarse al iniciar PostgreSQL; pgvector no requiere
+    # shared_preload_libraries. La imagen incluye ambas extensiones.
+    command:
+      - postgres
+      - "-c"
+      - shared_preload_libraries=pg_search
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    networks:
+      - db_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    # No se agrega cap_drop: ALL en esta primera instalación: se verificará
+    # compatibilidad con la imagen antes de endurecer capacidades.
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1536M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+networks:
+  db_net:
+    external: true

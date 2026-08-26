@@ -40,6 +40,32 @@ docs/services/datasql-guide.md
    es Home Assistant con `network_mode: host`: su Recorder usa PostgreSQL
    publicado exclusivamente como `127.0.0.1:5432:5432`, nunca una dirección LAN.
 8. Después de usar credenciales en variables temporales, ejecutar `unset`.
+9. `db_net` no demuestra uso de una base: confirmar la conexión en compose,
+   configuración y runtime. El inventario confirmado actual es Flowise →
+   `flowise_db` + `dataredis`, Home Assistant → `homeassistant_db` por loopback,
+   y `n8n_db` existente con su configuración de n8n todavía pendiente de auditar.
+10. No borrar ni reutilizar bases existentes; cada aplicación conserva su rol y
+    base dedicados.
+11. El DataSQL actual es `postgres:16-alpine` sin `vector` ni `pg_search`.
+    No cambiar su imagen para añadir extensiones mientras lo usan servicios
+    activos. Para LobeHub o una memoria semántica futura, usar un PostgreSQL
+    compatible separado en el NAS actual.
+12. En un servidor nuevo sin datos, si se decidió construir una plataforma de
+    IA, puede usarse un único clúster PostgreSQL compatible con ambas extensiones.
+    Disponibilizarlas en el clúster no habilita su uso en Home Assistant: ejecutar
+    `CREATE EXTENSION` solo en las bases que lo necesiten. Validar antes la
+    compatibilidad de la imagen, backups y consumo.
+13. PostgreSQL con extensiones no obliga a instalar LobeHub, Hermes ni el agente:
+    la infraestructura puede quedar preparada para cualquier consumidor futuro,
+    pero no crear bases vacías ni índices hasta que exista uno.
+
+## Inventario seguro de DataSQL
+
+Para revisar bases, roles y extensiones sin mostrar secretos, usar la guía
+`docs/services/datasql-guide.md#fase-8a--inventario-de-bases-y-consumidores`.
+Con el CLI Python, `svc exec` mantiene TTY: abrir `psql` interactivo y pegar el
+SQL; no enviar consultas por pipe. Si se necesita una ejecución sin TTY, usar
+la variante Bash documentada y comprobar primero el checkout instalado.
 
 ## Contrato de configuración de una aplicación
 
