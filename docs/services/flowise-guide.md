@@ -120,9 +120,9 @@ carpeta exista y de que el archivo `.env` haya sido creado.
 Flowise usará la base dedicada `flowise_db`, el rol `flowise_user`,
 `datapostgres`, `dataredis` y `db_net`. No se crea otro PostgreSQL ni otro
 Redis. La base y el rol se crean **después** de guardar el password de Flowise
-en su `.env`, usando la receta canónica de la Fase 5A de
-`docs/services/datasql-guide.md`. La instalación y recuperación del stack están en
-`docs/services/aipostgres-guide.md`.
+en su `.env`, usando la receta canónica de las secciones 5.2–5.5 de
+`docs/services/datasql-guide.md`. Esa guía única también cubre la instalación y
+recuperación del stack.
 
 No asumir `admin/appdb`, no ejecutar `source $dkco/datasql/.env` y no combinar
 `CREATE ROLE`/`CREATE USER` con `CREATE DATABASE`.

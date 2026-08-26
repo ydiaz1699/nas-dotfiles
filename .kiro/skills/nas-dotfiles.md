@@ -61,7 +61,7 @@ El `compose.yml` debe incluir:
 - un puerto externo libre, verificado con `svc port-map`, normalmente dentro de
   `8100-8999`; el puerto externo no tiene por qué coincidir con el interno.
 
-Si necesita PostgreSQL o Redis, cargar primero `docs/services/aipostgres-guide.md` y
+Si necesita PostgreSQL o Redis, cargar primero `docs/services/datasql-guide.md` y
 la ficha de DataSQL. Usar `db_net`, crear una base/usuario dedicados y no
 publicar DBs en la LAN. Excepción: si Home Assistant usa `network_mode: host` y
 su Recorder apunta a `127.0.0.1:5432`, PostgreSQL puede publicar únicamente

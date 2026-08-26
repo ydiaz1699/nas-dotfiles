@@ -76,9 +76,9 @@ Para plantillas y estructura de carpetas, ver `references/svc.md`.
 Antes de configurar PostgreSQL o Redis, cargar `.kiro/skills/datasql/SKILL.md`,
 leer `docs/services/datasql-guide.md` para consumidores y creación de bases,
 y `agent/catalog/services/datasql/ficha.md`. Para instalar o recuperar el
-stack, usar también `docs/services/aipostgres-guide.md`.
+stack, usar también `docs/services/datasql-guide.md`.
 Usar `db_net` como red externa, crear una base/usuario dedicados mediante la
-Fase 5A de la guía (rol y base en llamadas separadas), y no publicar bases a la
+secciones 5.2–5.5 de la guía (rol y base en llamadas separadas), y no publicar bases a la
 LAN. Home Assistant es una excepción documentada: si usa `network_mode: host` y
 su Recorder apunta a `127.0.0.1:5432`, PostgreSQL puede publicar únicamente
 `127.0.0.1:5432:5432`; nunca `0.0.0.0:5432`. No asumir `admin/appdb`; leer los

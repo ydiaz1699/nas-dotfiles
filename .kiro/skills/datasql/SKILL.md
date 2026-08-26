@@ -8,16 +8,16 @@ description: >
 
 # Skill `datasql`
 
-El stack operativo único es `datasql` y vive en `$dkco/datasql`. Su guía
-completa es:
+El stack operativo único es `datasql` y vive en `$dkco/datasql`. Su única guía
+operativa y de consumidores es:
 
 ```text
-docs/services/aipostgres-guide.md
+docs/services/datasql-guide.md
 ```
 
-La guía de instalación y operación del stack es
-`docs/services/aipostgres-guide.md`. La guía para consumidores y creación de
-bases/roles es `docs/services/datasql-guide.md`.
+La guía incluye instalación limpia, migración histórica, permisos, verificación,
+operación, recuperación, consumidores, creación de bases/roles y Redis
+compartido.
 
 ## Estado final obligatorio
 

@@ -114,7 +114,7 @@ svc ps datasql
 
 No usar `docker network prune` ni eliminar manualmente una red externa que
 puede ser utilizada por otros servicios. Ver el procedimiento completo en
-[`docs/services/aipostgres-guide.md`](../../docs/services/aipostgres-guide.md).
+[`docs/services/datasql-guide.md`](../../docs/services/datasql-guide.md).
 
 ---
 
