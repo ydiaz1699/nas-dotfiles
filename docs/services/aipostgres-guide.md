@@ -68,6 +68,9 @@ elimina DataSQL inmediatamente después del primer `svc up`.
 La imagen `paradedb/paradedb:0.25.4-pg17` es PostgreSQL 17 empaquetado por
 ParadeDB con estas extensiones disponibles:
 
+- `pg_cron`: tareas programadas dentro de PostgreSQL; la imagen la intenta
+  habilitar durante su bootstrap.
+
 - `vector` (`pgvector`): embeddings, tipos vectoriales, operadores e índices
   para memoria semántica y RAG.
 - `pg_search`: búsqueda full-text con ranking BM25 y búsqueda híbrida.
@@ -285,7 +288,7 @@ La configuración resuelta debe mostrar:
 - PostgreSQL en `127.0.0.1:5433:5432`.
 - pgAdmin en `5051:80`.
 - Redis sin `ports`.
-- `shared_preload_libraries=pg_search`.
+- `shared_preload_libraries=pg_search,pg_cron`.
 - Volúmenes persistentes en `./data/postgres`, `./data/pgadmin` y
   `./data/redis`.
 - `env_file` global y local.
@@ -334,6 +337,50 @@ loopback. No debe aparecer `6379`.
 No continúes si PostgreSQL o Redis no están saludables; conserva la salida de
 `svc ps aipostgres` y `svc logs aipostgres` para diagnosticar antes de cambiar
 permisos o eliminar datos.
+
+### Error de bootstrap `pg_cron`
+
+Si los logs muestran:
+
+```text
+ERROR:  pg_cron can only be loaded via shared_preload_libraries
+HINT:  Add pg_cron to the shared_preload_libraries configuration variable
+```
+
+la imagen de ParadeDB sí encontró `pg_search`, pero su script de bootstrap
+`10_bootstrap_paradedb.sh` también intenta crear la extensión `pg_cron`. El
+compose debe precargar ambas bibliotecas:
+
+```text
+shared_preload_libraries=pg_search,pg_cron
+```
+
+No borres `./data/postgres/pgdata`: el primer intento puede haber creado ya el
+clúster y dejar datos válidos aunque el bootstrap de la extensión haya fallado.
+Después de sincronizar el compose corregido, valida y recrea únicamente el
+stack sucesor:
+
+```bash
+dk aipostgres
+svc config aipostgres
+svc up aipostgres
+svc ps aipostgres
+svc logs aipostgres
+```
+
+Si PostgreSQL queda saludable, verifica que `pg_cron` esté disponible y crea la
+extensión solo si aún no existe en la base administrativa:
+
+```sql
+SELECT name, default_version, installed_version
+FROM pg_available_extensions
+WHERE name IN ('vector', 'pg_search', 'pg_cron')
+ORDER BY name;
+
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+```
+
+No detengas ni modifiques DataSQL como parte de esta recuperación.
 
 ## Avisos del preflight actual
 
@@ -386,19 +433,20 @@ SELECT version();
 
 SELECT name, default_version, installed_version
 FROM pg_available_extensions
-WHERE name IN ('vector', 'pg_search')
+WHERE name IN ('vector', 'pg_search', 'pg_cron')
 ORDER BY name;
 
 CREATE EXTENSION IF NOT EXISTS vector;
 CREATE EXTENSION IF NOT EXISTS pg_search;
+CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 SELECT extname, extversion
 FROM pg_extension
-WHERE extname IN ('vector', 'pg_search')
+WHERE extname IN ('vector', 'pg_search', 'pg_cron')
 ORDER BY extname;
 ```
 
-Las dos últimas extensiones deben aparecer en `pg_extension`. Esto solo afecta
+Las extensiones requeridas deben aparecer en `pg_extension`. Esto solo afecta
 la base `aipostgres` del nuevo clúster.
 
 Salir y limpiar:

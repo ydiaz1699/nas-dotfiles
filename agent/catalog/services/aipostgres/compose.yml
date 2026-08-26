@@ -25,10 +25,12 @@ services:
     # 5433 evita el 5432 de DataSQL durante la coexistencia.
     ports:
       - "127.0.0.1:${AIPG_POSTGRES_HOST_PORT:-5433}:5432"
+    # ParadeDB inicializa pg_search y pg_cron durante el primer arranque.
+    # Las dos bibliotecas deben precargarse para que el bootstrap termine.
     command:
       - postgres
       - "-c"
-      - shared_preload_libraries=pg_search
+      - shared_preload_libraries=pg_search,pg_cron
     volumes:
       - ./data/postgres/pgdata:/var/lib/postgresql/data/pgdata
       - ./data/postgres/backups:/backups
