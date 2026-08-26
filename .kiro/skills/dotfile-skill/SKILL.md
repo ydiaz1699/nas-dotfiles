@@ -74,7 +74,7 @@ Para plantillas y estructura de carpetas, ver `references/svc.md`.
 ### Servicio que usa DataSQL
 
 Antes de configurar PostgreSQL o Redis, cargar `.kiro/skills/datasql/SKILL.md`,
-leer `docs/services/datasql-guide.md` y `agent/catalog/services/datasql/ficha.md`.
+leer `docs/services/aipostgres-guide.md` y `agent/catalog/services/datasql/ficha.md`.
 Usar `db_net` como red externa, crear una base/usuario dedicados mediante la
 Fase 5A de la guía (rol y base en llamadas separadas), y no publicar bases a la
 LAN. Home Assistant es una excepción documentada: si usa `network_mode: host` y
