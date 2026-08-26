@@ -181,8 +181,9 @@ No duplicar `TZ` en `environment:`. Si el compose se guarda en el catálogo,
 `agent/catalog/services/<svc>/compose.yml`, su ruta equivalente es
 `../../_common.yml`; el pipeline la transforma al desplegar al NAS.
 
-Para una aplicación que usa DataSQL, leer antes `docs/services/aipostgres-guide.md`,
+Para una aplicación que usa DataSQL, leer antes `docs/services/datasql-guide.md`,
 usar `db_net`, crear una DB/usuario dedicados y no publicar bases a la LAN.
+La instalación y operación del stack están en `docs/services/aipostgres-guide.md`.
 Home Assistant es una excepción: al usar `network_mode: host`, su Recorder necesita
 PostgreSQL limitado a `127.0.0.1:5432:5432`. No usar `depends_on` contra
 `datapostgres` si DataSQL está en otro compose.

@@ -87,8 +87,9 @@ backup_paths:
   - "./data/pgadmin"
   - "./data/redis"
 protected: false
-docs_url: "docs/services/aipostgres-guide.md"
-notes: "Servicio operativo final en $dkco/datasql. ParadeDB usa datapostgres y publica PostgreSQL solo en 127.0.0.1:5432 para Home Assistant host-network; los consumidores Docker usan datapostgres:5432 en db_net. pgAdmin usa datapgadmin y se expone como dashboard LAN en :5050, excepción documentada. Redis usa dataredis:6379 solo en db_net y no publica ports. La base administrativa de PostgreSQL se llama aipostgres y el usuario es aiadmin. El compose precarga pg_search y pg_cron, configura cron.database_name con POSTGRES_DB, hereda SERVER_IP/TZ desde ../.env y no fija ipv4_address. La guía canónica contiene la instalación limpia, el renombrado inicial y la verificación."
+docs_url: "docs/services/datasql-guide.md"
+install_docs_url: "docs/services/aipostgres-guide.md"
+notes: "Servicio operativo final en $dkco/datasql. ParadeDB usa datapostgres y publica PostgreSQL solo en 127.0.0.1:5432 para Home Assistant host-network; los consumidores Docker usan datapostgres:5432 en db_net. pgAdmin usa datapgadmin y se expone como dashboard LAN en :5050, excepción documentada. Redis usa dataredis:6379 solo en db_net y no publica ports. La base administrativa de PostgreSQL se llama aipostgres y el usuario es aiadmin. El compose precarga pg_search y pg_cron, configura cron.database_name con POSTGRES_DB, hereda SERVER_IP/TZ desde ../.env y no fija ipv4_address. datasql-guide.md documenta consumidores y creación de bases/roles; aipostgres-guide.md documenta instalación y operación del stack."
 networks:
   - db_net
 ports:
@@ -106,6 +107,4 @@ security_extra:
 
 ## Referencia del agente
 
-La ficha describe el stack que el agente debe descubrir en el compose; no
-repite el procedimiento operativo. Para instalación, renombrado, permisos,
-recreación y comprobación inicial, cargar `docs/services/aipostgres-guide.md`.
+La ficha debe apuntar a `docs/services/datasql-guide.md` para el uso por consumidores. La instalación y operación del stack están en `docs/services/aipostgres-guide.md`.

@@ -15,7 +15,9 @@ completa es:
 docs/services/aipostgres-guide.md
 ```
 
-La guía `docs/services/aipostgres-guide.md` contiene tanto la operación del stack como la receta para consumidores.
+La guía de instalación y operación del stack es
+`docs/services/aipostgres-guide.md`. La guía para consumidores y creación de
+bases/roles es `docs/services/datasql-guide.md`.
 
 ## Estado final obligatorio
 
