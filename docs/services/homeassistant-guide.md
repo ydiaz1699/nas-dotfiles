@@ -169,14 +169,12 @@ recorder:
   commit_interval: 1
 ```
 
-La contraseña real no debe copiarse a esta guía ni al repositorio. La base
-`homeassistant_db` y el usuario `ha_user` deben crearse previamente con la
+La contraseña real no debe copiarse a esta guía ni al repositorio. La base `homeassistant_db` y el usuario `ha_user` deben crearse previamente con la
 receta de `docs/services/datasql-guide.md`, usando credenciales dedicadas. La
-guía compartida usa `admin/appdb` como ejemplo de acceso administrativo; no se
-debe copiar ese usuario o base: hay que leer `POSTGRES_USER`, `POSTGRES_DB` y
-`POSTGRES_PASSWORD` reales de `$dkco/datasql/.env` sin ejecutar `source`.
-Como PostgreSQL usa `scram-sha-256`, pasar `PGPASSWORD` explícitamente dentro
-de `svc exec datasql postgres`, tal como indica la guía de DataSQL.
+instalación y recuperación del stack están en `docs/services/aipostgres-guide.md`. La receta lee `POSTGRES_USER`, `POSTGRES_DB` y `POSTGRES_PASSWORD` reales de
+`$dkco/datasql/.env` sin ejecutar `source`. Como PostgreSQL usa
+`scram-sha-256`, pasar `PGPASSWORD` explícitamente dentro de
+`svc exec datasql postgres`, tal como indica `docs/services/datasql-guide.md`.
 
 DataSQL conserva PostgreSQL en `db_net` con IP dinámica, pero publica su puerto
 **solo en loopback**:
@@ -626,7 +624,7 @@ la causa fue una IP estática (`ipv4_address`) ocupada en la red compartida
 
 Mantener `db_net`, retirar las IPs estáticas del Compose y aplicar la versión
 canónica de DataSQL con asignación dinámica. El procedimiento de diagnóstico y
-migración está en [`docs/services/datasql-guide.md`](datasql-guide.md) y en el
+migración está en [`docs/services/aipostgres-guide.md`](aipostgres-guide.md) y en el
 [troubleshooting general](../troubleshooting.md). Después de corregir DataSQL,
 seguir este orden:
 

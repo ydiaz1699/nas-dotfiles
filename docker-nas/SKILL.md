@@ -150,7 +150,7 @@ Se aplican especialmente cuando el servicio no existe todavía en el catálogo.
   la imagen; si no hay persistencia confirmada, declararlo como pendiente.
 - SQLite solo se permite para smoke tests aislados y temporales. Para una
   integración persistente del NAS, preferir DataSQL y cargar además
-  `.kiro/skills/datasql/SKILL.md` y `docs/services/datasql-guide.md`.
+  `.kiro/skills/datasql/SKILL.md` y `docs/services/aipostgres-guide.md`.
 - No inventar credenciales, nombres de variables ni promesas como "SQLite +
   almacenamiento local". Confirmar también qué datos deben respaldarse y cómo
   se recuperan.
@@ -226,7 +226,7 @@ Template en: `agent/catalog/.env.global.example`
 
 Antes de crear un servicio que use PostgreSQL, Redis u otra base compartida:
 
-1. Activar/cargar `.kiro/skills/datasql/SKILL.md` y leer `docs/services/datasql-guide.md` y la ficha de DataSQL.
+1. Activar/cargar `.kiro/skills/datasql/SKILL.md`, leer `docs/services/aipostgres-guide.md` para el stack y `docs/services/datasql-guide.md` para la base/rol del consumidor, además de la ficha de DataSQL.
 2. Confirmar que el servicio realmente usa DB: `db_net` por sí sola solo permite comunicación; revisar compose, configuración y runtime.
 3. Usar la red externa `db_net`; no publicar bases de datos a la LAN. Para Home Assistant host-network, PostgreSQL usa `127.0.0.1:5432`; pgAdmin `datasql` usa la excepción documentada de dashboard LAN en `5050`; Redis (`6379`) permanece interno.
 4. Crear una base y un usuario dedicados dentro del clúster activo; no reutilizar el usuario administrador. Crear el rol y la base en llamadas separadas de `psql`. Los consumidores Docker usan `datapostgres`/`dataredis`.
@@ -423,7 +423,7 @@ Orden de consulta:
 
 | Servicio | Guía | Temas clave documentados |
 |----------|------|--------------------------|
-| **datasql** | `docs/services/datasql-guide.md` + `.kiro/skills/datasql/SKILL.md` | PostgreSQL+pgAdmin+Redis, procedimiento de roles/bases separado, Redis compartido, backups pg_dump, permisos, db_net |
+| **datasql** | `docs/services/datasql-guide.md` + `docs/services/aipostgres-guide.md` + `.kiro/skills/datasql/SKILL.md` | PostgreSQL+pgvector+pg_search+pg_cron, consumidores, creación de roles/bases, Redis compartido, instalación, permisos y db_net |
 | **filebrowser** | `docs/services/filebrowser-guide.md` | Bind mounts, `:rshared` para USB, fstab, permisos, mount propagation |
 | **ntfy** | `docs/services/ntfy-guide.md` | Notificaciones push, topics, clientes Android/PWA, alarma+cámara, Homepage |
 | **usb-api** | `docs/services/ntfy-guide.md#usb-api` | API REST para USBs, systemd nativo, Homepage widget, desmontaje seguro |

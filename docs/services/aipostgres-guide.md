@@ -11,6 +11,9 @@
 >
 > Esta guía no contiene contraseñas reales. Los comandos leen secretos desde
 > `$dkco/datasql/.env` sin hacer `source .env` ni imprimir sus valores.
+>
+> Para crear bases y roles de nuevos servicios o conectar consumidores, usa
+> [`datasql-guide.md`](datasql-guide.md).
 
 ## 1. Estado final y nombres que no se deben cambiar
 
@@ -469,90 +472,18 @@ no PostgreSQL. El hostname correcto entre contenedores es `datapostgres` por
 `db_net`. Si aparece el mensaje `The CSRF session token is missing`, recarga
 la sesión, cierra sesión y vuelve a entrar; no cambies la base para resolverlo.
 
-## 5. Crear bases limpias para consumidores
+## 5. Consumidores, bases y roles
 
-No levantes una aplicación consumidora hasta crear su base y rol dedicados.
-`db_net` solo permite comunicación; no demuestra que la aplicación esté
-configurada para usar PostgreSQL.
+La guía de consumidores y creación de bases, roles y configuración de Redis es
+[`datasql-guide.md`](datasql-guide.md). No dupliques aquí esa receta; vuelve a
+esa guía antes de levantar Flowise, Home Assistant, n8n u otro consumidor.
 
-Para cada aplicación:
+Esta guía de ParadeDB conserva únicamente la instalación, operación y
+recuperación del stack. `db_net` permite comunicación, pero no demuestra que una
+aplicación esté configurada para usar su base correcta; la guía de consumidores
+documenta las comprobaciones de compose y runtime.
 
-1. Lee su contraseña desde el `.env` propio, sin mostrarla.
-2. Crea el rol en una llamada de `psql` separada.
-3. Crea la base con ese rol como propietario en otra llamada.
-4. Verifica conexión con el usuario de la aplicación.
-5. Configura el consumidor con `datapostgres:5432` y, si necesita Redis,
-   `dataredis:6379`.
-6. Limpia variables temporales con `unset`.
-
-Ejemplo para Flowise, usando la contraseña que ya existe en su `.env`:
-
-```bash
-APP_DB_PASSWORD=$(grep '^FLOWISE_DB_PASSWORD=' "$dkco/flowise/.env" | cut -d= -f2-)
-PGPASS=$(grep '^POSTGRES_PASSWORD=' "$dkco/datasql/.env" | cut -d= -f2-)
-PGUSER=$(grep '^POSTGRES_USER=' "$dkco/datasql/.env" | cut -d= -f2-)
-PGDB=$(grep '^POSTGRES_DB=' "$dkco/datasql/.env" | cut -d= -f2-)
-
-svc exec datasql postgres \
-  env PGPASSWORD="$PGPASS" PGUSER="$PGUSER" PGDATABASE="$PGDB" psql
-```
-
-En `psql`, crea el rol y solicita su contraseña sin escribirla en la guía:
-
-```sql
-CREATE ROLE flowise_user LOGIN;
-\password flowise_user
-\q
-```
-
-Abre otra sesión administrativa y crea la base por separado:
-
-```bash
-svc exec datasql postgres \
-  env PGPASSWORD="$PGPASS" PGUSER="$PGUSER" PGDATABASE="$PGDB" psql
-```
-
-```sql
-CREATE DATABASE flowise_db OWNER flowise_user;
-SELECT datname, pg_get_userbyid(datdba) AS owner
-FROM pg_database
-WHERE datname = 'flowise_db';
-\q
-```
-
-Verifica la identidad del consumidor y limpia secretos temporales:
-
-```bash
-svc exec datasql postgres \
-  env PGPASSWORD="$APP_DB_PASSWORD" psql \
-  -U flowise_user -d flowise_db \
-  -c 'SELECT current_user, current_database();'
-
-unset APP_DB_PASSWORD PGPASS PGUSER PGDB
-```
-
-La consulta debe devolver `flowise_user | flowise_db`. Repite el patrón para
-Home Assistant y n8n solo después de confirmar sus variables efectivas. Home
-Assistant, por usar `network_mode: host`, usa `127.0.0.1:5432`; los contenedores
-conectados a `db_net` usan `datapostgres:5432`.
-
-Flowise, cuando esté confirmado, debe usar:
-
-```text
-PostgreSQL: datapostgres:5432
-Redis:      dataredis:6379
-```
-
-Después de cambiar su `.env`, recrea y verifica el consumidor, no el stack de
-bases a ciegas:
-
-```bash
-svc recreate flowise
-svc ps flowise
-svc logs flowise
-```
-
-## 6. Problemas conocidos
+## 5. Problemas conocidos
 
 ### ParadeDB informa que `pg_cron` no está precargado
 
@@ -618,7 +549,7 @@ Es un warning del host si el healthcheck sigue en `healthy` y Redis responde
 `PONG`. No borres ni recrees el stack por ese warning. La corrección del host
 se decide aparte y no es requisito para esta instalación.
 
-## 7. Operación y datos críticos
+## 6. Operación y datos críticos
 
 ```bash
 svc ps datasql
