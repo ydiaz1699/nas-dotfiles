@@ -1,8 +1,12 @@
 # Catálogo: agent/catalog/services/aipostgres/compose.yml
 # Al desplegarlo en $dkco/aipostgres/compose.yml, la ruta de extends
 # se transforma de ../../_common.yml a ../_common.yml.
+#
+# Es el stack sucesor de DataSQL: PostgreSQL IA + pgAdmin + Redis.
+# Durante la coexistencia usa nombres/puertos propios para no interferir
+# con datapostgres, datapgadmin y dataredis.
 services:
-  aipostgres:
+  postgres:
     extends:
       file: ../../_common.yml
       service: _defaults
@@ -15,14 +19,19 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    # pg_search debe cargarse al iniciar PostgreSQL; pgvector no requiere
-    # shared_preload_libraries. La imagen incluye ambas extensiones.
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    # Loopback únicamente para migrar Home Assistant, que usa host network.
+    # 5433 evita el 5432 de DataSQL durante la coexistencia.
+    ports:
+      - "127.0.0.1:${AIPG_POSTGRES_HOST_PORT:-5433}:5432"
     command:
       - postgres
       - "-c"
       - shared_preload_libraries=pg_search
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - ./data/postgres/pgdata:/var/lib/postgresql/data/pgdata
+      - ./data/postgres/backups:/backups
     networks:
       - db_net
     healthcheck:
@@ -31,8 +40,8 @@ services:
       timeout: 5s
       retries: 6
       start_period: 30s
-    # No se agrega cap_drop: ALL en esta primera instalación: se verificará
-    # compatibilidad con la imagen antes de endurecer capacidades.
+    # Se deja sin cap_drop durante el primer arranque para validar
+    # compatibilidad del entrypoint de ParadeDB. Endurecer después.
     deploy:
       resources:
         limits:
@@ -41,6 +50,89 @@ services:
         reservations:
           cpus: '0.25'
           memory: 256M
+
+  pgadmin:
+    # Excepción documentada: pgAdmin usa sudo internamente y no debe heredar
+    # security_opt/no-new-privileges ni cap_drop desde _common.yml.
+    image: dpage/pgadmin4:latest
+    container_name: aipgadmin
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "True"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
+    # 5051 evita el pgAdmin 5050 de DataSQL durante la coexistencia.
+    ports:
+      - "${AIPGADMIN_PORT:-5051}:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - db_net
+    labels:
+      - homepage.group=Bases de datos
+      - homepage.name=pgAdmin IA
+      - homepage.icon=pgadmin
+      - homepage.href=http://${SERVER_IP}:${AIPGADMIN_PORT:-5051}
+      - homepage.description=Administración del PostgreSQL IA
+    # pgAdmin requiere sus capacidades internas; no aplicar cap_drop aquí.
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  redis:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: redis:7-alpine
+    container_name: airedis
+    env_file:
+      - ../.env
+      - .env
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - "${REDIS_PASSWORD}"
+    volumes:
+      - ./data/redis:/data
+    networks:
+      - db_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, SETUID, SETGID]
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
 
 networks:
   db_net:

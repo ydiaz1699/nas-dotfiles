@@ -102,6 +102,7 @@ todavía ejecuta un checkout anterior y aparece `No such command 'snapshot'`, us
 | emqx | 1883, 8883, 8083, 8084, 18083 | iot_net, db_net | ✅ labels |
 | esphome | 6052 | host | ✅ labels |
 | datasql | 5050 (pgAdmin) | db_net | ✅ labels (pgAdmin) |
+| aipostgres | 5433 (loopback), 5051 (pgAdmin) | db_net | ✅ labels (pgAdmin IA) |
 | flowise | 8100 | db_net | ✅ labels |
 | n8n | 5678 | db_net | ✅ labels (backend pendiente de auditar) |
 | filebrowser | 8085 | filebrowser_default | ✅ labels |
@@ -120,7 +121,7 @@ todavía ejecuta un checkout anterior y aparece `No such command 'snapshot'`, us
 
 | Red | Uso | Regla |
 |-----|-----|-------|
-| `db_net` | Apps ↔ DBs (postgres, pgadmin, redis) | No publicar DBs en la LAN; PostgreSQL puede usar `127.0.0.1:5432` solo para Home Assistant host-network |
+| `db_net` | Apps ↔ DBs (postgres, pgAdmin, redis) | No publicar DBs en la LAN; DataSQL usa `127.0.0.1:5432` para Home Assistant y aipostgres usa temporalmente `127.0.0.1:5433` |
 | `iot_net` | IoT (EMQX, ESPHome, HA futuro, ioBroker) | Todo IoT aquí |
 | `homepage_net` | Homepage ↔ ntfy (widgets internos) | Para APIs internas |
 | `adguard_macvlan_NET` | AdGuard IP propia (192.168.1.201) | Solo macvlan, parent: eno1 |
@@ -148,17 +149,20 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 8. `svc catalog-sync <svc>` — genera ficha, guía, script DebMenux
 
 Si necesita PostgreSQL o Redis, leer primero `docs/services/datasql-guide.md` y la
-ficha de DataSQL; usar `db_net`, crear DB/usuario dedicados, no publicar DBs en
-la LAN y no usar `depends_on` contra DataSQL si está en otro compose. `db_net`
-no prueba que una aplicación use una base: confirmar compose, configuración y
-runtime. Consumidores confirmados: Flowise (`flowise_db` + `dataredis`) y Home
-Assistant (`homeassistant_db` por `127.0.0.1:5432`); `n8n_db` existe, pero su
-compose real debe auditarse. La excepción host-only `127.0.0.1:5432:5432` solo
-aplica al Recorder de Home Assistant cuando usa `network_mode: host`.
+ficha de DataSQL o `docs/services/aipostgres-guide.md` según el clúster activo;
+usar `db_net`, crear DB/usuario dedicados, no publicar DBs en la LAN y no usar
+`depends_on` contra un compose externo. `db_net` no prueba que una aplicación
+use una base: confirmar compose, configuración y runtime. Consumidores
+confirmados: Flowise (`flowise_db` + `dataredis`) y Home Assistant
+(`homeassistant_db` por `127.0.0.1:5432`); `n8n_db` existe, pero su compose real
+debe auditarse. `aipostgres` es el stack sucesor completo con PostgreSQL 17,
+pgvector/pg_search, pgAdmin y Redis, pero DataSQL no se retira hasta migrar y
+verificar todos sus consumidores. RustFS es un servicio S3 separado y solo se
+instala con LobeHub u otro consumidor real de objetos.
 
 El DataSQL actual usa `postgres:16-alpine` sin `pgvector` ni `pg_search`; no
-cambiarlo mientras existan consumidores activos. En este NAS, LobeHub o una
-memoria semántica futura deben usar un PostgreSQL compatible separado. En un
+cambiarlo mientras existan consumidores activos. En este NAS, `aipostgres` se
+instala como sucesor compatible y la migración se hace gradualmente. En un
 servidor nuevo sin datos, sí puede usarse un único clúster compatible desde el
 inicio: las extensiones solo se habilitan en las bases que las necesitan y no
 obligan a instalar LobeHub, Hermes ni el agente. SQLite queda para smoke tests
