@@ -140,6 +140,7 @@ volúmenes ni redes conjeturadas; confirmarlos primero en la fuente oficial.
 | esphome | 6052 | host | `agent/catalog/services/esphome/ficha.md` |
 | datasql | 5050 | db_net | `docs/services/datasql-guide.md` |
 | flowise | 8100 | db_net | `docs/services/flowise-guide.md` |
+| n8n | 5678 | db_net | compose/runtime pendiente de catalogar |
 | filebrowser | 8085 | default | `docs/services/filebrowser-guide.md` |
 | homeassistant | 8123 | host | `docs/services/homeassistant-guide.md` |
 | homepage | 3000 | homepage_net | `docs/services/homepage-guide.md` |
@@ -156,13 +157,20 @@ Antes de crear una aplicación que necesite PostgreSQL o Redis compartido:
 2. Comprobar DataSQL con `svc health` y `svc ps datasql`; `svc health` no recibe el nombre del servicio.
 3. Leer `POSTGRES_USER`, `POSTGRES_DB`, `POSTGRES_PASSWORD` y `REDIS_PASSWORD` desde `$dkco/datasql/.env`; no asumir `admin/appdb` ni ejecutar `source .env`.
 4. Crear una base y usuario dedicados con la Fase 5A de la guía: primero el rol, después la base, en llamadas separadas de `psql`.
-5. Usar `svc exec datasql postgres env PGPASSWORD="..." psql ...` y Redis con `env REDISCLI_AUTH="..." redis-cli ping`; limpiar las variables con `unset`.
+5. Usar `svc exec datasql postgres env PGPASSWORD="..." psql ...` y Redis con `env REDISCLI_AUTH="..." redis-cli ping`; limpiar las variables con `unset`. Con el CLI Python, abrir `psql` interactivo y no enviar SQL por pipe porque `svc exec` conserva TTY.
 6. Usar la red externa `db_net`; no publicar bases de datos a la LAN. La única
    excepción es PostgreSQL en `127.0.0.1:5432:5432` para el Recorder de Home
    Assistant con `network_mode: host`; Redis (`6379`) permanece interno.
 7. Conectar usando `datapostgres` y `dataredis` como hostnames Docker, nunca una IP fija.
 8. No crear otro Redis ni otra contraseña; reutilizar el `REDIS_PASSWORD` de DataSQL.
 9. No usar `depends_on` contra `datapostgres` si DataSQL vive en otro compose.
+10. El inventario confirmado es Flowise → `flowise_db` + Redis, Home Assistant →
+    `homeassistant_db`, y `n8n_db` existente pendiente de auditar en el compose
+    real. Una base existente no demuestra que el servicio actual la use.
+11. El DataSQL actual usa `postgres:16-alpine` sin `pgvector` ni `pg_search`.
+    No cambiarlo para LobeHub o memoria semántica; en este NAS usar un
+    PostgreSQL compatible separado. En un servidor nuevo sin datos, un único
+    clúster compatible es válido si se decidió prepararlo como plataforma IA.
 
 ### Redes
 

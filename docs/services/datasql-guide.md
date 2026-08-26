@@ -701,6 +701,152 @@ unset BACKUP PG_ADMIN_USER PG_ADMIN_DB PG_ADMIN_PASSWORD
 
 ---
 
+## Fase 8A — Inventario de bases y consumidores
+
+Tener un contenedor conectado a `db_net` **no demuestra** que use PostgreSQL o
+Redis. La red solo permite la comunicación. La conexión real se confirma en el
+compose, la configuración del servicio y, cuando sea necesario, en el runtime.
+
+### Inventario confirmado del NAS
+
+Este inventario fue comprobado en el NAS el 2026-08-25. Las bases muestran
+propietario y tamaño, pero la existencia de una base no prueba que el servicio
+actual siga apuntando a ella.
+
+| Base | Propietario | Tamaño observado | Consumidor | Estado |
+|---|---|---:|---|---|
+| `appdb` | `admin` | 7519 kB | Base administrativa de DataSQL | Confirmada |
+| `flowise_db` | `flowise_user` | 9327 kB | Flowise | Configuración documentada |
+| `homeassistant_db` | `ha_user` | 42 MB | Home Assistant Recorder | Configuración documentada |
+| `n8n_db` | `n8n_user` | 14 MB | n8n | Base existente; configuración del compose pendiente de auditar |
+| `postgres` | `admin` | 7519 kB | Base estándar de PostgreSQL | Confirmada |
+
+No borrar ni reutilizar estas bases para otra aplicación. Cada consumidor debe
+tener una base y un rol dedicados.
+
+### Mapa de consumidores
+
+| Servicio | PostgreSQL | Redis | Persistencia principal | Evidencia |
+|---|---|---|---|---|
+| DataSQL | Proveedor (`datapostgres`) | Proveedor (`dataredis`) | `datasql/data/` | compose de DataSQL |
+| Flowise | `flowise_db` por `datapostgres` | `dataredis`, cola `flowise-queue` | `$dkco/flowise/data` | compose y guía de Flowise |
+| Home Assistant | `homeassistant_db` por `127.0.0.1:5432` | No configurado | `$dkco/homeassistant/data` | `recorder.db_url` documentado |
+| n8n | `n8n_db` existe; endpoint y modo deben comprobarse | Desconocido | Debe comprobarse en su compose real | no catalogado actualmente |
+| Node-RED | No externo confirmado | No externo confirmado | `$dkco/node-red/data` | compose/guía |
+| EMQX | Mnesia/archivos internos | No externo confirmado | `$dkco/emqx/data` | compose/ficha |
+| ioBroker | Archivos/JSON | No habilitado | `$dkco/iobroker/data` | compose/ficha |
+| File Browser | SQLite embebida | No | `$dkco/filebrowser/config` | `database.db` en compose |
+| Homepage/ESPHome/ntfy | No externo confirmado | No externo confirmado | archivos/bind mounts | compose/fichas |
+
+Las filas “no externo confirmado” no descartan que un flujo, nodo o adapter
+instalado desde la interfaz use una base por su cuenta; solo indican que no hay
+esa conexión declarada en el catálogo versionado.
+
+### Ver el inventario PostgreSQL sin mostrar secretos
+
+La implementación Python de `svc exec` abre TTY por defecto. Para consultas
+interactivas, ejecutar `psql` sin pipe y pegar el SQL en el prompt:
+
+```bash
+dk datasql
+
+POSTGRES_DB="$(awk -F= '$1=="POSTGRES_DB"{print substr($0,index($0,"=")+1)}' .env)"
+POSTGRES_USER="$(awk -F= '$1=="POSTGRES_USER"{print substr($0,index($0,"=")+1)}' .env)"
+POSTGRES_PASSWORD="$(awk -F= '$1=="POSTGRES_PASSWORD"{print substr($0,index($0,"=")+1)}' .env)"
+
+svc exec datasql postgres env \
+  PGPASSWORD="$POSTGRES_PASSWORD" \
+  PGUSER="$POSTGRES_USER" \
+  PGDATABASE="$POSTGRES_DB" \
+  psql
+```
+
+Dentro de `psql`:
+
+```sql
+SELECT datname AS database,
+       pg_get_userbyid(datdba) AS owner,
+       pg_size_pretty(pg_database_size(datname)) AS size
+FROM pg_database
+WHERE datistemplate = false
+ORDER BY datname;
+
+SELECT rolname AS role,
+       rolsuper AS superuser,
+       rolcanlogin AS can_login
+FROM pg_roles
+WHERE rolname NOT LIKE 'pg_%'
+ORDER BY rolname;
+
+SELECT name, default_version, installed_version
+FROM pg_available_extensions
+WHERE name IN ('vector', 'pg_search')
+ORDER BY name;
+```
+
+Para comprobar tablas de una base concreta, sin modificarla:
+
+```sql
+SELECT datname FROM pg_database
+WHERE datname IN ('flowise_db', 'homeassistant_db', 'n8n_db');
+
+\c n8n_db
+\dt
+```
+
+Salir y limpiar variables:
+
+```text
+\q
+```
+
+```bash
+unset POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD
+```
+
+La consulta de `pg_available_extensions` solo informa si la extensión está
+disponible en la imagen/servidor. `pg_extension` informa si está habilitada en
+la base actualmente seleccionada:
+
+```sql
+SELECT extname FROM pg_extension
+WHERE extname IN ('vector', 'pg_search')
+ORDER BY extname;
+```
+
+### Auditar n8n antes de crear o migrar nada
+
+La existencia de `n8n_db` no basta para afirmar cómo funciona el n8n activo.
+Inspeccionar su compose sin compartir valores secretos:
+
+```bash
+dk n8n
+grep -Ein \
+  'DB_|DATABASE|POSTGRES|SQLITE|REDIS|env_file|volumes|networks|image' \
+  compose.yml
+svc volumes n8n
+svc depends n8n
+```
+
+No pegar líneas que contengan `PASSWORD`, `TOKEN`, `KEY`, `SECRET` o valores de
+`.env`. Si n8n usa PostgreSQL, conservar `n8n_db` y `n8n_user`; si usa SQLite,
+la base existente puede ser antigua, residual o pertenecer a otra instalación
+y debe confirmarse en el runtime antes de tocarla.
+
+### Receta para cualquier nuevo consumidor
+
+1. Leer esta guía y la guía específica del servicio.
+2. Ejecutar `svc health`, `svc ps datasql` y comprobar `svc net`.
+3. Leer las credenciales administrativas desde `$dkco/datasql/.env` sin
+   `source` y sin mostrar secretos.
+4. Crear el rol primero y la base después, usando nombres dedicados.
+5. Verificar propietario, conexión con el usuario dedicado y, si aplica, Redis.
+6. Configurar `db_net` y los hostnames `datapostgres`/`dataredis`; no publicar
+   `5432` ni `6379` y no usar `depends_on` contra otro compose.
+7. Levantar y verificar el consumidor; después documentarlo con `svc catalog-sync`.
+
+---
+
 ## Fase 9 — Operación Diaria
 
 ```bash
@@ -751,21 +897,115 @@ Usar siempre la **Fase 5A**. No copiar una variante que ejecute
 `CREATE USER`/`CREATE ROLE` y `CREATE DATABASE` en la misma sesión o llamada.
 El patrón mantiene un usuario y una base dedicados por aplicación.
 
-| Servicio | DB sugerida | Cómo se configura |
-|----------|-------------|-------------------|
-| Home Assistant | `homeassistant_db` | `configuration.yaml` → `recorder:` |
-| Node-RED | `nodered_db` | Nodo postgresql en la UI |
-| EMQX | `emqx_db` | Dashboard → Data Integration |
-| n8n | `n8n_db` | Variables de entorno en `compose.yml` |
-| Flowise | `flowise_db` | `DATABASE_TYPE=postgres`, `DATABASE_HOST=datapostgres`, `DATABASE_NAME=flowise_db`, usuario y contraseña dedicados |
+| Servicio | Estado actual | DB | Cómo se configura |
+|----------|---------------|----|-------------------|
+| Home Assistant | Activo/documentado | `homeassistant_db` | `configuration.yaml` → `recorder:` |
+| Flowise | Activo/documentado | `flowise_db` | `DATABASE_TYPE=postgres`, `DATABASE_HOST=datapostgres` |
+| n8n | Base existente; compose pendiente de auditar | `n8n_db` | Confirmar variables `DB_*` en el compose real |
+| Node-RED | No usa DB externa en el catálogo | — | Solo si se instala/configura un nodo PostgreSQL |
+| EMQX | No usa PostgreSQL para su estado | — | `emqx_db` sería una integración opcional, no su base interna |
+| LobeHub | No instalado | futura `lobehub_db` | Requiere una imagen PostgreSQL compatible con vector/RAG |
+| Agente/Hermes | No conectado a DataSQL | futura `nas_agent_db` | Requiere implementar un backend de memoria explícito |
+
+Las bases “sugeridas” para Node-RED, EMQX, LobeHub o el agente no deben
+crearse por adelantado sin una aplicación que las utilice. La tabla distingue
+la arquitectura posible de las conexiones confirmadas.
+
+### PostgreSQL con `pgvector` y `pg_search`
+
+#### NAS actual
+
+El DataSQL actual usa `postgres:16-alpine` y el inventario comprobó que
+`vector` y `pg_search` no están disponibles. No cambiar la imagen de DataSQL
+mientras Flowise, Home Assistant y n8n dependan de ella: una actualización de
+imagen implica reinicio, pruebas de compatibilidad y un plan de recuperación,
+aunque las extensiones solo se habiliten en una base concreta.
+
+La opción segura es mantener:
+
+```text
+DataSQL existente
+├── Flowise → flowise_db
+├── Home Assistant → homeassistant_db
+├── n8n → n8n_db (confirmar configuración)
+└── otros consumidores actuales
+
+PostgreSQL IA separado
+├── LobeHub → lobehub_db
+└── agente/Hermes futuro → nas_agent_db
+```
+
+El PostgreSQL IA debe conectarse a `db_net`, no publicar `5432`, y usar un rol
+por aplicación. No se debe crear ni habilitar `CREATE EXTENSION` en las bases
+de Home Assistant, Flowise o n8n desde ese servicio separado.
+
+#### Servidor nuevo sin datos
+
+Si el servidor se instala desde cero y el objetivo es dejarlo preparado para
+LobeHub, Hermes o un agente propio, es razonable usar **un único clúster
+PostgreSQL compatible con ambas extensiones** desde el principio:
+
+```text
+DataSQL compatible
+├── PostgreSQL + pgvector + pg_search
+├── flowise_db
+├── homeassistant_db
+├── n8n_db
+├── lobehub_db (solo si se instala)
+└── nas_agent_db (solo si se implementa)
+```
+
+Las extensiones se instalan/disponibilizan a nivel de la imagen/clúster, pero
+se habilitan por base con `CREATE EXTENSION` únicamente cuando una aplicación
+las necesita. Home Assistant puede usar el mismo PostgreSQL normalmente sin
+usar esas extensiones.
+
+Esta opción consume menos recursos que mantener dos servidores PostgreSQL: un
+solo proceso, un solo buffer pool y una sola rutina de backup. Sin embargo,
+una imagen especializada puede tener más requisitos de compatibilidad y el
+trabajo vectorial/RAG puede competir por CPU, RAM, I/O y almacenamiento con el
+Recorder de Home Assistant. Por eso requiere límites, backups y pruebas de
+carga antes de considerarse producción.
+
+#### ¿Conviene instalarlo si todavía no se decidió LobeHub o Hermes?
+
+- Si el servidor es nuevo y ya se decidió que será una plataforma de IA,
+  **sí**: preparar el clúster compatible desde el inicio evita migrar después.
+  No hace falta crear todavía `lobehub_db`, `nas_agent_db` ni índices.
+- Si aún no se sabe si habrá LobeHub, Hermes o un agente con memoria semántica,
+  no hay beneficio operativo inmediato en añadir una imagen especializada.
+  Mantener PostgreSQL estándar reduce complejidad hasta que exista el primer
+  consumidor real.
+- La decisión de tener el clúster listo no obliga a instalar ningún agente.
+  Bash, Hermes, un agente Python o LobeHub podrían usarlo más adelante mediante
+  sus propios roles y bases.
+
+La separación no protege a Home Assistant de todos los problemas: evita que
+una migración de imagen del DataSQL actual lo afecte, pero duplica el consumo
+base de PostgreSQL y el trabajo de backup. La decisión depende de si se prioriza
+compatibilidad aislada hoy o simplicidad de recursos en un servidor nuevo.
 
 ### Aplicaciones en otro compose
 
 Si la aplicación vive en un compose separado (por ejemplo, Flowise en
-`$dkco/flowise/`), comparte `db_net` con DataSQL, pero **no** uses `depends_on` contra `datapostgres`: `depends_on` solo controla
-servicios definidos en el mismo compose. Verifica primero `svc health` y configura el host como `datapostgres`.
-El compose de la aplicación debe incluir `env_file: [../.env, .env]`,
-`extends.file: ../_common.yml` y sus labels `homepage.*`.
+`$dkco/flowise/`), comparte `db_net` con DataSQL, pero **no** uses `depends_on`
+contra `datapostgres`: `depends_on` solo controla servicios definidos en el
+mismo compose. Verifica primero `svc health` y configura el host como
+`datapostgres`.
+
+El compose del consumidor debe incluir:
+
+```yaml
+env_file:
+  - ../.env
+  - .env
+networks:
+  db_net:
+    external: true
+```
+
+No publicar `5432` ni `6379`, no usar IPs internas fijas y no crear otro Redis
+si el consumidor puede usar `dataredis`.
 
 ---
 
