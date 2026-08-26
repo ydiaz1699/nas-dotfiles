@@ -261,7 +261,12 @@ No poner `SERVER_IP` ni `TZ` en este `.env`; se heredan desde el global mediante
 
 ### 4. Aplicar permisos
 
+La imagen `dpage/pgadmin4:latest` ejecuta pgAdmin con UID/GID `5050:5050`.
+El `bind mount` completo debe pertenecer a ese usuario; `chmod 700` por sí solo
+no basta si la carpeta fue creada por `root`.
+
 ```bash
+chown -R 5050:5050 "$dkco/aipostgres/data/pgadmin"
 chmod 700 "$dkco/aipostgres/data/postgres/pgdata"
 chmod 700 "$dkco/aipostgres/data/postgres/backups"
 chmod 700 "$dkco/aipostgres/data/pgadmin"
@@ -269,8 +274,9 @@ chmod 700 "$dkco/aipostgres/data/redis"
 chmod 600 "$dkco/aipostgres/.env"
 ```
 
-No aplicar `chown` a un UID supuesto antes de probar la imagen. Si aparecen
-errores de permisos, conservar los logs y determinar el UID real del contenedor.
+El `chown` recursivo también corrige archivos creados por intentos anteriores,
+como `pgadmin4.db` o `sessions`. No usar `chmod -R 777` ni aplicar este
+ownership a los datos de PostgreSQL, Redis o DataSQL.
 
 ### 5. Validar sin levantar todavía
 
@@ -381,6 +387,31 @@ CREATE EXTENSION IF NOT EXISTS pg_cron;
 ```
 
 No detengas ni modifiques DataSQL como parte de esta recuperación.
+
+### Error de permisos en pgAdmin
+
+Si los logs de `aipgadmin` muestran:
+
+```text
+Failed to create the directory /var/lib/pgadmin/sessions:
+[Errno 13] Permission denied
+```
+
+el directorio persistente de pgAdmin no pertenece al usuario de la imagen. No
+es un problema de PostgreSQL, Redis ni de `db_net`. Corrige solo ese bind mount
+(en el orden: ownership y luego permisos) y reinicia el stack sucesor:
+
+```bash
+chown -R 5050:5050 "$dkco/aipostgres/data/pgadmin"
+chmod 700 "$dkco/aipostgres/data/pgadmin"
+svc restart aipostgres
+svc ps aipostgres
+```
+
+La salida esperada es `aipgadmin Up` y los logs ya no deben mostrar el error de
+`/var/lib/pgadmin/sessions`. No borres `data/pgadmin` salvo que aparezcan además
+los síntomas específicos de corrupción SQLite documentados en la guía de
+DataSQL. No ejecutes `svc down datasql`.
 
 ## Avisos del preflight actual
 
