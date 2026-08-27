@@ -392,6 +392,12 @@ Si quieres usar PostgreSQL, no tomes este paso como verificación de PostgreSQL:
 
 ## 9. Determinar qué backend usa actualmente HA, sin modificarlo
 
+> **Sintaxis crítica de este NAS:** `svc exec` recibe primero el nombre del proyecto/servicio (`homeassistant`) y después el nombre del servicio interno de Compose, que también es `homeassistant`. Además, la implementación Python de `svc` interpreta `-c` como una opción propia. Por eso los ejemplos que ejecutan `sh -c` fuerzan la ruta Bash y repiten el nombre interno:
+>
+> La forma segura para esos comandos es `NAS_CLI=bash svc exec homeassistant homeassistant sh -c 'comando'`.
+>
+> El comando que falló (`svc exec homeassistant sh -c ...`) omitía el nombre interno y dejaba `-c` expuesto al parser Python. No se debe reutilizar esa forma.
+
 Estos comandos son de solo lectura. Sirven para distinguir el estado actual antes de cambiar nada.
 
 ### 9.1 Revisar la configuración persistente sin mostrar secretos
@@ -400,7 +406,7 @@ La configuración está en `$dkco/homeassistant/data/`, montada como `/config` d
 
 ```bash
 dk homeassistant
-svc exec homeassistant sh -c '
+NAS_CLI=bash svc exec homeassistant homeassistant sh -c '
 for f in /config/configuration.yaml /config/secrets.yaml /config/includes/*.yaml /config/includes/*.yml; do
   [ -f "$f" ] || continue
   awk '\''
@@ -421,7 +427,7 @@ done
 No pegues en el chat una línea que contenga una contraseña o una URI completa. Si `db_url` usa `!secret`, comprueba solamente el nombre de la clave:
 
 ```bash
-svc exec homeassistant sh -c '
+NAS_CLI=bash svc exec homeassistant homeassistant sh -c '
 grep -nE "^[[:space:]]*[^#[:space:]][^:]*:[[:space:]]*[^#]+" /config/secrets.yaml 2>/dev/null |
 sed -E "s/:[[:space:]].*/: <valor oculto>/"
 '
@@ -437,7 +443,7 @@ Interpretación:
 ### 9.2 Comprobar el archivo SQLite por defecto
 
 ```bash
-svc exec homeassistant sh -c '
+NAS_CLI=bash svc exec homeassistant homeassistant sh -c '
 for f in /config/home-assistant_v2.db /config/*.db; do
   [ -e "$f" ] && stat -c "%n | %s bytes | %y" "$f"
 done
@@ -466,7 +472,7 @@ svc exec datasql postgres \
   psql
 ```
 
-Dentro de `psql` ejecuta:
+Dentro de la sesión administrativa ejecuta únicamente las consultas que no requieren cambiar de base:
 
 ```sql
 SELECT datname,
@@ -483,11 +489,6 @@ SELECT usename,
 FROM pg_stat_activity
 WHERE usename = 'ha_user'
   AND datname = 'homeassistant_db';
-
-\connect homeassistant_db
-
-SELECT to_regclass('public.states') AS states_table,
-       to_regclass('public.events') AS events_table;
 ```
 
 Sal con:
@@ -495,6 +496,39 @@ Sal con:
 ```text
 \q
 ```
+
+Para comprobar las tablas de `homeassistant_db`, abre **otra sesión** apuntando a esa base. No uses `\connect` en esta guía: en una entrada multilinea pegada en el terminal puede consumir tokens de la consulta siguiente y producir errores como `invalid integer value "AS" for connection option "port"`.
+
+```bash
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+      PGUSER="$PG_ADMIN_USER" \
+      PGDATABASE=homeassistant_db \
+  psql
+```
+
+Dentro de la segunda sesión ejecuta:
+
+```sql
+SELECT current_database();
+
+SELECT to_regclass('public.states') AS states_table,
+       to_regclass('public.events') AS events_table;
+
+SELECT table_schema, table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
+  AND table_name IN ('states', 'events')
+ORDER BY table_name;
+```
+
+Solo si `states_table` no es `NULL`, consulta:
+
+```sql
+SELECT COUNT(*) AS states_count FROM states;
+```
+
+Sal con `\q`.
 
 Interpretación:
 
@@ -521,7 +555,7 @@ Este es el paso que faltaba: crear la base en PostgreSQL no configura automátic
 No instales paquetes dentro del contenedor como solución permanente: los cambios internos se pierden al recrearlo. Comprueba primero si la imagen actual trae el driver:
 
 ```bash
-svc exec homeassistant python3 -c 'import psycopg2; print(psycopg2.__version__)'
+NAS_CLI=bash svc exec homeassistant homeassistant python3 -c 'import psycopg2; print(psycopg2.__version__)'
 ```
 
 Si el comando falla con `ModuleNotFoundError`, detente y documenta la imagen/tag real antes de elegir una solución reproducible. No continúes esperando que `db_url` funcione sin el driver.
@@ -603,9 +637,21 @@ curl -s -o /dev/null -w '%{http_code}\n' "http://${SERVER_IP}:8123"
 svc ps homeassistant
 ```
 
-Después repite la consulta administrativa del paso 9.3. Dentro de `psql`:
+Después de comprobar la configuración de HA, abre directamente una sesión administrativa contra `homeassistant_db`; no uses `\connect`:
+
+```bash
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+      PGUSER="$PG_ADMIN_USER" \
+      PGDATABASE=homeassistant_db \
+  psql
+```
+
+Dentro de `psql` ejecuta:
 
 ```sql
+SELECT current_database();
+
 SELECT usename,
        datname,
        application_name,
@@ -615,11 +661,13 @@ FROM pg_stat_activity
 WHERE usename = 'ha_user'
   AND datname = 'homeassistant_db';
 
-\connect homeassistant_db
-
 SELECT to_regclass('public.states') AS states_table,
        to_regclass('public.events') AS events_table;
+```
 
+Si `states_table` no es `NULL`, ejecuta:
+
+```sql
 SELECT COUNT(*) AS states_count FROM states;
 ```
 
