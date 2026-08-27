@@ -4,9 +4,9 @@
 ## Fecha: 2026-08-25
 ## Resumen
 
-Esta guía configura la integración opcional del Recorder de Home Assistant con una base PostgreSQL dedicada. No instala PostgreSQL, no instala DataSQL y no decide por el usuario si debe existir una base de datos.
+Esta guía prepara externamente una base PostgreSQL dedicada para un posible uso posterior de Home Assistant. No instala PostgreSQL, no instala DataSQL y no modifica ningún archivo, secreto, configuración, contenedor o proceso de Home Assistant.
 
-> **Alcance:** Home Assistant y PostgreSQL son decisiones independientes. Puedes usar esta guía si ya tienes PostgreSQL/DataSQL o detenerte aquí para instalar/provisionar el backend que prefieras. La instalación y recuperación del stack DataSQL están en [`datasql-guide.md`](datasql-guide.md).
+> **Alcance:** Home Assistant y PostgreSQL son decisiones independientes. Puedes usar esta guía si ya tienes PostgreSQL/DataSQL o detenerte aquí para instalar/provisionar el backend que prefieras. La instalación y recuperación del stack DataSQL están en [`datasql-guide.md`](datasql-guide.md). Esta guía solo prepara el lado PostgreSQL; la configuración de Home Assistant queda fuera de alcance.
 
 ---
 
@@ -36,34 +36,31 @@ Detente. Esta guía no instala un motor de base de datos automáticamente ni pre
 - Si prefieres otro PostgreSQL, instálalo y documenta su host, puerto, base administrativa, usuario administrativo y método de acceso según la documentación de ese backend.
 - Cuando el backend esté disponible y tengas esos datos, vuelve a esta guía en la sección 2.
 
-No levantes Home Assistant con un `recorder:` que apunte a una base que todavía no existe.
+Esta guía no levanta, reinicia ni configura Home Assistant. Solo prepara el rol y la base PostgreSQL que otro procedimiento podrá utilizar posteriormente.
 
 ---
 
-## 2. Decidir qué valores usará Home Assistant
+## 2. Decidir los valores del backend
 
 El usuario decide los nombres y el backend. Los valores canónicos usados en el ejemplo del NAS son:
 
 ```text
 Usuario dedicado:       ha_user
 Base dedicada:          homeassistant_db
-Host desde HA:          127.0.0.1
-Puerto del NAS:         5432
+Endpoint DataSQL:       127.0.0.1:5432
 ```
 
-Estos nombres no son obligatorios para otro backend. Si cambias alguno, reemplázalo de forma consistente en cada comando, consulta y URI.
+Estos nombres no son obligatorios para otro backend. Si cambias alguno, reemplázalo de forma consistente en cada comando y consulta de PostgreSQL. Esta guía no añade una URI ni ningún valor a Home Assistant.
 
-### Regla de red para el Home Assistant de este repositorio
+### Regla de red del caso NAS/DataSQL
 
-El compose de Home Assistant usa `network_mode: host`. Por eso:
+El compose de Home Assistant usa `network_mode: host`, pero esta guía no cambia ese compose ni configura HA. Para preparar DataSQL se usa el endpoint PostgreSQL publicado realmente en el host:
 
-- HA no pertenece a `db_net`.
-- Desde HA no se debe usar `datapostgres` como hostname Docker.
-- No se debe usar la IP histórica `172.20.0.4`.
-- En el NAS/DataSQL se usa `127.0.0.1` y el puerto publicado realmente en el host.
-- Para un PostgreSQL externo se usa el host y puerto que el usuario haya confirmado; no se adivinan.
+- En el caso canónico del NAS: `127.0.0.1` y el puerto confirmado en `.env`, `svc ps datasql` y `ss`.
+- Para un PostgreSQL externo: el host y puerto que el usuario haya confirmado.
+- `datapostgres:5432` es un hostname interno para consumidores conectados a `db_net`; no se usa en los comandos de administración de este flujo host-side.
 
-Los consumidores que sí están dentro de `db_net` pueden usar `datapostgres:5432`, pero esa regla no aplica a HA mientras conserve `network_mode: host`.
+No se adivinan endpoints ni se modifican archivos de Home Assistant.
 
 ---
 
@@ -325,7 +322,7 @@ Si la base ya existe, no ejecutes `CREATE DATABASE`. Verifica únicamente el pro
 
 ---
 
-## 7. Verificar el login dedicado antes de iniciar HA
+## 7. Verificar el login dedicado
 
 Introduce temporalmente la contraseña de `ha_user` sin mostrarla:
 
@@ -367,172 +364,56 @@ El resultado esperado es:
  ha_user      | homeassistant_db
 ```
 
-Sal con `\\q`. Si la prueba falla, no levantes Home Assistant ni configures el Recorder: primero resuelve el endpoint, rol, contraseña, permisos o propietario.
+Sal con `\\q`. Si la prueba falla, resuelve primero el endpoint, rol, contraseña, permisos o propietario.
 
-**Checkpoint 7 — login listo:** `ha_user` puede conectarse a `homeassistant_db`.
-
----
-
-## 8. Levantar Home Assistant y completar el onboarding
-
-Solo realiza este paso después del checkpoint 7. Si el onboarding ya estaba completado, no lo repitas: verifica el servicio y continúa con la sección 9.
-
-Si es el primer inicio:
-
-```bash
-dk homeassistant
-svc config homeassistant
-svc up homeassistant
-svc ps homeassistant
-svc logs homeassistant
-```
-
-`svc logs homeassistant` sigue los logs; pulsa `Ctrl-C` para salir sin detener el contenedor.
-
-Abre desde la LAN:
-
-```text
-http://${SERVER_IP}:8123
-```
-
-Completa el onboarding de Home Assistant. No edites `data/configuration.yaml` ni configures `recorder:` antes de terminarlo. Después confirma:
-
-```bash
-svc ps homeassistant
-```
-
-La configuración inicial debe existir en `$dkco/homeassistant/data/`.
-
-**Checkpoint 8 — onboarding listo:** HA está `Up` y su configuración inicial existe.
+**Checkpoint 7 — login PostgreSQL listo:** `ha_user` puede conectarse a `homeassistant_db`. Hasta aquí llega esta guía; Home Assistant no se levanta, reinicia ni configura en este procedimiento.
 
 ---
 
-## 9. Configurar el secreto y el Recorder
+## 8. Resultado y límites de esta guía
 
-Realiza primero las operaciones de directorio, archivo y permisos:
+Al completar el checkpoint 7, el lado PostgreSQL queda preparado:
 
-```bash
-dk homeassistant
-mkdir -p data
-touch data/secrets.yaml
-chmod 600 data/secrets.yaml
-```
+- el rol dedicado existe y puede iniciar sesión;
+- `homeassistant_db` existe y pertenece a `ha_user`;
+- la contraseña dedicada fue comprobada con una conexión real;
+- no se modificó ningún archivo ni configuración de Home Assistant;
+- no se levantó, reinició ni inspeccionó el contenedor de Home Assistant.
 
-Edita el secreto local:
+Esta guía termina aquí. No contiene instrucciones para editar `configuration.yaml`, crear `secrets.yaml`, agregar `recorder:`, instalar `psycopg2`, reiniciar Home Assistant, leer logs de HA ni consultar PostgreSQL desde el contenedor de HA.
 
-```bash
-nano data/secrets.yaml
-```
+La verificación de las tablas de Home Assistant tampoco forma parte de este procedimiento, porque requiere que exista un proceso externo que configure y use ese backend. Si posteriormente se configura un consumidor, la consulta debe ejecutarse desde una sesión administrativa de PostgreSQL, nunca pegando SQL directamente en Bash.
 
-Agrega una sola línea. Sustituye localmente `CONTRASEÑA_HEX` por la contraseña dedicada y `PUERTO_HOST` por el puerto confirmado. Para el NAS/DataSQL actual, el ejemplo confirmado usa `127.0.0.1:5432`:
-
-```yaml
-recorder_db_url: "postgresql://ha_user:CONTRASEÑA_HEX@127.0.0.1:PUERTO_HOST/homeassistant_db"
-```
-
-Ejemplo del NAS/DataSQL:
-
-```yaml
-recorder_db_url: "postgresql://ha_user:CONTRASEÑA_HEX@127.0.0.1:5432/homeassistant_db"
-```
-
-Para un backend externo, reemplaza `127.0.0.1:PUERTO_HOST` por el host y puerto que hayas confirmado. Si la contraseña contiene `@`, `:`, `/`, `#` o `%`, codifícala para URL antes de ponerla en la URI. La contraseña hexadecimal generada en la sección 5 evita normalmente este problema.
-
-Comprueba que el onboarding creó la configuración principal:
+Para el caso NAS/DataSQL, cualquier consulta posterior del lado PostgreSQL debe conservar el patrón compatible con `svc exec`:
 
 ```bash
-if [[ ! -f data/configuration.yaml ]]; then
-  printf 'No existe data/configuration.yaml; completa primero el onboarding de Home Assistant.\n' >&2
-  exit 1
-fi
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+      PGUSER="$PG_ADMIN_USER" \
+      PGDATABASE="$PG_ADMIN_DB" \
+  psql
 ```
 
-Comprueba si ya existe Recorder:
+Dentro de `psql` se ejecutan las consultas SQL, por ejemplo:
 
-```bash
-grep -n '^recorder:' data/configuration.yaml || true
+```sql
+SELECT datname,
+       pg_get_userbyid(datdba) AS owner
+FROM pg_database
+WHERE datname = 'homeassistant_db';
 ```
 
-Si no aparece ninguna línea, edita `data/configuration.yaml`:
-
-```bash
-nano data/configuration.yaml
-```
-
-Agrega una única sección:
-
-```yaml
-recorder:
-  db_url: !secret recorder_db_url
-  purge_keep_days: 10
-  auto_purge: true
-  commit_interval: 1
-```
-
-Si ya existe `recorder:`, no agregues una segunda sección. Edita el bloque existente y agrega únicamente esta clave dentro de él:
-
-```yaml
-db_url: !secret recorder_db_url
-```
-
-Conserva las demás opciones. La configuración final debe tener una sola sección de nivel superior `recorder:` y una sola `db_url` dentro de ella.
-
-**Checkpoint 9 — Recorder configurado:** `data/secrets.yaml` existe con modo `600`, la URI usa el endpoint real y `configuration.yaml` tiene una sola sección `recorder:`.
-
----
-
-## 10. Reiniciar y verificar la conexión
-
-Limpia las credenciales temporales que ya no necesites y reinicia HA:
+No se deben añadir `-U`, `-d` ni `-c` después de `svc exec`; este wrapper puede interpretarlos como opciones propias. Limpia la contraseña temporal cuando termines:
 
 ```bash
 unset PG_ADMIN_PASSWORD PG_ADMIN_USER PG_ADMIN_DB HA_DB_PASSWORD HA_PG_PORT
-svc restart homeassistant
-svc ps homeassistant
-svc logs homeassistant
 ```
-
-Comprueba HTTP y los logs:
-
-```bash
-curl -s -o /dev/null -w '%{http_code}\n' "http://${SERVER_IP}:8123"
-svc ps homeassistant
-svc logs homeassistant
-```
-
-Un código HTTP exitoso demuestra que la interfaz responde, pero no demuestra por sí solo que el Recorder escriba en PostgreSQL. Revisa especialmente `recorder`, `postgres`, `database`, `connection refused` y `authentication failed` en los logs. Si el driver PostgreSQL reporta un error, conserva el mensaje exacto y detente antes de instalar paquetes o cambiar el backend.
-
-### 10.1 Confirmar escritura en `states`
-
-Espera a que Home Assistant genere estados y vuelve a abrir una sesión administrativa contra `homeassistant_db` usando el camino elegido en las secciones 5.2 o 7.
-
-Dentro de `psql` ejecuta:
-
-```sql
-SELECT COUNT(*) AS states_count FROM states;
-```
-
-Sal con:
-
-```text
-\q
-```
-
-En NAS/DataSQL, limpia las variables administrativas después de la consulta:
-
-```bash
-unset PG_ADMIN_PASSWORD PG_ADMIN_USER
-```
-
-Un valor `states_count` mayor que cero confirma que el Recorder está escribiendo en `homeassistant_db`. Si es cero, revisa los logs y espera a que HA genere estados; no crees otra base ni otro usuario.
-
-**Checkpoint 10 — integración funcional:** HA responde por HTTP, no hay errores de autenticación/conexión en los logs y `states_count > 0` está confirmado.
 
 ---
 
-## 11. Continuidad y recuperación del flujo
+## 9. Continuidad y recuperación del flujo
 
-El checkpoint de esta integración está en:
+El checkpoint de preparación PostgreSQL está en:
 
 ```text
 _drafts/SESSION-HA-DATASQL.md
@@ -542,10 +423,10 @@ Cuando pauses, registra únicamente:
 
 - el último checkpoint confirmado;
 - la salida relevante sin secretos;
-- la única siguiente acción;
+- la única siguiente acción de PostgreSQL;
 - cualquier error exacto que haya detenido el flujo.
 
-No repitas una mutación ya confirmada (`CREATE ROLE`, `CREATE DATABASE`, cambio de contraseña o edición del Recorder) solo porque cambies de chat. Si aparece `already exists`, consulta y verifica; no recrees a ciegas.
+No repitas una mutación ya confirmada (`CREATE ROLE`, `CREATE DATABASE` o cambio de contraseña) solo porque cambies de chat. Si aparece `already exists`, consulta y verifica; no recrees a ciegas.
 
 Si ejecutaste SQL directamente en Bash y recibiste errores como `SELECT: orden no encontrada`, no se modificó PostgreSQL: vuelve a abrir una sesión `psql` y ejecuta la consulta en el prompt `aipostgres=#` o equivalente.
 
@@ -562,8 +443,8 @@ Si aparece `No such option: -U` en `svc exec`, no es un error de PostgreSQL. Rep
 | Conversación y salida real del NAS | Ejecutar `SELECT` en Bash produce `orden no encontrada` | HECHO | ALTA | Se documenta como error de ejecución y se exige prompt `psql` | INTEGRADO |
 | `docs/services/homeassistant-guide.md` | HA usa `network_mode: host` y DataSQL se alcanza por loopback del host | HECHO | ALTA | Se conserva solo para el camino NAS/DataSQL | INTEGRADO |
 | `docs/services/datasql-guide.md` | DataSQL requiere salud de PostgreSQL, `db_net` y credenciales del `.env` | HECHO | ALTA | Se usa como prerrequisito; su instalación queda fuera de alcance | FUERA_DE_ALCANCE |
-| `agent/catalog/services/homeassistant/compose.yml` y ficha | HA usa host networking, puerto 8123 y configuración persistente en `data` | HECHO | ALTA | Se usa para onboarding, Recorder y verificación | INTEGRADO |
-| Variantes `datapostgres:5432` y `127.0.0.1:<puerto>` | Parecen equivalentes, pero afectan redes distintas | INFERENCIA SEGURA | ALTA | Se elige loopback para HA host-networked; `datapostgres` queda para consumidores en `db_net` | RECHAZADO |
+| `agent/catalog/services/homeassistant/compose.yml` y ficha | HA usa host networking y puerto 8123 | HECHO | ALTA | Solo se conserva como contexto; esta guía no inicia ni modifica HA | FUERA_DE_ALCANCE |
+| Variantes `datapostgres:5432` y `127.0.0.1:<puerto>` | Afectan redes distintas | INFERENCIA SEGURA | ALTA | Se usa el endpoint confirmado para administrar PostgreSQL; no se configura ningún hostname en HA | INTEGRADO |
 | Variantes `psql -c` y sesión interactiva | Tienen el mismo propósito general, pero `svc exec` intercepta opciones | HECHO | ALTA | Se elige sesión interactiva compatible y observable | REEMPLAZADO |
 | Integración opcional de PostgreSQL | El usuario puede tener o no backend antes de conectar HA | HECHO | ALTA | La existencia del backend queda como decisión/prerrequisito del usuario | INTEGRADO |
 
@@ -579,8 +460,8 @@ Si aparece `No such option: -U` en `svc exec`, no es un error de PostgreSQL. Rep
 ## Decisiones derivadas durante la separación
 
 1. La instalación de PostgreSQL/DataSQL no forma parte de esta guía; se enlaza como prerrequisito opcional.
-2. La guía mantiene un camino específico para NAS/DataSQL y otro para un PostgreSQL existente distinto, porque sus métodos de ejecución y endpoints no son intercambiables.
-3. La creación del rol y la base es idempotente por consulta previa, pero no se modifica silenciosamente el propietario de una base existente.
+2. La guía mantiene un camino específico para NAS/DataSQL y otro para un PostgreSQL existente distinto, porque sus métodos de administración y endpoints no son intercambiables.
+3. La guía termina después de verificar rol, base, propietario y login. No configura, reinicia ni inspecciona Home Assistant.
 
 ## Artefactos principales
 
@@ -589,11 +470,8 @@ Si aparece `No such option: -U` en `svc exec`, no es un error de PostgreSQL. Rep
 | Servicio | PostgreSQL/DataSQL o backend elegido | Existe/no existe según decisión del usuario | Verificar o provisionar fuera de esta guía | Saludable y accesible |
 | Rol PostgreSQL | `ha_user` | Puede no existir | Crear/verificar/habilitar login | Existe con `rolcanlogin = t` |
 | Base PostgreSQL | `homeassistant_db` | Puede no existir | Crear/verificar propietario | Existe con propietario `ha_user` |
-| Directorio | `$dkco/homeassistant/data` | Debe existir tras onboarding | Consumir | Contiene configuración de HA |
-| Archivo | `$dkco/homeassistant/data/secrets.yaml` | Puede no existir | Crear, editar y proteger | Existe con modo `600` |
-| Archivo | `$dkco/homeassistant/data/configuration.yaml` | Lo crea el onboarding | Editar | Una sola sección `recorder:` |
-| Servicio | `homeassistant` | Detenido/no configurado o activo | Levantar/reiniciar/verificar | Responde en el puerto 8123 |
-| Tabla | `homeassistant_db.states` | Puede estar vacía | Consultar | `states_count > 0` después de generar estados |
+| Servicio | `datapostgres` o backend elegido | Detenido/no saludable/desconocido | Verificar externamente | Saludable y accesible |
+| Servicio | `homeassistant` | Sin cambios requeridos por esta guía | No operar | Permanece sin modificar |
 
 ## Decisiones pendientes y bloqueados
 

@@ -142,11 +142,11 @@ Homepage con `${SERVER_IP}`. `network_mode: host` hace innecesario declarar
 
 La conexión de Home Assistant con PostgreSQL es opcional y está documentada por separado. Esta guía principal solo cubre la operación propia de Home Assistant, su compose, onboarding e integraciones de automatización.
 
-Si quieres usar Recorder sobre PostgreSQL, elige primero si ya tienes un backend disponible. Después sigue la guía completa, que contempla ambos casos y no instala DataSQL automáticamente:
+Si quieres preparar PostgreSQL para un uso posterior con Home Assistant, elige primero si ya tienes un backend disponible. Después sigue la guía, que contempla ambos casos y no instala DataSQL automáticamente:
 
 [`docs/services/homeassistant-datasql-guide.md`](homeassistant-datasql-guide.md)
 
-La guía de integración incluye la creación/verificación idempotente de `ha_user` y `homeassistant_db`, el flujo compatible con `svc exec`, `secrets.yaml`, una única sección `recorder:`, el reinicio, los logs y la verificación de `states_count`.
+La guía solo crea/verifica el rol, la base, el propietario y el login en PostgreSQL; no edita, levanta, reinicia ni inspecciona Home Assistant.
 
 ---
 
@@ -175,11 +175,7 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8123
 svc logs homeassistant
 ```
 
-El healthcheck HTTP confirma que la interfaz responde, pero no confirma por sí
-solo la conexión del Recorder. Si configuraste PostgreSQL, la verificación
-funcional está en [`homeassistant-datasql-guide.md`](homeassistant-datasql-guide.md),
-donde se consulta `states` usando `PGUSER` y `PGDATABASE` para que el CLI no
-interprete `-U`, `-d` o `-c` como opciones propias.
+El healthcheck HTTP confirma que la interfaz responde. Esta guía de preparación PostgreSQL no verifica Home Assistant ni sus tablas: termina con la comprobación del rol, la base, el propietario y el login en PostgreSQL. Para operar Home Assistant usa los comandos propios de esta guía principal.
 
 Las operaciones habituales son:
 
