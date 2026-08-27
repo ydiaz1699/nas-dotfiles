@@ -5,10 +5,11 @@
 ## Estado
 
 - **Estado:** PAUSADO_ESPERANDO_USUARIO
-- **Guía canónica:** `docs/services/homeassistant-guide.md`
-- **Objetivo:** conectar Home Assistant (`network_mode: host`) con la base PostgreSQL `homeassistant_db` del único stack `datasql`.
+- **Guía canónica:** `docs/services/homeassistant-datasql-guide.md`
+- **Guía principal relacionada:** `docs/services/homeassistant-guide.md`
+- **Objetivo:** conectar opcionalmente Home Assistant (`network_mode: host`) con una base PostgreSQL dedicada; PostgreSQL/DataSQL puede existir previamente o ser una decisión posterior del usuario.
 - **Última actualización:** 2026-08-25
-- **Paso actual:** 7 — levantar Home Assistant y completar el onboarding
+- **Paso actual:** 7 — levantar Home Assistant y completar el onboarding, si el usuario eligió y confirmó un backend PostgreSQL
 
 ## Evidencia confirmada en el NAS
 
