@@ -8,7 +8,7 @@
 - **Guía canónica:** `docs/services/homeassistant-guide.md`
 - **Objetivo:** conectar Home Assistant (`network_mode: host`) con la base PostgreSQL `homeassistant_db` del único stack `datasql`.
 - **Última actualización:** 2026-08-25
-- **Paso actual:** 6 — verificar propietario y login de `ha_user`
+- **Paso actual:** 6 — verificar el login de `ha_user`
 
 ## Evidencia confirmada en el NAS
 
@@ -20,40 +20,14 @@
 - Las variables administrativas `PG_ADMIN_PASSWORD`, `PG_ADMIN_USER` y `PG_ADMIN_DB` se cargaron correctamente en la sesión actual.
 - `CREATE ROLE ha_user LOGIN;` terminó correctamente con salida `CREATE ROLE`.
 - La contraseña de `ha_user` se estableció mediante `\\password ha_user`.
-- `CREATE DATABASE homeassistant_db OWNER ha_user;` terminó correctamente con salida `CREATE DATABASE`.
+- La consulta en `psql` confirmó `homeassistant_db` con propietario `ha_user`.
 - La verificación con `-U`, `-d` y `-c` falló antes de ejecutar PostgreSQL porque el parser de `svc exec` interpretó `-U` como opción propia.
 - El usuario intentó ejecutar `SELECT` directamente en Bash; falló porque SQL debe ejecutarse dentro de una sesión interactiva de `psql`. Ese fallo no modificó nada.
 
-## Próxima acción única: verificar propietario
+## Próxima acción única: verificar el login de `ha_user`
 
-No repetir `CREATE ROLE` ni `CREATE DATABASE`.
-
-Ejecutar:
-
-```bash
-svc exec datasql postgres \
-  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
-      PGUSER="$PG_ADMIN_USER" \
-      PGDATABASE="$PG_ADMIN_DB" \
-  psql
-```
-
-Dentro de `psql`, ejecutar solamente:
-
-```sql
-SELECT datname,
-       pg_get_userbyid(datdba) AS owner
-FROM pg_database
-WHERE datname = 'homeassistant_db';
-```
-
-Esperado: `homeassistant_db` con propietario `ha_user`. Después ejecutar:
-
-```text
-\\q
-```
-
-## Siguiente paso después de confirmar el propietario
+El propietario ya está confirmado. No repetir `CREATE ROLE`, `CREATE DATABASE`
+ni la consulta del propietario.
 
 Verificar el login con la contraseña dedicada, sin usar `-U`, `-d` ni `-c`:
 
@@ -68,7 +42,7 @@ svc exec datasql postgres \
   psql
 ```
 
-Dentro de `psql`:
+Dentro de `psql` ejecutar:
 
 ```sql
 SELECT current_user, current_database();
