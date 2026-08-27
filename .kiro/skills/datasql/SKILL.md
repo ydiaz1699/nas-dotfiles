@@ -15,6 +15,16 @@ operativa y de consumidores es:
 docs/services/datasql-guide.md
 ```
 
+Antes de transportar credenciales entre DataSQL y un consumidor, cargar también:
+
+```text
+.kiro/skills/nas-runtime-secrets/SKILL.md
+```
+
+Esa skill define cómo leer claves localmente, distinguir instalación nueva de
+existente, sincronizar secretos compartidos y reportar verificaciones sin
+exponer valores.
+
 La guía incluye instalación limpia, migración histórica, permisos, verificación,
 operación, recuperación, consumidores, creación de bases/roles y Redis
 compartido.

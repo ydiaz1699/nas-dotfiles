@@ -343,6 +343,7 @@ Formato: `[fecha] corrección`.
 [2026-08-17] Catálogo pre-cargado: al arrancar, el agente inyecta resumen de todos los servicios en el prompt (sin llamar tools). El agente ya sabe qué servicios existen.
 [2026-08-17] Para aplicaciones nuevas con PostgreSQL/Redis, cargar la guía única datasql-guide.md; usar db_net, usuario/DB dedicados, env_file dual, extends ../_common.yml y labels Homepage. La guía cubre instalación, operación y consumidores. SQLite queda solo para smoke tests.
 [2026-08-17] El scanner incremental actual detecta cambios con Git y filtra issues, pero todavía no registra por archivo si fue leído, procesado, falló o quedó pendiente. La idea original requiere un ledger persistente `processed/pending/failed`.
+[2026-08-25] La habilidad `nas-runtime-secrets` establece el patrón para instalaciones nuevas vs existentes: copiar `.env.example` solo si no existe `.env`, generar únicamente secretos propios con `openssl rand -hex 32`, copiar secretos compartidos desde su fuente de verdad, verificar sin exponer valores y limpiar variables temporales con `unset`.
 ```
 
 > **Instrucciones al LLM (comportamiento proactivo):**
