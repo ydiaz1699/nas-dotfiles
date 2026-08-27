@@ -28,7 +28,14 @@
 
 ## Resultado actual
 
-La preparación externa de PostgreSQL terminó. El rol, la base, el propietario y el login están confirmados. Esta guía no indica levantar, reiniciar ni configurar Home Assistant; no existe una siguiente acción de HA en este checkpoint.
+La preparación externa de PostgreSQL terminó. El rol, la base, el propietario y el login están confirmados. Home Assistant aún no tiene evidencia versionada de conexión a PostgreSQL.
+
+**Siguiente decisión del usuario:**
+
+- Si acepta SQLite: levantar HA; no hace falta configurar PostgreSQL.
+- Si quiere PostgreSQL: levantar/completar onboarding y seguir la guía desde el paso de detección/configuración de `recorder.db_url`.
+
+La existencia de `homeassistant_db` no conecta HA por sí sola.
 
 ## Reglas de continuidad
 
@@ -36,10 +43,13 @@ La preparación externa de PostgreSQL terminó. El rol, la base, el propietario 
 2. No repetir `CREATE ROLE`, `CREATE DATABASE` ni el cambio de contraseña después de confirmar sus postcondiciones.
 3. El `svc exec` de este NAS puede interpretar `-U`, `-d` y `-c` como opciones propias; usar `PGUSER`, `PGDATABASE` y sesiones interactivas de `psql`.
 4. No ejecutar SQL en Bash.
-5. Esta guía no modifica ningún archivo, secreto, contenedor o proceso de Home Assistant.
-6. Después de cada mutación o verificación confirmada, actualizar este checkpoint con el paso, salida esperada y próxima acción de PostgreSQL.
+5. La configuración de PostgreSQL del consumidor es independiente: en HA se realiza con `recorder.db_url`, no modificando el compose.
+6. Después de cada mutación o verificación confirmada, actualizar este checkpoint con el paso, salida esperada y próxima acción.
 7. No pedir ni guardar contraseñas reales en este archivo.
 
 ## Pasos posteriores
 
-No hay pasos posteriores de Home Assistant en esta guía. El backend PostgreSQL queda preparado para el procedimiento que el usuario decida aplicar posteriormente.
+- **8:** si se acepta SQLite, levantar HA y completar onboarding sin configurar PostgreSQL.
+- **9:** detectar el backend actual sin modificarlo.
+- **10:** si se elige PostgreSQL, configurar `secrets.yaml` y una única sección `recorder:`.
+- **11:** verificar configuración, conexión activa y tablas del Recorder.

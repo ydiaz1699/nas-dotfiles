@@ -114,11 +114,11 @@ services:
 ## Primer inicio y onboarding
 
 El onboarding de Home Assistant no depende de que el usuario haya elegido
-PostgreSQL/DataSQL. Si se usará Recorder sobre PostgreSQL, sigue la guía
-separada para comprobar/provisionar el backend y crear el rol/base; configura el
-Recorder solamente después de terminar el onboarding. Si no se usará
-PostgreSQL, continúa con el onboarding y las integraciones propias de HA sin
-crear una base.
+PostgreSQL/DataSQL. Home Assistant puede levantarse directamente con Recorder y
+SQLite, que es su backend predeterminado. Si se usará PostgreSQL, prepara
+primero el backend y después sigue la guía separada para configurar `db_url` en
+la configuración persistente de HA y verificar la conexión. Si no se usará
+PostgreSQL, continúa con el onboarding sin crear una base externa.
 
 Para el primer inicio, comprueba únicamente la configuración de HA y levanta el
 servicio:
@@ -142,11 +142,14 @@ Homepage con `${SERVER_IP}`. `network_mode: host` hace innecesario declarar
 
 La conexión de Home Assistant con PostgreSQL es opcional y está documentada por separado. Esta guía principal solo cubre la operación propia de Home Assistant, su compose, onboarding e integraciones de automatización.
 
-Si quieres preparar PostgreSQL para un uso posterior con Home Assistant, elige primero si ya tienes un backend disponible. Después sigue la guía, que contempla ambos casos y no instala DataSQL automáticamente:
+Si quieres conectar el Recorder de Home Assistant a PostgreSQL, sigue la guía
+completa. La creación de `homeassistant_db` y `ha_user` no conecta HA por sí
+sola: cada consumidor tiene su propia configuración y Home Assistant usa
+`recorder.db_url` en su configuración persistente. La guía documenta el camino
+SQLite por defecto, la detección del backend actual, la configuración explícita
+para PostgreSQL y la verificación de runtime.
 
 [`docs/services/homeassistant-datasql-guide.md`](homeassistant-datasql-guide.md)
-
-La guía solo crea/verifica el rol, la base, el propietario y el login en PostgreSQL; no edita, levanta, reinicia ni inspecciona Home Assistant.
 
 ---
 
@@ -161,7 +164,9 @@ guía que debes continuar es
 No repitas una mutación ya confirmada (`CREATE ROLE`, `CREATE DATABASE`, cambio
 de contraseña o edición del Recorder) solo porque cambies de chat. Pega la
 última salida del NAS sin secretos y continúa desde la última postcondición
-confirmada.
+confirmada. La preparación del backend no demuestra que HA esté conectado: esa
+conclusión requiere comprobar `db_url`, `pg_stat_activity` y las tablas del
+Recorder.
 
 ---
 
@@ -175,7 +180,10 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8123
 svc logs homeassistant
 ```
 
-El healthcheck HTTP confirma que la interfaz responde. Esta guía de preparación PostgreSQL no verifica Home Assistant ni sus tablas: termina con la comprobación del rol, la base, el propietario y el login en PostgreSQL. Para operar Home Assistant usa los comandos propios de esta guía principal.
+El healthcheck HTTP confirma que la interfaz responde. No identifica el backend
+del Recorder. Para distinguir SQLite de PostgreSQL y verificar una conexión real,
+sigue las secciones de detección y verificación de
+[`homeassistant-datasql-guide.md`](homeassistant-datasql-guide.md).
 
 Las operaciones habituales son:
 

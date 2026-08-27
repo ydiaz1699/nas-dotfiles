@@ -23,7 +23,7 @@ backup_paths:
   - "./data"
 protected: true
 docs_url: "docs/services/homeassistant-guide.md"
-notes: "Usa network_mode: host (acceso directo a LAN para mDNS, descubrimiento IoT, USB y Bluetooth), stop_grace_period: 60s y DNS explícitos. Privileged: true es requerido por las integraciones de hardware; no agregar cap_drop/cap_add. El uso opcional de PostgreSQL está documentado en docs/services/homeassistant-datasql-guide.md; esa guía solo prepara/verifica el backend externo (rol, base, propietario y login) y NO edita, levanta, reinicia ni inspecciona Home Assistant. Para el caso NAS/DataSQL usa 127.0.0.1:5432 para administrar PostgreSQL; no usa db_net ni debe conectarse a datapostgres por DNS mientras conserve host networking. Completar el onboarding antes de editar configuration.yaml cuando el usuario decida configurar HA por separado. Config organizada con !include en carpeta includes/. Integración ntfy para push notifications con imagen vía shell_command + curl, no ntfy.publish. TvOverlay configurado como rest_command. SERVER_IP y TZ se heredan del env_file global; HOMEASSISTANT_TOKEN es local para el widget de Homepage."
+notes: "Usa network_mode: host (acceso directo a LAN para mDNS, descubrimiento IoT, USB y Bluetooth), stop_grace_period: 60s y DNS explícitos. Privileged: true es requerido por las integraciones de hardware; no agregar cap_drop/cap_add. Home Assistant usa SQLite por defecto en /config/home-assistant_v2.db y puede usar PostgreSQL opcionalmente mediante Recorder + db_url en su configuración persistente. La guía docs/services/homeassistant-datasql-guide.md prepara/verifica el backend, configura HA cuando se elige PostgreSQL y verifica db_url, pg_stat_activity y tablas. Para el caso NAS/DataSQL la URI usa 127.0.0.1:5432 por host networking; no usar datapostgres ni db_net desde HA. Completar el onboarding antes de editar configuration.yaml. Config organizada con !include en carpeta includes/. Integración ntfy para push notifications con imagen vía shell_command + curl, no ntfy.publish. TvOverlay configurado como rest_command. SERVER_IP y TZ se heredan del env_file global; HOMEASSISTANT_TOKEN es local para el widget de Homepage."
 networks: []
 ports:
   http: 8123
@@ -67,7 +67,7 @@ $dkco/homeassistant/
 - El compose define `stop_grace_period: 60s`, DNS explícitos, healthcheck HTTP y
   límites de 2 CPU/2 GiB (reserva 0.5 CPU/512 MiB).
 - El onboarding debe completarse antes de editar `configuration.yaml`.
-- El Recorder puede usar `homeassistant_db` con `ha_user` mediante `127.0.0.1:5432` en el caso NAS/DataSQL; la integración es opcional y está documentada en `docs/services/homeassistant-datasql-guide.md`.
+- El Recorder usa SQLite por defecto en `home-assistant_v2.db`; PostgreSQL es opcional y requiere configurar `recorder.db_url` en HA.
 - `SERVER_IP` y `TZ` vienen de `$dkco/.env`; `HOMEASSISTANT_TOKEN` permanece en el `.env` local para el widget de Homepage.
 
 ## Integraciones configuradas
