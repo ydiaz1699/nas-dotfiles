@@ -29,6 +29,97 @@ El patrón tiene dos propósitos simultáneos:
 La skill no inventa nombres de variables ni credenciales. Primero se consultan
 la guía del servicio, la ficha, el compose y `.env.example`.
 
+## Detección: instalación nueva o servicio existente
+
+La detección cambia la operación y evita destruir secretos estables:
+
+```bash
+if [[ -f .env ]]; then
+  ENV_MODE=existing
+else
+  ENV_MODE=new
+fi
+printf 'Modo de servicio: %s\n' "$ENV_MODE"
+```
+
+### Instalación nueva
+
+Cuando el `.env` local no existe:
+
+1. Crear primero las carpetas requeridas por la guía del servicio.
+2. Copiar el `.env.example` del catálogo a `.env`; no reconstruirlo desde memoria
+   con un heredoc incompleto. El `.env.example` es plantilla compartible, no una
+   fuente de secretos.
+3. Leer las credenciales compartidas desde su fuente de verdad. Ejemplo:
+   `REDIS_PASSWORD` se copia de `$dkco/datasql/.env`; no se genera otra.
+4. Generar con `openssl rand -hex 32` los secretos que son propios del
+   consumidor y no existen en otra fuente.
+5. Escribir únicamente las claves conocidas en `.env`, aplicar `chmod 600` y
+   comprobar nombres/placeholders sin mostrar valores.
+6. Crear el rol y la base dedicados en PostgreSQL, en llamadas separadas, y
+   verificar el login del consumidor.
+7. Verificar Redis compartido y solo entonces ejecutar `svc config <servicio>`.
+
+La plantilla del catálogo puede estar en
+`$NAS_DOTFILES/agent/catalog/services/<servicio>/.env.example`; no se debe
+suponer que existe una copia de `.env.example` dentro de `$dkco/<servicio>`.
+
+Antes de crear o validar el servicio nuevo, comprobar también los prerrequisitos
+no secretos de su entorno:
+
+```bash
+dk <servicio>
+test -f "$dkco/.env" || printf 'Falta $dkco/.env global.\n' >&2
+test -f "$dkco/_common.yml" || printf 'Falta $dkco/_common.yml.\n' >&2
+```
+
+No corregir una ruta `extends` por intuición. Comparar la ruta relativa real del
+`compose.yml` desplegado con la del compose del catálogo y con la ubicación
+confirmada de `_common.yml` antes de editar.
+
+### Decisiones de fusión
+
+Se integran estas ideas del procedimiento de Flowise:
+
+- para un servicio nuevo, copiar `.env.example`, generar secretos propios y
+  derivar secretos compartidos desde la fuente existente;
+- usar `openssl rand -hex 32` como formato canónico para secretos de una línea;
+- conservar la verificación de `SERVER_IP`, `_common.yml`, `svc config` y
+  permisos `600`;
+- crear el rol PostgreSQL primero y la base en una operación separada;
+- informar al LLM solo `PONG`, nombres de rol/base, estados y errores seguros.
+
+Se rechazan o se limitan estas variantes:
+
+- reescribir siempre `.env` con `cat >`: solo es válido para una instalación
+  nueva; en una existente puede borrar secretos estables y personalizaciones;
+- `openssl rand -base64 32` como formato general: se reemplaza por hexadecimal
+  para evitar caracteres reservados en `.env` y URI; Base64 solo queda permitido
+  si la aplicación lo exige explícitamente;
+- `docker exec`: se reemplaza por `svc exec`;
+- `psql -U/-d/-c` después de `svc exec`: se reemplaza por `PGUSER`, `PGDATABASE`,
+  `PGPASSWORD` y sesiones interactivas;
+- combinar `CREATE ROLE` y `CREATE DATABASE`: se rechaza porque son operaciones
+  distintas y `CREATE DATABASE` no debe depender de una transacción conjunta;
+- `echo` o `printf` de una contraseña generada: se reemplaza por escribirla
+  localmente y reportar solo el nombre de la clave;
+- `chown`/diagnóstico de permisos de `data`: queda en la guía del servicio,
+  porque depende del UID real de la imagen y no es una regla universal de
+  transporte de secretos.
+
+### Servicio existente
+
+Cuando `.env` ya existe:
+
+- no ejecutar `cp`, `cat > .env` ni regenerar todos los secretos;
+- detectar solo claves vacías o placeholders;
+- generar únicamente una clave propia que falte;
+- conservar `FLOWISE_SECRETKEY_OVERWRITE`, JWT y claves de cifrado ya usadas;
+- sincronizar una clave compartida desde su fuente de verdad solo si la
+  configuración del consumidor debe coincidir;
+- si se desconoce una contraseña de base existente, no cambiarla a ciegas:
+  confirmar el servicio y hacer un cambio deliberado en PostgreSQL y `.env`.
+
 ## Activación
 
 Usar antes de cualquier operación que incluya:
@@ -160,7 +251,72 @@ usuario. Si hace falta abortar una secuencia completa, envolverla explícitament
 )
 ```
 
-### 4. Sincronizar una clave entre servicios
+### 4. Crear o completar el `.env` sin sobrescribir secretos
+
+Para una instalación nueva, copia primero la plantilla del catálogo y luego
+escribe los valores. Para un servicio existente, omite la copia y conserva lo
+que ya funciona:
+
+```bash
+# Solo instalación nueva; no ejecutar si .env ya existe.
+if [[ ! -f .env ]]; then
+  cp "$NAS_DOTFILES/agent/catalog/services/<servicio>/.env.example" .env
+fi
+```
+
+Para valores de una sola línea y generados en hexadecimal, este helper actualiza
+una clave existente o la agrega si la plantilla no la contenía. No usarlo para
+secretos con saltos de línea o caracteres reservados sin adaptar el mecanismo:
+
+```bash
+set_env_key() {
+  local key="$1" value="$2" file="${3:-.env}"
+  if grep -q "^${key}=" "$file"; then
+    sed -i "s|^${key}=.*|${key}=${value}|" "$file"
+  else
+    printf '%s=%s\n' "$key" "$value" >> "$file"
+  fi
+}
+```
+
+Ejemplo de fusión para un consumidor nuevo de DataSQL:
+
+```bash
+# Fuente compartida: no generar una segunda contraseña Redis.
+dk datasql
+DATASQL_REDIS_PASSWORD="$(awk -F= '$1=="REDIS_PASSWORD"{print substr($0,index($0,"=")+1); exit}' .env)"
+
+# Secretos propios: generar solo en la instalación nueva.
+SERVICE_DB_PASSWORD="$(openssl rand -hex 32)"
+SERVICE_APP_PASSWORD="$(openssl rand -hex 32)"
+SERVICE_ENCRYPTION_SECRET="$(openssl rand -hex 32)"
+SERVICE_AUTH_SECRET="$(openssl rand -hex 32)"
+
+# Volver al consumidor; no imprimir ninguno de los valores.
+dk <consumidor>
+set_env_key SERVICE_DB_PASSWORD "$SERVICE_DB_PASSWORD"
+set_env_key SERVICE_APP_PASSWORD "$SERVICE_APP_PASSWORD"
+set_env_key SERVICE_ENCRYPTION_SECRET "$SERVICE_ENCRYPTION_SECRET"
+set_env_key SERVICE_AUTH_SECRET "$SERVICE_AUTH_SECRET"
+set_env_key REDIS_PASSWORD "$DATASQL_REDIS_PASSWORD"
+chmod 600 .env
+```
+
+Los nombres `SERVICE_*` son marcadores del patrón: deben sustituirse por las
+claves reales que aparecen en la guía, ficha, compose y `.env.example` del
+servicio. No se deben inventar variables. El consumidor debe conservar la
+misma contraseña de base que se usó al crear su rol PostgreSQL.
+
+Después de una mutación, verificar solo la presencia de claves problemáticas:
+
+```bash
+awk -F= '$1 ~ /^[A-Z_]+$/ && ($2 == "" || $2 == "__pega_aqui__" || $2 == "...") {print $1}' .env
+```
+
+La salida vacía significa que no se detectaron claves vacías o placeholders;
+no significa que se hayan mostrado los secretos.
+
+6. Sincronizar una clave entre servicios
 
 Solo después de validar la fuente y comprobar que la clave existe en el destino:
 
@@ -174,8 +330,8 @@ if [[ -z "$DATASQL_REDIS_PASSWORD" ||
   unset DATASQL_REDIS_PASSWORD
 else
   dk <consumidor>
-  if [[ ! -f .env || ! -f .env.example ]]; then
-    printf 'Falta el .env o .env.example del consumidor.\n' >&2
+  if [[ ! -f .env ]]; then
+    printf 'Falta el .env del consumidor.\n' >&2
     unset DATASQL_REDIS_PASSWORD
   elif ! grep -q '^REDIS_PASSWORD=' .env; then
     printf 'Falta REDIS_PASSWORD en el .env del consumidor.\n' >&2
@@ -195,7 +351,7 @@ modifica DataSQL ni crea otro Redis. Para valores con caracteres reservados o
 saltos de línea, no usar esta sustitución: aplicar el mecanismo de secreto
 propio de la aplicación y codificar la URI según su documentación.
 
-### 5. Verificar el consumidor sin exponer el secreto
+7. Verificar el consumidor sin exponer el secreto
 
 Redis compartido:
 
@@ -244,7 +400,7 @@ SELECT current_user, current_database();
 No consultar `rolpassword`: es un hash sensible y no prueba que la contraseña
 configurada por el consumidor funcione.
 
-### 6. Concluir con evidencia segura
+8. Concluir con evidencia segura
 
 El reporte al LLM debe contener únicamente:
 
