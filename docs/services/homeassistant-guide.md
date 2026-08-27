@@ -15,7 +15,7 @@ Esta guía incorpora la configuración real compartida en la [guía de Home Assi
 1. [Estructura de archivos](#estructura-de-archivos)
 2. [Compose](#compose)
 3. [Primer inicio y onboarding](#primer-inicio-y-onboarding)
-4. [Recorder con PostgreSQL y arranque coordinado](#recorder-con-postgresql-y-arranque-coordinado)
+4. [Conectar Home Assistant a DataSQL](#conectar-home-assistant-a-datasql--procedimiento-completo)
 5. [Verificación y operación diaria](#verificación-y-operación-diaria)
 6. [Organización con includes](#organización-con-includes)
 7. [Integración con ntfy (notificaciones push)](#integración-con-ntfy)
@@ -204,7 +204,7 @@ el chat.
 
 ### 4. Crear el rol dedicado de Home Assistant
 
-Genera una contraseña URL-safe en el terminal y consérvala localmente para
+Genera una contraseña hexadecimal en el terminal y consérvala localmente para
 introducirla en `\password` y después en `data/secrets.yaml`:
 
 ```bash
@@ -215,10 +215,16 @@ No pegues ese valor en el chat, en el repositorio ni en el historial. Si
 `openssl` no está disponible, detente y usa el gestor de secretos habitual para
 generar una contraseña hexadecimal equivalente.
 
+El CLI `svc exec` del NAS puede interpretar opciones como `-U`, `-d` y `-c`
+como opciones propias. Por eso se pasan `PGUSER` y `PGDATABASE` mediante
+`env`, y las consultas se escriben dentro de `psql`:
+
 ```bash
 svc exec datasql postgres \
   env PGPASSWORD="$PG_ADMIN_PASSWORD" \
-  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB"
+      PGUSER="$PG_ADMIN_USER" \
+      PGDATABASE="$PG_ADMIN_DB" \
+  psql
 ```
 
 Dentro de `psql` ejecuta:
@@ -235,46 +241,98 @@ Introduce dos veces la contraseña dedicada de Home Assistant. Después sal:
 ```
 
 `\password` evita escribir la contraseña en el SQL o en el historial del
-comando. Si `ha_user` ya existe, no ejecutes `CREATE ROLE` de nuevo: consulta
-primero su configuración y confirma la contraseña efectiva.
+comando. Si `CREATE ROLE` responde que `ha_user` ya existe, no ejecutes
+`\password` automáticamente: detente, conserva la contraseña que ya tengas y
+consulta el estado antes de cambiarla.
 
-### 5. Crear la base en una llamada separada
+### 5. Crear la base y comprobar que fue creada
 
-`CREATE DATABASE` se ejecuta aparte porque no puede ejecutarse dentro de una
-transacción:
-
-```bash
-svc exec datasql postgres \
-  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
-  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" \
-  -c 'CREATE DATABASE homeassistant_db OWNER ha_user;'
-```
-
-### 6. Verificar propietario y login
+`CREATE DATABASE` se ejecuta en una sesión separada porque no puede ejecutarse
+dentro de una transacción:
 
 ```bash
 svc exec datasql postgres \
   env PGPASSWORD="$PG_ADMIN_PASSWORD" \
-  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" \
-  -c "SELECT datname, pg_get_userbyid(datdba) AS owner FROM pg_database WHERE datname='homeassistant_db';"
+      PGUSER="$PG_ADMIN_USER" \
+      PGDATABASE="$PG_ADMIN_DB" \
+  psql
 ```
 
-Debe aparecer `homeassistant_db | ha_user`. Después prueba la conexión como
-`ha_user`, no como `aiadmin`:
+Dentro de `psql` ejecuta:
+
+```sql
+CREATE DATABASE homeassistant_db OWNER ha_user;
+```
+
+La salida esperada es:
+
+```text
+CREATE DATABASE
+```
+
+Después verifica inmediatamente la base y su propietario, todavía dentro de
+`psql`:
+
+```sql
+SELECT datname,
+       pg_get_userbyid(datdba) AS owner
+FROM pg_database
+WHERE datname = 'homeassistant_db';
+```
+
+La salida debe mostrar `homeassistant_db` con propietario `ha_user`. Después
+sal:
+
+```text
+\q
+```
+
+Si `CREATE DATABASE` responde que la base ya existe, no la recrees. Ejecuta
+solo la consulta `SELECT` anterior y confirma que el propietario sea `ha_user`.
+Si el propietario es diferente, detente antes de modificarlo.
+
+### 6. Verificar el acceso con `ha_user`
+
+Introduce temporalmente la contraseña dedicada:
 
 ```bash
 read -r -s -p 'Contraseña de ha_user para verificar: ' HA_DB_PASSWORD
 printf '\n'
-
-svc exec datasql postgres \
-  env PGPASSWORD="$HA_DB_PASSWORD" \
-  psql -U ha_user -d homeassistant_db \
-  -c 'SELECT current_user, current_database();'
 ```
 
-El resultado esperado es `ha_user | homeassistant_db`. Conserva la contraseña
-para el Recorder y no la compartas. Todavía no hagas `unset HA_DB_PASSWORD`
-porque la necesitarás al crear el secreto local de Home Assistant.
+Abre `psql` usando el rol y la base de Home Assistant:
+
+```bash
+svc exec datasql postgres \
+  env PGPASSWORD="$HA_DB_PASSWORD" \
+      PGUSER=ha_user \
+      PGDATABASE=homeassistant_db \
+  psql
+```
+
+Dentro ejecuta:
+
+```sql
+SELECT current_user, current_database();
+```
+
+El resultado esperado es:
+
+```text
+ current_user | current_database
+--------------+------------------
+ ha_user      | homeassistant_db
+```
+
+Después sal:
+
+```text
+\q
+```
+
+Si esta prueba falla, no configures todavía Home Assistant. El problema debe
+resolverse primero en PostgreSQL, el rol, la contraseña o el propietario de la
+base. Conserva `HA_DB_PASSWORD` solo hasta crear el secreto local de HA.
 
 ### 7. Iniciar Home Assistant y completar el onboarding
 
@@ -351,17 +409,36 @@ svc ps homeassistant
 svc logs homeassistant
 ```
 
-Cuando HA haya generado estados, consulta la base con la cuenta administrativa:
+Cuando HA haya generado estados, consulta la base con la cuenta administrativa.
+Como el CLI `svc exec` puede interpretar `-U`, `-d` y `-c`, esta verificación
+usa variables de conexión y una sesión interactiva de `psql`:
 
 ```bash
-PG_ADMIN_PASSWORD="$(awk -F= '$1=="POSTGRES_PASSWORD"{print substr($0,index($0,"=")+1)}' "$dkco/datasql/.env")"
-PG_ADMIN_USER="$(awk -F= '$1=="POSTGRES_USER"{print substr($0,index($0,"=")+1)}' "$dkco/datasql/.env")"
+PG_ADMIN_PASSWORD="$(awk -F= '$1=="POSTGRES_PASSWORD"{print substr($0,index($0,"=")+1); exit}' "$dkco/datasql/.env")"
+PG_ADMIN_USER="$(awk -F= '$1=="POSTGRES_USER"{print substr($0,index($0,"=")+1); exit}' "$dkco/datasql/.env")"
 
 svc exec datasql postgres \
   env PGPASSWORD="$PG_ADMIN_PASSWORD" \
-  psql -U "$PG_ADMIN_USER" -d homeassistant_db \
-  -c 'SELECT COUNT(*) AS states_count FROM states;'
+      PGUSER="$PG_ADMIN_USER" \
+      PGDATABASE=homeassistant_db \
+  psql
+```
 
+Dentro de `psql` ejecuta:
+
+```sql
+SELECT COUNT(*) AS states_count FROM states;
+```
+
+Después sal:
+
+```text
+\q
+```
+
+Limpia las variables:
+
+```bash
 unset PG_ADMIN_PASSWORD PG_ADMIN_USER
 ```
 
@@ -393,25 +470,13 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8123
 svc logs homeassistant
 ```
 
-Para confirmar que el Recorder está escribiendo datos, esperar a que HA haya
-generado estados y consultar la base usando las credenciales administrativas de
-DataSQL. No usar `docker exec` directo ni `source $dkco/datasql/.env`:
+El healthcheck HTTP confirma que la interfaz responde, pero no confirma por sí
+solo la conexión del Recorder. La verificación funcional de PostgreSQL está en
+la sección `9. Verificar la conexión desde Home Assistant`, donde se consulta
+`states` usando `svc exec` con `PGUSER` y `PGDATABASE` para que el CLI no
+interprete `-U`, `-d` o `-c` como opciones propias.
 
-```bash
-PG_ADMIN_USER=$(grep '^POSTGRES_USER=' "$dkco/datasql/.env" | cut -d= -f2-)
-PG_ADMIN_DB=$(grep '^POSTGRES_DB=' "$dkco/datasql/.env" | cut -d= -f2-)
-PG_ADMIN_PASSWORD=$(grep '^POSTGRES_PASSWORD=' "$dkco/datasql/.env" | cut -d= -f2-)
-
-svc exec datasql postgres \
-  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
-  psql -U "$PG_ADMIN_USER" -d homeassistant_db \
-  -c "SELECT COUNT(*) FROM states;"
-
-unset PG_ADMIN_USER PG_ADMIN_DB PG_ADMIN_PASSWORD
-```
-
-El resultado esperado es un conteo mayor que cero después de que HA haya
-registrado estados. Las operaciones habituales son:
+Las operaciones habituales son:
 
 ```bash
 svc ps homeassistant
@@ -423,7 +488,7 @@ svc stop homeassistant
 
 El acceso LAN es `http://${SERVER_IP}:8123`; el acceso local para pruebas es
 `http://127.0.0.1:8123`. Si HA reinicia en bucle y los logs no muestran el
-motivo actual, detenerlo con `svc stop homeassistant` y después consultar
+motivo actual, deténlo con `svc stop homeassistant` y después consulta
 `svc logs homeassistant` para aislar el arranque completo.
 
 ---

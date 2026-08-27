@@ -611,13 +611,19 @@ Para un servicio nuevo, no es necesario usar pgAdmin para crear el rol y la
 base. Esta es la ruta recomendada en el NAS: usa `svc exec`, no `docker exec`,
 no hace `source .env` y no escribe la contraseña en el SQL.
 
-Las variables administrativas de la sección anterior ya están cargadas. Crea el
-rol en una sesión interactiva:
+El CLI `svc exec` del NAS puede interpretar opciones como `-U`, `-d` y `-c`
+como opciones propias. Por eso se pasan `PGUSER` y `PGDATABASE` mediante
+`env`, y las consultas se escriben dentro de sesiones interactivas de `psql`.
+
+Las variables administrativas de la sección anterior ya están cargadas. Crea
+el rol en una sesión interactiva:
 
 ```bash
 svc exec datasql postgres \
   env PGPASSWORD="$PG_ADMIN_PASSWORD" \
-  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB"
+      PGUSER="$PG_ADMIN_USER" \
+      PGDATABASE="$PG_ADMIN_DB" \
+  psql
 ```
 
 En `psql` ejecuta:
@@ -633,40 +639,67 @@ Introduce dos veces la contraseña dedicada de Home Assistant y sal:
 \q
 ```
 
-Crea la base en una llamada separada. Así `CREATE DATABASE` no queda atrapado
+Crea la base en una sesión separada. Así `CREATE DATABASE` no queda atrapado
 en una transacción:
 
 ```bash
 svc exec datasql postgres \
   env PGPASSWORD="$PG_ADMIN_PASSWORD" \
-  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" \
-  -c 'CREATE DATABASE homeassistant_db OWNER ha_user;'
+      PGUSER="$PG_ADMIN_USER" \
+      PGDATABASE="$PG_ADMIN_DB" \
+  psql
 ```
 
-Verifica propietario y conexión con el usuario dedicado. Después de salir de
-`psql`, vuelve a introducir temporalmente la misma contraseña en la terminal
-para probar el login; no la escribas en esta guía ni en el chat:
+En `psql` ejecuta:
+
+```sql
+CREATE DATABASE homeassistant_db OWNER ha_user;
+
+SELECT datname,
+       pg_get_userbyid(datdba) AS owner
+FROM pg_database
+WHERE datname = 'homeassistant_db';
+```
+
+La consulta debe devolver `homeassistant_db | ha_user`. Si `CREATE DATABASE`
+responde que la base ya existe, no la recrees: ejecuta solo la consulta y
+verifica el propietario. Sal de `psql`:
+
+```text
+\q
+```
+
+Verifica la conexión con el usuario dedicado. Después de salir de `psql`, vuelve
+a introducir temporalmente la misma contraseña en la terminal para probar el
+login; no la escribas en esta guía ni en el chat:
 
 ```bash
 read -r -s -p 'Contraseña de ha_user para verificar: ' HA_DB_PASSWORD
 printf '\n'
 
 svc exec datasql postgres \
-  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
-  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB" \
-  -c "SELECT datname, pg_get_userbyid(datdba) AS owner FROM pg_database WHERE datname='homeassistant_db';"
-
-svc exec datasql postgres \
   env PGPASSWORD="$HA_DB_PASSWORD" \
-  psql -U ha_user -d homeassistant_db \
-  -c 'SELECT current_user, current_database();'
+      PGUSER=ha_user \
+      PGDATABASE=homeassistant_db \
+  psql
+```
 
+En `psql` ejecuta:
+
+```sql
+SELECT current_user, current_database();
+```
+
+El resultado esperado es `ha_user | homeassistant_db`. Sal de `psql` con
+`\q` y limpia las variables:
+
+```bash
 unset PG_ADMIN_PASSWORD PG_ADMIN_USER PG_ADMIN_DB HA_DB_PASSWORD
 ```
 
-El resultado esperado es `homeassistant_db | ha_user` y después
-`ha_user | homeassistant_db`. Para Home Assistant, el `db_url` usa
-`127.0.0.1:5432`, no `datapostgres` ni una IP fija de Docker.
+Para Home Assistant, el `db_url` usa el puerto loopback real detectado en
+`AIPG_POSTGRES_HOST_PORT`, normalmente `127.0.0.1:5432`; no uses
+`datapostgres` ni una IP fija de Docker desde HA.
 
 ### 5.2 Definir nombres y leer la contraseña del consumidor
 
@@ -708,7 +741,9 @@ Abre una sesión administrativa interactiva. `svc exec` recibe la contraseña po
 ```bash
 svc exec datasql postgres \
   env PGPASSWORD="$PG_ADMIN_PASSWORD" \
-  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB"
+      PGUSER="$PG_ADMIN_USER" \
+      PGDATABASE="$PG_ADMIN_DB" \
+  psql
 ```
 
 En el prompt, ejecuta solamente SQL:
@@ -737,7 +772,9 @@ administrativa, fuera de una transacción:
 ```bash
 svc exec datasql postgres \
   env PGPASSWORD="$PG_ADMIN_PASSWORD" \
-  psql -U "$PG_ADMIN_USER" -d "$PG_ADMIN_DB"
+      PGUSER="$PG_ADMIN_USER" \
+      PGDATABASE="$PG_ADMIN_DB" \
+  psql
 ```
 
 En `psql`:
@@ -768,8 +805,9 @@ Prueba con la contraseña del consumidor, no con la administrativa:
 ```bash
 svc exec datasql postgres \
   env PGPASSWORD="$APP_DB_PASSWORD" \
-  psql -U "$APP_DB_USER" -d "$APP_DB_NAME" \
-  -c 'SELECT current_user, current_database();'
+      PGUSER="$APP_DB_USER" \
+      PGDATABASE="$APP_DB_NAME" \
+  psql
 ```
 
 La salida debe identificar `flowise_user` y `flowise_db`. Limpia todas las

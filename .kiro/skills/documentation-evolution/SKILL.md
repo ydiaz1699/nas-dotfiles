@@ -204,3 +204,66 @@ Después de una corrección confirmada:
 
 No copiar la conversación completa ni guardar secretos. Registrar una regla
 reutilizable, su origen y la fecha cuando corresponda.
+
+
+
+## Continuidad de una guía interactiva
+
+Cuando el usuario está ejecutando una guía paso a paso en el NAS, la conversación
+se trata como una máquina de estados, no como una consulta nueva independiente.
+La guía no debe reiniciarse ni desviarse aunque el usuario formule una pregunta
+lateral.
+
+### Detección
+
+Considera que existe una guía activa si el usuario:
+
+- pega la salida de un comando de la guía;
+- menciona "me quedé en el paso", "continúa", "dónde estoy" o una sección de la guía;
+- muestra un prompt del NAS (`root@...`, `svc`, `dk`) junto con comandos;
+- pregunta por un error ocurrido dentro del flujo actual.
+
+Antes de responder:
+
+1. Busca el checkpoint más específico en `_drafts/SESSION-*.md`,
+   `_drafts/SESION-*.md` o `_drafts/PENDIENTES-*.md`.
+2. Si existe, lee solo el checkpoint relevante y compara su `Paso actual` con
+   la última salida que el usuario proporcionó.
+3. Si no existe, reconstruye el estado únicamente con evidencia explícita del
+   chat. No infieras que una mutación terminó bien porque el usuario llegó a la
+   sección siguiente.
+4. Declara al inicio: `Ubicación actual: paso X — ...` y `Siguiente acción única:`.
+
+### Reglas de avance
+
+- Avanza un paso solo después de que la salida confirme su postcondición.
+- No repitas prechecks ya confirmados, salvo que haya cambio, error o una
+  dependencia que pueda haber quedado obsoleta.
+- No ejecutes ni recomiendes dos mutaciones alternativas a la vez.
+- Si una mutación puede ser no idempotente (`CREATE ROLE`, `CREATE DATABASE`,
+  `mv`, `rm`, cambios de contraseña), primero consulta el estado o detente ante
+  `already exists`.
+- Si el usuario pregunta algo lateral, responde lo necesario y vuelve al mismo
+  paso; no cambies de servicio, guía o arquitectura sin autorización explícita.
+- Si el comando de la guía falla por la implementación real del wrapper, corrige
+  primero la guía dueña y ofrece una variante compatible; no improvises una
+  nueva secuencia que salte pasos.
+- Antes de mostrar un comando, comprueba que sus opciones no sean consumidas por
+  el wrapper. Para `svc exec` de este repositorio, evita pasar `-U`, `-d` o `-c`
+  directamente; usa `PGUSER`, `PGDATABASE` y una sesión interactiva de `psql`.
+
+### Checkpoint
+
+Después de una mutación confirmada, actualiza el checkpoint específico de la
+sesión con:
+
+- estado (`EN_CURSO`, `PAUSADO_ESPERANDO_USUARIO`, `BLOQUEADO`, `COMPLETADO`);
+- guía canónica y paso actual;
+- evidencia observada, sin secretos;
+- postcondición confirmada o pendiente;
+- próxima acción única y salida esperada;
+- operaciones que no deben repetirse.
+
+Nunca guardes contraseñas, tokens, salidas que contengan secretos ni un `.env`
+real en `_drafts/`. El checkpoint registra estado de ejecución, no sustituye la
+guía canónica ni el historial completo de la conversación.
