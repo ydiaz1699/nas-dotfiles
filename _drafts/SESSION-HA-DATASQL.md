@@ -26,6 +26,11 @@
 - La verificación con `-U`, `-d` y `-c` falló antes de ejecutar PostgreSQL porque el parser de `svc exec` interpretó `-U` como opción propia.
 - El usuario intentó ejecutar `SELECT` directamente en Bash; falló porque SQL debe ejecutarse dentro de una sesión interactiva de `psql`. Ese fallo no modificó nada.
 
+La verificación más reciente mostró dos errores de procedimiento, sin modificar PostgreSQL ni Home Assistant:
+
+- `svc exec homeassistant sh -c ...` falló porque el CLI Python interpretó `-c`; la forma correcta para este NAS es `NAS_CLI=bash svc exec homeassistant homeassistant sh -c ...`.
+- `\connect homeassistant_db` seguido de una consulta pegada produjo `invalid integer value "AS" for connection option "port"`; las comprobaciones de tablas deben abrir una segunda sesión con `PGDATABASE=homeassistant_db`, sin usar `\connect`.
+
 ## Resultado actual
 
 La preparación externa de PostgreSQL terminó. El rol, la base, el propietario y el login están confirmados. Home Assistant aún no tiene evidencia versionada de conexión a PostgreSQL.
@@ -41,11 +46,12 @@ La existencia de `homeassistant_db` no conecta HA por sí sola.
 
 1. No repetir el preflight salvo que el usuario reporte un cambio o un error.
 2. No repetir `CREATE ROLE`, `CREATE DATABASE` ni el cambio de contraseña después de confirmar sus postcondiciones.
-3. El `svc exec` de este NAS puede interpretar `-U`, `-d` y `-c` como opciones propias; usar `PGUSER`, `PGDATABASE` y sesiones interactivas de `psql`.
+3. El `svc exec` de este NAS puede interpretar `-U`, `-d` y `-c` como opciones propias. Para comandos HA con `sh -c`, usar `NAS_CLI=bash svc exec homeassistant homeassistant sh -c ...`; incluir siempre el nombre interno Compose.
 4. No ejecutar SQL en Bash.
-5. La configuración de PostgreSQL del consumidor es independiente: en HA se realiza con `recorder.db_url`, no modificando el compose.
-6. Después de cada mutación o verificación confirmada, actualizar este checkpoint con el paso, salida esperada y próxima acción.
-7. No pedir ni guardar contraseñas reales en este archivo.
+5. Para consultar tablas de `homeassistant_db`, abrir una segunda sesión con `PGDATABASE=homeassistant_db`; no usar `\connect` con consultas pegadas en la misma entrada.
+6. La configuración de PostgreSQL del consumidor es independiente: en HA se realiza con `recorder.db_url`, no modificando el compose.
+7. Después de cada mutación o verificación confirmada, actualizar este checkpoint con el paso, salida esperada y próxima acción.
+8. No pedir ni guardar contraseñas reales en este archivo.
 
 ## Pasos posteriores
 
