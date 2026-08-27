@@ -19,6 +19,12 @@ redactar. Para comprobar conexiones, revisa la implementación real, sus
 entrypoints, `agent/tools/project_index.py`, `agent/tools/project_scanner.py`
 y `agent/architecture/contracts.json`.
 
+Si la petición menciona secretos, credenciales, `.env`, `PGPASSWORD`,
+`REDISCLI_AUTH`, PostgreSQL/Redis compartido o sincronizar una variable entre
+servicios, lee primero `.kiro/skills/nas-runtime-secrets/SKILL.md` y después la
+guía, ficha, compose y `.env.example` del servicio. Nunca pidas ni muestres
+valores reales; usa variables temporales locales, evidencia segura y `unset`.
+
 No afirmes que una herramienta, hook o automatización existe sin comprobar su
 archivo y consumidor. Distingue siempre entre implementado, documentado,
 pendiente y verificado. No resumas comandos ni configuraciones de los drafts;
@@ -75,7 +81,10 @@ No operes el NAS desde un entorno de desarrollo remoto/sandbox.
 - **Otro LLM con instrucciones de proyecto:** añadir este archivo o el bloque
   anterior a las instrucciones del proyecto.
 - **Chat sin acceso al repositorio:** adjuntar este archivo, la skill y el
-  meta-prompt; ningún LLM puede leer archivos que el chat no recibió.
+  meta-prompt; ningún LLM puede leer archivos que el chat no recibió. Si la
+  tarea trata de credenciales o `.env`, adjuntar también
+  `.kiro/skills/nas-runtime-secrets/SKILL.md`, junto con el `.env.example`
+  correspondiente, nunca el `.env` real.
 
 Este bootstrap no sustituye al meta-prompt ni al scanner: solo garantiza que el
 chat sepa cuándo debe cargarlos y comprobar sus conexiones.
