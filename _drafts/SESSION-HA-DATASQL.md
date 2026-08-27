@@ -8,7 +8,7 @@
 - **Guía canónica:** `docs/services/homeassistant-guide.md`
 - **Objetivo:** conectar Home Assistant (`network_mode: host`) con la base PostgreSQL `homeassistant_db` del único stack `datasql`.
 - **Última actualización:** 2026-08-25
-- **Paso actual:** 6 — verificar propietario y login de `ha_user`
+- **Paso actual:** 7 — levantar Home Assistant y completar el onboarding
 
 ## Evidencia confirmada en el NAS
 
@@ -20,67 +20,37 @@
 - Las variables administrativas `PG_ADMIN_PASSWORD`, `PG_ADMIN_USER` y `PG_ADMIN_DB` se cargaron correctamente en la sesión actual.
 - `CREATE ROLE ha_user LOGIN;` terminó correctamente con salida `CREATE ROLE`.
 - La contraseña de `ha_user` se estableció mediante `\\password ha_user`.
-- `CREATE DATABASE homeassistant_db OWNER ha_user;` terminó correctamente con salida `CREATE DATABASE`.
+- La consulta en `psql` confirmó `homeassistant_db` con propietario `ha_user`.
+- La consulta `SELECT current_user, current_database();` confirmó el login como `ha_user` en `homeassistant_db`.
 - La verificación con `-U`, `-d` y `-c` falló antes de ejecutar PostgreSQL porque el parser de `svc exec` interpretó `-U` como opción propia.
 - El usuario intentó ejecutar `SELECT` directamente en Bash; falló porque SQL debe ejecutarse dentro de una sesión interactiva de `psql`. Ese fallo no modificó nada.
 
-## Próxima acción única: verificar propietario
+## Próxima acción única: levantar Home Assistant
 
-No repetir `CREATE ROLE` ni `CREATE DATABASE`.
+La base, el propietario y el login de `ha_user` ya están confirmados. No repetir
+la creación de PostgreSQL ni el preflight.
 
-Ejecutar:
-
-```bash
-svc exec datasql postgres \
-  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
-      PGUSER="$PG_ADMIN_USER" \
-      PGDATABASE="$PG_ADMIN_DB" \
-  psql
-```
-
-Dentro de `psql`, ejecutar solamente:
-
-```sql
-SELECT datname,
-       pg_get_userbyid(datdba) AS owner
-FROM pg_database
-WHERE datname = 'homeassistant_db';
-```
-
-Esperado: `homeassistant_db` con propietario `ha_user`. Después ejecutar:
-
-```text
-\\q
-```
-
-## Siguiente paso después de confirmar el propietario
-
-Verificar el login con la contraseña dedicada, sin usar `-U`, `-d` ni `-c`:
+Si el onboarding todavía no está completado, ejecutar:
 
 ```bash
-read -r -s -p 'Contraseña de ha_user para verificar: ' HA_DB_PASSWORD
-printf '\n'
-
-svc exec datasql postgres \
-  env PGPASSWORD="$HA_DB_PASSWORD" \
-      PGUSER=ha_user \
-      PGDATABASE=homeassistant_db \
-  psql
+dk homeassistant
+svc config homeassistant
+svc up homeassistant
+svc ps homeassistant
+svc logs homeassistant
 ```
 
-Dentro de `psql`:
+Después abrir `http://${SERVER_IP}:8123` y completar el onboarding. No editar
+`configuration.yaml` ni configurar el Recorder hasta terminarlo.
 
-```sql
-SELECT current_user, current_database();
-```
-
-Esperado: `ha_user | homeassistant_db`. Después ejecutar `\\q` y conservar
-`HA_DB_PASSWORD` solamente hasta crear el secreto de Home Assistant.
+Si el onboarding ya estaba completado, no crear otra configuración: verificar
+con `svc ps homeassistant` y continuar con el paso 8 de la guía, que crea
+`data/secrets.yaml` y configura el Recorder.
 
 ## Reglas de continuidad
 
 1. No repetir el preflight salvo que el usuario reporte un cambio o un error.
-2. No saltar al Recorder ni iniciar HA hasta confirmar propietario y login de `ha_user`.
+2. No saltar al Recorder hasta confirmar propietario y login de `ha_user`, y no editar la configuración de HA antes de completar el onboarding.
 3. El `svc exec` de este NAS puede interpretar `-U`, `-d` y `-c` como opciones propias; usar `PGUSER`, `PGDATABASE` y sesiones interactivas de `psql`.
 4. No ejecutar SQL en Bash.
 5. Después de cada mutación o verificación confirmada, actualizar este checkpoint con el paso, salida esperada y próxima acción.
