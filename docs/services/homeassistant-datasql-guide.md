@@ -324,6 +324,8 @@ Si la base ya existe, no ejecutes `CREATE DATABASE`. Verifica únicamente el pro
 
 ## 7. Verificar el login dedicado
 
+> **Límite entre Bash y `psql`:** esta sección vuelve a ejecutar comandos de Bash después de una sesión interactiva de `psql`. Antes de ejecutar `read`, `printf` o `svc exec`, debes haber salido de `psql` con `\q` y comprobar que el prompt volvió a ser parecido a `root@Nas ... #`. Si todavía ves `aipostgres=#` o `homeassistant_db=>`, sigues dentro de `psql`: ejecuta únicamente `\q` y espera el prompt de Bash. Nunca pegues comandos Bash dentro de `psql`.
+
 Introduce temporalmente la contraseña de `ha_user` sin mostrarla:
 
 ```bash
@@ -350,7 +352,7 @@ env PGPASSWORD="$HA_DB_PASSWORD" \
   psql --host="$PG_HOST" --port="$PG_PORT"
 ```
 
-Dentro de `psql` ejecuta:
+Cuando termine el comando, el prompt debe cambiar a `homeassistant_db=>` (o similar). Ese es el indicador de que estás dentro de `psql`; ahí ejecuta solamente SQL:
 
 ```sql
 SELECT current_user, current_database();
@@ -364,7 +366,7 @@ El resultado esperado es:
  ha_user      | homeassistant_db
 ```
 
-Sal con `\\q`. Si la prueba falla, resuelve primero el endpoint, rol, contraseña, permisos o propietario.
+Sal con `\q`. Debes volver a un prompt parecido a `root@Nas ... #` antes de continuar con cualquier comando Bash. Si todavía ves `homeassistant_db=>`, ejecuta `\q` otra vez. Si la prueba falla, resuelve primero el endpoint, rol, contraseña, permisos o propietario.
 
 **Checkpoint 7 — login PostgreSQL listo:** `ha_user` puede conectarse a `homeassistant_db`. Hasta aquí llega esta guía; Home Assistant no se levanta, reinicia ni configura en este procedimiento.
 
@@ -528,7 +530,7 @@ Solo si `states_table` no es `NULL`, consulta:
 SELECT COUNT(*) AS states_count FROM states;
 ```
 
-Sal con `\q`.
+Sal con `\q`. Confirma que regresaste al prompt de Bash (`root@Nas ... #`) antes de ejecutar `unset` u otro comando de terminal.
 
 Interpretación:
 
@@ -647,6 +649,8 @@ svc exec datasql postgres \
   psql
 ```
 
+Cuando el comando termine, confirma que el prompt cambió a `homeassistant_db=#` (o similar). Solo después de ver ese prompt debes ejecutar las consultas SQL siguientes; si ves `root@Nas ... #`, todavía estás en Bash y debes abrir la sesión de `psql` correctamente.
+
 Dentro de `psql` ejecuta:
 
 ```sql
@@ -671,7 +675,7 @@ Si `states_table` no es `NULL`, ejecuta:
 SELECT COUNT(*) AS states_count FROM states;
 ```
 
-Sal con `\q` y limpia las variables administrativas. La verificación se considera completa cuando la configuración apunta a PostgreSQL, existe una conexión activa de `ha_user` y las tablas `states`/`events` existen; `states_count > 0` confirma además que ya se están registrando estados. Si el conteo es cero, espera a que HA genere estados y revisa logs; no crees otra base ni otro usuario.
+Sal con `\q`. Confirma que regresaste al prompt de Bash (`root@Nas ... #`) y solo entonces limpia las variables administrativas. La verificación se considera completa cuando la configuración apunta a PostgreSQL, existe una conexión activa de `ha_user` y las tablas `states`/`events` existen; `states_count > 0` confirma además que ya se están registrando estados. Si el conteo es cero, espera a que HA genere estados y revisa logs; no crees otra base ni otro usuario.
 
 **Checkpoint 11 — conexión PostgreSQL funcional:** configuración, conexión activa y tablas de Recorder confirmadas.
 
