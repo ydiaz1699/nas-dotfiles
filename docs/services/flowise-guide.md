@@ -44,9 +44,7 @@ La persistencia de Flowise queda en un bind mount respaldable.
 
 - **Base de datos:** PostgreSQL dedicado `flowise_db` dentro de DataSQL.
 - **Cola:** Redis de DataSQL, con `QUEUE_NAME=flowise-queue`.
-- **Procesamiento:** `MODE=queue` en main y worker; el proceso worker se inicia
-  con `entrypoint: /bin/sh -c "sleep 3; flowise worker"`, variante reportada como
-  funcional en el NAS.
+- **Procesamiento:** `MODE=queue` en main y worker. El worker usa la imagen oficial separada `flowiseai/flowise-worker:latest` y arranca el servidor auxiliar de salud en `5566` antes de ejecutar `pnpm run start-worker`.
 - **Persistencia:** `$dkco/flowise/data` montado en `/home/node/.flowise` en ambos
   contenedores. Se usa bind mount para que el backup pueda localizar los datos.
 - **Acceso:** `8100:3000` en la LAN durante esta fase.
@@ -305,7 +303,8 @@ services:
     extends:
       file: ../_common.yml
       service: _defaults
-    image: flowiseai/flowise:latest
+    # La imagen separada inicia también el servidor interno de healthcheck.
+    image: flowiseai/flowise-worker:latest
     container_name: flowise-worker
     env_file:
       - ../.env
@@ -364,7 +363,7 @@ services:
         reservations:
           cpus: '0.25'
           memory: 256M
-    entrypoint: /bin/sh -c "sleep 3; flowise worker"
+    entrypoint: /bin/sh -c "node /app/healthcheck/healthcheck.js & sleep 5 && pnpm run start-worker"
 
 networks:
   db_net:
@@ -374,9 +373,11 @@ networks:
 ### Motivos de las decisiones del compose
 
 - `MODE=queue` se conserva tanto en main como en worker porque la documentación
-  oficial indica compartir la configuración. En el NAS, el worker operativo usa
-  `entrypoint: /bin/sh -c "sleep 3; flowise worker"`, que deja unos segundos para
-  que el main saludable complete su inicialización antes de procesar trabajos.
+  oficial indica compartir la configuración. La primera variante usaba la imagen
+  principal y `flowise worker`; el runtime demostró que esa combinación dejaba el
+  worker `unhealthy` porque no iniciaba el servidor HTTP interno de `5566`. La
+  variante final usa `flowiseai/flowise-worker:latest` y arranca el healthcheck
+  oficial en paralelo con `pnpm run start-worker`.
 - `NODE_OPTIONS=--max-old-space-size=768` y los límites de `1G`/`256M` del worker
   son ajustes operativos reportados como funcionales en el NAS para evitar los
   reinicios por memoria observados durante el procesamiento.
@@ -552,12 +553,287 @@ Antes de habilitar réplicas se deben completar, como tarea separada:
 
 ---
 
+## Incidencias resueltas y comandos reproducibles
+
+Esta sección conserva la experiencia real de la instalación para que una sesión
+futura pueda diagnosticar Flowise sin repetir errores ni pedir secretos. Los
+comandos se muestran sin contraseñas reales; las variables temporales solo viven
+en la sesión actual y se eliminan al terminar.
+
+### A. Preparación inicial y comprobación de placeholders
+
+El orden confirmado fue: carpeta → archivo existente → permisos → validación →
+servicio. Desde el directorio del servicio:
+
+```bash
+dk flowise
+mkdir -p data
+chmod 600 .env
+
+if grep -q '__pega_aqui__' .env; then
+  printf 'Todavía existen placeholders en .env de Flowise.\n' >&2
+  exit 1
+else
+  printf '.env de Flowise no contiene placeholders.\n'
+fi
+```
+
+`chmod 600 .env` no crea el archivo: solo debe ejecutarse cuando `.env` ya
+existe. No mostrar el archivo completo ni pegar su contenido en el chat.
+
+### B. Confirmar las dependencias antes de levantar
+
+```bash
+svc health
+svc ps datasql
+svc net
+```
+
+La salida confirmó `datapostgres` y `dataredis` saludables y la red externa
+`db_net`. Los nombres que aparecen en esa tabla no son comandos: escribir
+`datapostgres`, `dataredis` o `db_net` directamente en Bash produce `orden no
+encontrada`, pero no modifica el sistema.
+
+### C. Sintaxis correcta de `svc exec`
+
+El wrapper de este NAS recibe el proyecto y el servicio interno antes del
+comando. Para consultar la versión del main:
+
+```bash
+NAS_CLI=bash svc exec flowise flowise sh -c 'flowise --version'
+```
+
+La variante incorrecta fue:
+
+```bash
+NAS_CLI=bash svc exec flowise sh -c 'flowise --version'
+```
+
+Ese orden hizo que el wrapper interpretara `sh` como un servicio y devolviera
+`service "sh" is not running`. Para PostgreSQL y Redis se conserva el mismo
+patrón, por ejemplo `svc exec datasql postgres ...` y `svc exec datasql redis ...`.
+
+### D. Sincronizar el secreto de Redis sin exponerlo
+
+Flowise debe reutilizar el `REDIS_PASSWORD` de DataSQL. No generar otra
+contraseña para Redis:
+
+```bash
+dk datasql
+DATASQL_REDIS_PASSWORD="$(awk -F= '$1=="REDIS_PASSWORD"{print substr($0,index($0,"=")+1); exit}' .env)"
+
+if [[ -z "$DATASQL_REDIS_PASSWORD" ||
+      "$DATASQL_REDIS_PASSWORD" == "__pega_aqui__" ]]; then
+  printf 'REDIS_PASSWORD de DataSQL falta o usa el placeholder.\n' >&2
+  unset DATASQL_REDIS_PASSWORD
+  exit 1
+fi
+
+dk flowise
+if [[ ! -f .env ]]; then
+  printf 'No existe .env de Flowise.\n' >&2
+  unset DATASQL_REDIS_PASSWORD
+  exit 1
+fi
+sed -i "s/^REDIS_PASSWORD=.*/REDIS_PASSWORD=$DATASQL_REDIS_PASSWORD/" .env
+chmod 600 .env
+
+if grep -q '^REDIS_PASSWORD=__pega_aqui__$' .env; then
+  printf 'Flowise todavía tiene el placeholder de Redis.\n' >&2
+  unset DATASQL_REDIS_PASSWORD
+  exit 1
+fi
+
+dk datasql
+svc exec datasql redis \
+  env REDISCLI_AUTH="$DATASQL_REDIS_PASSWORD" \
+  redis-cli ping
+
+unset DATASQL_REDIS_PASSWORD
+```
+
+La postcondición observada fue `PONG`. El valor nunca se imprimió. Si se compara
+el secreto de Flowise con DataSQL, informar únicamente `coincide` o `no coincide`.
+
+### E. PostgreSQL: rol primero, base después, conexión dedicada
+
+La creación de PostgreSQL se hizo separando las operaciones no transaccionales:
+primero `flowise_user`, después `flowise_db` con ese propietario. La guía única
+para leer las credenciales administrativas desde `$dkco/datasql/.env`, sin
+`source` y sin mostrarlas, es `docs/services/datasql-guide.md`.
+
+Las verificaciones seguras usadas después fueron:
+
+```bash
+dk flowise
+FLOWISE_DB_PASSWORD="$(awk -F= '$1=="FLOWISE_DB_PASSWORD"{print substr($0,index($0,"=")+1); exit}' .env)"
+
+if [[ -z "$FLOWISE_DB_PASSWORD" ||
+      "$FLOWISE_DB_PASSWORD" == "__pega_aqui__" ]]; then
+  printf 'FLOWISE_DB_PASSWORD falta o usa el placeholder.\n' >&2
+  unset FLOWISE_DB_PASSWORD
+  exit 1
+fi
+
+svc exec datasql postgres \
+  env PGPASSWORD="$FLOWISE_DB_PASSWORD" \
+      PGUSER=flowise_user \
+      PGDATABASE=flowise_db \
+  psql
+```
+
+Dentro de `psql` se verificó:
+
+```sql
+SELECT current_user, current_database();
+\q
+```
+
+La evidencia esperada es `flowise_user` y `flowise_db`. Después de salir de
+`psql`, volver al prompt Bash y limpiar:
+
+```bash
+unset FLOWISE_DB_PASSWORD
+```
+
+No pasar `-U`, `-d` ni `-c` directamente después de `svc exec`: el parser del
+wrapper puede consumir esas opciones. Usar `PGUSER`, `PGDATABASE`, `PGPASSWORD`
+y una sesión interactiva de `psql`.
+
+### F. Snapshot antes de cambiar el worker
+
+Antes de modificar el compose se creó un snapshot:
+
+```bash
+dk flowise
+svc snapshot flowise
+```
+
+El snapshot protege el `compose.yml` y el `.env` local. No publicar su contenido
+ni su ruta si puede revelar información de la instalación. Para una reversión
+futura, consultar primero los snapshots disponibles y usar el flujo confirmado:
+
+```bash
+svc rollback flowise
+```
+
+### G. Problema del worker `unhealthy`
+
+La primera variante usaba la imagen principal también para el worker:
+
+```yaml
+image: flowiseai/flowise:latest
+entrypoint: /bin/sh -c "sleep 3; flowise worker"
+```
+
+El main llegaba a `healthy`, pero el worker quedaba `unhealthy`. Los logs
+mostraban que las colas se creaban, pero no existía ningún servidor HTTP
+escuchando en `5566`; por eso fallaba el healthcheck
+`http://localhost:5566/healthz`.
+
+La corrección aplicada al bloque `flowise-worker` fue:
+
+```yaml
+image: flowiseai/flowise-worker:latest
+entrypoint: /bin/sh -c "node /app/healthcheck/healthcheck.js & sleep 5 && pnpm run start-worker"
+```
+
+La imagen separada y el proceso auxiliar fueron contrastados con el compose
+oficial de queue mode. El comando de edición usado para la imagen fue:
+
+```bash
+sed -i '/^  flowise-worker:/,/^    container_name: flowise-worker/ s#^    image: flowiseai/flowise:latest$#    image: flowiseai/flowise-worker:latest#' compose.yml
+```
+
+Para el `entrypoint`, la variante exacta inicialmente no coincidió con el texto
+real y no modificó la línea. La variante robusta que sí permite cualquier
+entrypoint existente dentro del bloque del worker fue:
+
+```bash
+sed -i '/^  flowise-worker:/,$ s#^    entrypoint:.*#    entrypoint: /bin/sh -c "node /app/healthcheck/healthcheck.js \& sleep 5 \&\& pnpm run start-worker"#' compose.yml
+```
+
+Las barras invertidas `\&` solo escapan `&` durante la sustitución de `sed`; el
+valor final guardado en YAML debe contener `&` y `&&`, sin barras invertidas.
+Verificar antes de actualizar:
+
+```bash
+grep -nE 'flowise-worker:|image: flowiseai|entrypoint:' compose.yml
+```
+
+La salida debe contener:
+
+```text
+image: flowiseai/flowise-worker:latest
+entrypoint: /bin/sh -c "node /app/healthcheck/healthcheck.js & sleep 5 && pnpm run start-worker"
+```
+
+### H. Validar y recrear después de la corrección
+
+```bash
+svc config flowise
+svc update flowise
+svc ps flowise
+```
+
+La verificación final realizada fue:
+
+```bash
+curl -fsS http://127.0.0.1:8100/api/v1/ping
+printf '\n'
+```
+
+Postcondiciones confirmadas:
+
+```text
+flowise          healthy
+flowise-worker   healthy
+pong
+```
+
+Los logs finales del worker confirmaron `Healthcheck server listening on port
+5566`, workers de `prediction`, `upsertion` y `schedule` creados, y conexión de
+Redis. Los avisos de npm/deprecación no fueron bloqueantes.
+
+### I. Incidencia de dependencias y versión de imagen
+
+La imagen inicial reportó `flowise/3.1.2` y errores al cargar nodos ReAct y AWS
+Bedrock (`@langchain/core/utils/uuid` y `@smithy/eventstream-codec`). El main
+terminó inicializando y respondió `pong`; esos errores no impidieron el arranque
+básico, pero pueden afectar esos nodos concretos.
+
+`flowiseai/flowise:latest` es una etiqueta mutable. No afirmar una versión solo
+por el nombre de la etiqueta: consultarla con:
+
+```bash
+NAS_CLI=bash svc exec flowise flowise sh -c 'flowise --version'
+```
+
+En el runtime corregido, el worker reportó `flowise@3.1.4`. Si main y worker
+reportan versiones diferentes, registrar el hecho y tratar la fijación de ambas
+imágenes a una misma versión como una tarea separada; no cambiarla durante un
+diagnóstico de secretos, Redis o PostgreSQL.
+
+### J. Tabla de decisiones de esta incidencia
+
+| Variante | Resultado | Clasificación |
+|---|---|---|
+| `svc exec flowise sh -c ...` | El wrapper interpretó `sh` como servicio | RECHAZADO: sintaxis incompatible |
+| Escribir `entrypoint: ...` en Bash | `orden no encontrada`; no modifica YAML | RECHAZADO: contexto incorrecto |
+| `flowiseai/flowise:latest` para main y worker | Main inicia, worker queda `unhealthy` sin healthcheck en 5566 | REEMPLAZADO por imagen oficial separada |
+| `flowiseai/flowise-worker:latest` + healthcheck auxiliar | Worker healthy, colas creadas y Redis conectado | INTEGRADO |
+| `svc update flowise` sin borrar `data` | Actualiza/recrea contenedores y conserva datos | INTEGRADO |
+| Generar otra contraseña Redis | Rompería la autenticación con DataSQL | RECHAZADO |
+| `docker exec`/`docker compose` directos | Rompe la interfaz operativa del NAS | RECHAZADO; usar `svc` |
+
+---
+
 ## 10. Diagnóstico
 
 | Síntoma | Revisión y acción |
 |---|---|
 | `flowise` reinicia | `svc logs flowise`; revisar primero DB, Redis y variables requeridas |
-| `flowise-worker` queda `unhealthy` | `svc logs flowise`; confirmar `entrypoint: /bin/sh -c "sleep 3; flowise worker"`, `NODE_OPTIONS=--max-old-space-size=768`, `WORKER_PORT=5566` y `/healthz` |
+| `flowise-worker` queda `unhealthy` | `svc logs flowise`; confirmar `image: flowiseai/flowise-worker:latest`, `entrypoint` con `healthcheck.js` + `pnpm run start-worker`, `NODE_OPTIONS=--max-old-space-size=768`, `WORKER_PORT=5566` y `/healthz` |
 | Error de PostgreSQL | `svc health`, `svc ps datasql`, red `db_net`, host `datapostgres`, base y usuario |
 | Error de Redis | confirmar que `REDIS_PASSWORD` local coincide con DataSQL y que el host es `dataredis` |
 | Worker no procesa trabajos | comprobar que main y worker usan `MODE=queue`, `QUEUE_NAME` y `FLOWISE_SECRETKEY_OVERWRITE` iguales |
@@ -580,10 +856,7 @@ Antes de habilitar réplicas se deben completar, como tarea separada:
    los procesan mediante Redis.
 3. Las variables oficiales de queue incluyen `MODE`, `QUEUE_NAME`,
    `WORKER_CONCURRENCY`, `REDIS_HOST`, `REDIS_PORT` y `REDIS_PASSWORD`.
-4. La documentación oficial muestra `pnpm run start-worker` para iniciar el
-   worker y `http://localhost:5566/healthz` para comprobarlo; el runtime del NAS
-   reportó como funcional la variante `sleep 3; flowise worker`, que es la que
-   queda en el compose canónico.
+4. La documentación oficial muestra `flowiseai/flowise-worker`, `pnpm run start-worker` y `http://localhost:5566/healthz` para queue mode. El runtime del NAS confirmó que la variante operativa necesita además iniciar `node /app/healthcheck/healthcheck.js` en paralelo; sin ese proceso el worker queda `unhealthy`.
 5. DataSQL del NAS ya define `datapostgres`, `dataredis` y la red externa `db_net`.
 6. El compose de Flowise no publica PostgreSQL ni Redis a la LAN; el binding
    `127.0.0.1:5432` del compose de DataSQL existe únicamente para Home Assistant
@@ -628,7 +901,7 @@ significa que la decisión aparece en esta guía y en el compose del catálogo.
 | `cla1.md` | Main + worker y storage compartido | Hecho de fuente, compatible con docs | Alta | Se adopta con `/home/node/.flowise` | INTEGRADO |
 | `cla1.md` | `127.0.0.1:3000` | Hecho de fuente | Alta | Se sustituye por `8100:3000` LAN documentado | REEMPLAZADO |
 | `cla1.md` | `depends_on: datapostgres` | Hecho de fuente | Alta | No válido entre composes separados | RECHAZADO |
-| `cla1.md` + reporte runtime NAS | `flowise worker` y `MODE=queue` en el worker | Hecho de fuente y reporte runtime NAS | Alta | Se conserva `MODE=queue` y el runtime usa `entrypoint` con `sleep 3; flowise worker` | INTEGRADO |
+| `cla1.md` + reporte runtime NAS | `flowise worker` y `MODE=queue` en el worker | Hecho de fuente y reporte runtime NAS | Alta | Se conserva `MODE=queue`; el entrypoint `flowise worker` se reemplaza por la imagen separada, healthcheck auxiliar y `pnpm run start-worker` | REEMPLAZADO |
 | `cla1.md` | `svc scale flowise-worker s=3` | Hecho de fuente | Alta | `svc` no implementa ese comando | RECHAZADO |
 | `cla1.md` | `/root/.flowise` | Hecho de fuente | Alta | No coincide con imagen/configuración canónica del NAS | RECHAZADO |
 | `cla1.md` | `FLOWISE_USERNAME/PASSWORD` y clave persistente | Hecho de fuente | Media | Se integra como compatibilidad legacy y secreto estable | INTEGRADO |
@@ -683,8 +956,7 @@ significa que la decisión aparece en esta guía y en el compose del catálogo.
 - [ ] `$dkco/.env` contiene `SERVER_IP` y `TZ`.
 - [ ] `db_net` existe como red externa.
 - [ ] `compose.yml` usa `env_file: [../.env, .env]`.
-- [ ] El worker usa `NODE_OPTIONS=--max-old-space-size=768`, límite `1G` y reserva `256M`.
-- [ ] El worker inicia con `sleep 3; flowise worker` y mantiene healthcheck en `5566/healthz`.
+- [ ] El worker usa la imagen `flowiseai/flowise-worker:latest`, inicia `healthcheck.js` y `pnpm run start-worker`, con `NODE_OPTIONS=--max-old-space-size=768`, límite `1G` y reserva `256M`.
 - [ ] El compose de Flowise no publica PostgreSQL ni Redis a la LAN; el binding `127.0.0.1:5432` de DataSQL se reserva para Home Assistant host-network.
 - [ ] `svc config flowise` termina correctamente.
 - [ ] Main y worker aparecen `healthy`.
