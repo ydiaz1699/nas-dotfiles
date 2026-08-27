@@ -1,7 +1,8 @@
 # Pipeline de Auto-Documentación en Cascada
 
-> Cada vez que se crea o modifica un servicio Docker, la documentación se genera
-> automáticamente. Nunca más "olvidé documentar X".
+> El pipeline detecta y genera artefactos faltantes. La experiencia runtime y las
+> correcciones manuales deben alimentar la guía dueña mediante la skill de
+> evolución documental; la existencia de archivos no demuestra sincronización semántica.
 
 ---
 
@@ -276,6 +277,48 @@ svc catalog-sync vaultwarden
 
 # 4. Completar la guía con info real cuando tengas experiencia
 nano $NAS_DOTFILES/docs/services/vaultwarden-guide.md
+```
+
+---
+
+## Autoalimentación y límites reales
+
+`catalog-sync` cubre la generación y conversión de artefactos; no sustituye la
+reconciliación de conocimiento operativo. Cuando una sesión del NAS descubre un
+problema o una corrección, el flujo correcto es:
+
+```text
+salida sanitizada del NAS
+  → docs/services/<svc>-guide.md (fuente de conocimiento operativo)
+  → agent/catalog/services/<svc>/compose.yml (si cambió la configuración)
+  → ficha.md y .env.example (si cambió el contrato)
+  → nas-context.md (si el aprendizaje es reutilizable)
+  → skill/contrato/hook (solo si cambió el proceso)
+  → project_index.py + project_scanner.py + diff check
+```
+
+El registro debe conservar síntoma, causa, comando completo sin secretos,
+backup, verificación, postcondición y clasificación (`INTEGRADO`, `REEMPLAZADO`,
+`RECHAZADO`, `PENDIENTE` o `BLOQUEADO`). La guía no debe guardar contraseñas,
+tokens, `.env` real ni una salida completa de `svc config`.
+
+El hook Kiro informa faltantes y drift estático, pero no ejecuta comandos runtime
+del NAS. El scanner actual tampoco mantiene un ledger persistente de archivos
+`processed/pending/failed` ni un productor demostrado de eventos de memoria. Por
+eso esta fase se denomina **autoalimentación asistida por la skill**: el LLM
+extrae el aprendizaje y propone/realiza la actualización autorizada, pero no se
+debe afirmar automatización completa hasta implementar y validar el entrypoint,
+el ledger y sus consumidores.
+
+Para iniciar el siguiente servicio, conservar un handoff breve con:
+
+```text
+COMPLETADO: <servicio>
+EVIDENCIA: <healthy/pong/PONG/etc., sin secretos>
+CAMBIOS: <archivos y runtime>
+PENDIENTE: <discrepancias o riesgos>
+NO_REPETIR: <operaciones ya realizadas>
+SIGUIENTE: auditar <servicio siguiente> desde guía, ficha, compose y .env.example
 ```
 
 ---

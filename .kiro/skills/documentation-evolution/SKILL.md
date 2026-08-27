@@ -205,9 +205,123 @@ Después de una corrección confirmada:
 No copiar la conversación completa ni guardar secretos. Registrar una regla
 reutilizable, su origen y la fecha cuando corresponda.
 
+## Autoalimentación desde evidencia runtime
 
+Cuando el usuario entregue una salida del NAS, un Gist, un diagnóstico o una
+corrección de un comando, tratarlo como **evidencia de ejecución**, no como una
+pregunta aislada. La autoalimentación documental debe seguir esta cadena:
 
-## Continuidad de una guía interactiva
+```text
+evidencia runtime
+  → síntoma exacto
+  → causa confirmada o hipótesis separada
+  → variante/comando que corrigió
+  → postcondición observada
+  → guía dueña actualizada
+  → derivados revisados
+  → aprendizaje reutilizable
+  → validación y handoff siguiente
+```
+
+### Registro mínimo sin secretos
+
+Antes de cerrar una incidencia, crear mentalmente o en el artefacto de
+trazabilidad un registro con estos campos:
+
+```yaml
+incident_id: <servicio>-<síntoma-corto>
+service: <servicio>
+source: user-runtime-report | gist | log | code | guide
+observed_at: <si la fuente lo proporciona; no inventar>
+symptom: <salida sanitizada>
+root_cause: <HECHO o hipótesis marcada>
+mutations:
+  - command: <comando completo sin valores secretos>
+    target: <archivo/servicio/contenedor>
+    backup: <ruta o NO_APLICA>
+verification:
+  - command: <verificación>
+    expected: <salida segura>
+postcondition: confirmed | partial | failed | unknown
+owner_files:
+  - <guía o documento canónico>
+derived_files:
+  - <compose/ficha/.env.example/skill/contexto afectados>
+classification: INTEGRADO | REEMPLAZADO | RECHAZADO | PENDIENTE | BLOQUEADO
+next_action: <siguiente paso único>
+```
+
+Nunca incluir contraseñas, tokens, `.env` real, hashes de secretos, salida
+completa de `svc config` ni logs que los contengan. Sustituir valores por
+`<secreto_local>`, conservar solo la operación y verificar mediante `PONG`,
+`healthy`, `current_user`, `current_database`, `pong` u otra evidencia segura.
+
+### Qué actualizar y en qué orden
+
+1. **Guía dueña:** incorporar el problema, antes/después, causa, comando
+   reproducible, verificación, rollback y límites. La guía es la única fuente de
+   prosa operativa.
+2. **Compose del catálogo:** actualizarlo si cambió imagen, entrypoint, red,
+   volumen, healthcheck, puerto o variable. Mantener la diferencia de rutas
+   `extends` entre NAS y catálogo.
+3. **Ficha:** actualizar metadatos, healthcheck principal, notas y referencias
+   operativas; no copiar el procedimiento completo.
+4. **`.env.example`:** actualizarlo solo si cambió el contrato de variables; no
+   copiar valores reales.
+5. **`nas-context.md`:** añadir una línea breve si el aprendizaje evita que un
+   futuro LLM repita el incidente.
+6. **Esta skill:** modificarla solo si cambió el proceso general de auditoría,
+   autoalimentación o continuidad; no usarla como depósito de detalles de un
+   solo servicio.
+7. **Scanner, contratos o hooks:** actualizar implementación y entrypoint si la
+   corrección pretende ser automática. No afirmar que una conexión existe solo
+   porque la skill la describe.
+
+Después ejecutar las validaciones del repositorio y registrar qué fue realmente
+comprobado. Una salida del usuario puede confirmar el runtime del NAS, pero no
+sustituye `git diff --check`, `project_index.py`, `project_scanner.py` ni una
+prueba del código del repositorio.
+
+### Correcciones de comandos durante una guía
+
+Si el usuario pega un comando que falló, conservar tres piezas:
+
+- **Variante intentada:** comando exacto y error, clasificado como RECHAZADO o
+  REEMPLAZADO; no volver a recomendarlo.
+- **Causa del fallo:** parser, contexto Bash/`psql`, ruta inexistente, orden
+  temporal o incompatibilidad del servicio.
+- **Variante corregida:** comando completo, precondiciones y postcondición.
+
+No convertir una línea YAML (`image:`, `entrypoint:`) en un comando Bash. No
+recomendar dos mutaciones alternativas simultáneamente. Si una sustitución de
+`sed` depende de una línea exacta y no coincide, documentar la variante robusta
+y verificar el archivo antes de levantar el servicio.
+
+### Handoff entre servicios
+
+Al terminar un servicio y continuar con otro, guardar un handoff breve:
+
+```text
+COMPLETADO: <servicio>
+EVIDENCIA: <salidas sanitizadas>
+CAMBIOS: <archivos y runtime>
+PENDIENTE: <riesgos o discrepancias>
+NO_REPETIR: <operaciones destructivas o secretos ya establecidos>
+SIGUIENTE: auditar <servicio siguiente> desde su guía, ficha, compose y .env.example
+```
+
+Para n8n, el siguiente agente debe empezar por auditar su compose/runtime y no
+asumir que la existencia de `n8n_db` demuestra una conexión funcional. Debe leer
+la guía de DataSQL y la guía/ficha de n8n si existen, comparar la contraseña de
+Redis desde su fuente de verdad y comprobar healthcheck, reinicios, puertos,
+redes y logs antes de modificar nada.
+
+Si no existe un productor de eventos, un ledger o un hook que escriba estos
+registros, describir este flujo como **autoalimentación asistida por la skill**,
+no como automatización implementada. La skill puede obligar al LLM a extraer y
+proponer el aprendizaje; persistirlo automáticamente requiere además una
+herramienta, un entrypoint y una validación de conexión.
+
 
 Cuando el usuario está ejecutando una guía paso a paso en el NAS, la conversación
 se trata como una máquina de estados, no como una consulta nueva independiente.

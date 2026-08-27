@@ -49,7 +49,7 @@ backup_paths:
   - "$dkco/datasql/data/postgres/backups/flowise_db_*.sql"
 protected: true
 docs_url: "docs/services/flowise-guide.md"
-notes: "Flowise usa MODE=queue con PostgreSQL dedicado flowise_db en datapostgres y Redis dataredis mediante la red externa db_net. Main y worker comparten FLOWISE_SECRETKEY_OVERWRITE, el bind ./data y la configuración de queue; el worker se inicia con entrypoint sleep 3 + flowise worker, usa NODE_OPTIONS=--max-old-space-size=768 y valida /healthz en el puerto interno 5566. Main y worker tienen límites de 1g y reserva de 256m. No se usa depends_on contra DataSQL. El dashboard se publica en LAN en :8100 durante esta fase; no debe exponerse a Internet sin reverse proxy y HTTPS. svc no implementa scale todavía y flowise-worker conserva container_name fijo. El backup requiere los datos de Flowise y un dump de flowise_db."
+notes: "Flowise usa MODE=queue con PostgreSQL dedicado flowise_db en datapostgres y Redis dataredis mediante la red externa db_net. Main y worker comparten FLOWISE_SECRETKEY_OVERWRITE, el bind ./data y la configuración de queue. El main usa flowiseai/flowise:latest y el worker la imagen oficial separada flowiseai/flowise-worker:latest; el worker inicia healthcheck.js y pnpm run start-worker, valida /healthz en el puerto interno 5566 y no publica ese puerto. Main y worker tienen límites de 1g y reserva de 256m. No se usa depends_on contra DataSQL. El dashboard se publica en LAN en :8100 durante esta fase; no debe exponerse a Internet sin reverse proxy y HTTPS. svc no implementa scale todavía y flowise-worker conserva container_name fijo. El backup requiere los datos de Flowise y un dump de flowise_db. La etiqueta latest es mutable: verificar la versión real antes de fijarla o actualizarla."
 networks:
   - db_net
 ports:
@@ -78,6 +78,7 @@ procedimiento.
 - Redis compartido `dataredis`, con `QUEUE_NAME=flowise-queue`.
 - Red externa `db_net`.
 - Main publicado temporalmente en `${SERVER_IP}:8100`.
+- Main usa `flowiseai/flowise:latest`; worker usa `flowiseai/flowise-worker:latest` y arranca el healthcheck auxiliar antes de `pnpm run start-worker`.
 - Worker interno con healthcheck en `5566/healthz`.
 - Bind mount `./data:/home/node/.flowise` compartido por main y worker.
 - No se publican `5432`, `6379` ni `5566` al host.
