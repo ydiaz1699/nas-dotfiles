@@ -276,6 +276,7 @@ Requisitos pendientes:
 | Modificar/crear un compose.yml | `docs/docker-entorno.md` + `docs/dependency-map.md` (**OBLIGATORIO**) |
 | Usuario copia compose de internet | `docs/docker-entorno.md` (ajustar a convenciones: env_file, ${SERVER_IP}, labels, security) |
 | Crear servicio nuevo | `docs/dependency-map.md` + `docs/docker-entorno.md` + `agent/catalog/_template.md` |
+| Configurar/modificar secretos, `.env`, PostgreSQL o Redis | `.kiro/skills/nas-runtime-secrets/SKILL.md` + guía/ficha/compose del servicio |
 | Crear script/herramienta nueva | `docs/dependency-map.md` (verificar dónde conecta con el sistema) |
 | Resolver un problema nuevo | `docs/ideas-decisions.md` (agregar entrada con problema → idea → solución → aprendizaje) |
 | Entender por qué algo se hizo así | `docs/ideas-decisions.md` (historial de decisiones con contexto) |

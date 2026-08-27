@@ -39,3 +39,5 @@ agent/memory/sessions/*.md
 !.kiro/skills/documentation-evolution/SKILL.md
 !.kiro/skills/datasql/
 !.kiro/skills/datasql/SKILL.md
+!.kiro/skills/nas-runtime-secrets/
+!.kiro/skills/nas-runtime-secrets/SKILL.md
