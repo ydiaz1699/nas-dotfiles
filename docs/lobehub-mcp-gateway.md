@@ -351,26 +351,25 @@ Skills → Skill Store → Custom → Add custom skill**, o desde las Skills de 
 agente. También permite importar JSON y probar la conexión antes de instalarlo.
 Consulta la guía oficial: [Custom MCP en LobeHub](https://lobehub.com/docs/usage/community/custom-mcp).
 
-En el cuadro de importación, usar una configuración equivalente a esta, sin
-cometer el token en Git:
+En el cuadro de importación, usa inicialmente solo la URL y el tipo de conexión;
+configura la autenticación después en los campos de la interfaz:
 
 ```json
 {
   "mcpServers": {
     "nas-dotfiles": {
       "url": "http://lobehub-mcp:8790/mcp",
-      "type": "http",
-      "headers": {
-        "Authorization": "Bearer <LOBEHUB_MCP_TOKEN>"
-      }
+      "type": "http"
     }
   }
 }
 ```
 
-En la interfaz, si el formulario ofrece **Auth type: API Key**, elegirlo y
-pegar el valor del token local sin el prefijo `Bearer`; LobeHub construye el
-header. Si se usan headers avanzados, enviar exactamente
+En la interfaz, seleccionar **Streamable HTTP**, usar como endpoint
+`http://lobehub-mcp:8790/mcp`, elegir **Auth type: API Key** y pegar el valor
+local del token sin el prefijo `Bearer`; LobeHub construye el header. Esta forma
+es preferible al header JSON manual porque evita que el importador convierta o
+pierda la autenticación. Si se usan headers avanzados, enviar exactamente
 `Authorization: Bearer <token>`. Nunca poner `AUTH_SECRET`, `JWKS_KEY`,
 `LOBE_DB_PASSWORD` ni `REDIS_PASSWORD` en este campo.
 
@@ -418,6 +417,97 @@ restricciones y responde JSON directamente para requests normales. Referencias:
 [transporte MCP](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports)
 y [SDK Python oficial](https://github.com/modelcontextprotocol/python-sdk).
 Contenido externo reescrito y resumido para esta guía.
+
+## Compatibilidad con el CLI `svc`
+
+El NAS tiene dos entradas para `svc` y sus sintaxis no son intercambiables:
+
+- Bash: `NAS_CLI=bash` (predeterminada salvo que el entorno la cambie).
+- Python/Typer: `NAS_CLI=python`.
+
+Para ejecutar comandos dentro del compose de LobeHub, usa estas formas:
+
+```bash
+# CLI Bash: el proyecto es lobehub y el servicio interno se indica después.
+NAS_CLI=bash svc exec lobehub lobehub-mcp python -c 'print("ok")'
+NAS_CLI=bash svc exec lobehub /bin/node -e 'console.log("ok")'
+
+# CLI Python/Typer: `--` separa las opciones de svc del comando interno.
+NAS_CLI=python svc exec lobehub -- lobehub-mcp python -c 'print("ok")'
+NAS_CLI=python svc exec lobehub -- /bin/node -e 'console.log("ok")'
+```
+
+Reglas para cualquier diagnóstico paste-safe:
+
+- En Python, `--` es obligatorio antes de argumentos del comando que empiecen
+  por `-`; de lo contrario `-c`, `-e`, `-U`, `-d`, `-v` o `-T` pueden producir
+  `No such option` en el parser de Typer.
+- En Python, el primer argumento después de `svc exec` selecciona el compose.
+  Si el servicio interno difiere, va después de `--`: `lobehub` es el compose y
+  `lobehub-mcp` el servicio.
+- En Bash no usar esta variante con `--`; Bash hace passthrough directo a
+  Compose y usa `NAS_CLI=bash svc exec lobehub lobehub-mcp ...`.
+- `-T` no es una opción registrada por el CLI Python; no usarlo.
+- `Endpoint:`, `Auth type:` y `API Key:` son campos de la interfaz de LobeHub,
+  nunca comandos para pegar en Bash.
+- Si el diagnóstico lee `$dkco/.env`, ejecutarlo como root o después de `dk`
+  con un usuario que tenga permisos; desde `~` puede aparecer
+  `open /docker/.env: permission denied`.
+
+La prueba de red sin autenticación debe hacerse con el nombre interno desde el
+servicio LobeHub, y debe devolver `401`; la prueba autenticada del manifest
+sobre `lobehub-mcp` debe devolver `200` y cinco tools. Un `401` sin token no es
+un fallo del gateway.
+
+Comandos MCP paste-safe usando el CLI Python/Typer activo:
+
+```bash
+# Red/DNS: 401 es el resultado esperado porque no hay Bearer.
+NAS_CLI=python svc exec lobehub -- /bin/node -e '
+fetch("http://lobehub-mcp:8790/mcp", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Accept": "application/json, text/event-stream"
+  },
+  body: JSON.stringify({
+    jsonrpc: "2.0",
+    id: 1,
+    method: "initialize",
+    params: {
+      protocolVersion: "2025-03-26",
+      capabilities: {},
+      clientInfo: { name: "nas-diagnostic", version: "1.0" }
+    }
+  })
+}).then(async response => {
+  console.log("sin_token_status=" + response.status)
+  console.log("sin_token_content_type=" + (response.headers.get("content-type") || ""))
+  console.log("sin_token_body=" + (await response.text()).slice(0, 160))
+}).catch(error => console.log("sin_token_network_error=" + error.name + ":" + error.message))
+'
+
+# Manifest autenticado: el token ya está dentro del sidecar; no se imprime.
+NAS_CLI=python svc exec lobehub -- lobehub-mcp python -c '
+import os,json,urllib.request
+body=json.dumps({"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}).encode()
+request=urllib.request.Request(
+  "http://127.0.0.1:8790/mcp", data=body, method="POST",
+  headers={
+    "Authorization":"Bearer "+os.environ["MCP_SERVICE_TOKEN"],
+    "Content-Type":"application/json",
+    "Accept":"application/json, text/event-stream"
+  })
+with urllib.request.urlopen(request, timeout=5) as response:
+  result=json.loads(response.read().decode())
+  print("manifest_status="+str(response.status))
+  print("manifest_content_type="+response.headers.get("content-type",""))
+  print("tools_count="+str(len(result.get("result",{}).get("tools",[]))))
+'
+```
+
+No añadir `-T`, no repetir `lobehub` como servicio interno y no pegar las
+etiquetas `Endpoint:`, `Auth type:` o `API Key:` en Bash.
 
 ## Validación y troubleshooting
 
