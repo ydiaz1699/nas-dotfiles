@@ -144,48 +144,35 @@ if ! getent group nas-mcp >/dev/null; then
 fi
 MCP_SOCKET_GID="$(getent group nas-mcp | cut -d: -f3)"
 [[ "$MCP_SOCKET_GID" =~ ^[0-9]+$ ]] || {
-  printf 'No se pudo obtener el GID del grupo nas-mcp.\n' >&2
+  echo "No se pudo obtener el GID de nas-mcp" >&2
   exit 1
 }
 
 # Generar un token solo si falta o todavía es el placeholder. Si ya existe un
-# token válido, conservarlo para no romper una configuración de LobeHub activa.
+# token válido, conservarlo para no romper una configuración activa.
 MCP_TOKEN=""
 if ! grep -q '^LOBEHUB_MCP_TOKEN=' "$dkco/lobehub/.env" || \
    grep -Eq '^LOBEHUB_MCP_TOKEN=(|__pega_aqui__)$' "$dkco/lobehub/.env"; then
   MCP_TOKEN="$(openssl rand -hex 32)"
 fi
-export MCP_TOKEN MCP_SOCKET_GID
 
-python3 - "$dkco/lobehub/.env" <<'PY'
-import os
-import sys
+# Se usa python3 -c en una sola línea lógica para evitar que un pegado
+# interactivo corte el delimitador de un heredoc antes de tiempo.
+MCP_TOKEN="$MCP_TOKEN" MCP_SOCKET_GID="$MCP_SOCKET_GID" python3 -c '
+import os, sys
 from pathlib import Path
-
-path = Path(sys.argv[1])
-updates = {
-    "NAS_DOTFILES": "/nas-dotfiles",
-    "MCP_HELPER_SOCKET": "/run/nas/lobehub-mcp.sock",
-    "MCP_SOCKET_GID": os.environ["MCP_SOCKET_GID"],
-}
-if os.environ["MCP_TOKEN"]:
-    updates["LOBEHUB_MCP_TOKEN"] = os.environ["MCP_TOKEN"]
-
-lines = path.read_text(encoding="utf-8").splitlines()
-found = set()
-output = []
+p = Path(sys.argv[1])
+u = {"NAS_DOTFILES": "/nas-dotfiles", "MCP_HELPER_SOCKET": "/run/nas/lobehub-mcp.sock", "MCP_SOCKET_GID": os.environ["MCP_SOCKET_GID"]}
+if os.environ.get("MCP_TOKEN"): u["LOBEHUB_MCP_TOKEN"] = os.environ["MCP_TOKEN"]
+lines = p.read_text(encoding="utf-8").splitlines()
+seen, out = set(), []
 for line in lines:
     key = line.split("=", 1)[0] if "=" in line else ""
-    if key in updates:
-        output.append(f"{key}={updates[key]}")
-        found.add(key)
-    else:
-        output.append(line)
-for key, value in updates.items():
-    if key not in found:
-        output.append(f"{key}={value}")
-path.write_text("\n".join(output) + "\n", encoding="utf-8")
-PY
+    if key in u: out.append(f"{key}={u[key]}"); seen.add(key)
+    else: out.append(line)
+out.extend(f"{key}={value}" for key, value in u.items() if key not in seen)
+p.write_text("\n".join(out) + "\n", encoding="utf-8")
+' "$dkco/lobehub/.env"
 unset MCP_TOKEN MCP_SOCKET_GID
 chmod 600 "$dkco/lobehub/.env"
 ```
