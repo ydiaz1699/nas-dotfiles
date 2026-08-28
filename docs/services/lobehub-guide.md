@@ -612,16 +612,19 @@ if [[ "$KEY_VAULTS_SECRET_BYTES" == 16 ||
   printf 'KEY_VAULTS_SECRET válido: %s bytes decodificados.\n' "$KEY_VAULTS_SECRET_BYTES"
 else
   printf 'KEY_VAULTS_SECRET inválido: %s bytes decodificados.\n' "$KEY_VAULTS_SECRET_BYTES" >&2
+  unset KEY_VAULTS_SECRET_VALUE KEY_VAULTS_SECRET_BYTES
+  exit 1
 fi
 
 unset KEY_VAULTS_SECRET_VALUE KEY_VAULTS_SECRET_BYTES
 ```
 
-Después de una validación correcta, inicia LobeHub y revisa solo el estado y los
-logs localmente:
+Después de una validación correcta, fuerza la recreación de LobeHub para que
+Docker no conserve las variables de entorno del contenedor anterior. `svc up`
+sin recrear puede dejar activo el `KEY_VAULTS_SECRET` antiguo:
 
 ```bash
-svc up lobehub
+svc recreate lobehub
 svc ps lobehub
 svc health
 ```
@@ -1149,6 +1152,47 @@ fi
 
 Debe devolver `PONG`. El bloque limpia la variable incluso si el comando
 termina con error; no crear otro Redis ni generar otra contraseña.
+
+LobeHub tiene varios clientes Redis. El log `[Agent Runtime Redis] ... NOAUTH`
+aparece cuando `REDIS_PASSWORD` existe como variable separada pero el cliente usa
+`REDIS_URL` sin credenciales. Por eso el compose final incluye la misma
+contraseña dentro de la URL, en formato `redis://:${REDIS_PASSWORD}@dataredis:6379/0`,
+y conserva también `REDIS_PASSWORD` para los clientes que leen esa variable.
+La documentación oficial de [variables Redis de LobeHub](https://lobehub.com/docs/self-hosting/environment-variables/redis)
+indica que la URL autenticada debe incluir usuario y contraseña. No pegar la URL
+resuelta ni `svc config lobehub` en el chat.
+
+Si el runtime se preparó con el compose anterior, actualiza esa línea localmente
+y fuerza la recreación del contenedor; `svc up` sin recrear puede dejar las
+variables antiguas dentro del contenedor:
+
+```bash
+python3 - "$dkco/lobehub/compose.yml" <<'PY'
+import os
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+text = path.read_text()
+old = "      REDIS_URL: redis://dataredis:6379"
+new = '      REDIS_URL: "redis://:${REDIS_PASSWORD}@dataredis:6379/0"'
+if old in text:
+    temporary = path.with_name(path.name + ".tmp")
+    try:
+        temporary.write_text(text.replace(old, new, 1))
+        os.replace(temporary, path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+    print("REDIS_URL actualizado con autenticación")
+elif new in text:
+    print("REDIS_URL ya incluye autenticación")
+else:
+    raise SystemExit("No se encontró REDIS_URL en el formato esperado")
+PY
+
+svc recreate lobehub
+```
 
 ```bash
 dk lobehub
