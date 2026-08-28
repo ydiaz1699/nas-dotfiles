@@ -27,6 +27,30 @@ esté en la allowlist. `capabilities` lee los manifests versionados y valida, si
 checkout, que cada operación publicada tenga source, dispatch y guard
 read-only conectados.
 
+## Resultado verificado en el NAS
+
+La prueba runtime realizada el **28 de agosto de 2026** confirmó la ruta completa
+sin exponer el token:
+
+```text
+sin_token_status=401
+manifest_status=200
+manifest_content_type=application/json; charset=utf-8
+tools_count=5
+```
+
+El `401` de la primera prueba es intencional: se hizo un POST MCP sin `Bearer` y
+confirma que DNS, red, ruta y autenticación están alcanzables. El `200` de
+`tools/list` autenticado confirma el manifest funcional y las cinco tools
+esperadas. Un `GET /mcp` en un navegador no sustituye estas pruebas: el endpoint
+es interno, espera POST JSON-RPC y puede responder `405` a GET por diseño.
+
+En la misma sesión, `svc lobehub verify` terminó con **Resultado: 0 fallos**.
+LobeHub y `lobehub-mcp` estaban healthy; RustFS estaba healthy, `rustfs-init`
+había terminado correctamente, Redis respondió `PONG`, PostgreSQL mostró
+`vector`/`pg_search` y el rol `lobehub_user` cumplió mínimo privilegio. El aviso
+`QSTASH_TOKEN not set` es opcional y no invalida la integración.
+
 Herramientas publicadas:
 
 | Tool MCP | Operación interna | Cambia datos |
@@ -351,6 +375,23 @@ Skills → Skill Store → Custom → Add custom skill**, o desde las Skills de 
 agente. También permite importar JSON y probar la conexión antes de instalarlo.
 Consulta la guía oficial: [Custom MCP en LobeHub](https://lobehub.com/docs/usage/community/custom-mcp).
 
+### Procedimiento UI verificado
+
+1. En LobeHub, abrir **Settings → Skills → Skill Store → Custom → Add custom
+   skill** (o las Skills del agente) y seleccionar importar JSON.
+2. Importar únicamente la URL y el tipo, sin insertar secretos en el JSON:
+   `http://lobehub-mcp:8790/mcp` y conexión `http`/**Streamable HTTP**.
+3. En los campos de autenticación de la interfaz elegir **Auth type: API Key**
+   y pegar el valor local de `LOBEHUB_MCP_TOKEN` **sin** el prefijo `Bearer`.
+4. Ejecutar **Test connection** y comprobar las cinco tools de esta guía.
+5. Instalar/habilitar `nas-dotfiles` en el agente que lo usará. Instalar el MCP
+   no lo habilita automáticamente para todos los agentes.
+
+El navegador del usuario no debe resolver `lobehub-mcp`: LobeHub hace la petición
+como backend dentro de Docker, en `lobe_storage`. No cambiar el endpoint por
+`http://${SERVER_IP}:8790/mcp`, no publicar `8790` y no abrirlo directamente en
+el navegador.
+
 En el cuadro de importación, usa inicialmente solo la URL y el tipo de conexión;
 configura la autenticación después en los campos de la interfaz:
 
@@ -365,10 +406,10 @@ configura la autenticación después en los campos de la interfaz:
 }
 ```
 
-En la interfaz, seleccionar **Streamable HTTP**, usar como endpoint
-`http://lobehub-mcp:8790/mcp`, elegir **Auth type: API Key** y pegar el valor
-local del token sin el prefijo `Bearer`; LobeHub construye el header. Esta forma
-es preferible al header JSON manual porque evita que el importador convierta o
+La configuración final debe usar **Streamable HTTP**, el endpoint
+`http://lobehub-mcp:8790/mcp` y **Auth type: API Key**. Pegar el valor local
+del token sin el prefijo `Bearer`; LobeHub construye el header. Esta forma es
+preferible al header JSON manual porque evita que el importador convierta o
 pierda la autenticación. Si se usan headers avanzados, enviar exactamente
 `Authorization: Bearer <token>`. Nunca poner `AUTH_SECRET`, `JWKS_KEY`,
 `LOBE_DB_PASSWORD` ni `REDIS_PASSWORD` en este campo.
@@ -525,17 +566,26 @@ Desde la interfaz, `capabilities` debe indicar `mutations_exposed: false` y las
 operaciones publicadas deben estar conectadas. No se debe esperar que el MCP
 cree bases, haga backups, arregle permisos o detenga servicios.
 
-### Fallos frecuentes
+### Fallos frecuentes y causa real
 
-| Síntoma | Revisión segura |
-|---|---|
-| `Connection refused` al probar MCP | `svc ps lobehub`, `svc logs lobehub --tail=100`, y comprobar que `lobehub-mcp` esté healthy. |
-| `helper_unavailable` | `sudo systemctl status lobehub-mcp-helper` y `test -S /run/nas/lobehub-mcp.sock`; no crear el socket a mano. |
-| `401 Unauthorized` | Regenerar/leer el token solo localmente, actualizar el valor de LobeHub y no compartirlo. |
-| `Origin no permitido` | Añadir el origin exacto a `MCP_ALLOWED_ORIGINS`, recrear el sidecar con `svc recreate lobehub`; no usar `*`. |
-| Faltan tools en el preview | Revisar `svc capabilities --service lobehub`; el gateway falla cerrado si faltan source, dispatch o guard. |
-| El sidecar no inicia | `svc logs lobehub --tail=100`; comprobar que el helper ya exista y que `$NAS_DOTFILES` sea accesible para el build. |
-| Se solicita una mutación | Es comportamiento esperado: no está publicada. Usar el flujo local documentado y confirmación humana, nunca ampliar esta allowlist desde LobeHub. |
+| Síntoma observado | Causa | Corrección segura |
+|---|---|---|
+| `Error al obtener el manifest: Streamable HTTP error: Error POSTing to endpoint` | Se intentó importar el endpoint desde un contexto que no puede resolver `lobehub-mcp`, o la autenticación se perdió al importar headers JSON | Configurar **Streamable HTTP + API Key** en la UI; el backend de LobeHub debe hacer el POST dentro de `lobe_storage`. No publicar `8790`. |
+| No se puede abrir `http://lobehub-mcp:8790/mcp` en el navegador | `lobehub-mcp` es un hostname Docker interno y `/mcp` no es una página GET | Validar con POST JSON-RPC desde `svc exec`; `GET /mcp` puede devolver `405` por diseño. |
+| `sin_token_status=401` | La prueba omitió deliberadamente `Authorization` | Es el resultado esperado; confirma que el endpoint está protegido. Continuar con `tools/list` autenticado. |
+| `No such option: -T`, `-e`, `-c`, `-U` o `-d` | Se está usando el CLI Python/Typer y sus opciones están recibiendo flags del comando interno | Usar `NAS_CLI=python svc exec lobehub -- ...`; `--` separa Typer del comando. `-T` no es compatible con este CLI. |
+| El comando funciona con Bash pero no con Python | `NAS_CLI` selecciona dos implementaciones con sintaxis distinta | Fijar `NAS_CLI=bash` o `NAS_CLI=python` en cada bloque; no mezclar ejemplos. |
+| `open /docker/.env: permission denied` | Se ejecutó `svc` desde `~` con un usuario que no puede resolver el `.env` global | Entrar con `dk lobehub` o usar el contexto administrativo autorizado; no relajar permisos globales para ocultarlo. |
+| `csl: orden no encontrada`, `Endpoint: orden no encontrada`, `Auth: orden no encontrada` | Se pegó texto de la UI como si fueran comandos Bash, o el bloque quedó truncado | Separar los campos UI de los bloques de terminal y pegar bloques completos; no ejecutar `Endpoint:`, `Auth type:` ni `API Key:`. |
+| La sesión SSH se cierra durante un diagnóstico | `set -e`/`exit` se ejecutó en la shell interactiva root, a veces después de un `grep` que devolvió 1 | Usar subshells o `if/else`; no pegar `exit` en la shell principal. |
+| `svc lobehub verify` marca fallo de rol | El usuario de aplicación aún no está reconciliado con la contraseña de `.env` o tiene atributos elevados | Ejecutar el procedimiento local `svc lobehub reconcile-db --confirm`, volver a verificar y no compartir contraseñas. |
+| Aparece “migración PostgreSQL” aunque no se instaló otro PostgreSQL | LobeHub ejecuta sus migraciones contra la base dedicada `lobehub_db` dentro del PostgreSQL existente de DataSQL (`datapostgres`) | Es normal; reutilizar DataSQL, mantener `lobehub_user` dedicado y no crear un segundo contenedor PostgreSQL. |
+| `Connection refused` al probar MCP | El sidecar no está healthy o no está en la red privada | Ejecutar `svc ps lobehub` y revisar solo las últimas líneas con `svc logs lobehub -n 100`; comprobar que `lobehub-mcp` esté healthy. |
+| El sidecar no inicia | Falta el helper/socket o `$NAS_DOTFILES` no es accesible durante el build | Revisar `svc logs lobehub -n 100`, el servicio systemd y la ruta configurada; no publicar el socket ni el Docker socket. |
+| `helper_unavailable` | El servicio systemd no está activo o falta el socket | `sudo systemctl status lobehub-mcp-helper` y `test -S /run/nas/lobehub-mcp.sock`; no crear el socket a mano. |
+| `Origin no permitido` | El origen no está en `MCP_ALLOWED_ORIGINS` | Añadir el origin exacto, recrear con `svc recreate lobehub` y no usar `*`. |
+| Faltan tools en el preview | Falta una conexión source/dispatch/guard en los manifests | Revisar `svc capabilities --service lobehub`; el gateway debe fallar cerrado. |
+| Se solicita una mutación | La tool no está publicada por diseño | Usar el flujo local con confirmación humana; nunca ampliar esta allowlist desde LobeHub. |
 
 Para revisar el audit log sin exponer secretos:
 

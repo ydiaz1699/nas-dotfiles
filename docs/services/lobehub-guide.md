@@ -11,6 +11,32 @@
 > Esta guía no repite ni recrea `n8n_user`/`n8n_db`. LobeHub usa una identidad
 > PostgreSQL nueva y dedicada: `lobehub_user` / `lobehub_db`.
 
+## Estado runtime confirmado
+
+La comprobación final en el NAS dejó esta evidencia no sensible:
+
+- `lobehub` y `lobehub-mcp`: **healthy**.
+- RustFS: **healthy**; `rustfs-init`: terminó correctamente.
+- Redis: `PONG` autenticado.
+- PostgreSQL: extensiones `vector` y `pg_search` disponibles.
+- `lobehub_user`: login permitido, sin privilegios elevados ni atributos de
+  superusuario/creación de roles/DB.
+- `svc lobehub verify`: **Resultado: 0 fallos**; el aviso de `QSTASH_TOKEN` es
+  opcional.
+
+La línea “migración PostgreSQL” del verificador no significa que se haya creado
+otro contenedor PostgreSQL. LobeHub aplica sus migraciones sobre `lobehub_db`,
+una base dedicada dentro del PostgreSQL existente de DataSQL (`datapostgres`).
+La decisión canónica es reutilizar `datapostgres:5432` y `dataredis:6379`, crear
+un rol/base separados y no publicar PostgreSQL ni Redis a la LAN.
+
+La conexión MCP read-only tiene su procedimiento, pruebas HTTP y configuración
+UI en [`docs/lobehub-mcp-gateway.md`](../lobehub-mcp-gateway.md). La prueba de
+red sin token debe devolver `401`; la prueba autenticada de `tools/list` debe
+devolver `200` con cinco tools. No abrir el endpoint interno en un navegador:
+LobeHub debe resolverlo desde su backend dentro de la red Docker privada.
+
+
 ## 1. Decisión auditada y fuentes oficiales
 
 La versión elegida es **LobeHub 2.2.14**, publicada el 16 de agosto de 2026.

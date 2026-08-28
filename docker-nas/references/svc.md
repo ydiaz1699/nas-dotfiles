@@ -194,9 +194,33 @@ Cualquier subcomando de `docker compose` funciona automáticamente:
 | `svc run <svc> <cmd>` | Comando one-off |
 | `svc wait <svc>` | Esperar a que paren |
 
----
+### `svc exec`: Bash y Python no son intercambiables
 
-## Autocompletado TAB
+El shell puede exponer dos implementaciones. Fijar la elegida en cada bloque,
+especialmente en diagnósticos que se pegarán en una sesión SSH:
+
+```bash
+# Bash: passthrough de Compose; servicio interno antes del comando.
+NAS_CLI=bash svc exec lobehub lobehub-mcp python -c 'print("ok")'
+NAS_CLI=bash svc exec lobehub /bin/node -e 'console.log("ok")'
+
+# Python/Typer: `--` termina las opciones de Typer.
+NAS_CLI=python svc exec lobehub -- lobehub-mcp python -c 'print("ok")'
+NAS_CLI=python svc exec lobehub -- /bin/node -e 'console.log("ok")'
+```
+
+En Python, el primer argumento selecciona el compose (`lobehub`) y el servicio
+interno (`lobehub-mcp`) va después de `--`. Sin ese separador, Typer puede
+interpretar `-c`, `-e`, `-U`, `-d` o `-v` como opciones propias y mostrar `No
+such option`; `-T` no está soportado por esta implementación. No añadir `--` a
+la variante Bash.
+
+Para diagnósticos paste-safe, no usar `set -e` en la shell interactiva root
+cuando un `grep` pueda devolver 1; preferir subshells o `if/else`. `root@Nas ...
+#` es Bash, mientras `aipostgres=#`/`*_db=>` es `psql`; salir de SQL con `\q`
+antes de ejecutar `svc`, `unset` o comandos de shell. Los textos `Endpoint:`,
+`Auth type:` y `API Key:` pertenecen a la UI de LobeHub, no son comandos.
+
 
 ```bash
 svc <TAB>          # todos los comandos (globales + servicio)
