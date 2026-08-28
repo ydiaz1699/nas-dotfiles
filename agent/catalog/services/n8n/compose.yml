@@ -1,0 +1,63 @@
+# n8n — configuración objetivo posterior al hardening.
+# En el NAS este archivo se despliega como $dkco/n8n/compose.yml y la ruta
+# de extends cambia a ../_common.yml. Esta versión todavía debe verificarse
+# en el runtime si el hardening no se ha aplicado.
+services:
+  n8n:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: n8nio/n8n:2.36.7
+    container_name: n8n
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      N8N_SECURE_COOKIE: "false"
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: datapostgres
+      DB_POSTGRESDB_PORT: "5432"
+      DB_POSTGRESDB_DATABASE: n8n_db
+      DB_POSTGRESDB_USER: n8n_user
+      DB_POSTGRESDB_PASSWORD: ${DB_PASSWORD}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      WEBHOOK_URL: http://${SERVER_IP}:5678
+    ports:
+      - "5678:5678"
+    volumes:
+      - type: bind
+        source: ./data
+        target: /home/node/.n8n
+        read_only: false
+    networks:
+      - db_net
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          node -e "fetch('http://127.0.0.1:5678/healthz').then(response =>
+          process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    cap_drop:
+      - ALL
+    labels:
+      - homepage.group=IA y Automatización
+      - homepage.name=n8n
+      - homepage.icon=n8n
+      - homepage.href=http://${SERVER_IP}:5678
+      - homepage.description=Automatización de workflows
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+networks:
+  db_net:
+    external: true
