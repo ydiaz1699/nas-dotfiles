@@ -41,3 +41,6 @@ agent/memory/sessions/*.md
 !.kiro/skills/datasql/SKILL.md
 !.kiro/skills/nas-runtime-secrets/
 !.kiro/skills/nas-runtime-secrets/SKILL.md
+!.kiro/steering/
+.kiro/steering/*
+!.kiro/steering/svc-cli-runtime.md

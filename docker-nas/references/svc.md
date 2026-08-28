@@ -23,6 +23,15 @@ NAS_CLI=bash    # default — usa docker/cli/svc.sh
 NAS_CLI=python  # alternativo — usa svc_py/ (Rich + InquirerPy)
 ```
 
+Comprobar qué entrada está activa antes de copiar una sintaxis:
+
+```bash
+printf 'NAS_CLI=%s\n' "${NAS_CLI:-bash}"
+```
+
+`NAS_CLI` puede estar exportada por el perfil del usuario; por eso no se debe
+suponer que la sesión actual usa Bash solo porque el shell sea Bash.
+
 `svc snapshot` está disponible en las dos entradas: el comando Python lo
 registra y delega al Bash CLI mediante `bash_bridge.py`, que es la fuente única
 de la lógica. `rollback` sigue siendo Bash-only. Si el NAS todavía tiene un
@@ -37,6 +46,47 @@ NAS_CLI=bash svc rollback <svc>
 Después de actualizar el checkout del framework con `nasfk` + `gpl`, comprobar
 el comando antes de usarlo. No implementar una segunda versión de la lógica de
 snapshots en Python.
+
+### Sintaxis real de `svc exec` en los dos CLI
+
+El shell del NAS puede usar dos implementaciones. El valor por defecto es Bash;
+si `NAS_CLI=python` está exportado, se usa el CLI Python/Typer. No mezclar sus
+sintaxis:
+
+```bash
+# Bash: el primer nombre es el proyecto/compose y el siguiente el servicio
+# interno cuando no coinciden.
+NAS_CLI=bash svc exec lobehub lobehub-mcp python -c 'print("ok")'
+NAS_CLI=bash svc exec lobehub /bin/node -e 'console.log("ok")'
+
+# Python/Typer: el primer nombre selecciona el compose. `--` separa las
+# opciones de Typer del comando interno y evita que -c/-e/-U/-d/-v sean
+# interpretadas por svc.
+NAS_CLI=python svc exec lobehub -- lobehub-mcp python -c 'print("ok")'
+NAS_CLI=python svc exec lobehub -- /bin/node -e 'console.log("ok")'
+```
+
+Reglas obligatorias:
+
+- En Python, usar siempre `NAS_CLI=python svc exec <compose> -- <servicio> <comando> [argumentos]`.
+- Si el servicio Compose y el directorio tienen el mismo nombre, se omite el
+  servicio después de `--`: `NAS_CLI=python svc exec lobehub -- /bin/node -e ...`.
+- En Bash no añadir `--` delante del comando; el passthrough ya lo entrega a
+  Compose.
+- No usar `-T` como opción de `svc exec`: el CLI Python no lo registra y el
+  Bash CLI tampoco lo necesita para estas comprobaciones.
+- No poner `-U`, `-d`, `-c` o `-v` directamente antes del separador `--` del
+  CLI Python. Para PostgreSQL/Redis, preferir variables `PGUSER`, `PGDATABASE`,
+  `PGPASSWORD` y `REDISCLI_AUTH`.
+- Ejecutar desde `dk <servicio>` o desde root con acceso a `$dkco`; desde `~`
+  un usuario sin permisos puede obtener `open /docker/.env: permission denied`.
+- `Endpoint:`, `Auth type:` y `API Key:` son campos de la interfaz de LobeHub,
+  no comandos Bash.
+
+Si una guía no indica `NAS_CLI`, sus ejemplos `svc exec` se consideran Bash
+compatibles solo cuando no contienen argumentos que empiecen por `-`; para
+procedimientos paste-safe, fijar explícitamente `NAS_CLI=bash` o
+`NAS_CLI=python`.
 
 ## Detección de servicios
 
@@ -129,7 +179,8 @@ Cualquier subcomando de `docker compose` funciona automáticamente:
 | `svc ps <svc>` | Listar contenedores |
 | `svc stats <svc>` | CPU/RAM en tiempo real |
 | `svc top <svc>` | Procesos corriendo |
-| `svc exec <svc> <cmd>` | Ejecutar en contenedor |
+| `NAS_CLI=bash svc exec <proyecto> <servicio> <cmd>` | Ejecutar comando en servicio Compose (Bash) |
+| `NAS_CLI=python svc exec <proyecto> -- <servicio> <cmd>` | Ejecutar comando en servicio Compose (Python/Typer) |
 | `svc build <svc>` | Construir imagen |
 | `svc pull <svc>` | Descargar imagen |
 | `svc images <svc>` | Listar imágenes |

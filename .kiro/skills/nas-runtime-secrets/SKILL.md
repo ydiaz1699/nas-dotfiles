@@ -168,9 +168,13 @@ Usar antes de cualquier operación que incluya:
     `homeassistant_db=>` o `flowise_db=>` ejecutan SQL/órdenes de `psql`.
     Después de una sesión interactiva, ejecutar `\q` y esperar el prompt de Bash
     antes de `read`, `printf`, `svc exec` o `unset`.
-13. **Compatibilidad con `svc exec`:** no colocar `-U`, `-d` ni `-c` directamente
-    después de `svc exec`; pueden ser consumidas por el parser de `svc`. Usar
-    `PGUSER`, `PGDATABASE`, `PGPASSWORD` y sesiones interactivas cuando aplique.
+13. **Compatibilidad con `svc exec`:** el NAS tiene CLI Bash y CLI Python/Typer;
+    no mezclar sus sintaxis. En Bash usar
+    `NAS_CLI=bash svc exec <proyecto> <servicio> <comando>`. En Python usar
+    `NAS_CLI=python svc exec <proyecto> -- <servicio> <comando>`; el `--` separa
+    las opciones de Typer y evita que `-c`, `-e`, `-U`, `-d`, `-v` o `-T` sean
+    interpretadas por `svc`. No usar `-T` con el CLI Python. Para PostgreSQL/
+    Redis, preferir `PGUSER`, `PGDATABASE`, `PGPASSWORD` y `REDISCLI_AUTH`.
 14. **No afirmar conexión por pertenencia a una red:** `db_net` permite llegar al
     servidor, pero la prueba debe confirmar configuración, autenticación y
     runtime.
