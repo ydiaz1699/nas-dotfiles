@@ -639,7 +639,7 @@ PY
       env PGPASSWORD="$PG_ADMIN_PASSWORD" \
           PGUSER="$PG_ADMIN_USER" \
           PGDATABASE="$PG_ADMIN_DB" \
-      psql -v ON_ERROR_STOP=1
+      psql
   status=${PIPESTATUS[1]}
   unset APP_DB_PASSWORD
 
@@ -650,6 +650,10 @@ PY
   fi
 fi
 ```
+
+`svc exec` interpreta opciones como `-v`, `-U`, `-d` o `-c` como opciones
+propias del wrapper. Por eso este bloque usa `psql` sin opciones: el SQL llega
+por stdin y la salida esperada es `ALTER ROLE`. Si aparece `ERROR`, no continuar.
 
 El bloque automatizado se elige aquí para corregir una discrepancia ya detectada
 durante la instalación; la variante `\password` sigue documentada para cambios
