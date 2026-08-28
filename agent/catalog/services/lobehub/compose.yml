@@ -94,10 +94,6 @@ services:
         target: /data
         read_only: false
     command:
-      - --access-key
-      - lobehub
-      - --secret-key
-      - ${RUSTFS_SECRET_KEY}
       - /data
     networks:
       - lobe_storage
