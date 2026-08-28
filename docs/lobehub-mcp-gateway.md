@@ -137,44 +137,27 @@ if [[ ! -f "$dkco/lobehub/.env" ]]; then
     "$dkco/lobehub/.env"
 fi
 
-# (3) Esta sección es autocontenida: no depende de que la sección 1 se haya
-# ejecutado en la misma shell. El GID lo obtiene Debian automáticamente.
+# (3) Esta sección es autocontenida y no usa heredoc: obtiene el GID y
+# actualiza el .env sin imprimir ni pasar el token como argumento de proceso.
 if ! getent group nas-mcp >/dev/null; then
   sudo groupadd --system nas-mcp
 fi
 MCP_SOCKET_GID="$(getent group nas-mcp | cut -d: -f3)"
-[[ "$MCP_SOCKET_GID" =~ ^[0-9]+$ ]] || {
-  echo "No se pudo obtener el GID de nas-mcp" >&2
-  exit 1
-}
+[[ "$MCP_SOCKET_GID" =~ ^[0-9]+$ ]] || { echo "GID inválido" >&2; exit 1; }
 
-# Generar un token solo si falta o todavía es el placeholder. Si ya existe un
-# token válido, conservarlo para no romper una configuración activa.
 MCP_TOKEN=""
 if ! grep -q '^LOBEHUB_MCP_TOKEN=' "$dkco/lobehub/.env" || \
    grep -Eq '^LOBEHUB_MCP_TOKEN=(|__pega_aqui__)$' "$dkco/lobehub/.env"; then
   MCP_TOKEN="$(openssl rand -hex 32)"
 fi
 
-# Se usa python3 -c en una sola línea lógica para evitar que un pegado
-# interactivo corte el delimitador de un heredoc antes de tiempo.
-MCP_TOKEN="$MCP_TOKEN" MCP_SOCKET_GID="$MCP_SOCKET_GID" python3 -c '
-import os, sys
-from pathlib import Path
-p = Path(sys.argv[1])
-u = {"NAS_DOTFILES": "/nas-dotfiles", "MCP_HELPER_SOCKET": "/run/nas/lobehub-mcp.sock", "MCP_SOCKET_GID": os.environ["MCP_SOCKET_GID"]}
-if os.environ.get("MCP_TOKEN"): u["LOBEHUB_MCP_TOKEN"] = os.environ["MCP_TOKEN"]
-lines = p.read_text(encoding="utf-8").splitlines()
-seen, out = set(), []
-for line in lines:
-    key = line.split("=", 1)[0] if "=" in line else ""
-    if key in u: out.append(f"{key}={u[key]}"); seen.add(key)
-    else: out.append(line)
-out.extend(f"{key}={value}" for key, value in u.items() if key not in seen)
-p.write_text("\n".join(out) + "\n", encoding="utf-8")
-' "$dkco/lobehub/.env"
-unset MCP_TOKEN MCP_SOCKET_GID
-chmod 600 "$dkco/lobehub/.env"
+umask 077
+tmp="$(mktemp "$dkco/lobehub/.env.mcp.XXXXXX")"
+MCP_TOKEN="$MCP_TOKEN" MCP_SOCKET_GID="$MCP_SOCKET_GID" awk 'BEGIN { g=ENVIRON["MCP_SOCKET_GID"]; t=ENVIRON["MCP_TOKEN"] } { k=$0; sub(/=.*/,"",k); if (k=="NAS_DOTFILES") { print "NAS_DOTFILES=/nas-dotfiles"; sn=1 } else if (k=="MCP_HELPER_SOCKET") { print "MCP_HELPER_SOCKET=/run/nas/lobehub-mcp.sock"; sh=1 } else if (k=="MCP_SOCKET_GID") { print "MCP_SOCKET_GID=" g; sg=1 } else if (k=="LOBEHUB_MCP_TOKEN") { if (t!="") print "LOBEHUB_MCP_TOKEN=" t; else print; st=1 } else print } END { if (!sn) print "NAS_DOTFILES=/nas-dotfiles"; if (!sh) print "MCP_HELPER_SOCKET=/run/nas/lobehub-mcp.sock"; if (!sg) print "MCP_SOCKET_GID=" g; if (t!="" && !st) print "LOBEHUB_MCP_TOKEN=" t }' "$dkco/lobehub/.env" > "$tmp"
+chmod 600 "$tmp"
+mv "$tmp" "$dkco/lobehub/.env"
+unset MCP_TOKEN MCP_SOCKET_GID tmp
+
 ```
 
 El `.env` debe tener también `NAS_DOTFILES`,
