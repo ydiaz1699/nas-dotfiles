@@ -1393,3 +1393,18 @@ Si una migración falla:
 - Debe hacerse la prueba runtime de healthcheck, recursos, migración, uploads y
   backups antes de marcar la ficha como `protected` o decir que el servicio está
   operativo.
+
+
+## 13. Integración MCP read-only con LobeHub
+
+La conexión de LobeHub con el framework nas-dotfiles está documentada en
+[`docs/lobehub-mcp-gateway.md`](../lobehub-mcp-gateway.md). El gateway es un
+sidecar interno de `lobe_storage` y un helper host separado; no reutiliza
+`nas_agent.py`, no monta Docker socket y no publica un puerto MCP en la LAN.
+
+La allowlist inicial contiene únicamente `lobehub_preflight`,
+`lobehub_verify`, `lobehub_status`, `lobehub_providers` y `capabilities`. Las
+operaciones `backup-db`, `repair-storage` y `reconcile-db` siguen fuera del
+MCP. Antes de configurar la Skill en la interfaz, levantar el helper y validar
+`svc capabilities --service lobehub`; no copiar tokens al repositorio ni a esta
+guía.

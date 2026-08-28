@@ -65,6 +65,15 @@
         "prompt": "agent/nas_agent.py"
       }
     },
+    "mcp_gateway": {
+      "description": "Gateway MCP independiente con allowlist read-only para LobeHub.",
+      "discovery": {
+        "implementation": "agent/lobehub_mcp.py",
+        "sidecar_dockerfile": "agent/mcp/Dockerfile",
+        "helper_systemd": "systemd/lobehub-mcp-helper.service",
+        "documentation": "docs/lobehub-mcp-gateway.md"
+      }
+    },
     "draft": {
       "description": "Entrada temporal que debe clasificarse antes de convertirse en código o documentación.",
       "discovery": {
@@ -180,6 +189,20 @@
       "required": [
         "agent/nas_agent.py",
         "docker-nas/references/nas-context.md"
+      ]
+    },
+    {
+      "id": "lobehub-mcp-gateway",
+      "entity": "mcp_gateway",
+      "name": "LobeHub read-only MCP",
+      "level": "functional",
+      "required": [
+        "agent/lobehub_mcp.py",
+        "agent/.dockerignore",
+        "agent/mcp/Dockerfile",
+        "systemd/lobehub-mcp-helper.service",
+        "agent/catalog/services/lobehub/compose.yml",
+        "docs/lobehub-mcp-gateway.md"
       ]
     }
   ],

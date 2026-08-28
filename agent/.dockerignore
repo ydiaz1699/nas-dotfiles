@@ -1,0 +1,5 @@
+# El contexto del sidecar contiene solo el módulo MCP y su Dockerfile.
+*
+!lobehub_mcp.py
+!mcp/
+!mcp/Dockerfile

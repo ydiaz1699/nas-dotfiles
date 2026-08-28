@@ -29,10 +29,15 @@ env_required:
   - AUTH_ALLOWED_EMAILS
   - REDIS_PASSWORD
   - RUSTFS_SECRET_KEY
+  - LOBEHUB_MCP_TOKEN
+  - NAS_DOTFILES
+  - MCP_SOCKET_GID
+  - MCP_HELPER_SOCKET
 env_optional:
   - AUTH_DISABLE_EMAIL_PASSWORD
   - S3_REGION
   - SEARXNG_URL
+  - MCP_ALLOWED_ORIGINS
 healthcheck: '["CMD", "/bin/node", "-e", "fetch(\u0027http://127.0.0.1:3210\u0027).then(r => process.exit(r.status < 500 ? 0 : 1)).catch(() => process.exit(1))"]'
 backup_critical: true
 backup_paths:
@@ -56,6 +61,19 @@ resources:
   memory_reservation: "512m"
 security_extra:
   rustfs_console: "127.0.0.1:9001"
+mcp:
+  enabled: true
+  transport: "streamable-http"
+  endpoint: "http://lobehub-mcp:8790/mcp"
+  exposure: "internal:lobe_storage"
+  auth: "independent bearer token"
+  tools:
+    - lobehub_preflight
+    - lobehub_verify
+    - lobehub_status
+    - lobehub_providers
+    - capabilities
+  mutations_exposed: false
 ---
 
 # LobeHub

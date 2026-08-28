@@ -249,6 +249,16 @@ atómica sin sobrescribir archivos existentes. Después de cambiar `.env` o comp
 clasifican con `providers`; no confundirlos con fallos de PostgreSQL, Redis o
 RustFS.
 
+### Gateway MCP para LobeHub
+
+LobeHub puede consultar una frontera MCP independiente documentada en
+`docs/lobehub-mcp-gateway.md`. El gateway no reutiliza el agente Strands: publica
+solo `lobehub_preflight`, `lobehub_verify`, `lobehub_status`,
+`lobehub_providers` y `capabilities`. El sidecar vive en `lobe_storage`, no
+publica puertos y no monta Docker socket; un helper host ejecuta las cuatro
+acciones `svc lobehub` con argumentos constantes. Backups y mutaciones quedan
+fuera de esta interfaz.
+
 ### Cómo descubrir una capacidad nueva
 
 1. Ejecutar `svc capabilities [consulta]`.

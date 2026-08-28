@@ -14,6 +14,7 @@ Framework completo para administrar un servidor Linux/NAS con Docker. Convierte 
 | **CLI Bash** (`docker/cli/`) | Administracion de servicios Docker (`svc`) | Bash |
 | **CLI Python** (`svc_py/`) | CLI alternativa con Rich + InquirerPy (`svc`) | Python |
 | **Agente** (`agent/`) | Administracion con lenguaje natural + tools + memoria + plugins | Python |
+| **Gateway MCP** (`agent/lobehub_mcp.py`) | Consultas read-only de nas-dotfiles desde LobeHub | Python/HTTP |
 | **Daemon** (`agent/daemon.py`) | Scheduler + plugins corriendo 24/7 (systemd) | Python |
 
 ## Instalacion
@@ -81,6 +82,8 @@ nas-dotfiles/
 ├── agent/              Agente IA (tools, memoria, plugins, MQTT, scheduler)
 │   ├── core/           Managers + MemoryManager
 │   ├── tools/          Tools (@tool), scanner, índice y autodescubrimiento
+│   ├── lobehub_mcp.py  Gateway MCP read-only independiente para LobeHub
+│   ├── mcp/             Dockerfile del sidecar MCP sin Docker socket
 │   ├── capabilities/   Manifests versionados de operaciones por servicio
 │   ├── architecture/   Contratos verificables del framework
 │   ├── plugins/        Plugins (docker, backup, network, memory, notification)
@@ -93,7 +96,7 @@ nas-dotfiles/
 │   ├── catalog-sync-pipeline.md  Pipeline auto-docs
 │   ├── services/              Guías operativas por servicio (incluye LobeHub)
 │   └── dependency-map.md      Cascada de archivos conectados
-├── systemd/            Unit file para nas-agent.service
+├── systemd/            Units para nas-agent y helper MCP de LobeHub
 ├── tests/              Tests (pytest, 75+ tests)
 ├── logs/               Historial de paquetes (APT + pip)
 ├── ui/                 Instalador TUI
@@ -149,6 +152,7 @@ TZ=America/La_Paz
 | [`docs/services/flowise-guide.md`](docs/services/flowise-guide.md) | Flowise: integración con DataSQL y prueba inicial |
 | [`docs/services/n8n-guide.md`](docs/services/n8n-guide.md) | n8n: reparación PostgreSQL, auditoría runtime y handoff a LobeHub |
 | [`docs/services/lobehub-guide.md`](docs/services/lobehub-guide.md) | LobeHub: PostgreSQL, Redis, RustFS, comandos operativos y verificación |
+| [`docs/lobehub-mcp-gateway.md`](docs/lobehub-mcp-gateway.md) | Integración MCP read-only de LobeHub con nas-dotfiles |
 | [docs/architecture-consistency.md](docs/architecture-consistency.md) | Contratos e índice de conexiones del framework |
 | [docs/services/homepage-guide.md](docs/services/homepage-guide.md) | Homepage: dashboard (labels vs services.yaml) |
 | [docs/github-cli.md](docs/github-cli.md) | Instalación y autenticación de gh |
