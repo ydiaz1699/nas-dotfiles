@@ -104,6 +104,7 @@ todavía ejecuta un checkout anterior y aparece `No such command 'snapshot'`, us
 | datasql | 5432 (loopback), 5050 (pgAdmin) | db_net | ✅ labels (datapostgres/datapgadmin/dataredis) |
 | flowise | 8100 | db_net | ✅ labels |
 | n8n | 5678 | db_net | ✅ labels (PostgreSQL/runtime auditado; hardening pendiente) |
+| lobehub | 3210 (+ RustFS S3 9000) | db_net + lobe_storage | ✅ labels (instalación preparada; runtime pendiente) |
 | filebrowser | 8085 | filebrowser_default | ✅ labels |
 | homepage | 3000 | homepage_net | — (es el dashboard) |
 | ntfy | 8090 | homepage_net | ✅ labels |
@@ -113,9 +114,11 @@ todavía ejecuta un checkout anterior y aparece `No such command 'snapshot'`, us
 | spacedrive | — | spacedrive_default | — |
 
 > Flowise está activo en el NAS y usa `flowise_db` + `dataredis`; n8n está activo,
-> usa `n8n_db` con `n8n_user` y su conexión/runtime ya fue auditado. La ficha,
-> guía y compose objetivo están catalogados; queda verificar en el NAS el
-> hardening del compose y el pin de imagen `2.36.7` antes de declararlos aplicados.
+> usa `n8n_db` con `n8n_user` y su conexión/runtime ya fue auditado. LobeHub está
+> preparado en catálogo con `lobehub_db`/`lobehub_user`, Redis compartido y RustFS
+> separado, pero aún requiere ejecución y verificación en el NAS. La ficha,
+> guía y compose objetivo de n8n están catalogados; queda verificar su hardening
+> y pin `2.36.7` antes de declararlos aplicados.
 
 ## Redes Docker
 
@@ -150,7 +153,11 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 
 Si necesita PostgreSQL o Redis, leer `docs/services/datasql-guide.md` para el estado del stack, crear bases/roles y conectar consumidores; usar `db_net`, crear DB/usuario dedicados, no publicar DBs en la LAN y no usar `depends_on` contra un compose externo. `db_net` no prueba que una aplicación
 use una base: confirmar compose, configuración y runtime. Consumidores confirmados: Flowise (`flowise_db` + `dataredis`), Home Assistant
-(`homeassistant_db` por `127.0.0.1:5432`) y n8n (`n8n_db` con `n8n_user` por `datapostgres:5432` dentro de `db_net`). El runtime de n8n está auditado; el hardening y pin `2.36.7` quedan pendientes de verificación. El stack operativo único es `datasql`, con ParadeDB PostgreSQL
+(`homeassistant_db` por `127.0.0.1:5432`), n8n (`n8n_db` con `n8n_user` por
+`datapostgres:5432` dentro de `db_net`) y LobeHub (preparado para
+`lobehub_db`/`lobehub_user`, `dataredis` y RustFS; runtime pendiente). El runtime
+ de n8n está auditado; el hardening y pin `2.36.7` quedan pendientes de verificación.
+El stack operativo único es `datasql`, con ParadeDB PostgreSQL
 17, pgvector/pg_search/pg_cron, pgAdmin y Redis; sus contenedores finales son
 `datapostgres`, `datapgadmin` y `dataredis`. `aipostgres` es la base
 administrativa y un alias histórico, no un segundo stack. RustFS es un servicio
@@ -224,6 +231,7 @@ svc diff <svc>             # Compose en disco vs resuelta (interpolada)
 | DataSQL y servicios con PostgreSQL | `docs/services/datasql-guide.md` | PostgreSQL+pgvector+pg_search+pg_cron, consumidores, creación de roles/bases, Redis compartido, instalación, permisos y db_net |
 | Flowise (prueba con DataSQL) | `docs/services/flowise-guide.md` |
 | n8n (auditoría, PostgreSQL y handoff a LobeHub) | `docs/services/n8n-guide.md` |
+| LobeHub (instalación auditada, DataSQL, RustFS y verificación) | `docs/services/lobehub-guide.md` |
 | Troubleshooting | `docs/troubleshooting.md` |
 | Skill completa (para LLMs) | `docker-nas/references/nas-context.md` |
 | Comandos shell | `docker-nas/references/entorno.md` |
