@@ -106,7 +106,7 @@ ALL_TOOLS = [
 ]
 ```
 
-> **Nota:** `ALL_TOOLS` contiene las 28 herramientas del agente.
+> **Nota:** `ALL_TOOLS` registra las herramientas base del agente; las capacidades operativas adicionales se descubren desde manifests.
 > Las tools se pasan directamente al agente sin wrapper.
 > La auditoría se integra vía plugin/hooks, no por decorador,
 > porque wrappear funciones `@tool` rompe su registro en Strands SDK.
@@ -375,7 +375,7 @@ nas-dotfiles/
 │   │   ├── compose_manager.py
 │   │   └── backup_manager.py
 │   ├── tools/                # Thin wrappers (@tool → core)
-│   │   ├── __init__.py       # Exporta ALL_TOOLS (28 tools)
+│   │   ├── __init__.py       # Exporta ALL_TOOLS
 │   │   ├── _shell.py         # safe_run, validación, readonly, dryrun
 │   │   ├── _audit.py         # Sistema de auditoría
 │   │   ├── docker_tools.py

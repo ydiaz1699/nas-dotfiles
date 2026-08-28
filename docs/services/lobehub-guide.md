@@ -1,9 +1,12 @@
 # Guía: LobeHub server/database en el NAS
 
-> **Estado:** archivos preparados en el repositorio; todavía no es una
-> instalación confirmada en el NAS porque esta sesión no ejecutó `svc` contra el
-> servidor. No afirmar `lobehub_user`, `lobehub_db`, RustFS ni el contenedor como
-> existentes hasta completar la verificación de la sección 10.
+> **Estado:** el runtime base de LobeHub fue confirmado en el NAS durante la
+> sesión operativa: la migración PostgreSQL pasó, RustFS inició y ejecutó su
+> inicialización, Redis respondió autenticado, `KEY_VAULTS_SECRET` quedó válido
+> tras recrear el contenedor y Next.js escuchó en `0.0.0.0:3210`. Esta guía
+> conserva los criterios de aceptación y los comandos para repetir la
+> verificación sin imprimir secretos; el dump lógico y las funciones opcionales
+> (proveedores, QStash y marketplace) siguen requiriendo su comprobación propia.
 >
 > Esta guía no repite ni recrea `n8n_user`/`n8n_db`. LobeHub usa una identidad
 > PostgreSQL nueva y dedicada: `lobehub_user` / `lobehub_db`.
@@ -1206,6 +1209,60 @@ Si el wrapper local necesita leer el `.env` global, ejecutar desde el contexto
 con permisos adecuado; el handoff de n8n documenta el `permission denied` que
 puede aparecer desde un usuario sin acceso a `$dkco/.env`.
 
+### Comandos operativos y autoconocimiento
+
+Los bloques manuales de esta guía tienen equivalentes atómicos en `svc`. El
+manifest de capacidades y el índice estructural permiten descubrirlos sin
+mantener otra lista fija en el agente:
+
+```bash
+svc capabilities --service lobehub
+svc capabilities providers
+```
+
+Comandos de solo lectura:
+
+```bash
+svc lobehub preflight       # archivos, formatos, permisos, compose y red
+svc lobehub status          # estado Compose sin secretos
+svc lobehub verify          # HTTP, RustFS, Redis, PostgreSQL y logs resumidos
+svc lobehub providers       # OpenAI/DeepSeek, QStash y marketplace
+```
+
+Comandos con cambios controlados:
+
+```bash
+svc lobehub repair-storage --confirm
+svc lobehub reconcile-db --confirm
+svc lobehub backup-db
+```
+
+`repair-storage` detiene temporalmente LobeHub y RustFS, y solo corrige
+`uid=10001:gid=10001` y permisos de `data/rustfs`; no borra datos y restaura el
+estado de los contenedores que estaban activos. `reconcile-db` lee también
+`POSTGRES_DB` desde `$dkco/datasql/.env` para administrar PostgreSQL en la base
+correcta, sincroniza `lobehub_user`, crea `lobehub_db` si falta o corrige su
+propietario, y precrea `vector`/`pg_search` como administrador. `verify`,
+`reconcile-db` y `backup-db` transportan las contraseñas por stdin hacia el
+contenedor; no las colocan en `argv` ni las imprimen. `backup-db` genera un dump
+lógico separado del backup de objetos RustFS.
+
+Después de cambiar `.env` o `compose.yml`, usar `svc recreate lobehub`, no solo
+`svc up lobehub`, porque un contenedor existente puede conservar las variables
+de entorno anteriores. Nunca compartir `svc config lobehub` ni logs completos.
+
+Interpretación de avisos runtime conocidos:
+
+- `QSTASH_TOKEN not set`: opcional; solo configurar QStash para workflows programados.
+- `InvalidProviderAPIKey`: volver a guardar o eliminar la clave del proveedor desde la UI; no cambiar PostgreSQL/Redis.
+- `Missing bearer token` del marketplace: función remota opcional; no impide arrancar LobeHub.
+- `NOAUTH Authentication required`: revisar que `REDIS_URL` incluya `${REDIS_PASSWORD}` y ejecutar `svc recreate lobehub`.
+- `KEY_VAULTS_SECRET ... got 48 bytes`: ejecutar `svc lobehub preflight`; la clave debe ser Base64 de 16, 24 o 32 bytes decodificados.
+
+El agente debe consultar primero `svc capabilities --service lobehub` cuando
+encuentre una operación no conocida, y `svc lobehub verify` antes de declarar el
+runtime operativo.
+
 ## 9. Levantar en el orden real
 
 Después de directorios → archivos → propietario/permisos → validación de
@@ -1261,12 +1318,12 @@ puntos en el NAS:
    `vector` y `pg_search` existen dentro de `lobehub_db`, ambas fueron creadas
    antes de iniciar LobeHub y `lobehub_user` conserva `rolsuper = false`. `pg_cron`
    no se habilita en esta base.
-8. Redis responde `PONG` usando el secreto existente, sin crear otro contenedor:
+8. Redis responde `PONG` usando el secreto existente, sin crear otro contenedor.
+   El comando `verify` ejecuta esta prueba localmente sin mostrar ni colocar la
+   contraseña en `argv`:
 
    ```bash
-   REDIS_PASSWORD="$(awk -F= '$1=="REDIS_PASSWORD"{print substr($0,index($0,"=")+1); exit}' "$dkco/datasql/.env")"
-   svc exec datasql redis env REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli PING
-   unset REDIS_PASSWORD
+   svc lobehub verify
    ```
 
 9. Después del primer login, validar un chat y, si se habilita, una imagen o
@@ -1294,29 +1351,7 @@ procedimiento lógico siguiente escribe el dump en el directorio de backups de
 DataSQL y no versiona el secreto:
 
 ```bash
-BACKUP_TS="$(date +%Y%m%d-%H%M%S)"
-DUMP_FILE="$dkco/datasql/data/postgres/backups/lobehub_db_${BACKUP_TS}.sql"
-APP_DB_PASSWORD="$(awk -F= '$1=="LOBE_DB_PASSWORD"{print substr($0,index($0,"=")+1); exit}' "$dkco/lobehub/.env")"
-
-if [[ -z "$APP_DB_PASSWORD" ]]; then
-  printf 'No se encontró LOBE_DB_PASSWORD en %s/lobehub/.env.\n' "$dkco" >&2
-  unset BACKUP_TS DUMP_FILE APP_DB_PASSWORD
-  exit 1
-fi
-
-if ! svc exec datasql postgres \
-  env PGPASSWORD="$APP_DB_PASSWORD" \
-      PGUSER=lobehub_user \
-      PGDATABASE=lobehub_db \
-  pg_dump --format=plain --no-owner --no-privileges > "$DUMP_FILE"; then
-  printf 'El dump de LobeHub falló; se elimina solo el archivo parcial.\n' >&2
-  rm -f "$DUMP_FILE"
-  unset BACKUP_TS DUMP_FILE APP_DB_PASSWORD
-  exit 1
-fi
-
-printf 'Dump lógico creado en %s.\n' "$DUMP_FILE"
-unset BACKUP_TS DUMP_FILE APP_DB_PASSWORD
+svc lobehub backup-db
 ```
 
 Este comando debe ejecutarse con DataSQL saludable y después de verificar que

@@ -13,6 +13,8 @@ _svc_ayuda() {
   echo "    net                 Mapa de redes Docker"
   echo "    watch [N]           Monitoreo continuo (refresh cada N seg)"
   echo "    create <nombre>     Scaffolding de nuevo servicio"
+  echo "    capabilities [q]    Descubrir capacidades y comandos disponibles"
+  echo "    lobehub <acción>    Preflight, verify, Redis/DB y recuperación segura"
   echo "    menu                Menu TUI interactivo con fzf"
   echo ""
   echo "  -- Comandos propios (requieren servicio) ───────────────────"

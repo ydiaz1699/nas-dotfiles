@@ -2,7 +2,7 @@
 # Autocompletado de svc
 
 # ── Comandos globales (no necesitan servicio) ──────────────────────────────
-_SVC_GLOBAL_CMDS="lista health update-all menu port-map size net watch create doctor diff catalog-sync scan backup-all logs-grep clone cron doctor-history lock unlock snapshot rollback --help -h"
+_SVC_GLOBAL_CMDS="lista health update-all menu port-map size net watch create doctor diff catalog-sync capabilities lobehub scan backup-all logs-grep clone cron doctor-history lock unlock snapshot rollback --help -h"
 
 # ── Comandos que requieren un servicio ─────────────────────────────────────
 _SVC_SERVICE_CMDS="
@@ -22,6 +22,13 @@ _svc_services() {
     | awk -F/ '{print $(NF-1)}' | sort -u
 }
 
+_lobe_actions() {
+  local root="${NAS_DOTFILES:-/nas-dotfiles}"
+  python3 "$root/agent/tools/capabilities.py" --service lobehub --json 2>/dev/null \
+    | python3 -c 'import json,sys; data=json.load(sys.stdin); print(" ".join(item["id"].split(".", 1)[-1] for item in data.get("capabilities", []) if item.get("id")))' \
+    2>/dev/null
+}
+
 _svc_complete() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
   local cmd="${COMP_WORDS[1]}"
@@ -29,6 +36,12 @@ _svc_complete() {
   # svc <TAB> → todos los comandos
   if [[ $COMP_CWORD -eq 1 ]]; then
     COMPREPLY=($(compgen -W "$_SVC_GLOBAL_CMDS $_SVC_SERVICE_CMDS" -- "$cur"))
+    return
+  fi
+
+  # Las subacciones de LobeHub salen del manifest, no de una lista fija.
+  if [[ "$cmd" == "lobehub" && $COMP_CWORD -eq 2 ]]; then
+    COMPREPLY=($(compgen -W "$(_lobe_actions)" -- "$cur"))
     return
   fi
 

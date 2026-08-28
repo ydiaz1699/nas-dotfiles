@@ -3,7 +3,7 @@ name: dotfile-skill
 description: >
   Administra un NAS/Homelab Debian con Docker mediante tres capas: shell
   personalizado (aliases, navegación, prompt), CLI Docker (comando svc), y
-  agente IA Python (Strands SDK, 28 tools). Usar cuando el usuario mencione
+  agente IA Python (Strands SDK, herramientas registradas y capacidades dinámicas). Usar cuando el usuario mencione
   NAS, homelab, contenedor, servicio, compose, dk, adm, svc, agent, plugin,
   o cualquier comando del entorno bash personalizado del servidor.
 ---
@@ -151,8 +151,9 @@ lento, healthcheck, red), ver `references/diagnostic.md`.
 
 ## Agente IA
 
-28 tools · 3 providers (Gemini default, Bedrock, Ollama) · memoria
-persistente · plugins dinámicos · daemon systemd.
+Herramientas registradas y capacidades descubiertas dinámicamente · 3 providers
+(Gemini default, Bedrock, Ollama) · memoria persistente · plugins dinámicos ·
+daemon systemd.
 
 Para tools, memoria, plugins y configuración, ver `references/agent.md`.
 

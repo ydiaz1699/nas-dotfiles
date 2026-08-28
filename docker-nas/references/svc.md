@@ -12,6 +12,7 @@ $NAS_DOTFILES/docker/cli/
     ├── backup.sh        ← svc_backup(), svc_restore()
     ├── extras.sh        ← port-map, size, net, doctor, diff, watch, create, env, open, depends
     ├── menu.sh          ← svc_menu() TUI con fzf
+    ├── lobehub.sh       ← operaciones seguras de LobeHub
     └── help.sh          ← _svc_ayuda()
 ```
 
@@ -69,7 +70,30 @@ se debe eliminar o renombrar el resto para evitar ambigüedad.
 | `svc diff <servicio>` | Comparar compose en disco vs config resuelta |
 | `svc diff --all` | Comparar todos los compose locales contra el catálogo, sin entrar en carpetas |
 | `svc menu` | TUI interactivo con preview (requiere fzf) |
+| `svc capabilities [consulta]` | Descubrir capacidades y guards desde manifests e índice dinámico |
+| `svc lobehub <acción>` | Operaciones LobeHub seguras: preflight, verify, DB, RustFS y backup |
 | `svc --help` | Ayuda completa |
+
+---
+
+## Operaciones LobeHub
+
+```bash
+svc capabilities --service lobehub
+svc lobehub preflight
+svc lobehub status
+svc lobehub verify
+svc lobehub providers
+svc lobehub repair-storage --confirm
+svc lobehub reconcile-db --confirm
+svc lobehub backup-db
+```
+
+Las acciones mutantes requieren `--confirm`; las credenciales se leen de los
+`.env` locales y no se imprimen. Las operaciones Bash pasan las contraseñas por
+stdin al contenedor, no por `argv`; `backup-db` usa archivo temporal protegido y
+publicación atómica sin sobrescribir otro dump. Después de modificar `.env` o compose, usar `svc recreate lobehub` para recrear el entorno del contenedor. No compartir
+`svc config lobehub` ni logs completos.
 
 ---
 
@@ -359,8 +383,9 @@ svc restore <svc>
 `svc snapshot <svc>` no reemplaza a `svc backup`: guarda un tar.gz pequeño con
 el `compose.yml`, `.env` y archivos YAML de configuración en
 `$dkco/backups/.snapshots/`. Sirve para volver atrás rápidamente antes de
-cambiar un Compose o una variable. Se conservan los últimos 10 snapshots por
-servicio.
+cambiar un Compose o una variable. Como puede incluir `.env`, el archivo se crea
+con `umask 077` y se conserva con modo `600`; no debe compartirse ni publicarse.
+Se conservan los últimos 10 snapshots por servicio.
 
 ```bash
 svc snapshot datasql

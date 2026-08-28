@@ -139,27 +139,46 @@ def _get_changed_files(since_commit: str) -> List[str]:
     if not since_commit:
         return []
     try:
-        # Archivos modificados desde el último scan
-        result = subprocess.run(
-            ["git", "diff", "--name-only", since_commit, "HEAD"],
-            capture_output=True, text=True, timeout=10,
-            cwd=str(NAS_DOTFILES),
-        )
-        files = []
-        if result.returncode == 0:
-            files = [f.strip() for f in result.stdout.strip().splitlines() if f.strip()]
+        changed: List[str] = []
+        commands: List[List[str]] = []
+        if since_commit:
+            # Comparar contra el commit del snapshot incluyendo el working tree;
+            # usar ``... HEAD`` omitía modificaciones staged/unstaged no commit.
+            commands.append(["git", "diff", "--name-only", since_commit])
+        # Cubrir explícitamente cambios del índice y del árbol de trabajo cuando
+        # el snapshot fue creado antes de un rebase o el commit ya no existe.
+        commands.extend([
+            ["git", "diff", "--name-only"],
+            ["git", "diff", "--cached", "--name-only"],
+        ])
+        for command in commands:
+            result = subprocess.run(
+                command,
+                capture_output=True, text=True, timeout=10,
+                cwd=str(NAS_DOTFILES),
+            )
+            if result.returncode == 0:
+                changed.extend(
+                    line.strip()
+                    for line in result.stdout.splitlines()
+                    if line.strip()
+                )
 
-        # Archivos sin trackear (nuevos)
-        result2 = subprocess.run(
+        # Archivos sin trackear (nuevos).
+        result = subprocess.run(
             ["git", "ls-files", "--others", "--exclude-standard"],
             capture_output=True, text=True, timeout=10,
             cwd=str(NAS_DOTFILES),
         )
-        if result2.returncode == 0:
-            untracked = [f.strip() for f in result2.stdout.strip().splitlines() if f.strip()]
-            files.extend(untracked)
+        if result.returncode == 0:
+            changed.extend(
+                line.strip()
+                for line in result.stdout.splitlines()
+                if line.strip()
+            )
 
-        return files
+        # El mismo archivo puede aparecer en commit, índice y working tree.
+        return list(dict.fromkeys(changed))
     except (subprocess.TimeoutExpired, FileNotFoundError):
         return []
 
@@ -179,7 +198,7 @@ def _classify_changed_file(filepath: str) -> Tuple[str, str]:
     Returns:
         Tuple (tipo, servicio_o_contexto)
         tipo: "compose", "script_svc", "shell_lib", "plugin", "tool",
-              "guide", "ficha", "debmenux", "config", "other"
+              "capability", "guide", "ficha", "debmenux", "config", "other"
     """
     # Compose de servicio (en catálogo o $dkco)
     m = re.match(r"(?:agent/catalog/services|docker)/([^/]+)/compose\.yml", filepath)
@@ -205,6 +224,11 @@ def _classify_changed_file(filepath: str) -> Tuple[str, str]:
     m = re.match(r"shell/lib/(\w+)\.sh", filepath)
     if m:
         return ("shell_lib", m.group(1))
+
+    # Manifest de capacidades por servicio
+    m = re.match(r"agent/capabilities/([^/]+)\.json", filepath)
+    if m:
+        return ("capability", m.group(1))
 
     # Plugin agente
     m = re.match(r"agent/plugins/(\w+)\.py", filepath)
@@ -310,7 +334,7 @@ def incremental_scan(verbose: bool = False) -> Tuple[ScanResult, List[str]]:
         classifications.append(f"  {filepath} → [{file_type}] {context}")
 
         # Determinar servicios afectados
-        if file_type in ("compose", "ficha", "guide", "debmenux") and context:
+        if file_type in ("compose", "ficha", "guide", "debmenux", "capability") and context:
             affected_services.add(context)
         elif file_type in ("script_svc", "python_cli", "shell_lib"):
             # Cambios globales de CLI afectan la verificación de paridad
@@ -748,6 +772,42 @@ def _check_architecture_contracts(result: ScanResult) -> None:
                 fix_hint="Revisar permisos de agent/cache/",
             ))
 
+    capabilities = index.get("capabilities", {})
+    for manifest in capabilities.get("manifests", []):
+        if not manifest.get("source_exists"):
+            result.issues.append(Issue(
+                severity="error",
+                category="capability",
+                service=manifest.get("service") or "global",
+                message=f"Manifest de capacidades sin entrypoint: {manifest.get('source')}",
+                fix_hint="Crear el entrypoint o corregir source en agent/capabilities/*.json",
+            ))
+    for operation in capabilities.get("operations", []):
+        if not operation.get("source_exists"):
+            result.issues.append(Issue(
+                severity="error",
+                category="capability",
+                service=operation.get("service") or "global",
+                message=f"Capacidad sin implementación: {operation.get('id')}",
+                fix_hint="Conectar la operación al código antes de documentarla como disponible",
+            ))
+        elif not operation.get("dispatch_exists", True):
+            result.issues.append(Issue(
+                severity="error",
+                category="capability",
+                service=operation.get("service") or "global",
+                message=f"Capacidad sin dispatch real: {operation.get('id')}",
+                fix_hint="Agregar la subacción al entrypoint o retirarla del manifest",
+            ))
+        elif not operation.get("guard_valid", True):
+            result.issues.append(Issue(
+                severity="error",
+                category="capability",
+                service=operation.get("service") or "global",
+                message=f"Guard inconsistente en capacidad: {operation.get('id')}",
+                fix_hint="Alinear mode/confirm/--confirm en agent/capabilities/*.json",
+            ))
+
     contracts_path = NAS_DOTFILES / "agent" / "architecture" / "contracts.json"
     try:
         contracts = json.loads(contracts_path.read_text(encoding="utf-8"))
@@ -875,6 +935,7 @@ def _check_architecture_contracts(result: ScanResult) -> None:
         "files": index.get("summary", {}).get("files", 0),
         "services": index.get("summary", {}).get("services", 0),
         "connections": index.get("summary", {}).get("contract_connections", 0),
+        "capabilities": index.get("summary", {}).get("capabilities", 0),
         "broken_connections": index.get("summary", {}).get("broken_contract_connections", 0),
         "cli_parity": index.get("cli", {}).get("parity", {}),
     }
@@ -970,6 +1031,7 @@ def format_report(result: ScanResult, verbose: bool = False) -> str:
             "     Índice: "
             f"{result.architecture.get('files', 0)} archivos, "
             f"{result.architecture.get('services', 0)} servicios, "
+            f"{result.architecture.get('capabilities', 0)} capacidades, "
             f"{result.architecture.get('connections', 0)} contratos"
         )
         lines.append(

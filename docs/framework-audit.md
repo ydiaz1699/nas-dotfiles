@@ -2,7 +2,7 @@
 
 > **Mapa canónico de arquitectura, estado, gaps y criterios:** [`docs/framework-knowledge-compilation.md`](framework-knowledge-compilation.md). Este archivo conserva la orientación ejecutiva e inventario rápido; no sustituye contratos ni verificaciones.
 
-> **Última actualización:** 2026-08-17
+> **Última actualización:** 2026-08-28
 > **Propósito:** Evitar que el LLM relea todo el proyecto en cada sesión.
 > Leer SOLO este archivo para tener el mapa completo.
 > Para detalles de un archivo específico → usar lazy loading.
@@ -29,7 +29,7 @@
 └────────────────────────────────────────────────────────────────────────────┘
          │
          ▼
-┌── agent (28 tools, 8 plugins) ─────────────────────────────────────────────┐
+┌── agent (tools, 8 plugins) ─────────────────────────────────────────────────┐
 │  Providers: Gemini (default) · Bedrock (Claude) · Ollama (local)           │
 │  Prompt: clasificación dinámica → solo carga bloques relevantes            │
 │  Catálogo: pre-cargado al arrancar (resumen de servicios sin llamar tools) │
@@ -37,11 +37,12 @@
 └────────────────────────────────────────────────────────────────────────────┘
          │
          ▼
-┌── Verificación (3 tools + compare) ───────────────────────────────────────┐
-│  svc scan          → DETECTA lagunas (Git + snapshot; ledger por archivo pendiente de implementar) │
-│  svc catalog-sync  → GENERA lo que falta (ficha, guía, script)             │
-│  dependency-map.md → DOCUMENTA las reglas (grafos A–I)                     │
-│  compare_catalog() → DETECTA drift (compose real vs catálogo)              │
+┌── Verificación (scanner + catalog-sync + compare + capabilities) ───────────┐
+│  svc scan          → DETECTA lagunas (Git + snapshot incremental)            │
+│  svc catalog-sync  → GENERA lo que falta (ficha, guía, script)               │
+│  dependency-map.md → DOCUMENTA las reglas (grafos A–I)                       │
+│  compare_catalog() → DETECTA drift (compose real vs catálogo)                │
+│  discover_capabilities() → DESCUBRE comandos y guards desde manifests       │
 └────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -49,15 +50,17 @@
 
 ## Estado real del scanner incremental
 
-`svc scan` ya usa `git diff`, `git ls-files` y `agent/cache/project-snapshot.json`
-para detectar cambios desde `last_commit`. Sin embargo, el snapshot aún no conserva
-un ledger por archivo que indique `processed`, `pending` o `failed`. La versión actual
-filtra inconsistencias por servicio y no debe describirse como procesamiento
-incremental completo.
+`svc scan` usa `git diff`, `git diff --cached`, `git ls-files` y
+`agent/cache/project-snapshot.json` para detectar cambios desde `last_commit`,
+incluidos cambios committeados, staged, unstaged, eliminaciones y archivos no
+trackeados. El scanner clasifica los archivos, vuelve a verificar servicios,
+paridad CLI, prompt, documentación, contratos y capacidades, y reporta errores,
+warnings e información sin fallar por avisos históricos conocidos.
 
-La siguiente fase pendiente es comparar commits, staged, unstaged, no trackeados y
-eliminados; guardar hash/estado por archivo; persistir pendientes y exponer
-`svc scan --status`. El diseño detallado está en
+El snapshot conserva hashes de archivos y el resumen del último scan. Todavía no
+persiste un ledger por archivo con estados `processed`, `pending` o `failed`, ni
+expone `svc scan --status`; esas son mejoras futuras independientes del modo
+incremental ya operativo. El diseño histórico se conserva en
 `_drafts/IDEA-scanner-incremental-git.md`.
 
 ---
@@ -90,6 +93,7 @@ eliminados; guardar hash/estado por archivo; persistir pendientes y exponer
 | `lib/catalog-sync.sh` | Pipeline auto-docs en cascada |
 | `lib/notifications.sh` | ntfy_send() |
 | `lib/menu.sh` | TUI con fzf |
+| `lib/lobehub.sh` | preflight, verify, status, providers, repair-storage, reconcile-db, backup-db |
 | `lib/help.sh` | Texto de ayuda |
 
 ### Docker CLI python (`svc_py/`)
@@ -115,7 +119,7 @@ eliminados; guardar hash/estado por archivo; persistir pendientes y exponer
 |---------|---------|
 | `nas_agent.py` | Prompt dinámico, clasificador, REPL, multi-provider |
 | `daemon.py` | Systemd daemon (scheduler + plugins) |
-| `tools/__init__.py` | ALL_TOOLS (28 tools registradas) |
+| `tools/__init__.py` | ALL_TOOLS registradas |
 | `tools/discovery_tools.py` | list_services, scan_compose, auto_catalog, bulk_discover, export_service |
 | `tools/system_tools.py` | scan_ports, disk_usage, memory_info, network_info, list_files, read_file_content |
 | `tools/docker_tools.py` | service_start/stop/restart/update/logs |
@@ -126,6 +130,8 @@ eliminados; guardar hash/estado por archivo; persistir pendientes y exponer
 | `tools/memory_tools.py` | remember, recall, learn_skill, update_user_model, memory_stats |
 | `tools/project_scanner.py` | project_scan (incremental git-based) |
 | `tools/compare_tools.py` | compare_catalog (drift detection) |
+| `tools/capabilities.py` | Inventario de manifests y guards; índice fresco con fallback fail-closed |
+| `tools/capability_tools.py` | discover_capabilities (consulta sin mutaciones) |
 | `plugins/docker_plugin.py` | Monitoreo de contenedores |
 | `plugins/backup_plugin.py` | Backups programados |
 | `plugins/notification_plugin.py` | Alertas ntfy |
@@ -146,6 +152,7 @@ eliminados; guardar hash/estado por archivo; persistir pendientes y exponer
 | homepage | ✅ | ✅ | ✅ | ✅ | ✅ |
 | node-red | ✅ | ✅ | ✅ | ✅ | ✅ |
 | ntfy | ✅ | ✅ | ✅ | ✅ | ✅ |
+| lobehub | ✅ | ✅ | ✅ | ✅ | ❌ |
 | usb-api | ✅ | ✅ | ✅ | ⚠️ | ✅ |
 | adguard | ❌ | ❌ | ❌ | ❌ | ✅ |
 
@@ -205,6 +212,7 @@ eliminados; guardar hash/estado por archivo; persistir pendientes y exponer
 | homepage | 3000 | homepage_net | Dashboard |
 | ntfy | 8090 | homepage_net | Notificaciones push |
 | node-red | 1880 | iot_net | Automatización flujos |
+| lobehub | 3210, 9000 | db_net + lobe_storage | LobeHub + RustFS |
 | usb-api | 8091 | nativo (systemd) | REST API USBs |
 
 ---
@@ -216,7 +224,7 @@ eliminados; guardar hash/estado por archivo; persistir pendientes y exponer
 ```
 lista, health, doctor, doctor-history, update-all, backup-all,
 port-map, size, net, watch, create, clone, menu, diff,
-logs-grep, cron, lock, unlock, catalog-sync, scan,
+logs-grep, cron, lock, unlock, catalog-sync, capabilities, lobehub, scan,
 snapshot, rollback
 ```
 

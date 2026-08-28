@@ -501,7 +501,16 @@ svc_snapshot() {
   local timestamp
   timestamp=$(date +%Y%m%d_%H%M%S)
 
-  mkdir -p "$SNAPSHOT_DIR"
+  # El snapshot puede contener .env; protegerlo durante la creación y dejar
+  # también el archivo final con modo 600 aunque la umask del usuario sea laxa.
+  local previous_umask
+  previous_umask=$(umask)
+  umask 077
+  mkdir -p "$SNAPSHOT_DIR" || {
+    umask "$previous_umask"
+    echo "  No se pudo crear el directorio de snapshots."
+    return 1
+  }
 
   local out="${SNAPSHOT_DIR}/${svc}_${timestamp}.tar.gz"
 
@@ -513,13 +522,26 @@ svc_snapshot() {
   done
 
   if [[ ${#files_to_snap[@]} -eq 0 ]]; then
+    umask "$previous_umask"
     echo "  No hay archivos de config para '$svc'."
     return 1
   fi
 
-  # Crear snapshot relativo al directorio del servicio
-  tar czf "$out" -C "$svc_dir" \
-    $(for f in "${files_to_snap[@]}"; do basename "$f"; done | sort -u) 2>/dev/null
+  # Crear snapshot relativo al directorio del servicio.
+  if ! tar czf "$out" -C "$svc_dir" \
+      $(for f in "${files_to_snap[@]}"; do basename "$f"; done | sort -u) 2>/dev/null; then
+    umask "$previous_umask"
+    rm -f -- "$out"
+    echo "  No se pudo crear el snapshot de '$svc'."
+    return 1
+  fi
+  if ! chmod 600 "$out"; then
+    umask "$previous_umask"
+    rm -f -- "$out"
+    echo "  No se pudieron proteger los permisos del snapshot."
+    return 1
+  fi
+  umask "$previous_umask"
 
   local size
   size=$(du -sh "$out" 2>/dev/null | cut -f1)

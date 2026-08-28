@@ -13,7 +13,7 @@ Framework completo para administrar un servidor Linux/NAS con Docker. Convierte 
 | **Shell** (`shell/`) | Aliases, prompt, navegacion, dashboard | Bash |
 | **CLI Bash** (`docker/cli/`) | Administracion de servicios Docker (`svc`) | Bash |
 | **CLI Python** (`svc_py/`) | CLI alternativa con Rich + InquirerPy (`svc`) | Python |
-| **Agente** (`agent/`) | Administracion con lenguaje natural + 28 tools + memoria + plugins | Python |
+| **Agente** (`agent/`) | Administracion con lenguaje natural + tools + memoria + plugins | Python |
 | **Daemon** (`agent/daemon.py`) | Scheduler + plugins corriendo 24/7 (systemd) | Python |
 
 ## Instalacion
@@ -48,6 +48,9 @@ svc backup emqx                  # backup de volumenes
 svc doctor                       # chequeo de 6 puntos
 svc menu                         # TUI interactivo (fzf)
 svc update-all                   # actualizar todos
+svc capabilities --service lobehub # descubrir operaciones y guards
+svc lobehub verify               # verificar runtime sin mostrar secretos
+svc lobehub backup-db             # dump lógico de la base de LobeHub
 
 # Docker CLI (python — NAS_CLI=python)
 NAS_CLI=python svc menu          # menu con InquirerPy + fuzzy search
@@ -72,11 +75,14 @@ nas-dotfiles/
 ├── docker/cli/         CLI Bash de Docker (comando svc)
 │   └── lib/
 │       ├── notifications.sh   ntfy_send() para scripts
-│       └── catalog-sync.sh    Pipeline auto-documentación
+│       ├── catalog-sync.sh    Pipeline auto-documentación
+│       └── lobehub.sh         Operaciones seguras de LobeHub
 ├── svc_py/             CLI Python de Docker (Rich + InquirerPy + Typer)
-├── agent/              Agente IA (28 tools, memoria, plugins, MQTT, scheduler)
+├── agent/              Agente IA (tools, memoria, plugins, MQTT, scheduler)
 │   ├── core/           Managers + MemoryManager
-│   ├── tools/          Tools (@tool) incluyendo memoria (Learning Loop)
+│   ├── tools/          Tools (@tool), scanner, índice y autodescubrimiento
+│   ├── capabilities/   Manifests versionados de operaciones por servicio
+│   ├── architecture/   Contratos verificables del framework
 │   ├── plugins/        Plugins (docker, backup, network, memory, notification)
 │   ├── memory/         Datos persistentes (MEMORY.md, USER.md, SKILLS.md)
 │   ├── catalog/        Catálogo de servicios (fichas + compose + .env.example)
@@ -85,7 +91,8 @@ nas-dotfiles/
 ├── docs/               Documentación extendida
 │   ├── nas-manual.md          Manual del NAS (hardware, redes, puertos)
 │   ├── catalog-sync-pipeline.md  Pipeline auto-docs
-│   └── services/              Guías operativas por servicio
+│   ├── services/              Guías operativas por servicio (incluye LobeHub)
+│   └── dependency-map.md      Cascada de archivos conectados
 ├── systemd/            Unit file para nas-agent.service
 ├── tests/              Tests (pytest, 75+ tests)
 ├── logs/               Historial de paquetes (APT + pip)
@@ -141,6 +148,8 @@ TZ=America/La_Paz
 | `docs/services/ntfy-guide.md` | ntfy: notificaciones push (setup, clientes, troubleshooting) |
 | [`docs/services/flowise-guide.md`](docs/services/flowise-guide.md) | Flowise: integración con DataSQL y prueba inicial |
 | [`docs/services/n8n-guide.md`](docs/services/n8n-guide.md) | n8n: reparación PostgreSQL, auditoría runtime y handoff a LobeHub |
+| [`docs/services/lobehub-guide.md`](docs/services/lobehub-guide.md) | LobeHub: PostgreSQL, Redis, RustFS, comandos operativos y verificación |
+| [docs/architecture-consistency.md](docs/architecture-consistency.md) | Contratos e índice de conexiones del framework |
 | [docs/services/homepage-guide.md](docs/services/homepage-guide.md) | Homepage: dashboard (labels vs services.yaml) |
 | [docs/github-cli.md](docs/github-cli.md) | Instalación y autenticación de gh |
 

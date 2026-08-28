@@ -142,7 +142,7 @@ volúmenes ni redes conjeturadas; confirmarlos primero en la fuente oficial.
 | aipostgres | alias histórico de datasql | db_net | `docs/services/datasql-guide.md` (migración y base administrativa) |
 | flowise | 8100 | db_net | `docs/services/flowise-guide.md` |
 | n8n | 5678 | db_net | `docs/services/n8n-guide.md` + `agent/catalog/services/n8n/` (runtime confirmado; hardening pendiente) |
-| lobehub | 3210 + RustFS 9000 | db_net + lobe_storage | `docs/services/lobehub-guide.md` + `agent/catalog/services/lobehub/` (preparado; runtime pendiente) |
+| lobehub | 3210 + RustFS 9000 | db_net + lobe_storage | `docs/services/lobehub-guide.md` + `agent/catalog/services/lobehub/` (runtime base confirmado; opcionales pendientes) |
 | filebrowser | 8085 | default | `docs/services/filebrowser-guide.md` |
 | homeassistant | 8123 | host | `docs/services/homeassistant-guide.md` |
 | homepage | 3000 | homepage_net | `docs/services/homepage-guide.md` |
@@ -176,11 +176,10 @@ Antes de crear una aplicación que necesite PostgreSQL o Redis compartido:
 10. No usar `depends_on` contra una base que vive en otro compose; verificar la
     disponibilidad con `svc health` y logs.
 11. El inventario confirmado es Flowise → `flowise_db` + Redis, Home Assistant →
-    `homeassistant_db`, y n8n → `n8n_db` con `n8n_user` por `datapostgres:5432`.
-    LobeHub está preparado con `lobehub_db`/`lobehub_user`, `dataredis` y un
-    RustFS separado en `lobe_storage`, pero todavía requiere ejecución y
-    verificación runtime. El runtime de n8n está confirmado; la aplicación del
-    hardening y del pin `2.36.7` queda pendiente de una verificación posterior.
+    `homeassistant_db`, n8n → `n8n_db` con `n8n_user` por `datapostgres:5432` y
+    LobeHub → `lobehub_db`/`lobehub_user`, `dataredis` y RustFS en `lobe_storage`.
+    El runtime de n8n está confirmado; la aplicación del hardening y del pin
+    `2.36.7` queda pendiente de una verificación posterior.
 
 ### Redes
 
@@ -213,8 +212,10 @@ Dependency-map DOCUMENTA → las reglas para que el próximo LLM sepa qué casca
 
 | Herramienta | Comando | Función |
 |---|---|---|
-| **Scanner incremental** | `svc scan` | Detecta cambios vía Git y filtra inconsistencias por servicio. **Todavía no mantiene un ledger de archivos leídos/procesados/pendientes.** |
+| **Scanner incremental** | `svc scan` | Detecta cambios en commits, staged, working tree, eliminaciones y no trackeados; filtra inconsistencias por servicio. **Todavía no mantiene un ledger de archivos leídos/procesados/pendientes.** |
 | **Catalog-sync** | `svc catalog-sync [svc]` | Genera ficha, guía, script DebMenux en cascada |
+| **Capability index** | `svc capabilities [consulta]` | Descubre comandos reales desde manifests e índice; no depende de una lista fija del prompt |
+| **LobeHub operations** | `svc lobehub <acción>` | Preflight, verify, provider diagnostics, reconciliación DB, permisos RustFS y dump lógico |
 | **Dependency-map** | `docs/dependency-map.md` | Reglas estáticas (grafos A–I) de qué conecta con qué |
 | **Compare catalog** | Tool `compare_catalog("svc")` | Detecta drift: compose real vs catálogo |
 
@@ -228,18 +229,46 @@ svc scan --verbose    # incluir issues de severidad info
 svc scan --json       # output JSON (para herramientas)
 ```
 
+### Capacidades operativas de LobeHub
+
+```bash
+svc capabilities --service lobehub
+svc lobehub preflight
+svc lobehub verify
+svc lobehub providers
+svc lobehub repair-storage --confirm
+svc lobehub reconcile-db --confirm
+svc lobehub backup-db
+```
+
+`preflight` y `verify` son de solo lectura. `repair-storage` y
+`reconcile-db` requieren confirmación explícita y no muestran secretos. Las
+operaciones Bash de PostgreSQL/Redis transportan contraseñas por stdin hacia el
+contenedor, no por `argv`; `backup-db` crea el dump con `umask 077` y publicación
+atómica sin sobrescribir archivos existentes. Después de cambiar `.env` o compose, usar `svc recreate lobehub` para que el contenedor reciba el entorno nuevo. Los avisos de proveedores, QStash y marketplace se
+clasifican con `providers`; no confundirlos con fallos de PostgreSQL, Redis o
+RustFS.
+
+### Cómo descubrir una capacidad nueva
+
+1. Ejecutar `svc capabilities [consulta]`.
+2. Revisar si indica `conectada` y si requiere `--confirm`.
+3. Consultar la guía del servicio que aparece en `evidence`.
+4. Ejecutar primero una operación read-only (`preflight`/`verify`).
+5. No inferir una mutación desde un compose o desde una lista antigua del prompt.
+
 ### Cómo funciona actualmente el scanner incremental
 
 1. **Primera ejecución:** hace un scan completo y genera `agent/cache/project-snapshot.json`.
-2. **Siguientes ejecuciones:** usa `git diff` desde `last_commit` y lista archivos no trackeados.
+2. **Siguientes ejecuciones:** compara el snapshot con commits posteriores, cambios staged/unstaged y archivos no trackeados.
 3. Clasifica los cambios y determina servicios afectados.
 4. Ejecuta detectores amplios y filtra los issues mostrados por servicio.
 5. Guarda el nuevo baseline del scan.
 
-> **Importante:** esta versión detecta deltas, pero no mantiene todavía un estado
-> por archivo `processed/pending/failed`. Tampoco detecta de forma completa todos
-> los cambios staged, unstaged y eliminaciones locales. No debe interpretarse como
-> una cola persistente de archivos que la LLM ya leyó.
+> **Importante:** esta versión detecta deltas de commits, índice, working tree,
+> eliminaciones y archivos no trackeados, pero no mantiene todavía un estado por
+> archivo `processed/pending/failed`. No debe interpretarse como una cola
+> persistente de archivos que la LLM ya leyó.
 
 ### Estado objetivo del scanner (pendiente)
 

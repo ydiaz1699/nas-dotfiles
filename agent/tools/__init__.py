@@ -50,6 +50,7 @@ from agent.tools.diagnostic_tools import (
     troubleshoot,
 )
 from agent.tools.project_scanner import project_scan
+from agent.tools.capability_tools import discover_capabilities
 from agent.tools.compare_tools import compare_catalog
 from agent.tools.memory_tools import (
     remember,
@@ -96,6 +97,8 @@ ALL_TOOLS = [
     troubleshoot,
     # Scanner de proyecto
     project_scan,
+    # Descubrimiento dinámico de capacidades (no ejecuta mutaciones)
+    discover_capabilities,
     # Comparador catálogo vs real
     compare_catalog,
     # Memoria persistente (Learning Loop)

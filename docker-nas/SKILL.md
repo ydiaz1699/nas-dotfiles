@@ -3,7 +3,7 @@ name: docker-nas
 description: >
   Skill para administrar un NAS Dell PowerEdge T20 con Debian 13 + Docker.
   Tres capas: Shell personalizado (aliases, navegación), CLI Docker (svc),
-  y Agente IA Python (28 tools, plugins, MQTT).
+  y Agente IA Python (tools, plugins, MQTT).
 
   ACTIVAR esta skill cuando el usuario mencione CUALQUIERA de estos contextos
   (aunque no diga "NAS" explícitamente):
@@ -234,7 +234,7 @@ Antes de crear un servicio que use PostgreSQL, Redis u otra base compartida:
 6. Configurar `env_file: [../.env, .env]`, `extends.file: ../_common.yml` cuando no exista una incompatibilidad documentada, y labels `homepage.*`.
 7. No usar `depends_on` para un contenedor que pertenece a otro compose; verificar la disponibilidad con `svc health` y logs.
 8. Documentar el host de conexión como el nombre del contenedor/servicio en `db_net`, no como una IP fija. La excepción de Home Assistant es loopback porque usa `network_mode: host`.
-9. Estado confirmado: Flowise usa `flowise_db` + `dataredis`; Home Assistant usa `homeassistant_db`; n8n usa `n8n_db` con `n8n_user` por `datapostgres:5432` en `db_net`. LobeHub tiene configuración preparada para `lobehub_db`/`lobehub_user`, `dataredis` y RustFS, pero su runtime queda pendiente de ejecutar y verificar la guía. La guía n8n separa runtime confirmado de hardening/pin pendiente.
+9. Estado confirmado: Flowise usa `flowise_db` + `dataredis`; Home Assistant usa `homeassistant_db`; n8n usa `n8n_db` con `n8n_user` por `datapostgres:5432` en `db_net`. LobeHub ya completó migración PostgreSQL, inició con RustFS y validó Redis autenticado; sus avisos restantes de proveedores/QStash/marketplace son funcionales y opcionales.
 10. El único stack operativo es `datasql`: ParadeDB PostgreSQL 17 con pgvector/pg_search/pg_cron, pgAdmin y Redis; sus contenedores son `datapostgres`, `datapgadmin` y `dataredis`. `aipostgres` es la base administrativa y un alias histórico. La instalación limpia puede eliminar el DataSQL anterior cuando el usuario lo confirma; después se verifica y se crean consumidores vacíos.
 11. RustFS no pertenece al stack PostgreSQL. Para LobeHub server/database, la documentación oficial confirma que S3 es necesario para uploads, imágenes y knowledge base; instalar RustFS como servicio separado en el compose de LobeHub, nunca dentro de DataSQL. Para otros consumidores, instalarlo solo cuando exista una necesidad real de objetos.
 
@@ -265,6 +265,8 @@ svc restore <svc>    # restaurar desde backup
 svc update-all       # actualizar todos los servicios
 svc port-map         # mapa de puertos + conflictos
 svc menu             # TUI interactivo con fzf
+svc capabilities     # descubrir comandos reales y sus guards
+svc lobehub verify   # validación runtime estructurada de LobeHub
 
 # Sistema
 nas                  # dashboard (uptime, RAM, disco, red, Docker, temp)
@@ -323,7 +325,7 @@ lento, healthcheck, red), ver `references/diagnostic.md`.
 
 ## Agente IA
 
-28 tools · 3 providers (Gemini default, Bedrock, Ollama) · memoria
+tools · 3 providers (Gemini default, Bedrock, Ollama) · memoria
 persistente · plugins dinámicos · daemon systemd · prompt modular por bloques.
 
 Para tools, memoria, plugins y configuración, ver `references/agent.md`.

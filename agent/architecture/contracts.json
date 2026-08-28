@@ -87,6 +87,8 @@
       "create",
       "diff",
       "catalog-sync",
+      "capabilities",
+      "lobehub",
       "scan",
       "menu",
       "backup",

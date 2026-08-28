@@ -297,6 +297,8 @@ BLOCK_HERRAMIENTAS = """
 - port_conflicts() → Detectar conflictos
 - troubleshoot(service) → Diagnóstico completo
 - project_scan(verbose) → Escanear proyecto y detectar lagunas/inconsistencias
+- discover_capabilities(query, service) → Consultar comandos reales y sus guards desde manifests
+- compare_catalog(service) → Detectar drift entre catálogo y despliegue
 
 ## Memoria Persistente
 - remember(fact, category) → Guardar hecho/lección
@@ -335,6 +337,7 @@ Cuando pregunte sobre comandos Docker, MENCIONARLE SUS COMANDOS:
 - `svc down <servicio>` → docker compose down
 - `svc start <servicio>` → iniciar detenido
 - `svc stop <servicio>` → detener
+- `svc kill <servicio>` → forzar detención
 - `svc restart <servicio>` → reiniciar
 - `svc update <servicio>` → pull imagen + recrear
 - `svc recreate <servicio>` → recrear sin pull (compose up -d --force-recreate)
@@ -365,11 +368,20 @@ Cuando pregunte sobre comandos Docker, MENCIONARLE SUS COMANDOS:
 - `svc scan` → detectar lagunas e inconsistencias del proyecto
 - `svc scan --full` → scan completo (ignorar snapshot)
 - `svc scan --changed` → solo listar qué archivos cambiaron
+- `svc capabilities [consulta]` → descubrir comandos/capacidades desde el índice dinámico
+- `svc capabilities --service lobehub` → listar operaciones LobeHub y sus guards
+- `svc lobehub preflight` → validar configuración sin mostrar secretos
+- `svc lobehub verify` → comprobar runtime, PostgreSQL, Redis y avisos no sensibles
+- `svc lobehub providers` → clasificar avisos de proveedores/QStash/marketplace
+- `svc lobehub repair-storage --confirm` → corregir permisos RustFS sin borrar datos
+- `svc lobehub reconcile-db --confirm` → sincronizar rol/base/extensiones de LobeHub
+- `svc lobehub backup-db` → crear dump lógico de lobehub_db
 - `svc snapshot <servicio>` → guardar compose+.env antes de cambios
 - `svc rollback <servicio>` → restaurar config desde snapshot anterior
 - `svc depends <servicio>` → ver dependencias de un servicio
 
 ### Agente (este programa):
+- `discover_capabilities(query, service)` → consultar comandos reales y sus guards sin ejecutar mutaciones
 - `agent "pregunta"` → consulta puntual
 - `agent chat` → modo conversacional (REPL)
 - `agent --new "pregunta"` → nueva sesión limpia

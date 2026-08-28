@@ -104,6 +104,8 @@ def _classify_path(relative: str, repo: str) -> str:
         return "python_cli_module"
     if relative.startswith("agent/tools/") and relative.endswith(".py"):
         return "agent_tool"
+    if relative.startswith("agent/capabilities/") and relative.endswith(".json"):
+        return "capability_manifest"
     if relative == "agent/nas_agent.py":
         return "agent_prompt"
     if relative.startswith("agent/plugins/") and relative.endswith(".py"):
@@ -252,6 +254,65 @@ def _extract_registered_tools(path: Path) -> Set[str]:
             if isinstance(item, ast.Name):
                 tools.add(item.id)
     return tools
+
+
+def _extract_capabilities() -> Dict[str, Any]:
+    """Carga manifests versionados y verifica que cada entrypoint exista."""
+    manifests: List[Dict[str, Any]] = []
+    operations: List[Dict[str, Any]] = []
+    capabilities_root = NAS_DOTFILES / "agent" / "capabilities"
+    if not capabilities_root.exists():
+        return {"manifests": [], "operations": []}
+
+    for path in sorted(capabilities_root.glob("*.json")):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        source = str(data.get("source", ""))
+        source_exists = bool(source) and (NAS_DOTFILES / source).exists()
+        source_text = _read_text(NAS_DOTFILES / source) if source_exists else ""
+        manifest = {
+            "manifest": _relative(path, NAS_DOTFILES),
+            "service": data.get("service", ""),
+            "source": source,
+            "source_exists": source_exists,
+            "description": data.get("description", ""),
+        }
+        manifests.append(manifest)
+        for operation in data.get("operations", []):
+            item = dict(operation)
+            operation_id = str(item.get("id", ""))
+            action = operation_id.rsplit(".", 1)[-1]
+            # Para entrypoints Bash, comprobar también el case dispatch y no
+            # limitarse a que exista el archivo compartido.
+            if source_exists and source.endswith(".sh"):
+                dispatch_exists = bool(
+                    re.search(
+                        rf"^\s*(?:[\w-]+\|)*{re.escape(action)}(?:\|[\w-]+)*\)",
+                        source_text,
+                        re.MULTILINE,
+                    )
+                )
+            else:
+                dispatch_exists = source_exists
+            mode = str(item.get("mode", ""))
+            declared_confirm = bool(item.get("confirm"))
+            command_has_confirm = "--confirm" in str(item.get("command", ""))
+            guard_valid = (
+                (mode == "mutating" and declared_confirm and command_has_confirm)
+                or (mode in {"read_only", "backup"} and not declared_confirm and not command_has_confirm)
+            )
+            item.update({
+                "service": data.get("service", ""),
+                "manifest": manifest["manifest"],
+                "source_exists": source_exists,
+                "dispatch_exists": dispatch_exists,
+                "guard_valid": guard_valid,
+            })
+            operations.append(item)
+
+    return {"manifests": manifests, "operations": operations}
 
 
 def _extract_service_ids() -> Dict[str, Dict[str, Any]]:
@@ -413,6 +474,7 @@ def build_index() -> Dict[str, Any]:
     contracts = _load_contracts()
     files = _file_records()
     service_data = _extract_service_ids()
+    capabilities = _extract_capabilities()
     cli = _cli_index()
     connections = _contract_connections(contracts)
 
@@ -429,12 +491,14 @@ def build_index() -> Dict[str, Any]:
             "nas_dotfiles_files": sum(1 for item in files if item["repo"] == "nas_dotfiles"),
             "debmenux_files": sum(1 for item in files if item["repo"] == "debmenux"),
             "services": len(service_data["services"]),
+            "capabilities": len(capabilities["operations"]),
             "contract_connections": len(connections),
             "broken_contract_connections": sum(1 for item in connections if not item["complete"]),
         },
         "files": files,
         "cli": cli,
         "services": service_data["services"],
+        "capabilities": capabilities,
         "debmenux_registry": service_data["registry"],
         "connections": connections,
     }

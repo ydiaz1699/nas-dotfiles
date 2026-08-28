@@ -72,6 +72,36 @@ app.command("catalog-sync")(catalog_mod.catalog_sync)
 # Scanner
 app.command("scan")(scanner_mod.scan)
 
+
+@app.command("capabilities")
+def capabilities(
+    query: Optional[str] = typer.Argument(None),
+    service: Optional[str] = typer.Option(None, "--service"),
+    json_output: bool = typer.Option(False, "--json"),
+):
+    """Descubrir capacidades reales desde manifests e índice estructural."""
+    args = []
+    if query:
+        args.append(query)
+    if service:
+        args.extend(["--service", service])
+    if json_output:
+        args.append("--json")
+    raise typer.Exit(svc_passthrough("capabilities", *args))
+
+
+@app.command("lobehub")
+def lobehub(
+    action: str = typer.Argument("help"),
+    confirm: bool = typer.Option(False, "--confirm"),
+):
+    """Operaciones LobeHub seguras y repetibles."""
+    args = [action]
+    if confirm:
+        args.append("--confirm")
+    raise typer.Exit(svc_passthrough("lobehub", *args))
+
+
 # Menu
 app.command("menu")(menu_mod.menu)
 

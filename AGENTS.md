@@ -63,6 +63,8 @@ nas                 →  dashboard del servidor
 | `svc lock <svc>` | Proteger servicio (doble confirmación para stop/down/kill/restore) |
 | `svc unlock <svc>` | Quitar protección |
 | `svc catalog-sync [svc]` | Generar docs en cascada (ficha, guía, script DebMenux) |
+| `svc capabilities [consulta]` | Descubrir capacidades reales desde manifests e índice dinámico |
+| `svc lobehub <acción>` | Preflight, verify, proveedores, DB, RustFS y backup lógico |
 | `svc scan` | Detectar lagunas del proyecto (servicios, CLI, docs) |
 | `svc snapshot <svc>` | Guardar compose+.env antes de cambios (liviano, rotación 10) |
 | `svc rollback <svc>` | Restaurar config desde snapshot anterior (fzf + confirmación) |
@@ -104,7 +106,7 @@ todavía ejecuta un checkout anterior y aparece `No such command 'snapshot'`, us
 | datasql | 5432 (loopback), 5050 (pgAdmin) | db_net | ✅ labels (datapostgres/datapgadmin/dataredis) |
 | flowise | 8100 | db_net | ✅ labels |
 | n8n | 5678 | db_net | ✅ labels (PostgreSQL/runtime auditado; hardening pendiente) |
-| lobehub | 3210 (+ RustFS S3 9000) | db_net + lobe_storage | ✅ labels (instalación preparada; runtime pendiente) |
+| lobehub | 3210 (+ RustFS S3 9000) | db_net + lobe_storage | ✅ labels (runtime base confirmado; opcionales pendientes) |
 | filebrowser | 8085 | filebrowser_default | ✅ labels |
 | homepage | 3000 | homepage_net | — (es el dashboard) |
 | ntfy | 8090 | homepage_net | ✅ labels |
@@ -114,11 +116,12 @@ todavía ejecuta un checkout anterior y aparece `No such command 'snapshot'`, us
 | spacedrive | — | spacedrive_default | — |
 
 > Flowise está activo en el NAS y usa `flowise_db` + `dataredis`; n8n está activo,
-> usa `n8n_db` con `n8n_user` y su conexión/runtime ya fue auditado. LobeHub está
-> preparado en catálogo con `lobehub_db`/`lobehub_user`, Redis compartido y RustFS
-> separado, pero aún requiere ejecución y verificación en el NAS. La ficha,
-> guía y compose objetivo de n8n están catalogados; queda verificar su hardening
-> y pin `2.36.7` antes de declararlos aplicados.
+> usa `n8n_db` con `n8n_user` y su conexión/runtime ya fue auditado. LobeHub ya
+> completó migración PostgreSQL, inició LobeHub/RustFS y validó Redis autenticado;
+> el runtime base está operativo. Queda configurar claves válidas de proveedores
+> (OpenAI/DeepSeek) si se van a usar, y QStash/marketplace solo para esas funciones.
+> La ficha, guía y compose objetivo de n8n están catalogados; queda verificar su
+> hardening y pin `2.36.7` antes de declararlos aplicados.
 
 ## Redes Docker
 
@@ -154,8 +157,8 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 Si necesita PostgreSQL o Redis, leer `docs/services/datasql-guide.md` para el estado del stack, crear bases/roles y conectar consumidores; usar `db_net`, crear DB/usuario dedicados, no publicar DBs en la LAN y no usar `depends_on` contra un compose externo. `db_net` no prueba que una aplicación
 use una base: confirmar compose, configuración y runtime. Consumidores confirmados: Flowise (`flowise_db` + `dataredis`), Home Assistant
 (`homeassistant_db` por `127.0.0.1:5432`), n8n (`n8n_db` con `n8n_user` por
-`datapostgres:5432` dentro de `db_net`) y LobeHub (preparado para
-`lobehub_db`/`lobehub_user`, `dataredis` y RustFS; runtime pendiente). El runtime
+`datapostgres:5432` dentro de `db_net`) y LobeHub (`lobehub_db` con
+`lobehub_user`, `dataredis` y RustFS; runtime base confirmado). El runtime
  de n8n está auditado; el hardening y pin `2.36.7` quedan pendientes de verificación.
 El stack operativo único es `datasql`, con ParadeDB PostgreSQL
 17, pgvector/pg_search/pg_cron, pgAdmin y Redis; sus contenedores finales son

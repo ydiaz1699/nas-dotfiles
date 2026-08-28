@@ -86,7 +86,7 @@ nas-dotfiles/
         config/
             defaults.yml        Configuracion centralizada
         core/                   Logica de negocio
-        tools/                  28 herramientas @tool
+        tools/                  Herramientas @tool y capacidades dinámicas
         plugins/                Sistema de plugins dinamicos
         events/                 Event bus + MQTT listener
         scheduler/              Tareas periodicas
@@ -645,9 +645,9 @@ agent --model gemini-2.5-flash   # cambio directo
 | **Bedrock** | Claude Sonnet 4 | ~$3/1M tokens | AWS credentials |
 | **Ollama** | llama3.1 | Gratis | Ollama local |
 
-## 28 herramientas
+## Herramientas
 
-El agente tiene acceso a 28 tools que ejecuta autonomamente:
+El agente tiene acceso a tools que ejecuta autonomamente:
 
 **Descubrimiento:** list_services, scan_compose, auto_catalog, bulk_discover, export_service
 
@@ -660,6 +660,8 @@ El agente tiene acceso a 28 tools que ejecuta autonomamente:
 **Backup:** backup_service, restore_service, list_backups
 
 **Diagnostico:** service_health, port_conflicts, troubleshoot
+
+**Arquitectura y autodescubrimiento:** project_scan, discover_capabilities, compare_catalog
 
 **Busqueda:** search_service_info (web fallback)
 
