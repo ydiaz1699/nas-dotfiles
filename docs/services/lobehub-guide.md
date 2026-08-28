@@ -171,9 +171,124 @@ fi
 
 La modificación de `extends.file` es necesaria porque en el catálogo es
 `../../_common.yml`, pero en `$dkco/lobehub/` debe ser `../_common.yml`. Si el
-runtime ya contenía esa ruta, el bloque no la cambia. No ejecutar `chmod` o
-`chown` sobre datos que todavía no existen, y no levantar el compose mientras
-falte algún artefacto.
+runtime ya contenía esa ruta, el bloque no la cambia.
+
+### Permisos del bind mount de RustFS
+
+RustFS ejecuta el proceso como el usuario no root con UID `10001`. El directorio
+host `data/rustfs` debe existir antes de aplicar permisos y debe pertenecer a ese
+UID; si queda propiedad de `root` con permisos `755`, RustFS puede iniciar pero
+no escribir `/data` y termina con `Permission denied (os error 13)`. Esto fue el
+fallo observado durante el primer `svc up`.
+
+La secuencia correcta es: **crear la carpeta → copiar los archivos → aplicar
+propietario/permisos → levantar el servicio**. Ejecuta el bloque siguiente después
+del bloque de preparación y antes de `svc up`:
+
+```bash
+if [[ ! -d "$dkco/lobehub/data/rustfs" ]]; then
+  printf 'Falta el directorio data/rustfs; no aplicar permisos.\n' >&2
+else
+  stat -c 'Antes: %n | uid=%u gid=%g modo=%a' "$dkco/lobehub/data/rustfs"
+
+  chown -R 10001:10001 "$dkco/lobehub/data/rustfs"
+  chmod -R u+rwX,go-rX "$dkco/lobehub/data/rustfs"
+
+  stat -c 'Después: %n | uid=%u gid=%g modo=%a' "$dkco/lobehub/data/rustfs"
+fi
+```
+
+La salida esperada es `uid=10001` y un modo que permita lectura/escritura al
+propietario. Este `chown` solo aplica al almacenamiento persistente de RustFS;
+no lo ejecutes sobre `$dkco/datasql`, `$dkco/lobehub/.env` ni directorios de otro
+servicio. La referencia oficial de [instalación de RustFS en contenedor](https://docs.rustfs.com/en/installation/container/docker) también exige
+que el directorio host montado en `/data` sea propiedad del UID `10001`.
+
+### No exponer `RUSTFS_SECRET_KEY` en la línea de comandos
+
+El compose inicial pasaba `RUSTFS_SECRET_KEY` como argumento
+`--secret-key`. RustFS lo reflejó en el log de arranque, por lo que ese secreto
+quedó expuesto durante el diagnóstico de este fallo. El compose corregido usa
+`RUSTFS_ACCESS_KEY` y `RUSTFS_SECRET_KEY` únicamente mediante `environment:` y
+arranca con `/data`; no debe aparecer `--secret-key` en `command:`.
+
+Si el runtime se copió antes de esta corrección, detén el proyecto y aplica la
+normalización siguiente después de actualizar el repositorio:
+
+```bash
+svc stop lobehub
+
+python3 - "$dkco/lobehub/compose.yml" <<'PY'
+import os
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+text = path.read_text()
+old = """    command:\n      - --access-key\n      - lobehub\n      - --secret-key\n      - ${RUSTFS_SECRET_KEY}\n      - /data\n"""
+new = """    command:\n      - /data\n"""
+if old not in text:
+    if "      - --secret-key\n" in text:
+        raise SystemExit("Se encontró --secret-key en un formato no reconocido; no modificar")
+else:
+    temporary = path.with_name(path.name + ".tmp")
+    try:
+        temporary.write_text(text.replace(old, new, 1))
+        os.replace(temporary, path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+PY
+```
+
+Como el secreto apareció en los logs compartidos, genera un
+`RUSTFS_SECRET_KEY` nuevo antes del primer arranque exitoso. El cambio no borra
+`data/rustfs`; RustFS todavía no llegó a iniciar correctamente:
+
+```bash
+python3 - "$dkco/lobehub/.env" <<'PY'
+import os
+import secrets
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+lines = path.read_text().splitlines()
+updated = []
+found = False
+value = secrets.token_hex(32)
+for line in lines:
+    if line.startswith("RUSTFS_SECRET_KEY="):
+        updated.append(f"RUSTFS_SECRET_KEY={value}")
+        found = True
+    else:
+        updated.append(line)
+if not found:
+    updated.append(f"RUSTFS_SECRET_KEY={value}")
+temporary = path.with_name(path.name + ".tmp")
+try:
+    temporary.write_text("\n".join(updated) + "\n")
+    os.chmod(temporary, 0o600)
+    os.replace(temporary, path)
+finally:
+    if temporary.exists():
+        temporary.unlink()
+PY
+chmod 600 "$dkco/lobehub/.env"
+```
+
+No compartas de nuevo el valor ni `svc logs lobehub` completo. En instalaciones
+futuras, los secretos que aparecen en variables de entorno no deben imprimirse
+en logs ni en salidas pegadas al chat.
+
+```bash
+svc stop lobehub
+chown -R 10001:10001 "$dkco/lobehub/data/rustfs"
+chmod -R u+rwX,go-rX "$dkco/lobehub/data/rustfs"
+```
+
+No borres `data/rustfs`, no ejecutes `docker prune` y no cambies secretos para
+resolver un error de permisos. El contenido persistente debe conservarse.
 
 ## 5. Completar el `.env` con configuración interactiva y protegerlo
 
@@ -842,9 +957,17 @@ puede aparecer desde un usuario sin acceso a `$dkco/.env`.
 
 ## 9. Levantar en el orden real
 
-Después de directorios → archivos → permisos → validación:
+Después de directorios → archivos → propietario/permisos → validación de
+credenciales y configuración:
 
 ```bash
+# Si el proyecto ya tuvo un arranque fallido, detener el bucle de reinicio.
+svc stop lobehub
+
+# Repetir la corrección de permisos sin borrar el almacenamiento.
+chown -R 10001:10001 "$dkco/lobehub/data/rustfs"
+chmod -R u+rwX,go-rX "$dkco/lobehub/data/rustfs"
+
 svc pull lobehub
 svc up lobehub
 svc ps lobehub
@@ -853,10 +976,17 @@ svc health
 svc stats lobehub
 ```
 
+Si es la primera ejecución y los contenedores todavía no existen, `svc stop`
+puede informar que no hay nada que detener; continúa con `chown`, `svc pull` y
+`svc up`. No uses `svc down` como reparación genérica: conservar el directorio
+bind-mounted y sus permisos es lo importante.
+
 La primera ejecución debe mostrar, en el contenedor LobeHub, migración de base
 completada y el servidor Next.js listo. `rustfs-init` debe terminar con código 0
-tras crear `lobe`; no debe imprimir secretos. No usar `svc update` sobre otro
-servicio y no detener DataSQL como parte de esta instalación.
+tras crear `lobe`; no debe imprimir secretos. Si RustFS vuelve a mostrar
+`Permission denied (os error 13)`, detente y revisa primero `stat`/`chown` del
+paso 4; no cambies contraseñas ni borres `data/rustfs`. No usar `svc update`
+sobre otro servicio y no detener DataSQL como parte de esta instalación.
 
 ## 10. Verificación posterior y criterios de aceptación
 
