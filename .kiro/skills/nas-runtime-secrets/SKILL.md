@@ -480,3 +480,13 @@ actualizarse.
 
 Esta skill controla **cómo transportar y verificar secretos en runtime**; no
 reemplaza la guía del servicio ni autoriza a inventar su configuración.
+
+
+## Caso MCP read-only de LobeHub
+
+Cuando la credencial local sea `LOBEHUB_MCP_TOKEN`:
+
+- Leerla únicamente desde `$dkco/lobehub/.env` en una variable temporal para una prueba local; nunca pedirla, imprimirla o incluirla en la respuesta.
+- La configuración UI canónica es Streamable HTTP + API Key con `http://lobehub-mcp:8790/mcp`; el campo API Key recibe el valor sin `Bearer`. No publicar el puerto ni depender de que el navegador resuelva el hostname Docker.
+- La evidencia segura esperada es POST sin token `401` y `tools/list` autenticado `200` con cinco tools. Un `401` sin token confirma protección, no un fallo.
+- Si el bloque usa `NAS_CLI=python`, debe incluir `--` antes del servicio/comando interno; `-T`, `-e`, `-c`, `-U` y `-d` no deben llegar al parser Typer. Limpiar la variable temporal con `unset` al terminar, también tras un error.

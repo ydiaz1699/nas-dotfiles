@@ -43,3 +43,12 @@ En Python, el primer argumento después de `svc exec` selecciona el compose. Par
 - Una petición POST sin Bearer debe devolver `401`; eso confirma red, DNS y ruta.
 - Una petición autenticada `tools/list` desde el sidecar debe devolver `200` y cinco tools.
 - No abrir `http://lobehub-mcp:8790/mcp` en el navegador: es un endpoint POST interno y un GET devuelve `405` por diseño.
+
+
+## Integración MCP de LobeHub
+
+- Configurar el cliente como **Streamable HTTP** con endpoint `http://lobehub-mcp:8790/mcp` y **API Key** en la UI; pegar el token sin `Bearer`. No importar inicialmente un header JSON manual ni publicar el puerto `8790`.
+- `lobehub-mcp` es resoluble únicamente desde el backend de LobeHub dentro de `lobe_storage`; el navegador no debe abrir ese hostname. Un GET puede devolver `405` por diseño porque el flujo válido es POST JSON-RPC.
+- Evidencia de aceptación: POST sin token devuelve `401`; `tools/list` autenticado devuelve `200`, `application/json; charset=utf-8` y `tools_count=5`. `svc lobehub verify` debe terminar con `Resultado: 0 fallos`; `QSTASH_TOKEN not set` es un aviso opcional.
+- “Migración PostgreSQL” significa que LobeHub migró `lobehub_db` dentro de `datapostgres` de DataSQL; no implica crear otro PostgreSQL. Mantener `lobehub_user` dedicado y mínimo privilegio.
+- En una sesión interactiva, texto como `Endpoint:`/`Auth type:`/`API Key:` se copia solo en la UI, nunca en Bash. Si aparece `csl: orden no encontrada`, se pegó contenido de presentación en la terminal.
