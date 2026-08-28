@@ -190,7 +190,7 @@ _lobe_verify() {
   if [[ -n "$pg_password" && -n "$pg_user" ]]; then
     ext_count=$(_lobe_sql_admin "SELECT count(*) FROM pg_extension WHERE extname IN ('vector','pg_search');" "$pg_password" "$pg_user" lobehub_db 2>/dev/null || echo 0)
     if [[ "$ext_count" == 2 ]]; then _lobe_result extensions pass 'vector y pg_search'; else _lobe_result extensions fail "se encontraron $ext_count de 2"; fail=$((fail + 1)); fi
-    role_flags=$(_lobe_sql_admin "SELECT rolcanlogin || '|' || rolsuper || '|' || rolcreaterole || '|' || rolcreatedb || '|' || rolreplication || '|' || rolbypassrls FROM pg_roles WHERE rolname='lobehub_user';" "$pg_password" "$pg_user" lobehub_db 2>/dev/null || true)
+    role_flags=$(_lobe_sql_admin "SELECT CASE WHEN rolcanlogin THEN 't' ELSE 'f' END || '|' || CASE WHEN rolsuper THEN 't' ELSE 'f' END || '|' || CASE WHEN rolcreaterole THEN 't' ELSE 'f' END || '|' || CASE WHEN rolcreatedb THEN 't' ELSE 'f' END || '|' || CASE WHEN rolreplication THEN 't' ELSE 'f' END || '|' || CASE WHEN rolbypassrls THEN 't' ELSE 'f' END FROM pg_roles WHERE rolname='lobehub_user';" "$pg_password" "$pg_user" lobehub_db 2>/dev/null || true)
     if [[ "$role_flags" == 't|f|f|f|f|f' ]]; then _lobe_result role pass 'lobehub_user login sin privilegios elevados'; else _lobe_result role fail 'atributos no cumplen mínimo privilegio'; fail=$((fail + 1)); fi
   else
     _lobe_result postgres fail 'faltan credenciales administrativas'; fail=$((fail + 1))

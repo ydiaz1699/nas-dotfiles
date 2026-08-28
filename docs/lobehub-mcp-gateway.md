@@ -69,111 +69,271 @@ piden en el chat.
 
 ### 1. Preparar el helper host
 
-```bash
-set -e
-: "${NAS_DOTFILES:?Define NAS_DOTFILES apuntando al checkout}"
-: "${dkco:?Define dkco apuntando a la raíz de datos Docker}"
-: "${aadm:?Define aadm apuntando al home del usuario del NAS}"
+El bloque siguiente es autocontenido: usa las variables que el entorno del NAS
+ya exporta y, si faltan, intenta recuperarlas desde un login shell. No hay que
+rellenar manualmente `NAS_DOTFILES`, `DOCKER_BASE`, `MCP_SOCKET_GID` ni ninguna
+ruta. Si una variable no está configurada, se detiene antes de copiar archivos.
 
-# (1) Crear el grupo dedicado antes de crear el socket o arrancar contenedores.
+```bash
+set -euo pipefail
+
+# Recuperar las rutas del entorno NAS sin pedirlas ni escribirlas a mano.
+if [[ -z "${NAS_DOTFILES:-}" || -z "${dkco:-}" || -z "${aadm:-}" ]]; then
+  IFS=$'\x1f' read -r detected_nas detected_docker detected_home < <(
+    bash -lc 'printf "%s\037%s\037%s" "${NAS_DOTFILES:-}" "${dkco:-}" "${aadm:-}"' \
+      2>/dev/null || true
+  ) || true
+  NAS_DOTFILES="${NAS_DOTFILES:-${detected_nas:-}}"
+  dkco="${dkco:-${detected_docker:-}}"
+  aadm="${aadm:-${detected_home:-}}"
+fi
+
+: "${NAS_DOTFILES:?No se encontró NAS_DOTFILES; carga el entorno con nasfk}"
+: "${dkco:?No se encontró dkco; carga el entorno con dk}"
+: "${aadm:?No se encontró aadm; carga el entorno con adm}"
+DOCKER_BASE="${DOCKER_BASE:-$dkco}"
+export NAS_DOTFILES DOCKER_BASE
+
+# Validar antes de crear o reemplazar cualquier archivo.
+test -f "$NAS_DOTFILES/systemd/lobehub-mcp-helper.service"
+test -f "$NAS_DOTFILES/systemd/lobehub-mcp-helper.env.example"
+test -f "$NAS_DOTFILES/agent/lobehub_mcp.py"
+test -d "$dkco"
+test -d "$aadm"
+
+# Crear el grupo dedicado antes de crear el socket o arrancar contenedores.
 if ! getent group nas-mcp >/dev/null; then
   sudo groupadd --system nas-mcp
 fi
 MCP_SOCKET_GID="$(getent group nas-mcp | cut -d: -f3)"
-export MCP_SOCKET_GID
+[[ "$MCP_SOCKET_GID" =~ ^[0-9]+$ ]] || {
+  printf 'No se pudo obtener un GID numérico para nas-mcp.\n' >&2
+  exit 1
+}
 
-# (2) Carpetas antes de archivos.
+# Crear carpetas antes de instalar archivos. El helper corre como aadm,
+# incluso si este bloque se pega desde una sesión root.
+AADM_UID="$(id -u "$(basename "$aadm")")"
+AADM_GID="$(id -g "$(basename "$aadm")")"
 sudo install -d -m 0750 /etc/nas
-sudo install -d -o "$(id -u)" -g "$(id -g)" -m 0750 /var/lib/nas/lobehub-mcp
+sudo install -d -o "$AADM_UID" -g "$AADM_GID" -m 0750 \
+  /var/lib/nas/lobehub-mcp
 
-# (3) Copiar la unidad y su configuración no secreta.
+# Copiar la unidad y su configuración no secreta.
 sudo install -m 0644 "$NAS_DOTFILES/systemd/lobehub-mcp-helper.service" \
   /etc/systemd/system/lobehub-mcp-helper.service
 sudo install -m 0640 "$NAS_DOTFILES/systemd/lobehub-mcp-helper.env.example" \
   /etc/nas/lobehub-mcp-helper.env
-sudo sed -i "s/^MCP_SOCKET_GID=.*/MCP_SOCKET_GID=$MCP_SOCKET_GID/" \
+sudo sed -i \
+  -e "s|^NAS_DOTFILES=.*|NAS_DOTFILES=$NAS_DOTFILES|" \
+  -e "s|^DOCKER_BASE=.*|DOCKER_BASE=$DOCKER_BASE|" \
+  -e "s|^MCP_SOCKET_GID=.*|MCP_SOCKET_GID=$MCP_SOCKET_GID|" \
   /etc/nas/lobehub-mcp-helper.env
-
-# (4) La configuración anterior no contiene secretos. El audit log se crea
-# con modo 600 al primer uso por el proceso helper.
 sudo systemctl daemon-reload
 ```
 
-Si el checkout o el runtime no usan las rutas estándar, editar
-`/etc/nas/lobehub-mcp-helper.env` antes de arrancar y conservar:
+El bloque escribe automáticamente en `/etc/nas/lobehub-mcp-helper.env`:
+`NAS_DOTFILES` detectado, `DOCKER_BASE` heredado de `dkco`, el socket fijo del
+helper, el GID real del grupo `nas-mcp` y el audit log. El helper no recibe el
+token MCP; solo lee manifests y ejecuta las cuatro comprobaciones fijas.
 
-```env
-MCP_MODE=helper
-NAS_DOTFILES=<ruta-del-checkout>
-DOCKER_BASE=<ruta-de-datos-docker>
-MCP_HELPER_SOCKET=/run/nas/lobehub-mcp.sock
-MCP_SOCKET_GID=<gid-del-grupo-nas-mcp>
-MCP_AUDIT_LOG=/var/lib/nas/lobehub-mcp/audit.jsonl
-```
+### 2. Preparar el compose, el token y comprobar el resultado
 
-El archivo no contiene el token MCP. El helper solo necesita leer los
-manifests y ejecutar las cuatro comprobaciones fijas.
-
-### 2. Preparar el compose y el token del sidecar
-
-Si `$dkco/lobehub/` ya existe, tomar un snapshot antes de reemplazar el
-compose. No copiar secretos al catálogo:
+Este bloque respeta el orden **snapshot opcional → carpetas → archivos →
+permisos → comprobaciones**. El token existente se conserva; solo se genera uno
+nuevo si falta o es `__pega_aqui__`. No usa heredoc ni Python multilínea, no
+imprime el token y no lo pasa como argumento de ningún proceso.
 
 ```bash
-svc snapshot lobehub
+set -euo pipefail
+: "${NAS_DOTFILES:?Ejecuta primero la sección 1 o carga el entorno NAS}"
+: "${dkco:?Ejecuta primero la sección 1 o carga el entorno NAS}"
 
-# (1) La carpeta y el almacenamiento ya deben existir antes de copiar archivos.
-mkdir -p "$dkco/lobehub/data/rustfs"
+SERVICE_DIR="$dkco/lobehub"
+ENV_FILE="$SERVICE_DIR/.env"
 
-# (2) Copiar únicamente el compose canónico y completar el path runtime.
-cp "$NAS_DOTFILES/agent/catalog/services/lobehub/compose.yml" \
-  "$dkco/lobehub/compose.yml"
+# El helper y la operación normal del NAS usan aadm. No usar id -u/id -g sin
+# nombre: si este bloque se pega desde root, eso dejaría la configuración como
+# root:root y aadm no podría ejecutar svc ni leer el .env.
+AADM_USER="aadm"
+getent passwd "$AADM_USER" >/dev/null || {
+  printf 'No existe el usuario %s; no continuar.\n' "$AADM_USER" >&2
+  exit 1
+}
+AADM_UID="$(id -u "$AADM_USER")"
+AADM_GID="$(id -g "$AADM_USER")"
+
+# Una ejecución anterior como root puede haber dejado el directorio de
+# configuración no escribible para aadm. Normalizar SOLO la carpeta de
+# configuración y sus archivos; no tocar data/rustfs ni sus UID 10001.
+if [[ -d "$SERVICE_DIR" ]]; then
+  sudo chown "$AADM_UID:$AADM_GID" "$SERVICE_DIR"
+  sudo chmod 0750 "$SERVICE_DIR"
+  for config_file in compose.yml .env bucket.config.json; do
+    if [[ -e "$SERVICE_DIR/$config_file" ]]; then
+      sudo chown "$AADM_UID:$AADM_GID" "$SERVICE_DIR/$config_file"
+    fi
+  done
+  [[ ! -e "$ENV_FILE" ]] || sudo chmod 600 "$ENV_FILE"
+  [[ ! -e "$SERVICE_DIR/compose.yml" ]] || sudo chmod 644 "$SERVICE_DIR/compose.yml"
+  [[ ! -e "$SERVICE_DIR/bucket.config.json" ]] || sudo chmod 644 "$SERVICE_DIR/bucket.config.json"
+else
+  sudo install -d -o "$AADM_UID" -g "$AADM_GID" -m 0750 "$SERVICE_DIR"
+fi
+
+# svc snapshot necesita leer la configuración y escribir el destino de
+# snapshots. Esto no contiene secretos nuevos y evita que una ejecución desde
+# root deje el destino inaccesible para aadm.
+sudo install -d -o "$AADM_UID" -g "$AADM_GID" -m 0750 \
+  "$dkco/backups/.snapshots"
+
+# Snapshot solo si ya existe un compose que pueda reemplazarse.
+if [[ -f "$SERVICE_DIR/compose.yml" ]]; then
+  svc snapshot lobehub
+fi
+
+# Crear carpetas antes de copiar archivos. La carpeta de datos queda fuera de
+# la normalización de configuración; después se aplicará UID 10001 a RustFS.
+mkdir -p "$SERVICE_DIR/data/rustfs"
+
+# Instalar el compose canónico sin usar el alias interactivo cp del NAS.
+# install reemplaza deliberadamente el compose, porque es la fuente canónica.
+install -o "$AADM_UID" -g "$AADM_GID" -m 0644 \
+  "$NAS_DOTFILES/agent/catalog/services/lobehub/compose.yml" \
+  "$SERVICE_DIR/compose.yml"
 sed -i 's|file: ../../_common.yml|file: ../_common.yml|g' \
-  "$dkco/lobehub/compose.yml"
+  "$SERVICE_DIR/compose.yml"
 
-# El .env existente se conserva. Si no existe, crear una copia del ejemplo.
-if [[ ! -f "$dkco/lobehub/.env" ]]; then
-  cp "$NAS_DOTFILES/agent/catalog/services/lobehub/.env.example" \
-    "$dkco/lobehub/.env"
+# El .env existente se conserva; si no existe, se crea desde el ejemplo.
+if [[ ! -f "$ENV_FILE" ]]; then
+  install -o "$AADM_UID" -g "$AADM_GID" -m 0600 \
+    "$NAS_DOTFILES/agent/catalog/services/lobehub/.env.example" \
+    "$ENV_FILE"
 fi
 
-# (3) Esta sección es autocontenida y no usa heredoc: obtiene el GID y
-# actualiza el .env sin imprimir ni pasar el token como argumento de proceso.
-if ! getent group nas-mcp >/dev/null; then
-  sudo groupadd --system nas-mcp
-fi
+# Obtener el GID real y leer el token solo en memoria local.
 MCP_SOCKET_GID="$(getent group nas-mcp | cut -d: -f3)"
-[[ "$MCP_SOCKET_GID" =~ ^[0-9]+$ ]] || { echo "GID inválido" >&2; exit 1; }
-
-MCP_TOKEN=""
-if ! grep -q '^LOBEHUB_MCP_TOKEN=' "$dkco/lobehub/.env" || \
-   grep -Eq '^LOBEHUB_MCP_TOKEN=(|__pega_aqui__)$' "$dkco/lobehub/.env"; then
+[[ "$MCP_SOCKET_GID" =~ ^[0-9]+$ ]] || {
+  printf 'GID inválido para nas-mcp.\n' >&2
+  exit 1
+}
+MCP_TOKEN="$(awk -F= \
+  '$1=="LOBEHUB_MCP_TOKEN"{print substr($0,index($0,"=")+1); exit}' \
+  "$ENV_FILE")"
+if [[ -z "$MCP_TOKEN" || "$MCP_TOKEN" == "__pega_aqui__" ]]; then
   MCP_TOKEN="$(openssl rand -hex 32)"
 fi
+[[ "$MCP_TOKEN" =~ ^[[:xdigit:]]{64}$ ]] || {
+  printf 'El token MCP no tiene el formato esperado.\n' >&2
+  exit 1
+}
 
+# El token se guarda en un temporal 0600, no en el entorno ni en argv de awk.
 umask 077
-tmp="$(mktemp "$dkco/lobehub/.env.mcp.XXXXXX")"
-MCP_TOKEN="$MCP_TOKEN" MCP_SOCKET_GID="$MCP_SOCKET_GID" awk 'BEGIN { g=ENVIRON["MCP_SOCKET_GID"]; t=ENVIRON["MCP_TOKEN"] } { k=$0; sub(/=.*/,"",k); if (k=="NAS_DOTFILES") { print "NAS_DOTFILES=/nas-dotfiles"; sn=1 } else if (k=="MCP_HELPER_SOCKET") { print "MCP_HELPER_SOCKET=/run/nas/lobehub-mcp.sock"; sh=1 } else if (k=="MCP_SOCKET_GID") { print "MCP_SOCKET_GID=" g; sg=1 } else if (k=="LOBEHUB_MCP_TOKEN") { if (t!="") print "LOBEHUB_MCP_TOKEN=" t; else print; st=1 } else print } END { if (!sn) print "NAS_DOTFILES=/nas-dotfiles"; if (!sh) print "MCP_HELPER_SOCKET=/run/nas/lobehub-mcp.sock"; if (!sg) print "MCP_SOCKET_GID=" g; if (t!="" && !st) print "LOBEHUB_MCP_TOKEN=" t }' "$dkco/lobehub/.env" > "$tmp"
-chmod 600 "$tmp"
-mv "$tmp" "$dkco/lobehub/.env"
-unset MCP_TOKEN MCP_SOCKET_GID tmp
+tmp_env="$(mktemp "$SERVICE_DIR/.env.mcp.XXXXXX")"
+tmp_token="$(mktemp "$SERVICE_DIR/.token.mcp.XXXXXX")"
+cleanup_mcp_files() {
+  rm -f "$tmp_env" "$tmp_token"
+  unset MCP_TOKEN MCP_SOCKET_GID
+}
+trap cleanup_mcp_files EXIT
+printf '%s\n' "$MCP_TOKEN" > "$tmp_token"
+chmod 600 "$tmp_token"
 
+awk -v token_file="$tmp_token" -v gid="$MCP_SOCKET_GID" \
+    -v repo="$NAS_DOTFILES" '
+BEGIN {
+  if ((getline token < token_file) <= 0) {
+    print "No se pudo leer el token temporal" > "/dev/stderr"
+    exit 1
+  }
+}
+{
+  key=$0
+  sub(/=.*/, "", key)
+  if (key == "NAS_DOTFILES") {
+    print "NAS_DOTFILES=" repo
+    seen_repo=1
+  } else if (key == "MCP_HELPER_SOCKET") {
+    print "MCP_HELPER_SOCKET=/run/nas/lobehub-mcp.sock"
+    seen_socket=1
+  } else if (key == "MCP_SOCKET_GID") {
+    print "MCP_SOCKET_GID=" gid
+    seen_gid=1
+  } else if (key == "LOBEHUB_MCP_TOKEN") {
+    print "LOBEHUB_MCP_TOKEN=" token
+    seen_token=1
+  } else {
+    print
+  }
+}
+END {
+  if (!seen_repo) print "NAS_DOTFILES=" repo
+  if (!seen_socket) print "MCP_HELPER_SOCKET=/run/nas/lobehub-mcp.sock"
+  if (!seen_gid) print "MCP_SOCKET_GID=" gid
+  if (!seen_token) print "LOBEHUB_MCP_TOKEN=" token
+}' "$ENV_FILE" > "$tmp_env"
+chmod 600 "$tmp_env"
+mv -f "$tmp_env" "$ENV_FILE"
+# Si el bloque se ejecutó desde root, el temporal nació como root; el .env
+# debe quedar siempre administrable por aadm y seguir protegido con 0600.
+sudo chown "$AADM_UID:$AADM_GID" "$ENV_FILE"
+chmod 600 "$ENV_FILE"
+rm -f "$tmp_token"
+trap - EXIT
+unset MCP_TOKEN MCP_SOCKET_GID tmp_env tmp_token
 ```
 
-El `.env` debe tener también `NAS_DOTFILES`,
-`MCP_HELPER_SOCKET=/run/nas/lobehub-mcp.sock` y el GID numérico de `nas-mcp` en
-`MCP_SOCKET_GID`. No usar `docker compose config` para mostrar el archivo
-resuelto: puede interpolar secretos.
+Comprobar el resultado sin mostrar el token ni interpolar secretos:
+
+```bash
+ENV_FILE="$dkco/lobehub/.env"
+HELPER_ENV=/etc/nas/lobehub-mcp-helper.env
+EXPECTED_GID="$(getent group nas-mcp | cut -d: -f3)"
+
+# Estas tres líneas no son secretas y deben mostrar los valores configurados.
+grep -E '^(NAS_DOTFILES|MCP_HELPER_SOCKET|MCP_SOCKET_GID)=' "$ENV_FILE"
+
+# Estas comprobaciones solo imprimen estados, nunca el token. Se usan `if`
+# explícitos para que un fallo no cierre una shell root que tenga `set -e`.
+if grep -q '^LOBEHUB_MCP_TOKEN=[^[:space:]]' "$ENV_FILE" && \
+   ! grep -q '^LOBEHUB_MCP_TOKEN=__pega_aqui__$' "$ENV_FILE"; then
+  echo 'Token MCP configurado'
+else
+  echo 'FALTA configurar el token MCP' >&2
+fi
+
+if [[ "$(stat -c '%a' "$ENV_FILE")" == 600 ]]; then
+  echo '.env protegido (0600)'
+else
+  echo 'ERROR: .env no tiene modo 600' >&2
+fi
+
+ENV_GID="$(awk -F= '$1=="MCP_SOCKET_GID"{print $2; exit}' "$ENV_FILE")"
+HELPER_GID="$(awk -F= '$1=="MCP_SOCKET_GID"{print $2; exit}' "$HELPER_ENV")"
+if [[ "$ENV_GID" == "$EXPECTED_GID" && "$HELPER_GID" == "$EXPECTED_GID" ]]; then
+  echo 'GID del socket coincide en runtime y helper'
+else
+  echo 'ERROR: GID del socket no coincide' >&2
+fi
+```
+
+No usar `docker compose config` para mostrar el archivo resuelto: puede
+interpolar secretos.
 
 ### 3. Levantar en orden
 
-Primero arrancar el helper y verificar que el socket exista; después levantar
-el stack mediante `svc`:
+Primero arrancar el helper y verificar que el socket exista; después validar
+la configuración y levantar el stack mediante `svc`:
 
 ```bash
 sudo systemctl enable --now lobehub-mcp-helper
+systemctl is-active --quiet lobehub-mcp-helper \
+  && echo 'Helper MCP activo'
+test -S /run/nas/lobehub-mcp.sock \
+  && echo 'Socket MCP creado correctamente'
 
-test -S /run/nas/lobehub-mcp.sock
+svc config lobehub >/dev/null
 svc up lobehub
 svc ps lobehub
 ```
@@ -213,6 +373,16 @@ pegar el valor del token local sin el prefijo `Bearer`; LobeHub construye el
 header. Si se usan headers avanzados, enviar exactamente
 `Authorization: Bearer <token>`. Nunca poner `AUTH_SECRET`, `JWKS_KEY`,
 `LOBE_DB_PASSWORD` ni `REDIS_PASSWORD` en este campo.
+
+Para obtener el token cuando estés listo para pegarlo en LobeHub, ejecuta este
+comando **solo en la terminal local del NAS**. Imprime un secreto
+intencionadamente; no copies su salida al chat, a un issue, a un log ni al
+repositorio:
+
+```bash
+awk -F= '$1=="LOBEHUB_MCP_TOKEN"{print substr($0,index($0,"=")+1); exit}' \
+  "$dkco/lobehub/.env"
+```
 
 Después de **Test connection**, deben aparecer exactamente las cinco tools de
 la tabla. Finalmente habilitar `nas-dotfiles` en la configuración del agente de
