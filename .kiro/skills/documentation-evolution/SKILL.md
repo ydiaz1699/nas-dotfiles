@@ -313,6 +313,13 @@ comprobado. Una salida del usuario puede confirmar el runtime del NAS, pero no
 sustituye `git diff --check`, `project_index.py`, `project_scanner.py` ni una
 prueba del código del repositorio.
 
+Cuando se consulte una página externa de releases, registrar por separado la
+versión observada en el runtime, la versión disponible oficialmente y la versión
+objetivo. Una página que anuncia una versión estable no demuestra que el NAS ya
+la descargó o la está ejecutando. La ficha, el compose del catálogo y la guía
+pueden preparar el objetivo, pero deben marcarlo como `PENDIENTE` hasta que
+`svc update`/`svc ps`/logs/health y la prueba funcional confirmen el cambio.
+
 ### Correcciones de comandos durante una guía
 
 Si el usuario pega un comando que falló, conservar tres piezas:

@@ -18,7 +18,7 @@ trigger: >
   - Servicios: Docker, contenedor, compose, imagen, puerto, red, volumen
   - Comandos: dk, adm, nasfk, svc, instal, pipins, gpl, gs, nas, bat
   - Servicios específicos: emqx, ntfy, adguard, filebrowser, esphome,
-    homepage, datasql, aipostgres, datapostgres, datapgadmin, dataredis, pgadmin, redis, flowise, ioBroker, usb-api, spacedrive, rustfs
+    homepage, datasql, aipostgres, datapostgres, datapgadmin, dataredis, pgadmin, redis, flowise, n8n, ioBroker, usb-api, spacedrive, rustfs
   - Infra: homelab, servidor, backup, cron, systemd, USB, mount
   - IoT: MQTT, broker, ESP32, Home Assistant, alarma, sensor
   - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS
@@ -141,7 +141,7 @@ volúmenes ni redes conjeturadas; confirmarlos primero en la fuente oficial.
 | datasql | 5432 (loopback), 5050 | db_net | `docs/services/datasql-guide.md` (única guía: instalación, operación y consumidores) |
 | aipostgres | alias histórico de datasql | db_net | `docs/services/datasql-guide.md` (migración y base administrativa) |
 | flowise | 8100 | db_net | `docs/services/flowise-guide.md` |
-| n8n | 5678 | db_net | compose/runtime pendiente de catalogar |
+| n8n | 5678 | db_net | `docs/services/n8n-guide.md` + `agent/catalog/services/n8n/` (runtime confirmado; hardening pendiente) |
 | filebrowser | 8085 | default | `docs/services/filebrowser-guide.md` |
 | homeassistant | 8123 | host | `docs/services/homeassistant-guide.md` |
 | homepage | 3000 | homepage_net | `docs/services/homepage-guide.md` |
@@ -175,8 +175,9 @@ Antes de crear una aplicación que necesite PostgreSQL o Redis compartido:
 10. No usar `depends_on` contra una base que vive en otro compose; verificar la
     disponibilidad con `svc health` y logs.
 11. El inventario confirmado es Flowise → `flowise_db` + Redis, Home Assistant →
-    `homeassistant_db`, y `n8n_db` existente pendiente de auditar en el compose
-    real.
+    `homeassistant_db`, y n8n → `n8n_db` con `n8n_user` por `datapostgres:5432`.
+    El runtime de n8n está confirmado; la aplicación del hardening y del pin
+    `2.36.7` queda pendiente de una verificación posterior.
 
 ### Redes
 

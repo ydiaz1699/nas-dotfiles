@@ -562,7 +562,7 @@ Cada mejora se agrega aquí con fecha y contexto:
 | 2026-08-20 | Patrones de orden como heurística, no regla universal | revisión: las dependencias reales determinan el orden |
 | 2026-08-20 | Preservar decisiones de fuente sin reinterpretarlas | revisión: "Elegimos X" es hecho, "mantengo X" es derivada |
 | 2026-08-20 | Bloqueo resoluble vs irresoluble; no detener toda la guía | revisión: continuar hasta el punto seguro y marcar bloqueo |
-
+| 2026-08-25 | Separar evidencia runtime de configuración objetivo y versiones disponibles | n8n: `latest` resolvió a 2.23.4; `2.36.7` fue consultada como estable pero no se verificó desplegada; evitar afirmar que una propuesta ya está aplicada |
 Lecciones aprendidas de la primera unificación real (5790 → 304 líneas):
 
 ### Deduplicación con equivalencia operacional

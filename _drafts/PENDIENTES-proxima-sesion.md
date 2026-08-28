@@ -12,7 +12,7 @@ Estado actual (`svc catalog-sync --status`):
 
 | Servicio | Falta |
 |----------|-------|
-| **n8n** | ficha ❌, guía ❌, DebMenux script ❌ |
+| **n8n** | ~~ficha ❌, guía ❌~~ → ✅ **AUDITADO 2026-08-25** (`n8n-guide.md`, ficha, compose objetivo, `.env.example`); DebMenux script ⏸️ por dependencia NAS/DataSQL |
 | **vaultwarden** | ficha ❌, guía ❌, DebMenux script ❌, Homepage labels ❌ |
 | ~~**emqx**~~ | ~~guía ❌~~ → ✅ **HECHO 2026-08-17** (emqx-guide.md) |
 | ~~**esphome**~~ | ~~guía ❌, DebMenux script ❌~~ → ✅ **HECHO 2026-08-17** (esphome-guide.md + esphome.sh) |
@@ -20,7 +20,7 @@ Estado actual (`svc catalog-sync --status`):
 | ~~**node-red**~~ | ~~DebMenux script ❌~~ → ✅ **HECHO 2026-08-17** (node-red.sh) |
 | ~~**homepage**~~ | ~~DebMenux script ❌~~ → ✅ **HECHO 2026-08-17** (homepage.sh) |
 
-**Pendiente aún:** n8n y vaultwarden (no están instalados aún en el NAS).
+**Pendiente aún:** vaultwarden (n8n fue auditado el 2026-08-25; queda verificar el hardening/pin del compose y decidir si se necesita un instalador DebMenux).
 
 ### Correcciones adicionales (sesión Kiro Web 2026-08-17 #2):
 - ~~emqx/compose.yml: quitar db_net~~ → ✅ PR #33

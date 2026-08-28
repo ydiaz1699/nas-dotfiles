@@ -140,6 +140,7 @@ TZ=America/La_Paz
 | [docs/catalog-sync-pipeline.md](docs/catalog-sync-pipeline.md) | Pipeline de auto-documentación en cascada |
 | `docs/services/ntfy-guide.md` | ntfy: notificaciones push (setup, clientes, troubleshooting) |
 | [`docs/services/flowise-guide.md`](docs/services/flowise-guide.md) | Flowise: integración con DataSQL y prueba inicial |
+| [`docs/services/n8n-guide.md`](docs/services/n8n-guide.md) | n8n: reparación PostgreSQL, auditoría runtime y handoff a LobeHub |
 | [docs/services/homepage-guide.md](docs/services/homepage-guide.md) | Homepage: dashboard (labels vs services.yaml) |
 | [docs/github-cli.md](docs/github-cli.md) | Instalación y autenticación de gh |
 

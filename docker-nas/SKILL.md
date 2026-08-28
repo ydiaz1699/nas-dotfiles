@@ -10,7 +10,7 @@ description: >
   - Servicios: Docker, contenedor, compose, imagen, puerto, red, volumen
   - Comandos del entorno: dk, adm, nasfk, svc, instal, pipins, gpl, gs, nas
   - Servicios específicos: emqx, ntfy, adguard, filebrowser, esphome, homepage,
-    datasql, aipostgres, datapostgres, datapgadmin, dataredis, pgadmin, redis, flowise, ioBroker, usb-api, spacedrive, vaultwarden, RustFS
+    datasql, aipostgres, datapostgres, datapgadmin, dataredis, pgadmin, redis, flowise, n8n, ioBroker, usb-api, spacedrive, vaultwarden, RustFS
   - Infraestructura: homelab, servidor, backup, cron, systemd, USB, mount
   - IoT/domótica: MQTT, broker, ESP32, Home Assistant, alarma, sensor
   - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS, proxy
@@ -234,7 +234,7 @@ Antes de crear un servicio que use PostgreSQL, Redis u otra base compartida:
 6. Configurar `env_file: [../.env, .env]`, `extends.file: ../_common.yml` cuando no exista una incompatibilidad documentada, y labels `homepage.*`.
 7. No usar `depends_on` para un contenedor que pertenece a otro compose; verificar la disponibilidad con `svc health` y logs.
 8. Documentar el host de conexión como el nombre del contenedor/servicio en `db_net`, no como una IP fija. La excepción de Home Assistant es loopback porque usa `network_mode: host`.
-9. Estado confirmado: Flowise usa `flowise_db` + `dataredis`; Home Assistant usa `homeassistant_db`; `n8n_db` existe, pero su compose real debe auditarse.
+9. Estado confirmado: Flowise usa `flowise_db` + `dataredis`; Home Assistant usa `homeassistant_db`; n8n usa `n8n_db` con `n8n_user` por `datapostgres:5432` en `db_net`. La guía n8n separa runtime confirmado de hardening/pin pendiente.
 10. El único stack operativo es `datasql`: ParadeDB PostgreSQL 17 con pgvector/pg_search/pg_cron, pgAdmin y Redis; sus contenedores son `datapostgres`, `datapgadmin` y `dataredis`. `aipostgres` es la base administrativa y un alias histórico. La instalación limpia puede eliminar el DataSQL anterior cuando el usuario lo confirma; después se verifica y se crean consumidores vacíos.
 11. RustFS no pertenece al stack PostgreSQL. Instalarlo como servicio S3 separado solo cuando LobeHub u otro consumidor real necesite objetos.
 

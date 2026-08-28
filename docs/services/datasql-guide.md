@@ -70,7 +70,7 @@ separado cuando exista un consumidor real de objetos.
 | Guía anterior `datasql-guide.md`, §§1–7 | Consumidores, creación de roles/bases, Redis compartido y hostnames | HECHO | ALTA | Integrar después de verificar el clúster | INTEGRADO |
 | Ambas guías | Enlaces cruzados entre dos documentos | HECHO | ALTA | Reemplazar por referencias internas a esta guía única | REEMPLAZADO |
 | Ambas guías | Nombres temporales `aipgadmin`, `airedis` y puertos `5433`/`5051` | HECHO | ALTA | Conservar solo en el escenario histórico de migración | FUERA_DE_ALCANCE del estado final |
-| Fuentes disponibles | Procedimiento de auditoría del compose/runtime real de n8n | DESCONOCIDO | DESCONOCIDA | No inventar; dejarlo pendiente | PENDIENTE |
+| Conversación/runtime n8n | Auditoría real de rol, base, compose, logs, migraciones y healthcheck | HECHO | ALTA | Integrar n8n como consumidor PostgreSQL confirmado; mantener el hardening/version pin como pendiente | INTEGRADO |
 | Fuentes disponibles | Instalación de RustFS | HECHO | ALTA | Mantener fuera del stack PostgreSQL; destino: servicio S3 separado | FUERA_DE_ALCANCE |
 
 ## Hechos confirmados por las fuentes
@@ -89,8 +89,9 @@ separado cuando exista un consumidor real de objetos.
 8. La contraseña administrativa se pasa mediante `PGPASSWORD` y la de Redis
    mediante `REDISCLI_AUTH`; no se usa `source .env`.
 9. Flowise está confirmado con `flowise_db` y Redis compartido; Home Assistant
-   usa `homeassistant_db` por loopback; la configuración real de n8n sigue
-   pendiente de auditoría.
+   usa `homeassistant_db` por loopback; n8n está confirmado con `n8n_db` y
+   `n8n_user` por `datapostgres:5432` dentro de `db_net`. La ficha y guía n8n
+   separan el runtime comprobado del hardening/version pin aún no verificado.
 
 ## Decisiones derivadas durante la unificación
 
@@ -899,7 +900,7 @@ La respuesta esperada es `PONG`. El consumidor usa `dataredis:6379` dentro de
 |---|---|---|---|
 | Flowise | `flowise_db` vía `datapostgres:5432` | `dataredis:6379` | Confirmar main y worker después de cambios |
 | Home Assistant | `homeassistant_db` vía `127.0.0.1:5432` | No confirmado | `network_mode: host` |
-| n8n | `n8n_db` si el compose lo confirma | Por auditar | No asumir SQLite/PostgreSQL |
+| n8n | `n8n_db` vía `datapostgres:5432` con `n8n_user` | No configurado en el compose auditado | Runtime confirmado; no agregar Redis sin evidencia |
 
 Una base existente no demuestra que el runtime actual la use. Confirma siempre
 compose, variables efectivas y logs.
