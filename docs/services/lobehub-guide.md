@@ -844,6 +844,47 @@ Si existe, no ejecutar `CREATE DATABASE` otra vez. Continuar solo si el owner
 verificado es `lobehub_user`. No combinar `CREATE ROLE` y `CREATE DATABASE` en
 una llamada o transacción. Salir con `\q`.
 
+### Habilitar `vector` en la base de LobeHub
+
+DataSQL proporciona la extensión `vector`, pero PostgreSQL la registra por base
+de datos. Que exista en la imagen de DataSQL no significa que exista dentro de
+`lobehub_db`. LobeHub intenta ejecutar `CREATE EXTENSION IF NOT EXISTS vector`
+durante sus migraciones; `lobehub_user` no debe ser superusuario para resolverlo.
+Ejecuta esta operación una vez con las credenciales administrativas, después de
+crear la base y antes de levantar LobeHub:
+
+```bash
+svc exec datasql postgres \
+  env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+      PGUSER="$PG_ADMIN_USER" \
+      PGDATABASE=lobehub_db \
+  psql
+```
+
+Dentro de `psql`:
+
+```sql
+SELECT extname, extversion
+FROM pg_extension
+WHERE extname = 'vector';
+
+CREATE EXTENSION IF NOT EXISTS vector;
+
+SELECT extname, extversion
+FROM pg_extension
+WHERE extname = 'vector';
+\q
+```
+
+La primera consulta puede no devolver filas. La segunda debe responder
+`CREATE EXTENSION` o `NOTICE` si ya existía; la última debe mostrar `vector`.
+No ejecutes `ALTER ROLE lobehub_user SUPERUSER` y no habilites `pg_search` o
+`pg_cron` para esta migración sin un requisito confirmado.
+
+Si `CREATE EXTENSION vector` también falla con el usuario administrativo,
+verifica que la imagen de DataSQL proporciona `vector` y detente; no concedas
+privilegios permanentes al usuario de LobeHub.
+
 Verificar el login dedicado en una tercera sesión usando la contraseña de
 LobeHub, no la administrativa. El bloque de reconciliación limpió la variable
 por seguridad, por lo que se vuelve a leer desde el archivo local sin imprimirla:
@@ -1006,7 +1047,9 @@ puntos en el NAS:
    S3 y sin reinicios repetidos.
 6. La sesión de prueba de la sección 6 devuelve
    `lobehub_user | lobehub_db`.
-7. Redis responde `PONG` usando el secreto existente, sin crear otro contenedor:
+7. La sesión administrativa de la sección 6 confirma que la extensión `vector`
+   existe dentro de `lobehub_db`; no se elevó `lobehub_user` a superusuario.
+8. Redis responde `PONG` usando el secreto existente, sin crear otro contenedor:
 
    ```bash
    REDIS_PASSWORD="$(awk -F= '$1=="REDIS_PASSWORD"{print substr($0,index($0,"=")+1); exit}' "$dkco/datasql/.env")"
@@ -1014,12 +1057,12 @@ puntos en el NAS:
    unset REDIS_PASSWORD
    ```
 
-8. Después del primer login, validar un chat y, si se habilita, una imagen o
+9. Después del primer login, validar un chat y, si se habilita, una imagen o
    archivo para comprobar realmente S3; el bucket debe conservar objetos en
    `$dkco/lobehub/data/rustfs`.
-9. `svc port-map` no muestra `5432` ni `6379` publicados por LobeHub y `9001`
-   solo está en loopback.
-10. Medir `svc stats lobehub` y `svc stats datasql` antes de ajustar límites.
+10. `svc port-map` no muestra `5432` ni `6379` publicados por LobeHub y `9001`
+    solo está en loopback.
+11. Medir `svc stats lobehub` y `svc stats datasql` antes de ajustar límites.
 
 La presencia de `db_net` por sí sola no prueba que la aplicación use la base o
 Redis correctos: deben coincidir compose, variables, logs y consultas runtime.
