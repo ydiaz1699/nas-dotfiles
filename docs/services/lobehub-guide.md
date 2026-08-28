@@ -21,7 +21,7 @@ Fuentes oficiales consultadas y decisiones derivadas:
 |---|---|---|
 | Imagen/tag | [Release v2.2.14](https://github.com/lobehub/lobehub/releases/tag/v2.2.14) y [tag de Docker Hub](https://hub.docker.com/layers/lobehub/lobehub/2.2.14/images/sha256-1b571d94183ffee33759906b21e4c666d4bb5133a9f97f1266fc2a0b585b2b33) | Pin `2.2.14` + digest; no usar `latest` |
 | Variables | [Docker deployment](https://lobehub.com/docs/self-hosting/platform/docker) y [.env.example de v2.2.14](https://raw.githubusercontent.com/lobehub/lobehub/v2.2.14/docker-compose/deploy/.env.example) | Usar `DATABASE_URL`, secretos de auth, S3, Redis y `INTERNAL_APP_URL`; no copiar `POSTGRES_PASSWORD` del PostgreSQL incluido por upstream |
-| PostgreSQL | La [guía oficial de Docker](https://lobehub.com/docs/self-hosting/platform/docker) indica ParadeDB/pgvector/pg_search y migración automática | Reutilizar `datapostgres:5432` de DataSQL, crear `lobehub_user`/`lobehub_db`, habilitar `pg_search` solo si la prueba oficial/runtime lo requiere |
+| PostgreSQL | La [guía oficial de Docker](https://lobehub.com/docs/self-hosting/platform/docker) y la migración observada de LobeHub usan ParadeDB/pgvector/pg_search | Reutilizar `datapostgres:5432` de DataSQL, crear `lobehub_user`/`lobehub_db` y precrear administrativamente `vector` y `pg_search` dentro de `lobehub_db`; nunca elevar el usuario de aplicación |
 | Redis | La [guía oficial de Redis](https://lobehub.com/docs/self-hosting/advanced/redis) lo declara opcional; con `REDIS_URL` aporta sesiones/cache | Reutilizar `dataredis:6379` de DataSQL, con `REDIS_PASSWORD` existente y prefijo `lobehub`; no crear otro Redis |
 | S3/RustFS | La [guía oficial S3](https://lobehub.com/docs/self-hosting/advanced/s3) y la [guía de knowledge base](https://lobehub.com/docs/self-hosting/advanced/knowledge-base) lo requieren para archivos, imágenes y knowledge base en la versión server/database | Sí instalar RustFS separado; no agregarlo al compose de DataSQL |
 | SearXNG | La [guía oficial de búsqueda online](https://lobehub.com/docs/self-hosting/advanced/online-search) lo presenta como un proveedor opcional | No incluirlo en esta primera instalación; añadirlo solo si se habilita búsqueda web |
@@ -861,16 +861,42 @@ Si existe, no ejecutar `CREATE DATABASE` otra vez. Continuar solo si el owner
 verificado es `lobehub_user`. No combinar `CREATE ROLE` y `CREATE DATABASE` en
 una llamada o transacción. Salir con `\q`.
 
-### Habilitar `vector` en la base de LobeHub
+### Precrear `vector` y `pg_search` en la base de LobeHub
 
-DataSQL proporciona la extensión `vector`, pero PostgreSQL la registra por base
-de datos. Que exista en la imagen de DataSQL no significa que exista dentro de
-`lobehub_db`. LobeHub intenta ejecutar `CREATE EXTENSION IF NOT EXISTS vector`
-durante sus migraciones; `lobehub_user` no debe ser superusuario para resolverlo.
-Ejecuta esta operación una vez con las credenciales administrativas, después de
-crear la base y antes de levantar LobeHub:
+DataSQL proporciona `vector` y `pg_search`, pero PostgreSQL registra las
+extensiones por base de datos. Que estén disponibles en la imagen o precargadas
+con `shared_preload_libraries` no significa que existan dentro de
+`lobehub_db`.
+
+La migración real de LobeHub 2.2.14 ejecuta:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_search;
+```
+
+Si `pg_search` todavía no existe, `lobehub_user` recibe `must be superuser to
+create a base type`. Ese error no indica una contraseña incorrecta ni justifica
+elevar el usuario de LobeHub: `pg_search` debe crearse una vez con el usuario
+administrativo antes de iniciar la aplicación. Después, la migración encuentra
+la extensión existente y `lobehub_user` continúa siendo un rol de aplicación no
+privilegiado.
+
+Detén solo LobeHub antes de preparar las extensiones. No detengas DataSQL ni
+borres `lobehub_db` o `data/rustfs`:
 
 ```bash
+svc stop lobehub
+
+PG_ADMIN_PASSWORD="$(awk -F= '$1=="POSTGRES_PASSWORD"{print substr($0,index($0,"=")+1); exit}' "$dkco/datasql/.env")"
+PG_ADMIN_USER="$(awk -F= '$1=="POSTGRES_USER"{print substr($0,index($0,"=")+1); exit}' "$dkco/datasql/.env")"
+PG_ADMIN_DB="$(awk -F= '$1=="POSTGRES_DB"{print substr($0,index($0,"=")+1); exit}' "$dkco/datasql/.env")"
+
+if [[ -z "$PG_ADMIN_PASSWORD" || -z "$PG_ADMIN_USER" || -z "$PG_ADMIN_DB" ]]; then
+  printf 'Faltan credenciales administrativas de DataSQL; no continuar.\n' >&2
+  unset PG_ADMIN_PASSWORD PG_ADMIN_USER PG_ADMIN_DB
+  exit 1
+fi
+
 svc exec datasql postgres \
   env PGPASSWORD="$PG_ADMIN_PASSWORD" \
       PGUSER="$PG_ADMIN_USER" \
@@ -878,29 +904,48 @@ svc exec datasql postgres \
   psql
 ```
 
-Dentro de `psql`:
+En el prompt de `psql` (`lobehub_db=#`), ejecuta el SQL siguiente. El usuario
+administrativo crea las extensiones; el usuario de aplicación no recibe ningún
+privilegio adicional:
 
 ```sql
-SELECT extname, extversion
-FROM pg_extension
-WHERE extname = 'vector';
+SELECT current_user, current_database();
 
 CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS pg_search;
 
-SELECT extname, extversion
+SELECT extname, extversion, pg_get_userbyid(extowner) AS owner
 FROM pg_extension
-WHERE extname = 'vector';
+WHERE extname IN ('vector', 'pg_search')
+ORDER BY extname;
+
+SELECT rolname, rolsuper, rolcreaterole, rolcreatedb,
+       rolreplication, rolbypassrls
+FROM pg_roles
+WHERE rolname = 'lobehub_user';
 \q
 ```
 
-La primera consulta puede no devolver filas. La segunda debe responder
-`CREATE EXTENSION` o `NOTICE` si ya existía; la última debe mostrar `vector`.
-No ejecutes `ALTER ROLE lobehub_user SUPERUSER` y no habilites `pg_search` o
-`pg_cron` para esta migración sin un requisito confirmado.
+La consulta de extensiones debe mostrar `vector` y `pg_search`. La consulta del
+rol debe mostrar todos los indicadores de privilegio como `f` (`false`), en
+particular `rolsuper = f`. Si alguna extensión no aparece o la creación falla,
+detente la instalación y conserva el error; no ejecutes
+`ALTER ROLE lobehub_user SUPERUSER`.
 
-Si `CREATE EXTENSION vector` también falla con el usuario administrativo,
-verifica que la imagen de DataSQL proporciona `vector` y detente; no concedas
-privilegios permanentes al usuario de LobeHub.
+Después de salir de `psql`, limpia las credenciales temporales y levanta solo
+LobeHub:
+
+```bash
+unset PG_ADMIN_PASSWORD PG_ADMIN_USER PG_ADMIN_DB
+svc up lobehub
+svc ps lobehub
+svc health
+```
+
+`pg_cron` no se habilita en `lobehub_db`: DataSQL lo mantiene en la base
+administrativa configurada por `cron.database_name`. Si `CREATE EXTENSION` falla
+incluso con el usuario administrativo, verifica `pg_available_extensions` y la
+salud de DataSQL; no concedas privilegios permanentes a `lobehub_user`.
 
 Verificar el login dedicado en una tercera sesión usando la contraseña de
 LobeHub, no la administrativa. El bloque de reconciliación limpió la variable
@@ -936,9 +981,11 @@ La salida esperada es `lobehub_user | lobehub_db`. Limpiar secretos temporales:
 unset PG_ADMIN_PASSWORD PG_ADMIN_USER PG_ADMIN_DB APP_DB_PASSWORD
 ```
 
-No habilitar `vector`, `pg_search` o `pg_cron` sin confirmarlo en la prueba de
-migración/runtime. DataSQL ya provee el clúster compatible; preparar el clúster
-no implica habilitar extensiones en todas las bases.
+Las extensiones `vector` y `pg_search` deben existir en `lobehub_db` antes de
+la migración y se crean con las credenciales administrativas. `lobehub_user`
+solo ejecuta las migraciones de sus tablas y nunca se convierte en
+superusuario. `pg_cron` permanece únicamente en la base configurada por
+`cron.database_name`.
 
 ## 7. Compose final
 
@@ -1064,8 +1111,10 @@ puntos en el NAS:
    S3 y sin reinicios repetidos.
 6. La sesión de prueba de la sección 6 devuelve
    `lobehub_user | lobehub_db`.
-7. La sesión administrativa de la sección 6 confirma que la extensión `vector`
-   existe dentro de `lobehub_db`; no se elevó `lobehub_user` a superusuario.
+7. La sesión administrativa de la sección 6 confirma que las extensiones
+   `vector` y `pg_search` existen dentro de `lobehub_db`, ambas fueron creadas
+   antes de iniciar LobeHub y `lobehub_user` conserva `rolsuper = false`. `pg_cron`
+   no se habilita en esta base.
 8. Redis responde `PONG` usando el secreto existente, sin crear otro contenedor:
 
    ```bash
