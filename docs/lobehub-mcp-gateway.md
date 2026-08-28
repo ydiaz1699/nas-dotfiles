@@ -137,9 +137,26 @@ if [[ ! -f "$dkco/lobehub/.env" ]]; then
     "$dkco/lobehub/.env"
 fi
 
-# (4) Generar/actualizar el token en memoria del proceso, sin imprimirlo.
-MCP_TOKEN="$(openssl rand -hex 32)"
+# (3) Esta sección es autocontenida: no depende de que la sección 1 se haya
+# ejecutado en la misma shell. El GID lo obtiene Debian automáticamente.
+if ! getent group nas-mcp >/dev/null; then
+  sudo groupadd --system nas-mcp
+fi
+MCP_SOCKET_GID="$(getent group nas-mcp | cut -d: -f3)"
+[[ "$MCP_SOCKET_GID" =~ ^[0-9]+$ ]] || {
+  printf 'No se pudo obtener el GID del grupo nas-mcp.\n' >&2
+  exit 1
+}
+
+# Generar un token solo si falta o todavía es el placeholder. Si ya existe un
+# token válido, conservarlo para no romper una configuración de LobeHub activa.
+MCP_TOKEN=""
+if ! grep -q '^LOBEHUB_MCP_TOKEN=' "$dkco/lobehub/.env" || \
+   grep -Eq '^LOBEHUB_MCP_TOKEN=(|__pega_aqui__)$' "$dkco/lobehub/.env"; then
+  MCP_TOKEN="$(openssl rand -hex 32)"
+fi
 export MCP_TOKEN MCP_SOCKET_GID
+
 python3 - "$dkco/lobehub/.env" <<'PY'
 import os
 import sys
@@ -147,9 +164,13 @@ from pathlib import Path
 
 path = Path(sys.argv[1])
 updates = {
-    "LOBEHUB_MCP_TOKEN": os.environ["MCP_TOKEN"],
+    "NAS_DOTFILES": "/nas-dotfiles",
+    "MCP_HELPER_SOCKET": "/run/nas/lobehub-mcp.sock",
     "MCP_SOCKET_GID": os.environ["MCP_SOCKET_GID"],
 }
+if os.environ["MCP_TOKEN"]:
+    updates["LOBEHUB_MCP_TOKEN"] = os.environ["MCP_TOKEN"]
+
 lines = path.read_text(encoding="utf-8").splitlines()
 found = set()
 output = []
