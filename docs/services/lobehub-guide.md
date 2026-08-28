@@ -225,10 +225,21 @@ from pathlib import Path
 
 path = Path(sys.argv[1])
 text = path.read_text()
-old = """    command:\n      - --access-key\n      - lobehub\n      - --secret-key\n      - ${RUSTFS_SECRET_KEY}\n      - /data\n"""
-new = """    command:\n      - /data\n"""
+newline = os.linesep
+old = newline.join([
+    "    command:",
+    "      - --access-key",
+    "      - lobehub",
+    "      - --secret-key",
+    "      - ${RUSTFS_SECRET_KEY}",
+    "      - /data",
+]) + newline
+new = newline.join([
+    "    command:",
+    "      - /data",
+]) + newline
 if old not in text:
-    if "      - --secret-key\n" in text:
+    if "      - --secret-key" + newline in text:
         raise SystemExit("Se encontró --secret-key en un formato no reconocido; no modificar")
 else:
     temporary = path.with_name(path.name + ".tmp")
@@ -267,7 +278,7 @@ if not found:
     updated.append(f"RUSTFS_SECRET_KEY={value}")
 temporary = path.with_name(path.name + ".tmp")
 try:
-    temporary.write_text("\n".join(updated) + "\n")
+    temporary.write_text(os.linesep.join(updated) + os.linesep)
     os.chmod(temporary, 0o600)
     os.replace(temporary, path)
 finally:
@@ -369,7 +380,7 @@ if not found:
 
 temporary = path.with_name(path.name + ".tmp")
 try:
-    temporary.write_text("\n".join(output) + "\n")
+    temporary.write_text(os.linesep.join(output) + os.linesep)
     os.chmod(temporary, 0o600)
     os.replace(temporary, path)
 finally:
@@ -396,6 +407,12 @@ Para los secretos propios se usa un bloque Python heredoc; no usar un
 `python3 -c` multilínea porque el shell puede convertir `\n` en saltos de línea
 dentro del código y producir un `SyntaxError` antes de escribir el archivo. Los
 bloques están dentro de una subshell para que un fallo no cierre la sesión SSH.
+
+Los bloques Python de esta guía usan `os.linesep` y `chr(10)` en lugar de
+literales Python como `"\\n"`. En el terminal del NAS, ciertos pegados pueden
+convertir ese escape en un salto de línea dentro del heredoc y producir
+`SyntaxError: unterminated string literal`. No reemplaces estos bloques por
+`python3 -c` ni reintroduzcas `"\\n"` dentro de ellos.
 
 ```bash
 if (
@@ -479,7 +496,7 @@ if any(not final_values.get(key) or final_values[key] == "__pega_aqui__" for key
 
 temporary = path.with_name(path.name + ".tmp")
 try:
-    temporary.write_text("\n".join(output) + "\n")
+    temporary.write_text(os.linesep.join(output) + os.linesep)
     os.chmod(temporary, 0o600)
     os.replace(temporary, path)
 finally:
@@ -559,7 +576,7 @@ path = Path(sys.argv[1])
 raw = os.environ["JWKS_INPUT"]
 if raw.startswith("JWKS_KEY="):
     raw = raw.split("=", 1)[1]
-if "\n" in raw or "\r" in raw:
+if chr(10) in raw or chr(13) in raw:
     raise SystemExit("JWKS_KEY debe ser un JSON de una sola línea")
 
 try:
@@ -617,7 +634,7 @@ else:
 
 temporary = path.with_name(path.name + ".tmp")
 try:
-    temporary.write_text("\n".join(updated) + "\n")
+    temporary.write_text(os.linesep.join(updated) + os.linesep)
     os.chmod(temporary, 0o600)
     os.replace(temporary, path)
 finally:
