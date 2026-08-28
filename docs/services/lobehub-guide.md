@@ -323,7 +323,7 @@ LOBE_DB_PASSWORD=__pega_aqui__
 # Copiar localmente el valor de $dkco/datasql/.env; no generar otro Redis.
 REDIS_PASSWORD=__pega_aqui__
 
-# Generar valores nuevos y conservarlos estables para esta instalación.
+# Base64; al decodificar debe producir 16, 24 o 32 bytes.
 KEY_VAULTS_SECRET=__pega_aqui__
 AUTH_SECRET=__pega_aqui__
 JWKS_KEY=__pega_aqui__
@@ -429,6 +429,7 @@ if (
 
   export REDIS_PASSWORD
   python3 - "$ENV_FILE" <<'PY'
+import base64
 import os
 import re
 import secrets
@@ -457,6 +458,16 @@ for line in lines:
 values = {"REDIS_PASSWORD": os.environ["REDIS_PASSWORD"]}
 for key in secret_keys:
     old = existing.get(key, "").strip()
+    if key == "KEY_VAULTS_SECRET":
+        try:
+            decoded = base64.b64decode(old, validate=True)
+        except Exception:
+            decoded = b""
+        if len(decoded) not in (16, 24, 32):
+            values[key] = base64.b64encode(secrets.token_bytes(32)).decode("ascii")
+        else:
+            values[key] = old
+        continue
     if old and old != "__pega_aqui__":
         if key == "LOBE_DB_PASSWORD" and not re.fullmatch(r"[0-9a-fA-F]+", old):
             raise SystemExit(
@@ -494,6 +505,15 @@ for line in output:
 if any(not final_values.get(key) or final_values[key] == "__pega_aqui__" for key in all_keys):
     raise SystemExit("No se pudieron completar todas las claves de secretos")
 
+try:
+    key_vaults_decoded = base64.b64decode(final_values["KEY_VAULTS_SECRET"], validate=True)
+except Exception as exc:
+    raise SystemExit("KEY_VAULTS_SECRET no es Base64 válido") from exc
+if len(key_vaults_decoded) not in (16, 24, 32):
+    raise SystemExit(
+        "KEY_VAULTS_SECRET debe decodificar a 16, 24 o 32 bytes"
+    )
+
 temporary = path.with_name(path.name + ".tmp")
 try:
     temporary.write_text(os.linesep.join(output) + os.linesep)
@@ -520,10 +540,92 @@ fi
 ```
 
 El bloque copia siempre el `REDIS_PASSWORD` vigente de DataSQL, pero conserva los
-secretos propios que ya sean reales y solo genera los que todavía sean vacíos o
-`__pega_aqui__`. Para mantener la reconciliación segura, un
-`LOBE_DB_PASSWORD` existente debe ser hexadecimal; si no lo es, el bloque se
-detiene sin sobrescribirlo y exige una rotación deliberada documentada.
+secretos propios que ya sean reales. `KEY_VAULTS_SECRET` es una excepción: LobeHub
+lo interpreta como Base64 y exige que al decodificarlo produzca 16, 24 o 32 bytes.
+La versión anterior generaba `secrets.token_hex(32)`: eso produce 64 caracteres
+hexadecimales y, al interpretarse como Base64, se decodifica a 48 bytes. El bloque
+actual detecta ese formato inválido y genera Base64 de 32 bytes aleatorios.
+
+Para mantener la reconciliación segura, un `LOBE_DB_PASSWORD` existente debe ser
+hexadecimal; si no lo es, el bloque se detiene sin sobrescribirlo y exige una
+rotación deliberada documentada.
+
+### Reparar el `KEY_VAULTS_SECRET` inválido del primer intento
+
+El log `got 48 bytes` confirma que el valor actual tiene el formato anterior
+inválido. En esta instalación inicial LobeHub todavía no debe considerarse
+operativo; el bloque siguiente reemplaza únicamente `KEY_VAULTS_SECRET` por un
+valor Base64 que decodifica exactamente a 32 bytes. No imprime el secreto y usa
+escritura atómica. Si una instalación ya contiene conectores cifrados que deben
+conservarse, no rotar esta clave sin un procedimiento de migración: cambiarla
+impide descifrar esos valores antiguos.
+
+```bash
+svc stop lobehub
+
+python3 - "$dkco/lobehub/.env" <<'PY'
+import base64
+import os
+import secrets
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+lines = path.read_text().splitlines()
+value = base64.b64encode(secrets.token_bytes(32)).decode("ascii")
+updated = []
+found = False
+
+for line in lines:
+    if line.startswith("KEY_VAULTS_SECRET="):
+        updated.append(f"KEY_VAULTS_SECRET={value}")
+        found = True
+    else:
+        updated.append(line)
+
+if not found:
+    updated.append(f"KEY_VAULTS_SECRET={value}")
+
+temporary = path.with_name(path.name + ".tmp")
+try:
+    temporary.write_text(os.linesep.join(updated) + os.linesep)
+    os.chmod(temporary, 0o600)
+    os.replace(temporary, path)
+finally:
+    if temporary.exists():
+        temporary.unlink()
+PY
+
+chmod 600 "$dkco/lobehub/.env"
+printf 'KEY_VAULTS_SECRET actualizado sin mostrar su valor.\n'
+```
+
+Valida la longitud decodificada sin mostrar el secreto:
+
+```bash
+KEY_VAULTS_SECRET_VALUE="$(awk -F= '$1=="KEY_VAULTS_SECRET"{print substr($0,index($0,"=")+1); exit}' "$dkco/lobehub/.env")"
+KEY_VAULTS_SECRET_BYTES="$(printf '%s' "$KEY_VAULTS_SECRET_VALUE" | base64 -d 2>/dev/null | wc -c)"
+
+if [[ "$KEY_VAULTS_SECRET_BYTES" == 16 ||
+      "$KEY_VAULTS_SECRET_BYTES" == 24 ||
+      "$KEY_VAULTS_SECRET_BYTES" == 32 ]]; then
+  printf 'KEY_VAULTS_SECRET válido: %s bytes decodificados.\n' "$KEY_VAULTS_SECRET_BYTES"
+else
+  printf 'KEY_VAULTS_SECRET inválido: %s bytes decodificados.\n' "$KEY_VAULTS_SECRET_BYTES" >&2
+fi
+
+unset KEY_VAULTS_SECRET_VALUE KEY_VAULTS_SECRET_BYTES
+```
+
+Después de una validación correcta, inicia LobeHub y revisa solo el estado y los
+logs localmente:
+
+```bash
+svc up lobehub
+svc ps lobehub
+svc health
+```
+
 
 ### Fuentes de verdad y sincronización obligatoria
 
