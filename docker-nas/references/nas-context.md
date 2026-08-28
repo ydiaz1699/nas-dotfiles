@@ -18,7 +18,7 @@ trigger: >
   - Servicios: Docker, contenedor, compose, imagen, puerto, red, volumen
   - Comandos: dk, adm, nasfk, svc, instal, pipins, gpl, gs, nas, bat
   - Servicios específicos: emqx, ntfy, adguard, filebrowser, esphome,
-    homepage, datasql, aipostgres, datapostgres, datapgadmin, dataredis, pgadmin, redis, flowise, n8n, ioBroker, usb-api, spacedrive, rustfs
+    homepage, datasql, aipostgres, datapostgres, datapgadmin, dataredis, pgadmin, redis, flowise, n8n, lobehub, ioBroker, usb-api, spacedrive, rustfs
   - Infra: homelab, servidor, backup, cron, systemd, USB, mount
   - IoT: MQTT, broker, ESP32, Home Assistant, alarma, sensor
   - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS
@@ -142,6 +142,7 @@ volúmenes ni redes conjeturadas; confirmarlos primero en la fuente oficial.
 | aipostgres | alias histórico de datasql | db_net | `docs/services/datasql-guide.md` (migración y base administrativa) |
 | flowise | 8100 | db_net | `docs/services/flowise-guide.md` |
 | n8n | 5678 | db_net | `docs/services/n8n-guide.md` + `agent/catalog/services/n8n/` (runtime confirmado; hardening pendiente) |
+| lobehub | 3210 + RustFS 9000 | db_net + lobe_storage | `docs/services/lobehub-guide.md` + `agent/catalog/services/lobehub/` (preparado; runtime pendiente) |
 | filebrowser | 8085 | default | `docs/services/filebrowser-guide.md` |
 | homeassistant | 8123 | host | `docs/services/homeassistant-guide.md` |
 | homepage | 3000 | homepage_net | `docs/services/homepage-guide.md` |
@@ -176,16 +177,18 @@ Antes de crear una aplicación que necesite PostgreSQL o Redis compartido:
     disponibilidad con `svc health` y logs.
 11. El inventario confirmado es Flowise → `flowise_db` + Redis, Home Assistant →
     `homeassistant_db`, y n8n → `n8n_db` con `n8n_user` por `datapostgres:5432`.
-    El runtime de n8n está confirmado; la aplicación del hardening y del pin
-    `2.36.7` queda pendiente de una verificación posterior.
+    LobeHub está preparado con `lobehub_db`/`lobehub_user`, `dataredis` y un
+    RustFS separado en `lobe_storage`, pero todavía requiere ejecución y
+    verificación runtime. El runtime de n8n está confirmado; la aplicación del
+    hardening y del pin `2.36.7` queda pendiente de una verificación posterior.
 
 ### Redes
 
 | Red | Propósito | Regla |
 |-----|-----------|-------|
 | `adguard_macvlan_NET` | IP dedicada AdGuard (DNS:53) | Solo macvlan |
-| `db_net` | Apps ↔ DBs (interno) | No exponer bases a la LAN; PostgreSQL puede usar `127.0.0.1:5432:5432` solo para Home Assistant host-network |
-| `iot_net` | EMQX ↔ ESPHome ↔ HA ↔ ioBroker | Todo IoT aquí |
+| `db_net` | Apps ↔ DBs (interno) | No exponer bases a la LAN; PostgreSQL puede usar `127.0.0.1:5432:5432` solo para Home Assistant host-network; LobeHub usa datapostgres/dataredis aquí |
+| `lobe_storage` | LobeHub ↔ RustFS S3 | Red privada del compose; RustFS publica solo el endpoint S3 LAN necesario en `9000` y consola loopback en `9001` |
 | `homepage_net` | Homepage ↔ servicios (widgets) | Para APIs internas |
 
 ### USB Automount

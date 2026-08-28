@@ -1,0 +1,165 @@
+# LobeHub server/database version 2.2.14.
+# En el NAS este archivo se despliega como $dkco/lobehub/compose.yml;
+# en el catálogo extends usa ../../_common.yml y en el NAS ../_common.yml.
+# PostgreSQL y Redis son servicios externos de DataSQL; RustFS es el S3 local.
+services:
+  lobehub:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: lobehub/lobehub:2.2.14@sha256:1b571d94183ffee33759906b21e4c666d4bb5133a9f97f1266fc2a0b585b2b33
+    container_name: lobehub
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      APP_URL: http://${SERVER_IP}:3210
+      INTERNAL_APP_URL: http://localhost:3210
+      AUTH_ALLOWED_EMAILS: ${AUTH_ALLOWED_EMAILS}
+      KEY_VAULTS_SECRET: ${KEY_VAULTS_SECRET}
+      AUTH_SECRET: ${AUTH_SECRET}
+      JWKS_KEY: ${JWKS_KEY}
+      DATABASE_URL: postgresql://lobehub_user:${LOBE_DB_PASSWORD}@datapostgres:5432/lobehub_db
+      REDIS_URL: redis://dataredis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PREFIX: lobehub
+      REDIS_TLS: "0"
+      S3_ENDPOINT: http://${SERVER_IP}:9000
+      S3_BUCKET: lobe
+      S3_ACCESS_KEY: lobehub
+      S3_ACCESS_KEY_ID: lobehub
+      S3_SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY}
+      S3_ENABLE_PATH_STYLE: "1"
+      S3_SET_ACL: "0"
+      LLM_VISION_IMAGE_USE_BASE64: "1"
+    ports:
+      - "3210:3210"
+    volumes: []
+    networks:
+      - db_net
+      - lobe_storage
+    depends_on:
+      rustfs:
+        condition: service_healthy
+      rustfs-init:
+        condition: service_completed_successfully
+    healthcheck:
+      # La imagen scratch de LobeHub no incluye shell/curl. El Dockerfile
+      # oficial copia Node a /bin/node; se comprueba HTTP sin inventar /health.
+      test:
+        - CMD
+        - /bin/node
+        - -e
+        - >-
+          fetch('http://127.0.0.1:3210').then(r =>
+          process.exit(r.status < 500 ? 0 : 1)).catch(() => process.exit(1))
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    labels:
+      - homepage.group=IA y Automatización
+      - homepage.name=LobeHub
+      - homepage.icon=lobehub
+      - homepage.href=http://${SERVER_IP}:3210
+      - homepage.description=Chat y agentes de IA con base PostgreSQL
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  rustfs:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: rustfs/rustfs:1.0.0-rc.3@sha256:800cf3f352a0a27e3275ca854a51f0027975d7acc7a0d52089a35bcc9fcbf0b5
+    container_name: lobehub-rustfs
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_ACCESS_KEY: lobehub
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+    ports:
+      - "${SERVER_IP}:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - type: bind
+        source: ./data/rustfs
+        target: /data
+        read_only: false
+    command:
+      - --access-key
+      - lobehub
+      - --secret-key
+      - ${RUSTFS_SECRET_KEY}
+      - /data
+    networks:
+      - lobe_storage
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://localhost:9000/health >/dev/null 2>&1 || exit 1
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+  rustfs-init:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z-cpuv1@sha256:95b5f3f7969a5c5a9f3a700ba72d5c84172819e13385aaf916e237cf111ab868
+    container_name: lobehub-rustfs-init
+    env_file:
+      - ../.env
+      - .env
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    volumes:
+      - type: bind
+        source: ./bucket.config.json
+        target: /bucket.config.json
+        read_only: true
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - >-
+        set -eu;
+        mc alias set rustfs http://rustfs:9000 lobehub
+        "$${RUSTFS_SECRET_KEY}" >/dev/null;
+        mc mb rustfs/lobe --ignore-existing >/dev/null;
+        mc anonymous set-json /bucket.config.json rustfs/lobe;
+    restart: "no"
+    networks:
+      - lobe_storage
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+
+networks:
+  db_net:
+    external: true
+  lobe_storage:
+    name: lobe_storage
+    driver: bridge
+    internal: false
