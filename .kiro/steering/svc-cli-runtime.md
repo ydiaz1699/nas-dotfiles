@@ -27,7 +27,7 @@ NAS_CLI=python svc exec lobehub -- /bin/node -e 'console.log("ok")'
 
 En Python, `--` separa las opciones de Typer del comando interno. Debe aparecer antes de cualquier argumento como `-c`, `-e`, `-U`, `-d`, `-v` o `-T`; si se omite, Typer puede responder `No such option`. `-T` no está registrado por el CLI Python y no debe usarse.
 
-En Python, el primer argumento después de `svc exec` selecciona el compose. Para el stack LobeHub, `lobehub` es el compose y `lobehub-mcp` es el servicio interno; por eso no se debe repetir `lobehub` como servicio cuando se quiere ejecutar dentro del contenedor `lobehub`, y para MCP se usa `NAS_CLI=python svc exec lobehub -- lobehub-mcp ...`.
+En Python, el primer argumento después de `svc exec` selecciona el compose. Para el stack LobeHub, `lobehub` es el compose y `lobehub-mcp` es el servicio interno; por eso no se debe repetir `lobehub` como servicio cuando se quiere ejecutar dentro del contenedor `lobehub`, y para MCP se usa `NAS_CLI=python svc exec lobehub -- lobehub-mcp ...`. La forma antigua `svc exec lobehub lobehub-mcp -- python -c ...` es inválida porque mezcla ambas gramáticas.
 
 ## Contexto y secretos
 
