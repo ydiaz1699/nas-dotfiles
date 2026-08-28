@@ -256,6 +256,37 @@ completa de `svc config` ni logs que los contengan. Sustituir valores por
 `<secreto_local>`, conservar solo la operación y verificar mediante `PONG`,
 `healthy`, `current_user`, `current_database`, `pong` u otra evidencia segura.
 
+### Fuente de secretos: consumir, no mostrar
+
+Cuando un comando necesite un secreto que ya existe en el NAS, el flujo preferido
+es leerlo desde la fuente de verdad en una variable temporal y consumirlo dentro
+del mismo bloque:
+
+```bash
+SERVICE_SECRET="$(awk -F= '$1=="KEY"{print substr($0,index($0,"=")+1); exit}' "$dkco/servicio/.env")"
+
+if [[ -z "$SERVICE_SECRET" || "$SERVICE_SECRET" == "__pega_aqui__" ]]; then
+  printf 'Falta KEY o usa el placeholder.\n' >&2
+  unset SERVICE_SECRET
+  exit 1
+fi
+
+# Usar "$SERVICE_SECRET" solo en la operación local autorizada.
+unset SERVICE_SECRET
+```
+
+No pedir al usuario que copie o escriba manualmente una contraseña estable si el
+agente puede leerla localmente y consumirla de forma segura. No sugerir comandos
+que la impriman, como `grep ... | cut ...`, salvo que el usuario pida
+explícitamente una inspección local y se advierta que la salida es secreta. Un
+comando que muestra un valor no es equivalente a uno que lo transporta a una
+operación local.
+
+En este repositorio se prefieren `$dkco`, `$NAS_DOTFILES` y `$aadm`; no sustituirlos
+por rutas hardcodeadas como `/docker` cuando el objetivo es reutilizar el flujo
+en otro NAS. Si una herramienta externa requiere una ruta absoluta, marcarla
+como variante externa y no convertirla en la regla canónica.
+
 ### Qué actualizar y en qué orden
 
 1. **Guía dueña:** incorporar el problema, antes/después, causa, comando
