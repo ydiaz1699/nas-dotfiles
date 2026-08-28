@@ -73,6 +73,9 @@ Reglas obligatorias:
   servicio después de `--`: `NAS_CLI=python svc exec lobehub -- /bin/node -e ...`.
 - En Bash no añadir `--` delante del comando; el passthrough ya lo entrega a
   Compose.
+- No usar la variante antigua `svc exec lobehub lobehub-mcp -- python -c ...`:
+  mezcla el orden del Bash CLI con el separador del CLI Python. Elegir siempre
+  una de las formas completas anteriores y fijar `NAS_CLI` en bloques pegables.
 - No usar `-T` como opción de `svc exec`: el CLI Python no lo registra y el
   Bash CLI tampoco lo necesita para estas comprobaciones.
 - No poner `-U`, `-d`, `-c` o `-v` directamente antes del separador `--` del

@@ -406,6 +406,37 @@ configura la autenticación después en los campos de la interfaz:
 }
 ```
 
+### Alternativa: configuración manual en LobeHub
+
+Si la importación JSON no muestra los campos de autenticación o falla con
+`Error POSTing to endpoint`, configura el MCP manualmente en la misma pantalla.
+Esta alternativa es equivalente y fue la ruta verificada en la interfaz:
+
+```text
+MCP name:        nas-dotfiles
+Connection type: Streamable HTTP
+Endpoint URL:    http://lobehub-mcp:8790/mcp
+Auth type:       API Key
+API Key:         <valor local de LOBEHUB_MCP_TOKEN, sin Bearer>
+```
+
+No escribas `Bearer` en el campo **API Key**: LobeHub lo añade al header
+`Authorization`. No agregues headers manuales en el primer intento y no uses
+`type: "stdio"`; este gateway es HTTP interno. Después:
+
+1. Pulsa **Test connection**.
+2. Comprueba que aparecen exactamente `lobehub_preflight`, `lobehub_verify`,
+   `lobehub_status`, `lobehub_providers` y `capabilities`.
+3. Pulsa **Install** o **Save**.
+4. Abre la configuración del agente que lo usará, entra en **Skills**, busca
+   `nas-dotfiles`, activa el interruptor y guarda. La instalación no habilita el
+   MCP automáticamente para todos los agentes.
+
+Si se configura desde el agente en lugar del Skill Store, usa **Agent settings
+→ Skills → Add custom skill** y repite los mismos campos. Los nombres pueden
+variar ligeramente según la versión de LobeHub, pero no cambian el endpoint, el
+tipo de conexión ni el modo de autenticación.
+
 La configuración final debe usar **Streamable HTTP**, el endpoint
 `http://lobehub-mcp:8790/mcp` y **Auth type: API Key**. Pegar el valor local
 del token sin el prefijo `Bearer`; LobeHub construye el header. Esta forma es
@@ -488,6 +519,9 @@ Reglas para cualquier diagnóstico paste-safe:
   `lobehub-mcp` el servicio.
 - En Bash no usar esta variante con `--`; Bash hace passthrough directo a
   Compose y usa `NAS_CLI=bash svc exec lobehub lobehub-mcp ...`.
+- No usar la forma antigua `svc exec lobehub lobehub-mcp -- python -c ...`:
+  mezcla el orden del Bash CLI con el separador del CLI Python y puede producir
+  `No such option` o enviar argumentos al servicio equivocado.
 - `-T` no es una opción registrada por el CLI Python; no usarlo.
 - `Endpoint:`, `Auth type:` y `API Key:` son campos de la interfaz de LobeHub,
   nunca comandos para pegar en Bash.
