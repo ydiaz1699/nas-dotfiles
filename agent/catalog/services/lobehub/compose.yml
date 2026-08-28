@@ -20,7 +20,8 @@ services:
       AUTH_SECRET: ${AUTH_SECRET}
       JWKS_KEY: ${JWKS_KEY}
       DATABASE_URL: postgresql://lobehub_user:${LOBE_DB_PASSWORD}@datapostgres:5432/lobehub_db
-      REDIS_URL: redis://dataredis:6379
+      # Algunos clientes, incluido Agent Runtime, autentican solo desde REDIS_URL.
+      REDIS_URL: "redis://:${REDIS_PASSWORD}@dataredis:6379/0"
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_PREFIX: lobehub
       REDIS_TLS: "0"
