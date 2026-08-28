@@ -171,7 +171,7 @@ Busca en `$DOCKER_BASE/*/` archivos: `compose.yml`, `compose.yaml`, `docker-comp
 
 ## Componente 3: Agente IA (`$NAS_DOTFILES/agent/`)
 
-Agente Python basado en Strands Agents SDK. Administra el NAS con lenguaje natural. 28 tools, memoria persistente, plugins dinámicos, daemon systemd.
+Agente Python basado en Strands Agents SDK. Administra el NAS con lenguaje natural mediante herramientas registradas y capacidades descubiertas dinámicamente; conserva memoria persistente, plugins dinámicos y daemon systemd.
 
 ### Ejecución
 

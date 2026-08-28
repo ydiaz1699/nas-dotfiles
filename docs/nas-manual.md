@@ -189,8 +189,8 @@ Redes creadas manualmente para segmentación de servicios.
 | Red | Driver | Propósito | Servicios conectados |
 |-----|--------|-----------|---------------------|
 | `adguard_macvlan_NET` | macvlan | IP dedicada para AdGuard (DNS:53 sin conflicto) | adguard |
-| `db_net` | bridge | Comunicación interna entre apps y bases de datos | datasql (postgres, pgadmin, redis), flowise, n8n, lobehub (preparado) |
-| `lobe_storage` | bridge | Red privada LobeHub ↔ RustFS S3 | lobehub, lobehub-rustfs, rustfs-init (preparado; runtime pendiente) |
+| `db_net` | bridge | Comunicación interna entre apps y bases de datos | datasql (postgres, pgadmin, redis), flowise, n8n, lobehub (runtime confirmado) |
+| `lobe_storage` | bridge | Red privada LobeHub ↔ RustFS S3 | lobehub, lobehub-rustfs, rustfs-init (runtime confirmado) |
 | `iot_net` | bridge | Servicios IoT/domótica | emqx, esphome, homeassistant, ioBroker (preparado) |
 | `bridge` | bridge | Default Docker (servicios sin red especial) | ntfy, filebrowser, etc. |
 | `homepage_net` | bridge | Dashboard Homepage ↔ servicios internos | homepage, ntfy |
@@ -330,7 +330,7 @@ DOCKER_BASE=/docker
 | **esphome** | Docker | 6052 | iot_net | Firmware ESP32/ESP8266 |
 | **homeassistant** | Docker (host) | 8123 | host | Automatización del hogar |
 | **datasql** | Docker (multi) | 5050 (pgAdmin), 5432 (solo loopback) | db_net | PostgreSQL + pgAdmin + Redis |
-| **lobehub** | Docker (preparado; runtime pendiente) | 3210 (LobeHub), 9000 (RustFS S3), 9001 (solo loopback) | db_net + lobe_storage | Chat/agentes IA con PostgreSQL, Redis y S3; no confirmado activo |
+| **lobehub** | Docker | 3210 (LobeHub), 9000 (RustFS S3), 9001 (solo loopback) | db_net + lobe_storage | Chat/agentes IA con PostgreSQL, Redis y S3; runtime base confirmado |
 | **filebrowser** | Docker | 8085 | filebrowser_default | Explorador archivos web |
 | **homepage** | Docker | 3000 | homepage_net | Dashboard de servicios |
 | **ntfy** | Docker | 8090 | bridge + homepage_net | Notificaciones push |
@@ -351,7 +351,7 @@ DOCKER_BASE=/docker
 | 1883 | EMQX | TCP | MQTT sin TLS |
 | 3000 | AdGuard | TCP | Asistente primer arranque |
 | 3000 | Homepage | TCP | Dashboard de servicios |
-| 3210 | LobeHub (preparado; runtime pendiente) | TCP | Dashboard web en LAN durante la fase inicial; no confirmado activo |
+| 3210 | LobeHub | TCP | Dashboard web en LAN; runtime base confirmado |
 | 5050 | pgAdmin | TCP | Acceso desde la LAN (`5050:80`) |
 | 5432 | PostgreSQL | TCP | Solo loopback del NAS (`127.0.0.1:5432:5432`) para Home Assistant |
 | 6052 | ESPHome | TCP | Dashboard ESPHome |
@@ -364,8 +364,8 @@ DOCKER_BASE=/docker
 | 8123 | Home Assistant | TCP | Automatización del hogar |
 | 8181 | ioBroker (preparado) | TCP | Panel web, pendiente de despliegue y verificación en NAS |
 | 8883 | EMQX | TCP | MQTT con TLS |
-| 9000 | RustFS de LobeHub (preparado; runtime pendiente) | TCP | Endpoint S3 en LAN; necesario para uploads/imágenes/knowledge base |
-| 9001 | RustFS de LobeHub (preparado; runtime pendiente) | TCP | Consola solo en loopback del NAS; no confirmado activo |
+| 9000 | RustFS de LobeHub | TCP | Endpoint S3 en LAN; necesario para uploads/imágenes/knowledge base; runtime confirmado |
+| 9001 | RustFS de LobeHub | TCP | Consola solo en loopback del NAS; runtime confirmado |
 | 18083 | EMQX | TCP | Dashboard EMQX |
 
 ### Rangos reservados

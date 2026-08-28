@@ -13,6 +13,7 @@ source "$CLI_DIR/lib/health.sh"
 source "$CLI_DIR/lib/backup.sh"
 source "$CLI_DIR/lib/extras.sh"
 source "$CLI_DIR/lib/menu.sh"
+source "$CLI_DIR/lib/lobehub.sh"
 source "$CLI_DIR/lib/help.sh"
 
 cmd="$1"
@@ -38,7 +39,9 @@ case "$cmd" in
     fi
     svc_diff "$@" ; exit $? ;;
   catalog-sync) source "$CLI_DIR/lib/catalog-sync.sh" ; catalog_sync "$@" ; exit 0 ;;
-  scan) python3 "${NAS_DOTFILES:-/nas-dotfiles}/agent/tools/project_scanner.py" "$@" ; exit 0 ;;
+  capabilities) python3 "${NAS_DOTFILES:-/nas-dotfiles}/agent/tools/capabilities.py" "$@" ; exit $? ;;
+  lobehub) svc_lobehub "$@" ; exit $? ;;
+  scan) python3 "${NAS_DOTFILES:-/nas-dotfiles}/agent/tools/project_scanner.py" "$@" ; exit $? ;;
   backup-all) svc_backup_all "$@" ; exit 0 ;;
   logs-grep) svc_logs_grep "$@" ; exit 0 ;;
   clone) svc_clone "$@" ; exit 0 ;;

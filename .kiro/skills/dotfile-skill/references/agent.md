@@ -34,7 +34,10 @@ Thinking Prompt → Identidad → Reglas Core → [Bloque específico] → Forma
 Bloques: identidad, reglas_core, seguridad, herramientas, formato,
 contexto_nas, diagnostico, creacion, backup, admin, memoria.
 
-## Tools (28 herramientas)
+## Tools
+
+`ALL_TOOLS` registra las herramientas base y los manifests añaden capacidades
+operativas descubiertas dinámicamente.
 
 | Módulo | Tools |
 |--------|-------|
@@ -45,6 +48,9 @@ contexto_nas, diagnostico, creacion, backup, admin, memoria.
 | `backup_tools` | backup_service, restore_service, list_backups |
 | `diagnostic_tools` | service_health, port_conflicts, troubleshoot |
 | `search_tools` | search_service_info (web fallback) |
+| `project_scanner` | project_scan |
+| `capability_tools` | discover_capabilities |
+| `compare_tools` | compare_catalog |
 | `memory_tools` | remember, recall, learn_skill, update_user_model, memory_stats |
 
 ## Reglas de ejecución del agente

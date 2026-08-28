@@ -459,10 +459,10 @@
         "./bucket.config.json"
       ],
       "protected": false,
-      "runtime_status": "prepared",
-      "target_status": "pending-runtime-verification",
+      "runtime_status": "operational",
+      "target_status": "runtime-verified",
       "docs_url": "docs/services/lobehub-guide.md",
-      "notes": "Configuración preparada, no evidencia de despliegue runtime. LobeHub 2.2.14 está fijado por tag y digest. Requiere AUTH_ALLOWED_EMAILS no vacío para no dejar el registro abierto en la LAN. Usa lobehub_db/lobehub_user en datapostgres:5432 y dataredis:6379 mediante db_net externa, sin crear PostgreSQL/Redis propios ni repetir n8n_user/n8n_db. RustFS 1.0.0-rc.3 es S3 separado en la red física lobe_storage: el endpoint 9000 se publica en LAN porque el navegador debe resolverlo; la consola 9001 queda en loopback. SearXNG no se incluye porque la búsqueda online es opcional. La política bucket.config.json permite solo GET público de objetos; revisar si la exposición LAN no es adecuada. El healthcheck de LobeHub es local del catálogo: la imagen oficial no publica un endpoint /health, pero su Dockerfile v2.2.14 incluye Node en /bin/node y la aplicación sirve HTTP en 3210. La guía incluye dump lógico PostgreSQL no probado en este entorno. Verificar en NAS antes de afirmar que funciona.",
+      "notes": "Runtime base confirmado en el NAS: migración PostgreSQL, RustFS/rustfs-init, Redis autenticado, KEY_VAULTS_SECRET válido tras recreación y Next.js en 3210; las claves de proveedores, QStash y marketplace son opcionales. LobeHub 2.2.14 está fijado por tag y digest. Requiere AUTH_ALLOWED_EMAILS no vacío para no dejar el registro abierto en la LAN. Usa lobehub_db/lobehub_user en datapostgres:5432 y dataredis:6379 mediante db_net externa, sin crear PostgreSQL/Redis propios ni repetir n8n_user/n8n_db. RustFS 1.0.0-rc.3 es S3 separado en la red física lobe_storage: el endpoint 9000 se publica en LAN porque el navegador debe resolverlo; la consola 9001 queda en loopback. SearXNG no se incluye porque la búsqueda online es opcional. La política bucket.config.json permite solo GET público de objetos; revisar si la exposición LAN no es adecuada. El healthcheck de LobeHub es local del catálogo: la imagen oficial no publica un endpoint /health, pero su Dockerfile v2.2.14 incluye Node en /bin/node y la aplicación sirve HTTP en 3210. La guía incluye el procedimiento de dump lógico PostgreSQL; todavía no fue probado en este entorno. Ejecutar svc lobehub backup-db en el NAS y verificar que el archivo no esté vacío antes de tratarlo como backup probado.",
       "networks": [
         "db_net",
         "lobe_storage"

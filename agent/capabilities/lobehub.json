@@ -1,0 +1,63 @@
+{
+  "service": "lobehub",
+  "source": "docker/cli/lib/lobehub.sh",
+  "description": "Operaciones seguras de preflight, verificación, credenciales y recuperación de LobeHub.",
+  "operations": [
+    {
+      "id": "lobehub.preflight",
+      "command": "svc lobehub preflight",
+      "mode": "read_only",
+      "confirm": false,
+      "description": "Valida compose, .env sin imprimir secretos, KEY_VAULTS_SECRET, UID RustFS, red db_net y resolución Compose.",
+      "evidence": ["docs/services/lobehub-guide.md", "docker/cli/lib/lobehub.sh"]
+    },
+    {
+      "id": "lobehub.verify",
+      "command": "svc lobehub verify",
+      "mode": "read_only",
+      "confirm": false,
+      "description": "Comprueba contenedores, HTTP, RustFS, Redis, extensiones PostgreSQL, privilegios y avisos runtime sin mostrar logs completos ni credenciales.",
+      "evidence": ["docs/services/lobehub-guide.md", "docker/cli/lib/lobehub.sh"]
+    },
+    {
+      "id": "lobehub.status",
+      "command": "svc lobehub status",
+      "mode": "read_only",
+      "confirm": false,
+      "description": "Muestra el estado Compose de LobeHub sin resolver ni imprimir secretos.",
+      "evidence": ["docker/cli/lib/lobehub.sh"]
+    },
+    {
+      "id": "lobehub.providers",
+      "command": "svc lobehub providers",
+      "mode": "read_only",
+      "confirm": false,
+      "description": "Clasifica avisos de claves de proveedores, QStash y marketplace sin volcar logs.",
+      "evidence": ["docs/services/lobehub-guide.md", "docker/cli/lib/lobehub.sh"]
+    },
+    {
+      "id": "lobehub.repair-storage",
+      "command": "svc lobehub repair-storage --confirm",
+      "mode": "mutating",
+      "confirm": true,
+      "description": "Toma snapshot si está disponible, detiene temporalmente LobeHub/RustFS y corrige solo UID/permisos de data/rustfs; nunca borra datos.",
+      "evidence": ["docs/services/lobehub-guide.md", "docker/cli/lib/lobehub.sh"]
+    },
+    {
+      "id": "lobehub.reconcile-db",
+      "command": "svc lobehub reconcile-db --confirm",
+      "mode": "mutating",
+      "confirm": true,
+      "description": "Sincroniza lobehub_user con LOBE_DB_PASSWORD usando POSTGRES_DB de DataSQL, crea o corrige el propietario de lobehub_db y precrea vector/pg_search como administrador sin exponer credenciales.",
+      "evidence": ["docs/services/lobehub-guide.md", "docker/cli/lib/lobehub.sh"]
+    },
+    {
+      "id": "lobehub.backup-db",
+      "command": "svc lobehub backup-db",
+      "mode": "backup",
+      "confirm": false,
+      "description": "Crea y valida un dump lógico de lobehub_db con permisos 600, canal de contraseña por stdin y elimina dumps parciales.",
+      "evidence": ["docs/services/lobehub-guide.md", "docker/cli/lib/lobehub.sh"]
+    }
+  ]
+}

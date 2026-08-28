@@ -90,7 +90,7 @@ agent/
 │   ├── compose_manager.py      ← create/validate/read
 │   └── backup_manager.py       ← backup/restore/list
 ├── tools/                      ← Thin wrappers (@tool → core managers)
-│   ├── __init__.py             ← Exporta ALL_TOOLS (28 herramientas)
+│   ├── __init__.py             ← Exporta ALL_TOOLS y capacidades descubiertas
 │   ├── _shell.py               ← safe_run, validate, readonly, dryrun
 │   ├── _audit.py               ← Audit log JSON Lines
 │   ├── _result.py              ← ToolResult helpers
@@ -135,7 +135,7 @@ agent/
 ```
 
 
-## Herramientas (28 tools)
+## Herramientas
 
 | Herramienta | Qué hace | Segura |
 |-------------|----------|--------|
@@ -166,6 +166,9 @@ agent/
 | `port_conflicts()` | Detectar conflictos | ✅ |
 | `troubleshoot(svc)` | Diagnóstico completo | ✅ |
 | `remember(fact)` | Guardar hecho en memoria persistente | ✅ |
+| `project_scan()` | Detectar lagunas e inconsistencias del proyecto | ✅ |
+| `discover_capabilities(query, service)` | Descubrir comandos y guards desde manifests | ✅ |
+| `compare_catalog(svc)` | Detectar drift entre catálogo y despliegue | ✅ |
 | `recall(query)` | Buscar en memoria persistente | ✅ |
 | `learn_skill(name, steps)` | Guardar procedimiento reutilizable | ✅ |
 | `update_user_model(info)` | Actualizar perfil del usuario | ✅ |
@@ -223,7 +226,7 @@ agent "revisar emqx"
 │  THINKING_PROMPT (razonar antes de actuar)             │
 │  + BLOCK_IDENTIDAD (modelo, provider)                  │
 │  + BLOCK_REGLAS_CORE (actuar sin preguntar)            │
-│  + BLOCK_HERRAMIENTAS (23 tools)                       │
+│  + BLOCK_HERRAMIENTAS (herramientas base + capacidades consultables) │
 │  + BLOCK_DIAGNOSTICO (cadena, patrones error)          │
 │  + BLOCK_FORMATO (español, conciso)                    │
 └────────────────────────────────────────────────────────┘
@@ -236,7 +239,7 @@ agent "revisar emqx"
 | `identidad` | Modelo, provider, nombre |
 | `reglas_core` | Actuar sin preguntar, mapeo acción→tool |
 | `seguridad` | Puertos reservados, credenciales, modos |
-| `herramientas` | Lista de 23 tools con descripción |
+| `herramientas` | Herramientas disponibles y capacidades descubiertas dinámicamente |
 | `formato` | Español, conciso, emojis, markdown |
 | `contexto_nas` | Memoria sesión, comandos del usuario |
 | `diagnostico` | Cadena diagnóstica, patrones de error |
