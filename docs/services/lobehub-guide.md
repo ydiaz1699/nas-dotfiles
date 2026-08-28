@@ -1,6 +1,6 @@
 # Guía: LobeHub server/database en el NAS
 
-> **Estado:** archivos preparados en una rama de revisión; todavía no es una
+> **Estado:** archivos preparados en el repositorio; todavía no es una
 > instalación confirmada en el NAS porque esta sesión no ejecutó `svc` contra el
 > servidor. No afirmar `lobehub_user`, `lobehub_db`, RustFS ni el contenedor como
 > existentes hasta completar la verificación de la sección 10.
@@ -151,34 +151,175 @@ JWKS_KEY=__pega_aqui__
 RUSTFS_SECRET_KEY=__pega_aqui__
 ```
 
-Generar secretos sin compartirlos. Para `LOBE_DB_PASSWORD` y `RUSTFS_SECRET_KEY`
-conviene usar caracteres URL-safe porque la contraseña de PostgreSQL se inserta
-en `DATABASE_URL`:
+### Generar los secretos locales sin imprimirlos
+
+Ejecutar este bloque únicamente durante una instalación nueva, mientras los
+valores sean `__pega_aqui__`. No volver a ejecutarlo después del primer arranque:
+rotaría la contraseña de PostgreSQL, la credencial de RustFS y los secretos de
+sesión de LobeHub.
+
+La lista `AUTH_ALLOWED_EMAILS` debe ser no vacía. Puede configurarse sin abrir un
+editor, usando una dirección de ejemplo que debe sustituirse por la real:
 
 ```bash
-openssl rand -base64 36 | tr -dc 'A-Za-z0-9_-' | head -c 32; printf '\n'
-openssl rand -base64 36 | tr -dc 'A-Za-z0-9_-' | head -c 32; printf '\n'
-openssl rand -base64 36 | tr -dc 'A-Za-z0-9_+=/' | head -c 48; printf '\n'
+LOBE_ALLOWED_EMAILS='usuario@ejemplo.invalid'
+sed -i "s/^AUTH_ALLOWED_EMAILS=.*/AUTH_ALLOWED_EMAILS=${LOBE_ALLOWED_EMAILS}/" \
+  "$dkco/lobehub/.env"
+unset LOBE_ALLOWED_EMAILS
 ```
 
-La primera salida puede usarse para `LOBE_DB_PASSWORD`, la segunda para
-`RUSTFS_SECRET_KEY` y la tercera para `AUTH_SECRET` o `KEY_VAULTS_SECRET`.
-`JWKS_KEY` debe generarse siguiendo la [sección oficial de JWKS_KEY](https://lobehub.com/docs/self-hosting/environment-variables/auth#jwks_key), no inventarse ni copiarse del ejemplo de upstream. Mantener todas estas variables estables después del primer arranque. La lista
-`AUTH_ALLOWED_EMAILS` debe ser no vacía: LobeHub permite el registro de cualquier
-cuenta cuando esa variable queda vacía. Si se necesita cambiar la lista, tomar un
-snapshot y revisar el acceso resultante antes de recrear el servicio.
-
-Copiar `REDIS_PASSWORD` localmente sin imprimirlo. No usar `source .env`:
+LobeHub permite registrar cualquier cuenta si `AUTH_ALLOWED_EMAILS` queda vacío.
+Para los secretos propios se usa un bloque Python heredoc; no usar un
+`python3 -c` multilínea porque el shell puede convertir `\n` en saltos de línea
+dentro del código y producir un `SyntaxError` antes de escribir el archivo.
 
 ```bash
-REDIS_PASSWORD_FROM_DATASQL="$(awk -F= '$1=="REDIS_PASSWORD"{print substr($0,index($0,"=")+1); exit}' "$dkco/datasql/.env")"
-if [[ -z "$REDIS_PASSWORD_FROM_DATASQL" ]]; then
+REDIS_PASSWORD="$(awk -F= '$1=="REDIS_PASSWORD"{print substr($0,index($0,"=")+1); exit}' "$dkco/datasql/.env")"
+
+if [[ -z "$REDIS_PASSWORD" ]]; then
   printf 'No se encontró REDIS_PASSWORD en %s/datasql/.env.\n' "$dkco" >&2
-  unset REDIS_PASSWORD_FROM_DATASQL
+  unset REDIS_PASSWORD
   exit 1
 fi
-# Colocar el valor en $dkco/lobehub/.env con el editor local, sin imprimirlo.
-unset REDIS_PASSWORD_FROM_DATASQL
+
+export REDIS_PASSWORD
+export LOBE_DB_PASSWORD="$(openssl rand -hex 32)"
+export KEY_VAULTS_SECRET="$(openssl rand -hex 32)"
+export AUTH_SECRET="$(openssl rand -base64 32 | tr -d '\n')"
+export RUSTFS_SECRET_KEY="$(openssl rand -hex 32)"
+
+python3 - "$dkco/lobehub/.env" <<'PY'
+import os
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+keys = (
+    "REDIS_PASSWORD",
+    "LOBE_DB_PASSWORD",
+    "KEY_VAULTS_SECRET",
+    "AUTH_SECRET",
+    "RUSTFS_SECRET_KEY",
+)
+values = {key: os.environ[key] for key in keys}
+lines = path.read_text().splitlines()
+output = []
+
+for line in lines:
+    key = (
+        line.split("=", 1)[0]
+        if "=" in line and not line.lstrip().startswith("#")
+        else None
+    )
+    output.append(f"{key}={values[key]}" if key in values else line)
+
+path.write_text("\n".join(output) + "\n")
+PY
+
+status=$?
+unset REDIS_PASSWORD LOBE_DB_PASSWORD KEY_VAULTS_SECRET AUTH_SECRET RUSTFS_SECRET_KEY
+
+if (( status != 0 )); then
+  printf 'No se pudo actualizar el .env; no continuar.\n' >&2
+  exit "$status"
+fi
+```
+
+`JWKS_KEY` es distinto: no es una contraseña aleatoria. Debe generarse con el
+botón **Click button to generate** de la [sección oficial de JWKS_KEY](https://lobehub.com/docs/self-hosting/environment-variables/auth#jwks_key). El valor debe ser un
+JSON JWKS con una clave privada RSA `RS256`; no usar el valor de un gist o de otra
+instalación.
+
+Solicitarlo de forma interactiva y validarlo antes de escribirlo. Si la
+validación falla, el archivo permanece sin cambios y no se imprime un mensaje de
+éxito falso:
+
+```bash
+read -r -s -p 'Pega el JWKS_KEY nuevo; no se mostrará: ' JWKS_INPUT
+echo
+
+if [[ -z "$JWKS_INPUT" ]]; then
+  printf 'JWKS_KEY vacío; no se modificó el archivo.\n' >&2
+  unset JWKS_INPUT
+  exit 1
+fi
+
+export JWKS_INPUT
+
+python3 - "$dkco/lobehub/.env" <<'PY'
+import json
+import os
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+raw = os.environ["JWKS_INPUT"]
+
+if raw.startswith("JWKS_KEY="):
+    raw = raw.split("=", 1)[1]
+
+try:
+    document = json.loads(raw)
+except Exception as exc:
+    raise SystemExit(f"JWKS_KEY no contiene JSON válido: {exc}")
+
+keys = document.get("keys")
+required = {
+    "d", "dp", "dq", "e", "n", "p", "q",
+    "qi", "kty", "use", "kid", "alg",
+}
+
+if not isinstance(keys, list) or len(keys) != 1:
+    raise SystemExit("JWKS_KEY debe contener exactamente una clave")
+
+key = keys[0]
+if (
+    not required.issubset(key)
+    or key["kty"] != "RSA"
+    or key["alg"] != "RS256"
+    or key["use"] != "sig"
+):
+    raise SystemExit("JWKS_KEY no es una clave privada RSA RS256 válida")
+
+lines = path.read_text().splitlines()
+updated = [
+    "JWKS_KEY=" + raw if line.startswith("JWKS_KEY=") else line
+    for line in lines
+]
+
+temporary = path.with_name(path.name + ".tmp")
+temporary.write_text("\n".join(updated) + "\n")
+os.chmod(temporary, 0o600)
+os.replace(temporary, path)
+PY
+
+status=$?
+unset JWKS_INPUT
+
+if (( status != 0 )); then
+  printf 'JWKS_KEY inválido; no se confirmó la configuración.\n' >&2
+  exit "$status"
+fi
+
+chmod 600 "$dkco/lobehub/.env"
+printf 'JWKS_KEY validado y guardado localmente.\n'
+```
+
+Verificar sin mostrar ningún secreto:
+
+```bash
+awk -F= '
+/^(LOBE_DB_PASSWORD|REDIS_PASSWORD|AUTH_ALLOWED_EMAILS|KEY_VAULTS_SECRET|AUTH_SECRET|JWKS_KEY|RUSTFS_SECRET_KEY)=/ {
+  print $1 "=configured"
+}
+' "$dkco/lobehub/.env"
+
+if grep -q '__pega_aqui__' "$dkco/lobehub/.env"; then
+  printf 'Todavía quedan placeholders en .env.\n' >&2
+  exit 1
+fi
+
+printf 'No quedan placeholders en el .env.\n'
 ```
 
 Aplicar permisos solo después de crear y editar el archivo:
