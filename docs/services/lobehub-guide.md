@@ -208,10 +208,15 @@ RUSTFS_SECRET_KEY=__pega_aqui__
 
 ### Generar los secretos locales sin imprimirlos
 
-Ejecutar este bloque únicamente durante una instalación nueva, mientras los
-valores sean `__pega_aqui__`. No volver a ejecutarlo después del primer arranque:
-rotaría la contraseña de PostgreSQL, la credencial de RustFS y los secretos de
-sesión de LobeHub.
+Ejecutar este bloque durante una instalación nueva o para reanudar una
+instalación **antes del primer arranque**. Conserva los secretos propios que ya
+sean reales y solo genera los que estén vacíos o sean `__pega_aqui__`. El
+`REDIS_PASSWORD` de LobeHub nunca se genera: la fuente de verdad es siempre
+`$dkco/datasql/.env`.
+
+Después del primer arranque no lo ejecutes como una prueba, porque no debe rotar
+identidades ya usadas. Si se necesita cambiar una credencial después del
+arranque, debe hacerse mediante un procedimiento de rotación coordinado.
 
 La lista `AUTH_ALLOWED_EMAILS` debe ser no vacía. Se configura de forma
 interactiva, sin abrir un editor y sin dejar el correo de ejemplo:
@@ -293,6 +298,7 @@ if (
   export REDIS_PASSWORD
   python3 - "$ENV_FILE" <<'PY'
 import os
+import re
 import secrets
 import sys
 from pathlib import Path
@@ -319,7 +325,14 @@ for line in lines:
 values = {"REDIS_PASSWORD": os.environ["REDIS_PASSWORD"]}
 for key in secret_keys:
     old = existing.get(key, "").strip()
-    values[key] = old if old and old != "__pega_aqui__" else secrets.token_hex(32)
+    if old and old != "__pega_aqui__":
+        if key == "LOBE_DB_PASSWORD" and not re.fullmatch(r"[0-9a-fA-F]+", old):
+            raise SystemExit(
+                "LOBE_DB_PASSWORD existente no es hexadecimal; no se sobrescribe"
+            )
+        values[key] = old
+    else:
+        values[key] = secrets.token_hex(32)
 
 output = []
 seen = set()
@@ -376,9 +389,26 @@ fi
 
 El bloque copia siempre el `REDIS_PASSWORD` vigente de DataSQL, pero conserva los
 secretos propios que ya sean reales y solo genera los que todavía sean vacíos o
-`__pega_aqui__`. Así se puede reanudar una instalación parcial sin rotar
-credenciales. Después del primer arranque no se debe ejecutar para “probar”: una
-rotación dejaría PostgreSQL, RustFS o las sesiones de LobeHub desincronizadas.
+`__pega_aqui__`. Para mantener la reconciliación segura, un
+`LOBE_DB_PASSWORD` existente debe ser hexadecimal; si no lo es, el bloque se
+detiene sin sobrescribirlo y exige una rotación deliberada documentada.
+
+### Fuentes de verdad y sincronización obligatoria
+
+Estas reglas evitan la discrepancia que ocurre cuando el `.env` contiene una
+contraseña nueva pero el servidor todavía conserva otra:
+
+| Credencial | Fuente de verdad | Acción durante esta instalación |
+|---|---|---|
+| `REDIS_PASSWORD` | `$dkco/datasql/.env` | Copiarla al `.env` de LobeHub; nunca generar otra ni crear otro Redis |
+| `LOBE_DB_PASSWORD` | `$dkco/lobehub/.env` | Crear o sincronizar explícitamente la contraseña de `lobehub_user` |
+| `PG_ADMIN_PASSWORD` | `$dkco/datasql/.env` | Usarla solo temporalmente para administrar PostgreSQL |
+| `RUSTFS_SECRET_KEY` | `$dkco/lobehub/.env` | Usarla igual en RustFS, `rustfs-init` y LobeHub |
+
+Generar `LOBE_DB_PASSWORD` en el archivo **no crea ni cambia automáticamente** la
+contraseña de PostgreSQL. La guía debe ejecutar la reconciliación del rol en la
+sección 6 antes de crear la base o levantar LobeHub. De la misma forma, copiar
+`REDIS_PASSWORD` al nuevo `.env` solo funciona si se verifica con `redis-cli PING`.
 
 `JWKS_KEY` es distinto: no es una contraseña aleatoria. Debe generarse con el
 botón **Click button to generate** de la [sección oficial de JWKS_KEY](https://lobehub.com/docs/self-hosting/environment-variables/auth#jwks_key). El valor debe ser un
@@ -576,8 +606,12 @@ if [[ -z "$PG_ADMIN_PASSWORD" || -z "$PG_ADMIN_USER" || -z "$PG_ADMIN_DB" || -z 
 fi
 ```
 
-Comprobar si el rol ya existe antes de crear nada. Si ya existe, no cambiar su
-contraseña a ciegas: comparar primero con `LOBE_DB_PASSWORD` del `.env` efectivo.
+La contraseña de `LOBE_DB_PASSWORD` debe quedar sincronizada con el rol antes
+de crear la base. La consulta siguiente es opcional para inspeccionar el estado;
+si el rol no existe, el bloque de reconciliación posterior lo crea.
+
+**Las consultas SQL solo se escriben cuando el prompt termina en `=#` o `=>`,
+dentro de `psql`; nunca en el prompt `root@Nas ... #` de Bash.**
 
 ```bash
 svc exec datasql postgres \
@@ -587,78 +621,85 @@ svc exec datasql postgres \
   psql
 ```
 
-**Las consultas SQL solo se escriben cuando el prompt termina en `=#` o `=>`,
-dentro de `psql`.** Si el prompt es `root@Nas ... #`, estás en Bash y una
-consulta como `SELECT ...` produce un error de sintaxis del shell; primero abre
-`psql` con el bloque anterior.
-
-Dentro de `psql`:
+Dentro de `psql`, consultar el estado si lo necesitas y salir antes de
+continuar con el bloque automático:
 
 ```sql
 SELECT rolname, rolcanlogin
 FROM pg_roles
 WHERE rolname = 'lobehub_user';
+\q
 ```
 
-Si no devuelve filas, **no avances a la creación de la base**. Ejecuta en esa
-misma sesión:
+No crees ni cambies el rol manualmente antes del bloque automático. Así la guía
+usa un único camino idempotente y evita que `LOBE_DB_PASSWORD` y PostgreSQL
+queden desincronizados.
 
-```sql
-CREATE ROLE lobehub_user LOGIN;
-\password lobehub_user
-```
+### Reconciliar automáticamente el rol y su contraseña
 
-Cuando `psql` solicite la contraseña, introducir localmente el valor de
-`LOBE_DB_PASSWORD` del `.env`; no pegarlo en el chat. Es importante que
-`\password lobehub_user` es un prompt interactivo de `psql`: una variable Bash
-con el mismo secreto **no** rellena ese prompt automáticamente. Salir con
-`\q`.
+Este es el camino canónico para una instalación nueva o parcial. Si
+`lobehub_user` no existe, lo crea; si existe, sincroniza deliberadamente su
+contraseña con `LOBE_DB_PASSWORD`. Solo afecta al rol dedicado de LobeHub, no a
+`n8n_user`, `aiadmin` ni `aipostgres`.
 
-Si la consulta sí devuelve el rol, no repetir `CREATE ROLE`. Primero prueba el
-login dedicado de esta guía. Si aparece `password authentication failed`, la
-contraseña almacenada en PostgreSQL no coincide con `LOBE_DB_PASSWORD`; no
-continúes hacia `svc up` hasta sincronizarlas.
-
-Como alternativa automatizada para sincronizar deliberadamente la contraseña,
-el siguiente bloque consume `APP_DB_PASSWORD` desde la variable local y envía el
-SQL por stdin. No imprime el secreto ni lo pasa como argumento del proceso:
+El secreto viaja por stdin como SQL generado localmente. No se imprime ni se pasa
+como argumento de `psql`. Como este es un flujo no interactivo, usa
+`NAS_CLI=bash ... -T`: la implementación Bash permite pasar `-T` a Compose y
+elimina la pseudo-TTY. No uses `psql -v`, `-U`, `-d` o `-c` después de la forma
+Python de `svc exec`, porque el wrapper puede interpretarlos como opciones propias:
 
 ```bash
 if [[ -z "${PG_ADMIN_PASSWORD:-}" || -z "${PG_ADMIN_USER:-}" ||
       -z "${PG_ADMIN_DB:-}" || -z "${APP_DB_PASSWORD:-}" ]]; then
-  printf 'Faltan credenciales temporales; no se cambia la contraseña.\n' >&2
+  printf 'Faltan credenciales temporales; no se modifica el rol.\n' >&2
 else
   export APP_DB_PASSWORD
-  python3 - <<'PY' |
-import os
+  SQL_OUTPUT="$(mktemp)"
 
-password = os.environ["APP_DB_PASSWORD"].replace("'", "''")
-print(f"ALTER ROLE lobehub_user PASSWORD '{password}';")
-PY
-    svc exec datasql postgres \
+  python3 - <<'PY' | \
+    NAS_CLI=bash svc exec datasql -T postgres \
       env PGPASSWORD="$PG_ADMIN_PASSWORD" \
           PGUSER="$PG_ADMIN_USER" \
           PGDATABASE="$PG_ADMIN_DB" \
-      psql
-  status=${PIPESTATUS[1]}
+      psql >"$SQL_OUTPUT" 2>&1
+import os
+
+password = os.environ["APP_DB_PASSWORD"]
+if not password or password == "__pega_aqui__":
+    raise SystemExit("LOBE_DB_PASSWORD vacío o placeholder")
+if any(char not in "0123456789abcdefABCDEF" for char in password):
+    raise SystemExit("LOBE_DB_PASSWORD debe ser hexadecimal")
+
+print("\\set ON_ERROR_STOP on")
+print("DO $$")
+print("BEGIN")
+print("  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'lobehub_user') THEN")
+print(f"    ALTER ROLE lobehub_user LOGIN PASSWORD '{password}';")
+print("  ELSE")
+print(f"    CREATE ROLE lobehub_user LOGIN PASSWORD '{password}';")
+print("  END IF;")
+print("END")
+print("$$;")
+PY
+
+  pipeline_status=("${PIPESTATUS[@]}")
   unset APP_DB_PASSWORD
 
-  if (( status != 0 )); then
-    printf 'No se pudo sincronizar la contraseña del rol.\n' >&2
+  if (( pipeline_status[0] != 0 || pipeline_status[1] != 0 )); then
+    cat "$SQL_OUTPUT" >&2
+    printf 'No se pudo sincronizar lobehub_user; no continuar.\n' >&2
   else
-    printf 'Contraseña de lobehub_user sincronizada localmente.\n'
+    printf 'lobehub_user creado o sincronizado con LOBE_DB_PASSWORD.\n'
   fi
+
+  rm -f "$SQL_OUTPUT"
 fi
 ```
 
-`svc exec` interpreta opciones como `-v`, `-U`, `-d` o `-c` como opciones
-propias del wrapper. Por eso este bloque usa `psql` sin opciones: el SQL llega
-por stdin y la salida esperada es `ALTER ROLE`. Si aparece `ERROR`, no continuar.
-
-El bloque automatizado se elige aquí para corregir una discrepancia ya detectada
-durante la instalación; la variante `\password` sigue documentada para cambios
-manuales. En ambos casos, prueba el login dedicado antes de crear o levantar
-LobeHub.
+Si el bloque informa éxito, la contraseña del rol y la del `.env` ya representan
+la misma credencial. No ejecutes además `CREATE ROLE` ni `\password` a ciegas.
+La variante interactiva `\password lobehub_user` queda reservada para un cambio
+manual deliberado; una variable Bash no rellena ese prompt de `psql`.
 
 Crear o verificar la base en **otra** sesión, fuera de una transacción:
 
@@ -689,14 +730,24 @@ verificado es `lobehub_user`. No combinar `CREATE ROLE` y `CREATE DATABASE` en
 una llamada o transacción. Salir con `\q`.
 
 Verificar el login dedicado en una tercera sesión usando la contraseña de
-LobeHub, no la administrativa:
+LobeHub, no la administrativa. El bloque de reconciliación limpió la variable
+por seguridad, por lo que se vuelve a leer desde el archivo local sin imprimirla:
 
 ```bash
-svc exec datasql postgres \
-  env PGPASSWORD="$APP_DB_PASSWORD" \
-      PGUSER=lobehub_user \
-      PGDATABASE=lobehub_db \
-  psql
+(
+  trap 'unset APP_DB_PASSWORD' EXIT
+  APP_DB_PASSWORD="$(awk -F= '$1=="LOBE_DB_PASSWORD"{print substr($0,index($0,"=")+1); exit}' "$dkco/lobehub/.env")"
+
+  if [[ -z "$APP_DB_PASSWORD" || "$APP_DB_PASSWORD" == '__pega_aqui__' ]]; then
+    printf 'Falta una LOBE_DB_PASSWORD válida; no probar el login.\n' >&2
+  else
+    svc exec datasql postgres \
+      env PGPASSWORD="$APP_DB_PASSWORD" \
+          PGUSER=lobehub_user \
+          PGDATABASE=lobehub_db \
+      psql
+  fi
+)
 ```
 
 En `psql`:
@@ -743,7 +794,39 @@ ajustes:
 Crear también `$dkco/lobehub/bucket.config.json` copiando el archivo del
 catálogo. El bucket debe existir antes de que LobeHub intente guardar objetos.
 
-## 8. Validar configuración antes de levantar
+## 8. Validar configuración y dependencias antes de levantar
+
+Primero verifica que el `REDIS_PASSWORD` copiado desde DataSQL realmente
+funciona. Esta comprobación es una precondición; no esperes a que LobeHub esté
+levantado para descubrir una contraseña Redis incorrecta:
+
+```bash
+if (
+  DATA_REDIS_PASSWORD="$(awk -F= '$1=="REDIS_PASSWORD"{print substr($0,index($0,"=")+1); exit}' "$dkco/datasql/.env")"
+  LOBE_REDIS_PASSWORD="$(awk -F= '$1=="REDIS_PASSWORD"{print substr($0,index($0,"=")+1); exit}' "$dkco/lobehub/.env")"
+
+  if [[ -z "$DATA_REDIS_PASSWORD" || -z "$LOBE_REDIS_PASSWORD" ||
+        "$DATA_REDIS_PASSWORD" != "$LOBE_REDIS_PASSWORD" ]]; then
+    printf 'REDIS_PASSWORD de LobeHub no coincide con DataSQL; no continuar.\n' >&2
+    exit 1
+  fi
+
+  export REDIS_PASSWORD="$DATA_REDIS_PASSWORD"
+  svc exec datasql redis \
+    env REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli PING
+  status=$?
+  unset REDIS_PASSWORD DATA_REDIS_PASSWORD LOBE_REDIS_PASSWORD
+  exit "$status"
+)
+then
+  printf 'Redis verificado con la credencial sincronizada de DataSQL.\n'
+else
+  printf 'Redis no responde o sus credenciales no coinciden; no continuar.\n' >&2
+fi
+```
+
+Debe devolver `PONG`. El bloque limpia la variable incluso si el comando
+termina con error; no crear otro Redis ni generar otra contraseña.
 
 ```bash
 dk lobehub
