@@ -587,6 +587,11 @@ svc exec datasql postgres \
   psql
 ```
 
+**Las consultas SQL solo se escriben cuando el prompt termina en `=#` o `=>`,
+dentro de `psql`.** Si el prompt es `root@Nas ... #`, estás en Bash y una
+consulta como `SELECT ...` produce un error de sintaxis del shell; primero abre
+`psql` con el bloque anterior.
+
 Dentro de `psql`:
 
 ```sql
@@ -595,7 +600,8 @@ FROM pg_roles
 WHERE rolname = 'lobehub_user';
 ```
 
-Si no devuelve filas, crear el rol y asignar la contraseña de forma interactiva:
+Si no devuelve filas, **no avances a la creación de la base**. Ejecuta en esa
+misma sesión:
 
 ```sql
 CREATE ROLE lobehub_user LOGIN;
@@ -606,8 +612,49 @@ Cuando `psql` solicite la contraseña, introducir localmente el valor de
 `LOBE_DB_PASSWORD` del `.env`; no pegarlo en el chat. Es importante que
 `\password lobehub_user` es un prompt interactivo de `psql`: una variable Bash
 con el mismo secreto **no** rellena ese prompt automáticamente. Salir con
-`\q`. Si el rol ya existe, no repetir `CREATE ROLE` ni `\password` sin una
-comparación explícita.
+`\q`.
+
+Si la consulta sí devuelve el rol, no repetir `CREATE ROLE`. Primero prueba el
+login dedicado de esta guía. Si aparece `password authentication failed`, la
+contraseña almacenada en PostgreSQL no coincide con `LOBE_DB_PASSWORD`; no
+continúes hacia `svc up` hasta sincronizarlas.
+
+Como alternativa automatizada para sincronizar deliberadamente la contraseña,
+el siguiente bloque consume `APP_DB_PASSWORD` desde la variable local y envía el
+SQL por stdin. No imprime el secreto ni lo pasa como argumento del proceso:
+
+```bash
+if [[ -z "${PG_ADMIN_PASSWORD:-}" || -z "${PG_ADMIN_USER:-}" ||
+      -z "${PG_ADMIN_DB:-}" || -z "${APP_DB_PASSWORD:-}" ]]; then
+  printf 'Faltan credenciales temporales; no se cambia la contraseña.\n' >&2
+else
+  export APP_DB_PASSWORD
+  python3 - <<'PY' |
+import os
+
+password = os.environ["APP_DB_PASSWORD"].replace("'", "''")
+print(f"ALTER ROLE lobehub_user PASSWORD '{password}';")
+PY
+    svc exec datasql postgres \
+      env PGPASSWORD="$PG_ADMIN_PASSWORD" \
+          PGUSER="$PG_ADMIN_USER" \
+          PGDATABASE="$PG_ADMIN_DB" \
+      psql -v ON_ERROR_STOP=1
+  status=${PIPESTATUS[1]}
+  unset APP_DB_PASSWORD
+
+  if (( status != 0 )); then
+    printf 'No se pudo sincronizar la contraseña del rol.\n' >&2
+  else
+    printf 'Contraseña de lobehub_user sincronizada localmente.\n'
+  fi
+fi
+```
+
+El bloque automatizado se elige aquí para corregir una discrepancia ya detectada
+durante la instalación; la variante `\password` sigue documentada para cambios
+manuales. En ambos casos, prueba el login dedicado antes de crear o levantar
+LobeHub.
 
 Crear o verificar la base en **otra** sesión, fuera de una transacción:
 
