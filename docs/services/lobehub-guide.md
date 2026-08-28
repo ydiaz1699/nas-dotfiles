@@ -99,7 +99,14 @@ Continuar solo si:
 No pegar en GitHub ni en el chat la salida de `svc config`, porque puede
 contener secretos interpolados.
 
-## 4. Crear directorios primero
+## 4. Preparar el runtime y continuar desde aquí
+
+Si ya ejecutaste el preflight de la sección 3 y tienes una instalación parcial
+(o ya creaste `$dkco/lobehub`), **no borres ni sobrescribas archivos existentes**.
+Este bloque crea la carpeta y copia solo los artefactos que todavía falten. La
+única mutación permitida sobre un `compose.yml` existente es normalizar la ruta
+conocida de `extends.file` del catálogo al runtime. Después continúa en la
+sección 5 para completar o verificar el `.env`; todavía no ejecutes `svc up`.
 
 El despliegue usa estos artefactos:
 
@@ -112,25 +119,73 @@ $dkco/lobehub/
     └── rustfs/                  # objetos de LobeHub
 ```
 
-Crear únicamente las carpetas antes de crear archivos:
+Ejecuta el bloque completo desde el directorio local del repositorio
+`nas-dotfiles`. Las salidas solo indican archivos, nunca imprimen secretos:
 
 ```bash
-mkdir -p "$dkco/lobehub/data/rustfs"
+(
+  set -e
+
+  test -d "$NAS_DOTFILES"
+  test -f "$NAS_DOTFILES/agent/catalog/services/lobehub/compose.yml"
+  test -f "$NAS_DOTFILES/agent/catalog/services/lobehub/.env.example"
+  test -f "$NAS_DOTFILES/agent/catalog/services/lobehub/bucket.config.json"
+  test -f "$dkco/.env"
+  test -f "$dkco/_common.yml"
+
+  # (1) Carpetas antes de archivos.
+  mkdir -p "$dkco/lobehub/data/rustfs"
+
+  # (2) No sobrescribir una instalación parcial existente.
+  [[ -e "$dkco/lobehub/compose.yml" ]] || \
+    cp "$NAS_DOTFILES/agent/catalog/services/lobehub/compose.yml" \
+       "$dkco/lobehub/compose.yml"
+  [[ -e "$dkco/lobehub/bucket.config.json" ]] || \
+    cp "$NAS_DOTFILES/agent/catalog/services/lobehub/bucket.config.json" \
+       "$dkco/lobehub/bucket.config.json"
+  [[ -e "$dkco/lobehub/.env" ]] || \
+    cp "$NAS_DOTFILES/agent/catalog/services/lobehub/.env.example" \
+       "$dkco/lobehub/.env"
+
+  # El catálogo está dos niveles más abajo; el runtime solo uno.
+  if grep -q 'file: ../../_common.yml' "$dkco/lobehub/compose.yml"; then
+    sed -i 's|file: ../../_common.yml|file: ../_common.yml|g' \
+      "$dkco/lobehub/compose.yml"
+  elif ! grep -q 'file: ../_common.yml' "$dkco/lobehub/compose.yml"; then
+    printf 'extends.file no coincide con catálogo ni runtime; detenerse.\n' >&2
+    exit 1
+  fi
+
+  # (3) Verificar archivos; los permisos del secreto se aplican en la sección 5.
+  test -s "$dkco/lobehub/compose.yml"
+  test -s "$dkco/lobehub/.env"
+  test -s "$dkco/lobehub/bucket.config.json"
+)
+status=$?
+if (( status != 0 )); then
+  printf 'No se pudo preparar el runtime de LobeHub; no continuar.\n' >&2
+else
+  printf 'Runtime de LobeHub preparado; continuar en la sección 5.\n'
+fi
 ```
 
-No ejecutar `chmod` o `chown` antes de este `mkdir`, y no levantar el compose
-mientras falten `compose.yml`, `.env` o `bucket.config.json`.
+La modificación de `extends.file` es necesaria porque en el catálogo es
+`../../_common.yml`, pero en `$dkco/lobehub/` debe ser `../_common.yml`. Si el
+runtime ya contenía esa ruta, el bloque no la cambia. No ejecutar `chmod` o
+`chown` sobre datos que todavía no existen, y no levantar el compose mientras
+falte algún artefacto.
 
-## 5. Crear el `.env` local y protegerlo
+## 5. Completar el `.env` con configuración interactiva y protegerlo
 
-Crear el archivo vacío después de la carpeta:
+El `.env` se copia desde `.env.example`; no se recomienda crear un archivo vacío
+con `touch`, porque los actualizadores no deben depender de que existan claves
+que el usuario todavía no haya creado. Si el bloque anterior detectó un `.env`
+existente, lo conserva y solo modifica las claves indicadas explícitamente.
 
-```bash
-touch "$dkco/lobehub/.env"
-```
-
-Editar `$dkco/lobehub/.env` y sustituir cada `__pega_aqui__` por un valor real
-solo en el NAS:
+El contenido siguiente es una referencia de las claves esperadas; no pegues
+secretos reales en el repositorio ni en el chat. Para una instalación nueva, los
+bloques interactivos de esta sección sustituyen el ejemplo localmente, por lo que
+no es necesario abrir `nano` para configurar el correo, los secretos o `JWKS_KEY`.
 
 ```env
 # Permitir solo estas cuentas, separadas por comas; no dejar vacío en LAN.
@@ -158,175 +213,337 @@ valores sean `__pega_aqui__`. No volver a ejecutarlo después del primer arranqu
 rotaría la contraseña de PostgreSQL, la credencial de RustFS y los secretos de
 sesión de LobeHub.
 
-La lista `AUTH_ALLOWED_EMAILS` debe ser no vacía. Puede configurarse sin abrir un
-editor, usando una dirección de ejemplo que debe sustituirse por la real:
+La lista `AUTH_ALLOWED_EMAILS` debe ser no vacía. Se configura de forma
+interactiva, sin abrir un editor y sin dejar el correo de ejemplo:
 
 ```bash
-LOBE_ALLOWED_EMAILS='usuario@ejemplo.invalid'
-sed -i "s/^AUTH_ALLOWED_EMAILS=.*/AUTH_ALLOWED_EMAILS=${LOBE_ALLOWED_EMAILS}/" \
-  "$dkco/lobehub/.env"
-unset LOBE_ALLOWED_EMAILS
-```
+if (
+  read -r -p 'Correo(s) autorizado(s), separados por comas: ' LOBE_ALLOWED_EMAILS
 
-LobeHub permite registrar cualquier cuenta si `AUTH_ALLOWED_EMAILS` queda vacío.
-Para los secretos propios se usa un bloque Python heredoc; no usar un
-`python3 -c` multilínea porque el shell puede convertir `\n` en saltos de línea
-dentro del código y producir un `SyntaxError` antes de escribir el archivo.
+  if [[ -z "$LOBE_ALLOWED_EMAILS" || "$LOBE_ALLOWED_EMAILS" == *'__pega_aqui__'* ]]; then
+    printf 'AUTH_ALLOWED_EMAILS no puede quedar vacío ni contener placeholders.\n' >&2
+    exit 1
+  fi
 
-```bash
-REDIS_PASSWORD="$(awk -F= '$1=="REDIS_PASSWORD"{print substr($0,index($0,"=")+1); exit}' "$dkco/datasql/.env")"
-
-if [[ -z "$REDIS_PASSWORD" ]]; then
-  printf 'No se encontró REDIS_PASSWORD en %s/datasql/.env.\n' "$dkco" >&2
-  unset REDIS_PASSWORD
-  exit 1
-fi
-
-export REDIS_PASSWORD
-export LOBE_DB_PASSWORD="$(openssl rand -hex 32)"
-export KEY_VAULTS_SECRET="$(openssl rand -hex 32)"
-export AUTH_SECRET="$(openssl rand -base64 32 | tr -d '\n')"
-export RUSTFS_SECRET_KEY="$(openssl rand -hex 32)"
-
-python3 - "$dkco/lobehub/.env" <<'PY'
+  export LOBE_ALLOWED_EMAILS
+  python3 - "$dkco/lobehub/.env" <<'PY'
 import os
 import sys
 from pathlib import Path
 
 path = Path(sys.argv[1])
-keys = (
-    "REDIS_PASSWORD",
+value = os.environ["LOBE_ALLOWED_EMAILS"].strip()
+lines = path.read_text().splitlines()
+output = []
+found = False
+
+for line in lines:
+    if line.startswith("AUTH_ALLOWED_EMAILS="):
+        output.append(f"AUTH_ALLOWED_EMAILS={value}")
+        found = True
+    else:
+        output.append(line)
+
+if not found:
+    output.append(f"AUTH_ALLOWED_EMAILS={value}")
+
+temporary = path.with_name(path.name + ".tmp")
+try:
+    temporary.write_text("\n".join(output) + "\n")
+    os.chmod(temporary, 0o600)
+    os.replace(temporary, path)
+finally:
+    if temporary.exists():
+        temporary.unlink()
+PY
+
+  status=$?
+  unset LOBE_ALLOWED_EMAILS
+  if (( status != 0 )); then
+    printf 'No se pudo guardar AUTH_ALLOWED_EMAILS.\n' >&2
+    exit "$status"
+  fi
+)
+then
+  printf 'AUTH_ALLOWED_EMAILS configurado localmente.\n'
+else
+  printf 'No se modificó AUTH_ALLOWED_EMAILS.\n' >&2
+fi
+```
+
+LobeHub permite registrar cualquier cuenta si `AUTH_ALLOWED_EMAILS` queda vacío.
+Para los secretos propios se usa un bloque Python heredoc; no usar un
+`python3 -c` multilínea porque el shell puede convertir `\n` en saltos de línea
+dentro del código y producir un `SyntaxError` antes de escribir el archivo. Los
+bloques están dentro de una subshell para que un fallo no cierre la sesión SSH.
+
+```bash
+if (
+  set -u
+  ENV_FILE="$dkco/lobehub/.env"
+
+  test -s "$ENV_FILE"
+  REDIS_PASSWORD="$(awk -F= '$1=="REDIS_PASSWORD"{print substr($0,index($0,"=")+1); exit}' "$dkco/datasql/.env")"
+
+  if [[ -z "$REDIS_PASSWORD" ]]; then
+    printf 'No se encontró REDIS_PASSWORD en %s/datasql/.env.\n' "$dkco" >&2
+    exit 1
+  fi
+
+  export REDIS_PASSWORD
+  python3 - "$ENV_FILE" <<'PY'
+import os
+import secrets
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+if not path.is_file():
+    raise SystemExit(f"No existe {path}")
+
+secret_keys = (
     "LOBE_DB_PASSWORD",
     "KEY_VAULTS_SECRET",
     "AUTH_SECRET",
     "RUSTFS_SECRET_KEY",
 )
-values = {key: os.environ[key] for key in keys}
+all_keys = ("REDIS_PASSWORD",) + secret_keys
 lines = path.read_text().splitlines()
-output = []
+existing = {}
+for line in lines:
+    if "=" in line and not line.lstrip().startswith("#"):
+        key, value = line.split("=", 1)
+        if key in all_keys:
+            existing[key] = value
 
+values = {"REDIS_PASSWORD": os.environ["REDIS_PASSWORD"]}
+for key in secret_keys:
+    old = existing.get(key, "").strip()
+    values[key] = old if old and old != "__pega_aqui__" else secrets.token_hex(32)
+
+output = []
+seen = set()
 for line in lines:
     key = (
         line.split("=", 1)[0]
         if "=" in line and not line.lstrip().startswith("#")
         else None
     )
-    output.append(f"{key}={values[key]}" if key in values else line)
+    if key in values:
+        output.append(f"{key}={values[key]}")
+        seen.add(key)
+    else:
+        output.append(line)
 
-path.write_text("\n".join(output) + "\n")
+for key in all_keys:
+    if key not in seen:
+        output.append(f"{key}={values[key]}")
+
+final_values = {}
+for line in output:
+    if "=" in line and not line.lstrip().startswith("#"):
+        key, value = line.split("=", 1)
+        if key in all_keys:
+            final_values[key] = value
+
+if any(not final_values.get(key) or final_values[key] == "__pega_aqui__" for key in all_keys):
+    raise SystemExit("No se pudieron completar todas las claves de secretos")
+
+temporary = path.with_name(path.name + ".tmp")
+try:
+    temporary.write_text("\n".join(output) + "\n")
+    os.chmod(temporary, 0o600)
+    os.replace(temporary, path)
+finally:
+    if temporary.exists():
+        temporary.unlink()
 PY
 
-status=$?
-unset REDIS_PASSWORD LOBE_DB_PASSWORD KEY_VAULTS_SECRET AUTH_SECRET RUSTFS_SECRET_KEY
-
-if (( status != 0 )); then
-  printf 'No se pudo actualizar el .env; no continuar.\n' >&2
-  exit "$status"
+  status=$?
+  unset REDIS_PASSWORD ENV_FILE
+  if (( status != 0 )); then
+    printf 'No se pudo actualizar el .env; no continuar.\n' >&2
+    exit "$status"
+  fi
+)
+then
+  chmod 600 "$dkco/lobehub/.env"
+  printf 'Secretos locales preparados sin imprimir sus valores.\n'
+else
+  printf 'No se modificaron los secretos locales.\n' >&2
 fi
 ```
+
+El bloque copia siempre el `REDIS_PASSWORD` vigente de DataSQL, pero conserva los
+secretos propios que ya sean reales y solo genera los que todavía sean vacíos o
+`__pega_aqui__`. Así se puede reanudar una instalación parcial sin rotar
+credenciales. Después del primer arranque no se debe ejecutar para “probar”: una
+rotación dejaría PostgreSQL, RustFS o las sesiones de LobeHub desincronizadas.
 
 `JWKS_KEY` es distinto: no es una contraseña aleatoria. Debe generarse con el
 botón **Click button to generate** de la [sección oficial de JWKS_KEY](https://lobehub.com/docs/self-hosting/environment-variables/auth#jwks_key). El valor debe ser un
 JSON JWKS con una clave privada RSA `RS256`; no usar el valor de un gist o de otra
 instalación.
 
-Solicitarlo de forma interactiva y validarlo antes de escribirlo. Si la
-validación falla, el archivo permanece sin cambios y no se imprime un mensaje de
-éxito falso:
+Solicitarlo de forma interactiva y validarlo antes de escribirlo. El generador
+oficial entrega normalmente una línea JSON minificada; `read` captura una sola
+línea para no guardar accidentalmente un valor incompleto. Si la validación falla,
+el archivo permanece sin cambios y no se imprime un mensaje de éxito falso:
 
 ```bash
-read -r -s -p 'Pega el JWKS_KEY nuevo; no se mostrará: ' JWKS_INPUT
-echo
+if (
+  read -r -s -p 'Pega el JWKS_KEY nuevo; no se mostrará: ' JWKS_INPUT
+  printf '\n'
 
-if [[ -z "$JWKS_INPUT" ]]; then
-  printf 'JWKS_KEY vacío; no se modificó el archivo.\n' >&2
-  unset JWKS_INPUT
-  exit 1
-fi
+  if [[ -z "$JWKS_INPUT" ]]; then
+    printf 'JWKS_KEY vacío; no se modificó el archivo.\n' >&2
+    exit 1
+  fi
 
-export JWKS_INPUT
-
-python3 - "$dkco/lobehub/.env" <<'PY'
+  export JWKS_INPUT
+  python3 - "$dkco/lobehub/.env" <<'PY'
+import base64
 import json
+import math
 import os
+import re
 import sys
 from pathlib import Path
 
 path = Path(sys.argv[1])
 raw = os.environ["JWKS_INPUT"]
-
 if raw.startswith("JWKS_KEY="):
     raw = raw.split("=", 1)[1]
+if "\n" in raw or "\r" in raw:
+    raise SystemExit("JWKS_KEY debe ser un JSON de una sola línea")
 
 try:
     document = json.loads(raw)
-except Exception as exc:
-    raise SystemExit(f"JWKS_KEY no contiene JSON válido: {exc}")
+except json.JSONDecodeError as exc:
+    raise SystemExit("JWKS_KEY no contiene JSON válido") from exc
 
-keys = document.get("keys")
-required = {
-    "d", "dp", "dq", "e", "n", "p", "q",
-    "qi", "kty", "use", "kid", "alg",
-}
-
-if not isinstance(keys, list) or len(keys) != 1:
+keys = document.get("keys") if isinstance(document, dict) else None
+required = {"d", "dp", "dq", "e", "n", "p", "q", "qi", "kty", "use", "kid", "alg"}
+if not isinstance(keys, list) or len(keys) != 1 or not isinstance(keys[0], dict):
     raise SystemExit("JWKS_KEY debe contener exactamente una clave")
 
 key = keys[0]
-if (
-    not required.issubset(key)
-    or key["kty"] != "RSA"
-    or key["alg"] != "RS256"
-    or key["use"] != "sig"
-):
+if not required.issubset(key) or key["kty"] != "RSA" or key["alg"] != "RS256" or key["use"] != "sig":
     raise SystemExit("JWKS_KEY no es una clave privada RSA RS256 válida")
 
+rsa_fields = ("d", "dp", "dq", "e", "n", "p", "q", "qi")
+components = {}
+for field in rsa_fields:
+    value = key[field]
+    if not isinstance(value, str) or not value or not re.fullmatch(r"[A-Za-z0-9_-]+", value):
+        raise SystemExit(f"JWKS_KEY tiene un campo RSA inválido: {field}")
+    try:
+        decoded = base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
+    except Exception as exc:
+        raise SystemExit(f"JWKS_KEY tiene un campo RSA ilegible: {field}") from exc
+    components[field] = int.from_bytes(decoded, "big")
+    if components[field] <= 0:
+        raise SystemExit(f"JWKS_KEY tiene un campo RSA vacío: {field}")
+
+kid = key["kid"]
+if not isinstance(kid, str) or not kid.strip():
+    raise SystemExit("JWKS_KEY necesita un kid no vacío")
+if components["e"] < 3 or components["n"] != components["p"] * components["q"]:
+    raise SystemExit("JWKS_KEY tiene componentes RSA inconsistentes")
+if components["dp"] != components["d"] % (components["p"] - 1):
+    raise SystemExit("JWKS_KEY tiene dp inconsistente")
+if components["dq"] != components["d"] % (components["q"] - 1):
+    raise SystemExit("JWKS_KEY tiene dq inconsistente")
+if components["qi"] != pow(components["q"], -1, components["p"]):
+    raise SystemExit("JWKS_KEY tiene qi inconsistente")
+if (components["d"] * components["e"]) % math.lcm(components["p"] - 1, components["q"] - 1) != 1:
+    raise SystemExit("JWKS_KEY no corresponde a una clave RSA válida")
+
+compact = json.dumps(document, separators=(",", ":"), ensure_ascii=True)
 lines = path.read_text().splitlines()
-updated = [
-    "JWKS_KEY=" + raw if line.startswith("JWKS_KEY=") else line
-    for line in lines
-]
+positions = [index for index, line in enumerate(lines) if line.startswith("JWKS_KEY=")]
+if len(positions) > 1:
+    raise SystemExit(".env contiene más de una línea JWKS_KEY=")
+updated = list(lines)
+if positions:
+    updated[positions[0]] = "JWKS_KEY=" + compact
+else:
+    updated.append("JWKS_KEY=" + compact)
 
 temporary = path.with_name(path.name + ".tmp")
-temporary.write_text("\n".join(updated) + "\n")
-os.chmod(temporary, 0o600)
-os.replace(temporary, path)
+try:
+    temporary.write_text("\n".join(updated) + "\n")
+    os.chmod(temporary, 0o600)
+    os.replace(temporary, path)
+finally:
+    if temporary.exists():
+        temporary.unlink()
 PY
 
-status=$?
-unset JWKS_INPUT
-
-if (( status != 0 )); then
-  printf 'JWKS_KEY inválido; no se confirmó la configuración.\n' >&2
-  exit "$status"
+  status=$?
+  unset JWKS_INPUT
+  if (( status != 0 )); then
+    printf 'JWKS_KEY inválido; no se confirmó la configuración.\n' >&2
+    exit "$status"
+  fi
+)
+then
+  chmod 600 "$dkco/lobehub/.env"
+  printf 'JWKS_KEY validado y guardado localmente.\n'
+else
+  printf 'No se modificó JWKS_KEY.\n' >&2
 fi
-
-chmod 600 "$dkco/lobehub/.env"
-printf 'JWKS_KEY validado y guardado localmente.\n'
 ```
 
 Verificar sin mostrar ningún secreto:
 
 ```bash
-awk -F= '
-/^(LOBE_DB_PASSWORD|REDIS_PASSWORD|AUTH_ALLOWED_EMAILS|KEY_VAULTS_SECRET|AUTH_SECRET|JWKS_KEY|RUSTFS_SECRET_KEY)=/ {
-  print $1 "=configured"
-}
-' "$dkco/lobehub/.env"
+if ! (
+  set -u
+  ENV_FILE="$dkco/lobehub/.env"
 
-if grep -q '__pega_aqui__' "$dkco/lobehub/.env"; then
-  printf 'Todavía quedan placeholders en .env.\n' >&2
-  exit 1
+  awk -F= '
+  /^(LOBE_DB_PASSWORD|REDIS_PASSWORD|AUTH_ALLOWED_EMAILS|KEY_VAULTS_SECRET|AUTH_SECRET|JWKS_KEY|RUSTFS_SECRET_KEY)=/ {
+    print $1 "=configured"
+  }
+  ' "$ENV_FILE"
+
+  required_keys=(
+    LOBE_DB_PASSWORD REDIS_PASSWORD AUTH_ALLOWED_EMAILS
+    KEY_VAULTS_SECRET AUTH_SECRET JWKS_KEY RUSTFS_SECRET_KEY
+  )
+  for key in "${required_keys[@]}"; do
+    mapfile -t matches < <(grep -E "^${key}=" "$ENV_FILE" || true)
+    if (( ${#matches[@]} != 1 )); then
+      printf 'Debe existir exactamente una línea para: %s.\n' "$key" >&2
+      exit 1
+    fi
+    value="${matches[0]#*=}"
+    if [[ -z "$value" || "$value" == '__pega_aqui__' ]]; then
+      printf 'Falta o está vacío: %s.\n' "$key" >&2
+      exit 1
+    fi
+  done
+
+  if [[ "${value:-}" == 'usuario@ejemplo.invalid' ]] || \
+     grep -q '^AUTH_ALLOWED_EMAILS=usuario@ejemplo.invalid$' "$ENV_FILE"; then
+    printf 'Sustituye el correo de ejemplo por una cuenta autorizada real.\n' >&2
+    exit 1
+  fi
+)
+then
+  printf 'El .env todavía no está completo; no continuar.\n' >&2
+else
+  chmod 600 "$dkco/lobehub/.env"
+  printf 'Configuración local completa y protegida.\n'
 fi
-
-printf 'No quedan placeholders en el .env.\n'
 ```
 
-Aplicar permisos solo después de crear y editar el archivo:
-
-```bash
-chmod 600 "$dkco/lobehub/.env"
-```
+Este patrón (`read` interactivo → validación → escritura atómica → `unset` →
+comprobación del estado) es el patrón reutilizable para futuros servicios que
+necesiten recibir datos sensibles durante la instalación. Nunca se debe imprimir
+el valor introducido ni asumir éxito porque el comando anterior terminó con un
+mensaje parcial.
 
 `SERVER_IP` y `TZ` no se duplican: llegan desde `$dkco/.env` mediante
 `env_file: [../.env, .env]`.
