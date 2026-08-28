@@ -73,6 +73,65 @@ services:
           cpus: '0.5'
           memory: 512M
 
+  # Gateway MCP interno: no publica puertos y no monta Docker socket.
+  # El helper host expone únicamente las operaciones read-only por Unix socket.
+  lobehub-mcp:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    build:
+      context: ${NAS_DOTFILES:-/nas-dotfiles}/agent
+      dockerfile: mcp/Dockerfile
+    image: nas-dotfiles/lobehub-mcp:1.0.0
+    container_name: lobehub-mcp
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      MCP_MODE: http
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8790
+      MCP_PATH: /mcp
+      MCP_SERVICE_TOKEN: ${LOBEHUB_MCP_TOKEN}
+      MCP_HELPER_SOCKET: /run/nas/lobehub-mcp.sock
+      MCP_ALLOWED_ORIGINS: ${MCP_ALLOWED_ORIGINS:-}
+      MCP_AUDIT_LOG: /tmp/lobehub-mcp-container-audit.jsonl
+    user: "65532:65532"
+    group_add:
+      - ${MCP_SOCKET_GID}
+    read_only: true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:mode=1777,size=16m
+    volumes:
+      - type: bind
+        source: ${MCP_HELPER_SOCKET:-/run/nas/lobehub-mcp.sock}
+        target: /run/nas/lobehub-mcp.sock
+        read_only: true
+    networks:
+      - lobe_storage
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8790/health', timeout=2)
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+
   rustfs:
     extends:
       file: ../../_common.yml

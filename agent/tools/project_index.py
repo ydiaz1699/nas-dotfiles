@@ -108,6 +108,12 @@ def _classify_path(relative: str, repo: str) -> str:
         return "capability_manifest"
     if relative == "agent/nas_agent.py":
         return "agent_prompt"
+    if relative == "agent/lobehub_mcp.py":
+        return "mcp_gateway"
+    if relative.startswith("agent/mcp/"):
+        return "mcp_gateway"
+    if relative.startswith("systemd/lobehub-mcp"):
+        return "mcp_gateway"
     if relative.startswith("agent/plugins/") and relative.endswith(".py"):
         return "agent_plugin"
     if relative.startswith("agent/catalog/services/") and relative.endswith("/compose.yml"):

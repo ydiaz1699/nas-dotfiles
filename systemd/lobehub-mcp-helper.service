@@ -1,0 +1,43 @@
+# /etc/systemd/system/lobehub-mcp-helper.service
+# Host-side read-only helper for the LobeHub MCP gateway.
+# It is the only process allowed to invoke the fixed svc lobehub actions.
+# The HTTP gateway never receives the Docker socket.
+
+[Unit]
+Description=nas-dotfiles LobeHub MCP read-only helper
+Documentation=https://github.com/ydiaz1699/nas-dotfiles/blob/main/docs/lobehub-mcp-gateway.md
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=aadm
+SupplementaryGroups=docker nas-mcp
+Environment=NAS_DOTFILES=/nas-dotfiles
+Environment=DOCKER_BASE=/docker
+Environment=MCP_MODE=helper
+Environment=PYTHONUNBUFFERED=1
+Environment=MCP_HELPER_SOCKET=/run/nas/lobehub-mcp.sock
+Environment=MCP_AUDIT_LOG=/var/lib/nas/lobehub-mcp/audit.jsonl
+EnvironmentFile=-/etc/nas/lobehub-mcp-helper.env
+ExecStart=/usr/bin/python3 ${NAS_DOTFILES}/agent/lobehub_mcp.py
+
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadOnlyPaths=/nas-dotfiles /docker
+ReadWritePaths=/var/lib/nas/lobehub-mcp /run/nas
+RuntimeDirectory=nas
+RuntimeDirectoryMode=0750
+MemoryMax=256M
+CPUQuota=25%
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target
