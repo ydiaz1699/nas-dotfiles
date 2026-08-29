@@ -56,6 +56,6 @@ En Python, el primer argumento después de `svc exec` selecciona el compose. Par
 
 ## Verificación de contexto del helper
 
-- Las respuestas MCP de `lobehub_preflight`, `lobehub_verify` y `lobehub_status` deben incluir `execution_context.executor=host-helper`, `framework=nas-dotfiles`, `entrypoint=available` y `docker_base=configured`.
+- Las respuestas MCP de `lobehub_preflight`, `lobehub_verify` y `lobehub_status` deben incluir `execution_context.executor=host-helper`, `framework=nas-dotfiles`, `entrypoint=available` y `docker_base=configured`. El check `context` debe detallar únicamente estados como `global_env`, `compose`, `common`, `lobehub_env`, `datasql_env`, `docker_cli` y `docker_access`, nunca sus valores.
 - Si el executor es `local-process`, el sidecar no está usando el helper host. Si es `host-helper` pero `context` falla, el helper llegó al NAS y el problema está en permisos/rutas/Socket Docker del usuario `aadm`, no en el estado real de los contenedores.
 - El helper necesita lectura restringida de `$dkco/.env` y `$dkco/datasql/.env`; usar el grupo privado `nas-mcp` con modo `0640`, nunca permisos públicos. El `.env` de LobeHub puede permanecer `0600` si es propiedad de `aadm`.

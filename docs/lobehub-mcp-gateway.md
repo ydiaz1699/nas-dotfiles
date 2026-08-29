@@ -555,6 +555,19 @@ y `docker_base: configured`. Si aparece `local-process`, el sidecar no está
 usando el helper del host; si aparece `host-helper` junto a `context` en estado
 `fail`, el helper sí alcanzó el NAS pero su usuario no tiene acceso al runtime.
 
+El detalle de `context` identifica ahora cada prerrequisito sin mostrar rutas,
+valores ni secretos. Una salida típica tiene este formato:
+
+```text
+context: global_env=ok;compose=ok;common=ok;lobehub_env=ok;datasql_env=ok;docker_cli=ok;docker_access=ok
+compose_resolved: compose resoluble
+```
+
+Si alguno aparece como `missing` o `denied`, ese es el contexto que debe
+corregirse. `compose_resolved` además clasifica el error sin copiar stderr:
+`permission_denied`, `missing_compose_dependency`,
+`missing_environment_variable`, `invalid_compose` o `docker_unavailable`.
+
 Comandos MCP paste-safe usando el CLI Python/Typer activo:
 
 ```bash
