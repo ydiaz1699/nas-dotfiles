@@ -504,11 +504,9 @@ No asumir que una respuesta de `lobehub_verify` usa el NAS real solo porque el H
   `sudo -u aadm -g nas-mcp test -r "$dkco/.env"` y el mismo comando para
   `"$dkco/datasql/.env"`. No presentar `sudo -u aadm test -r` como equivalente,
   porque omite `SupplementaryGroups=nas-mcp`.
-- Si el helper se reinicia y después aparece `helper_unavailable` aunque el
-  servicio esté activo, comprobar el socket del host y usar `svc recreate
-  lobehub` para refrescar el bind mount del sidecar. La causa de socket stale
-  debe marcarse como hipótesis hasta confirmarla en el NAS; no pedir ni mostrar
-  el token para diagnosticarla.
+- Para pausar solo el contenedor MCP sin detener LobeHub ni RustFS, usar `NAS_CLI=bash svc stop lobehub lobehub-mcp` y después `sudo systemctl disable --now lobehub-mcp-helper`. No usar `svc stop lobehub` ni `svc down lobehub` para una pausa selectiva; el CLI Python rechaza `lobehub-mcp` como argumento adicional.
+- Para reanudar solo MCP, usar `sudo systemctl enable --now lobehub-mcp-helper`, esperar a `test -S /run/nas/lobehub-mcp.sock` y ejecutar `NAS_CLI=bash svc up lobehub --force-recreate lobehub-mcp`. La recreación selectiva evita conservar el bind mount/socket stale; `svc recreate lobehub` puede recrear todo el proyecto.
+- Si continúa `helper_unavailable`, comprobar únicamente el estado sanitizado del helper y del socket; no pedir ni mostrar el token ni ningún `.env`.
 - Mantener separados los errores de proveedor: `429 RESOURCE_EXHAUSTED` con
   `provider=google` y cuota `limit=0` requiere revisar cuota/billing/modelo de
   Google, no cambiar MCP ni sus permisos.

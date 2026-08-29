@@ -662,10 +662,91 @@ sudo journalctl -u lobehub-mcp-helper --since '1 hour ago' --no-pager
 sudo stat /var/lib/nas/lobehub-mcp/audit.jsonl
 ```
 
-Si hay que retirar la integración, deshabilitar primero el agente/Skill en
-LobeHub, luego detener el stack con `svc stop lobehub` y finalmente:
+### Pausar solo el contenedor MCP
+
+Si se quiere pausar la integración hasta nuevo aviso sin detener LobeHub ni
+RustFS, deshabilitar primero el agente/Skill MCP en LobeHub y ejecutar en el
+NAS:
 
 ```bash
+# El CLI Python no acepta el servicio interno como segundo argumento.
+# Forzar Bash para detener únicamente lobehub-mcp.
+NAS_CLI=bash svc stop lobehub lobehub-mcp
+
+# El helper ya no debe ejecutar operaciones host mientras el MCP está pausado.
+sudo systemctl disable --now lobehub-mcp-helper
+
+# Verificaciones: LobeHub debe seguir activo y lobehub-mcp debe estar detenido.
+NAS_CLI=bash svc ps lobehub
+systemctl is-active lobehub-mcp-helper || true
+systemctl is-enabled lobehub-mcp-helper || true
+```
+
+El primer comando no debe escribirse como `svc stop lobehub lobehub-mcp` si la
+sesión está usando `NAS_CLI=python`: el CLI Python acepta solo el nombre del
+proyecto y rechazará `lobehub-mcp` como argumento adicional antes de ejecutar la
+parada. No usar `svc stop lobehub` para esta pausa selectiva, porque detendría
+el proyecto Compose completo. Tampoco usar `svc down lobehub`, que además
+elimina los contenedores.
+
+Estado esperado:
+
+- `lobehub`: activo;
+- `lobehub-mcp`: detenido;
+- `lobehub-rustfs` y `rustfs-init`: no afectados;
+- `lobehub-mcp-helper`: `inactive` y `disabled`.
+
+### Reanudar solo el contenedor MCP
+
+Para reanudar únicamente MCP, arrancar primero el helper y después recrear solo
+el servicio interno. La recreación selectiva es importante: al reiniciar el
+helper, este elimina y crea de nuevo `/run/nas/lobehub-mcp.sock`; `start` puede
+conservar el bind mount/socket anterior dentro del contenedor.
+
+```bash
+sudo systemctl enable --now lobehub-mcp-helper
+
+# Esperar a que el helper publique el socket, sin imprimir secretos.
+for _ in {1..10}; do
+  if test -S /run/nas/lobehub-mcp.sock; then
+    break
+  fi
+  sleep 1
+done
+
+if test -S /run/nas/lobehub-mcp.sock; then
+  echo "socket_host_ok"
+else
+  echo "socket_host_no_disponible"
+fi
+
+# up recibe el servicio interno y --force-recreate solo recrea lobehub-mcp.
+NAS_CLI=bash svc up lobehub --force-recreate lobehub-mcp
+NAS_CLI=bash svc ps lobehub
+```
+
+Después probar desde LobeHub:
+
+```text
+Usa nas-dotfiles y ejecuta lobehub_preflight.
+```
+
+Debe aparecer `executor=host-helper`, el contexto con todos sus estados en
+`ok` y `compose_resolved=compose resoluble`. Si el socket no aparece o
+`lobehub_preflight` devuelve `helper_unavailable`, detenerse y conservar solo
+la salida sanitizada; no imprimir tokens ni `.env`.
+
+No usar `svc recreate lobehub` para esta operación selectiva: esa forma puede
+recrear todo el proyecto Compose. Reservarla para una recuperación en la que
+se acepte recrear el stack completo.
+
+### Retirada completa del stack
+
+Si la intención fuera retirar toda la integración y detener el proyecto
+completo, entonces sí se puede usar:
+
+```bash
+NAS_CLI=bash svc stop lobehub
 sudo systemctl disable --now lobehub-mcp-helper
 ```
 
