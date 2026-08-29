@@ -84,7 +84,9 @@
         "helper_systemd": "systemd/nas-mcp-helper.service",
         "catalog": "agent/catalog/services/nas-mcp-gateway/compose.yml",
         "documentation": "docs/nas-mcp-gateway.md",
-        "skill": ".kiro/skills/nas-mcp-gateway/SKILL.md"
+        "skill": ".kiro/skills/nas-mcp-gateway/SKILL.md",
+        "index": "agent/tools/project_index.py",
+        "inventory_keys": ["mcp", "mcp_tools"]
       }
     },
     "draft": {
@@ -231,6 +233,7 @@
         "agent/mcp/nas_mcp_gateway/Dockerfile",
         "systemd/nas-mcp-helper.service",
         "agent/catalog/services/nas-mcp-gateway/compose.yml",
+        "agent/tools/project_index.py",
         "docs/nas-mcp-gateway.md",
         ".kiro/skills/nas-mcp-gateway/SKILL.md"
       ]

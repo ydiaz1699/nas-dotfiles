@@ -101,7 +101,17 @@ agent/
 │   ├── backup_tools.py         ← backup_service, restore_service, list_backups
 │   ├── search_tools.py         ← search_service_info (web fallback)
 │   ├── diagnostic_tools.py     ← service_health, port_conflicts, troubleshoot
-│   └── memory_tools.py         ← remember, recall, learn_skill, update_user_model, memory_stats
+│   ├── memory_tools.py         ← remember, recall, learn_skill, update_user_model, memory_stats
+│   ├── project_scanner.py      ← project_scan: scanner incremental y contratos
+│   ├── capability_tools.py     ← discover_capabilities: manifests y guards
+│   └── compare_tools.py        ← compare_catalog: drift catálogo/runtime
+├── mcp/
+│   └── nas_mcp_gateway/        ← Gateway MCP independiente, read-only y lazy
+│       ├── nas_mcp_gateway.py  ← front-door stdio/HTTP
+│       ├── nas_mcp_worker.py   ← worker cliente + helper host allowlisted
+│       ├── nas_mcp_manifest.json ← contrato canónico de tools MCP
+│       └── Dockerfile           ← sidecar HTTP interno
+├── lobehub_mcp.py              ← Gateway MCP histórico específico de LobeHub
 ├── plugins/                    ← Sistema de plugins dinámicos
 │   ├── base.py                 ← BasePlugin + PluginMeta + ScheduleConfig + EventHandler
 │   ├── loader.py               ← Auto-discovery + load/unload
@@ -176,6 +186,35 @@ agent/
 
 ⚠️ = Requiere `confirm="si"` para ejecutarse
 
+## Gateways MCP
+
+El repositorio mantiene dos superficies MCP independientes; no comparten
+helper, socket, token ni allowlist:
+
+| Gateway | Propósito | Transporte | Estado |
+|---------|-----------|------------|--------|
+| `agent/lobehub_mcp.py` | Integración histórica read-only específica de LobeHub | HTTP interno | Se conserva por compatibilidad |
+| `agent/mcp/nas_mcp_gateway/` | Frontera read-only general para el NAS | `stdio` recomendado; HTTP interno opcional | Preparado, no desplegado |
+
+El gateway nuevo usa `nas_mcp_manifest.json` como fuente canónica de sus cuatro
+tools (`nas_services`, `nas_health`, `nas_capabilities`, `nas_diagnostics`). El
+front-door responde `initialize` y `tools/list` sin iniciar el worker; el primer
+`tools/call` activa el worker lazy, que solo puede solicitar operaciones fijas al
+helper systemd. Su inventario se genera separadamente en
+`agent/cache/project-index.json` bajo `mcp` y `mcp_tools`; no forma parte de
+`ALL_TOOLS` ni de `agent/capabilities/*.json`.
+
+Consulta [docs/nas-mcp-gateway.md](../docs/nas-mcp-gateway.md) para límites,
+validación y activación futura. No iniciar el helper ni el compose como parte de
+una validación del repositorio.
+
+## Índice y scanner del proyecto
+
+- `project_scan()` ejecuta el scanner de lagunas y conexiones.
+- `project_index.py` inventaría archivos, comandos, servicios, capacidades y
+  gateways MCP sin ejecutar Docker.
+- `agent/cache/project-index.json` describe existencia/conexiones; `project-snapshot.json`
+  conserva el baseline incremental. No son la misma fuente.
 
 ## Sesión persistente
 

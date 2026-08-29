@@ -10,7 +10,7 @@ up down start stop restart kill pause unpause
 logs ps stats top exec run
 pull build images rm config
 cp events port volumes scale wait
-update backup restore depends open env
+update backup restore recreate depends open env
 "
 
 _svc_services() {

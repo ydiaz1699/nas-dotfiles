@@ -53,7 +53,23 @@ operativas descubiertas dinámicamente.
 | `compare_tools` | compare_catalog |
 | `memory_tools` | remember, recall, learn_skill, update_user_model, memory_stats |
 
-## Reglas de ejecución del agente
+## Gateways MCP
+
+Hay dos gateways separados y no intercambiables:
+
+- **Histórico LobeHub:** `agent/lobehub_mcp.py`, con
+  `systemd/lobehub-mcp-helper.service` y documentación en
+  `docs/lobehub-mcp-gateway.md`. Se conserva por compatibilidad.
+- **NAS general:** `agent/mcp/nas_mcp_gateway/`, con front-door lazy, worker,
+  manifest, Dockerfile y `systemd/nas-mcp-helper.service`. Publica solo
+  `nas_services`, `nas_health`, `nas_capabilities` y `nas_diagnostics`, usa
+  `stdio` como transporte recomendado y HTTP interno opcional. Está preparado,
+  pero no desplegado.
+
+El manifest nuevo es la autoridad de nombres y esquemas. El gateway no se
+mezcla con `ALL_TOOLS` ni con `agent/capabilities/*.json`; `project_index.py`
+lo inventaría por separado como `mcp` y `mcp_tools`.
+
 
 - **Lectura/seguras**: ejecutar SIN preguntar (logs, health, restart, update)
 - **Destructivas**: explicar + confirmar (stop, restore)

@@ -89,7 +89,7 @@ Clasificación por keywords:
 
 ---
 
-## Tools disponibles (28 total)
+## Tools disponibles (31 total)
 
 ### Descubrimiento
 | Tool | Acción |
@@ -140,8 +140,31 @@ Clasificación por keywords:
 | `service_health()` | Dashboard de salud |
 | `port_conflicts()` | Detectar conflictos |
 | `troubleshoot(service)` | Diagnóstico completo |
+| `project_scan()` | Detectar lagunas y conexiones faltantes del proyecto |
+| `discover_capabilities(query, service)` | Descubrir operaciones y guards desde manifests |
+| `compare_catalog(service)` | Detectar drift entre compose real y catálogo |
 
-### Memoria persistente
+### Índice estructural
+
+`agent/tools/project_index.py` genera `agent/cache/project-index.json` sin
+necesitar Docker. Inventaría por separado archivos, comandos Bash/Python,
+servicios, capacidades y gateways MCP. La superficie MCP se publica en las
+claves `mcp` y `mcp_tools`; no se mezcla con `ALL_TOOLS` ni con
+`agent/capabilities/*.json`. `project-snapshot.json` es el baseline incremental
+del scanner y no debe confundirse con el índice.
+
+### Gateways MCP
+
+| Gateway | Función | Estado |
+|---------|---------|--------|
+| `agent/lobehub_mcp.py` | Gateway histórico read-only específico de LobeHub | Conservado por compatibilidad |
+| `agent/mcp/nas_mcp_gateway/` | Gateway NAS independiente con manifest, front-door lazy, worker y helper host | Preparado, no desplegado |
+
+El gateway NAS publica únicamente `nas_services`, `nas_health`,
+`nas_capabilities` y `nas_diagnostics`, recomienda `stdio` y deja HTTP como
+transporte interno autenticado. No activar el helper ni el compose durante una
+actualización del framework.
+
 | Tool | Acción |
 |------|--------|
 | `remember(fact, category)` | Guardar hecho/lección |

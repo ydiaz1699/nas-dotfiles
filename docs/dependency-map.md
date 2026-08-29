@@ -4,7 +4,7 @@
 
 > Cuando modificas un archivo, ¿qué otros deben actualizarse?
 > Cubre AMBOS repos como un solo sistema interconectado.
-> Actualizado: 2026-08-16
+> Actualizado: 2026-08-29
 
 ---
 
@@ -149,7 +149,39 @@ agent/tools/<tool>.py  (TOOL CREADA)
     └──→ GUIDE.md                           (lista de tools)
 ```
 
-### F. Template de DebMenux (usb-automount, etc.)
+### F. Gateway MCP
+
+Cada gateway MCP es una superficie de protocolo separada de las tools Strands y
+de los manifests de capacidades de servicios. El gateway histórico y el nuevo
+no comparten helper, socket, token ni allowlist.
+
+```
+Gateway MCP histórico de LobeHub
+    ├──→ agent/lobehub_mcp.py
+    ├──→ agent/mcp/Dockerfile
+    ├──→ systemd/lobehub-mcp-helper.service
+    ├──→ agent/catalog/services/lobehub/compose.yml
+    └──→ docs/lobehub-mcp-gateway.md
+
+Gateway MCP general del NAS
+    ├──→ agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py   (front-door)
+    ├──→ agent/mcp/nas_mcp_gateway/nas_mcp_worker.py    (worker + helper)
+    ├──→ agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json (tools canónicas)
+    ├──→ agent/mcp/nas_mcp_gateway/Dockerfile
+    ├──→ systemd/nas-mcp-helper.service
+    ├──→ agent/catalog/services/nas-mcp-gateway/compose.yml + ficha.md
+    ├──→ docs/nas-mcp-gateway.md
+    ├──→ .kiro/skills/nas-mcp-gateway/SKILL.md
+    └──→ agent/tools/project_index.py → índice separado: mcp / mcp_tools
+```
+
+El nuevo gateway publica únicamente `nas_services`, `nas_health`,
+`nas_capabilities` y `nas_diagnostics`; está preparado, pero no desplegado.
+Modificar el manifest requiere validar también la allowlist del worker, el
+Dockerfile, el catálogo y la documentación antes de crear una imagen o activar
+el helper.
+
+### G. Template de DebMenux (usb-automount, etc.)
 
 ```
 /debmenux/templates/<template>/  (TEMPLATE CREADO/MODIFICADO)
@@ -165,7 +197,7 @@ agent/tools/<tool>.py  (TOOL CREADA)
     └──→ nas-dotfiles/AGENTS.md             (si cambia un comando/ruta)
 ```
 
-### G. Script de servicio en DebMenux
+### H. Script de servicio en DebMenux
 
 ```
 /debmenux/scripts/services/<svc>.sh  (INSTALADOR CREADO)
@@ -186,7 +218,7 @@ agent/tools/<tool>.py  (TOOL CREADA)
     └──→ /debmenux/AGENTS.md                (si cambia estructura)
 ```
 
-### H. Documentación (docs/, guías, README)
+### I. Documentación (docs/, guías, README)
 
 ```
 docs/<nuevo-archivo>.md  (DOCUMENTO CREADO)
@@ -197,7 +229,7 @@ docs/<nuevo-archivo>.md  (DOCUMENTO CREADO)
     └──→ AGENTS.md                          (tabla "Documentación adicional")
 ```
 
-### I. Variables globales ($dkco/.env)
+### J. Variables globales ($dkco/.env)
 
 ```
 $dkco/.env  (MODIFICADO)
@@ -210,7 +242,7 @@ $dkco/.env  (MODIFICADO)
     └──→ /etc/usb-automount.conf            (si cambia NTFY_URL)
 ```
 
-### J. Contenido en _drafts/ (carpeta temporal de ideas)
+### K. Contenido en _drafts/ (carpeta temporal de ideas)
 
 ```
 _drafts/<archivo>  (CONTENIDO NUEVO — ideas, planes, fragmentos, composes copiados)
@@ -259,6 +291,7 @@ _drafts/<archivo>  (CONTENIDO NUEVO — ideas, planes, fragmentos, composes copi
 | **Tool del agente** | tools/__init__, agent/README, agent.md, GUIDE | — |
 | **Template DebMenux** | guía del servicio, nas-manual, AGENTS | README.md |
 | **Script servicio DebMenux** | (auto: register_to_catalog genera) | services.json, README |
+| **Gateway MCP o manifest MCP** | gateway/worker/manifest/Dockerfile, helper systemd, catálogo, guía, Skill, índice MCP separado | — |
 | **Documento nuevo en docs/** | README (tabla docs), SKILL (si guía), nas-context (lazy loading), AGENTS | — |
 | **usb-automount.sh (template)** | copiar a /usr/local/bin/, ntfy-guide troubleshooting | README si cambia estructura |
 | **notifications.sh** | — | Si cambió API de ntfy_send → sincronizar en nas-dotfiles |
@@ -319,6 +352,7 @@ Usuario escribe: svc <comando>
 | `up/down/restart/stop/start` | ✅ | ✅ | Ambos (passthrough) |
 | `logs` | ✅ | ✅ | Ambos |
 | `update` / `update-all` | ✅ | ✅ | Ambos |
+| `recreate` | ✅ | ✅ | Ambos; force-recreate sin pull |
 | `backup` / `restore` | ✅ | ✅ | Ambos |
 | `menu` | ✅ | ✅ | Bash=fzf, Python=InquirerPy |
 | `doctor` | ✅ | ✅ | Ambos |
@@ -330,19 +364,19 @@ Usuario escribe: svc <comando>
 | `watch` | ✅ | ❌ | Solo bash |
 | `catalog-sync` | ✅ | ✅ | Ambos (Python wrapper via bash_bridge) |
 | `scan` | ✅ | ✅ | Ambos (Python: subprocess al scanner) |
-| `backup-all` | ✅ | ❌ | Solo bash — Python hereda via passthrough |
-| `logs-grep` | ✅ | ❌ | Solo bash |
-| `clone` | ✅ | ❌ | Solo bash |
-| `cron` | ✅ | ❌ | Solo bash |
-| `doctor-history` | ✅ | ❌ | Solo bash |
-| `lock` / `unlock` | ✅ | ❌ | Solo bash |
+| `backup-all` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
+| `logs-grep` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
+| `clone` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
+| `cron` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
+| `doctor-history` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
+| `lock` / `unlock` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
 | `snapshot` | ✅ | ✅ | Python registra el comando y delega a Bash mediante `bash_bridge.py` |
 | `rollback` | ✅ | ❌ | Bash; usar `NAS_CLI=bash svc rollback <svc>` desde Python mientras no tenga wrapper |
 | `depends` | ✅ | ✅ | Ambos |
 | `open` | ✅ | ✅ | Ambos |
 | `env` | ✅ | ✅ | Ambos |
 
-> **Estrategia:** Comando nuevo → implementar SOLO en bash → Python lo hereda via `bash_bridge.py` si necesita UI elaborada. Los que están "solo bash" funcionan porque la función `svc()` invoca svc.sh cuando el comando no está registrado en Typer.
+> **Estrategia vigente:** Bash es la fuente de verdad operacional y Python ofrece UI/wrappers solo donde existe una integración explícita (por ejemplo `bash_bridge.py`). Un comando marcado "Solo bash" requiere `NAS_CLI=bash`; no existe un fallback genérico que haga que cualquier comando ausente en Typer funcione automáticamente con `NAS_CLI=python`. Si se necesita paridad, hay que implementar y registrar el wrapper de forma explícita.
 
 ### Al agregar comando nuevo, actualizar:
 
@@ -471,7 +505,7 @@ diff <(ls $dkco/*/compose.yml | sed 's|.*/\(.*\)/compose.yml|\1|' | sort) \
 
 ---
 
-## K. Consistencia arquitectónica verificable
+## L. Consistencia arquitectónica verificable
 
 `dependency-map.md` continúa siendo la explicación humana de la cascada. La verificación ejecutable vive en tres piezas:
 
