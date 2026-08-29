@@ -39,20 +39,57 @@ _lobe_env_value() {
   awk -F= -v wanted="$key" '$1 == wanted {print substr($0, index($0, "=") + 1); exit}' "$file"
 }
 
-_lobe_context_check() {
+_lobe_context_report() {
   local missing=0
   local global_env="$BASE/.env"
   local compose_file="$BASE/lobehub/compose.yml"
+  local common_file="$BASE/_common.yml"
   local service_env="$BASE/lobehub/.env"
   local datasql_env="$BASE/datasql/.env"
+  local global_state compose_state common_state service_state datasql_state
+  local docker_cli docker_access
 
-  [[ -r "$global_env" ]] || missing=1
-  [[ -r "$compose_file" ]] || missing=1
-  [[ -r "$service_env" ]] || missing=1
-  [[ -r "$datasql_env" ]] || missing=1
-  command -v docker >/dev/null 2>&1 || missing=1
-  docker info >/dev/null 2>&1 || missing=1
-  return "$missing"
+  if [[ -r "$global_env" ]]; then global_state=ok; else global_state=missing; missing=1; fi
+  if [[ -r "$compose_file" ]]; then compose_state=ok; else compose_state=missing; missing=1; fi
+  if [[ -r "$common_file" ]]; then common_state=ok; else common_state=missing; missing=1; fi
+  if [[ -r "$service_env" ]]; then service_state=ok; else service_state=missing; missing=1; fi
+  if [[ -r "$datasql_env" ]]; then datasql_state=ok; else datasql_state=missing; missing=1; fi
+  if command -v docker >/dev/null 2>&1; then docker_cli=ok; else docker_cli=missing; missing=1; fi
+  if [[ "$docker_cli" == ok ]] && docker info >/dev/null 2>&1; then docker_access=ok; else docker_access=denied; missing=1; fi
+
+  printf 'global_env=%s;compose=%s;common=%s;lobehub_env=%s;datasql_env=%s;docker_cli=%s;docker_access=%s' \
+    "$global_state" "$compose_state" "$common_state" "$service_state" "$datasql_state" "$docker_cli" "$docker_access"
+  ((missing == 0))
+}
+
+_lobe_context_check() {
+  _lobe_context_report >/dev/null
+}
+
+_lobe_compose_resolve_hint() {
+  local error_file hint
+  error_file=$(mktemp) || { printf 'diagnostic_unavailable'; return 1; }
+  if _lobe_compose config --quiet >/dev/null 2>"$error_file"; then
+    rm -f "$error_file"
+    printf 'ok'
+    return 0
+  fi
+
+  hint=compose_error
+  if grep -Eqi 'permission denied|operation not permitted|access denied' "$error_file"; then
+    hint=permission_denied
+  elif grep -Eqi 'no such file|not found|does not exist|cannot find' "$error_file"; then
+    hint=missing_compose_dependency
+  elif grep -Eqi 'variable .* is not set|undefined variable|environment variable' "$error_file"; then
+    hint=missing_environment_variable
+  elif grep -Eqi 'invalid interpolation|invalid type|yaml|mapping values|parsing' "$error_file"; then
+    hint=invalid_compose
+  elif grep -Eqi 'docker daemon|is the docker daemon running|cannot connect' "$error_file"; then
+    hint=docker_unavailable
+  fi
+  rm -f "$error_file"
+  printf '%s' "$hint"
+  return 1
 }
 
 _lobe_result() {
@@ -101,10 +138,11 @@ _lobe_preflight() {
 
   echo 'LobeHub preflight (solo lectura)'
 
-  if _lobe_context_check; then
-    _lobe_result context pass 'contexto host y archivos legibles'
+  local context_detail
+  if context_detail=$(_lobe_context_report); then
+    _lobe_result context pass "$context_detail"
   else
-    _lobe_result context fail 'el helper no puede acceder al runtime real'
+    _lobe_result context fail "$context_detail"
     fail=$((fail + 1))
   fi
 
@@ -148,7 +186,13 @@ _lobe_preflight() {
     if grep -q -- '--secret-key' "$compose_file"; then _lobe_result rustfs_arg fail '--secret-key sigue en compose'; fail=$((fail + 1)); else _lobe_result rustfs_arg pass 'secreto no va en command'; fi
     if grep -q 'REDIS_URL:.*REDIS_PASSWORD' "$compose_file"; then _lobe_result redis_url pass 'URL incluye autenticación'; else _lobe_result redis_url fail 'REDIS_URL no incluye autenticación'; fail=$((fail + 1)); fi
     if grep -q 'env_file:' "$compose_file" && grep -q '      - ../.env' "$compose_file"; then _lobe_result env_file pass 'global y local'; else _lobe_result env_file fail 'env_file incompleto'; fail=$((fail + 1)); fi
-    if _lobe_compose config --quiet >/dev/null 2>&1; then _lobe_result compose_resolved pass 'compose resoluble'; else _lobe_result compose_resolved fail 'compose config falló'; fail=$((fail + 1)); fi
+    local compose_hint
+    if compose_hint=$(_lobe_compose_resolve_hint); then
+      _lobe_result compose_resolved pass 'compose resoluble'
+    else
+      _lobe_result compose_resolved fail "compose config falló: $compose_hint"
+      fail=$((fail + 1))
+    fi
   fi
 
   if docker network inspect db_net >/dev/null 2>&1; then _lobe_result db_net pass 'red externa existe'; else _lobe_result db_net fail 'falta db_net'; fail=$((fail + 1)); fi
@@ -190,7 +234,13 @@ _lobe_verify() {
   local server_ip="${SERVER_IP:-$(_lobe_env_value "$BASE/.env" SERVER_IP)}"
   echo 'LobeHub verify (solo lectura)'
 
-  if _lobe_context_check; then _lobe_result context pass 'contexto host y archivos legibles'; else _lobe_result context fail 'el helper no puede acceder al runtime real'; fail=$((fail + 1)); fi
+  local context_detail
+  if context_detail=$(_lobe_context_report); then
+    _lobe_result context pass "$context_detail"
+  else
+    _lobe_result context fail "$context_detail"
+    fail=$((fail + 1))
+  fi
   if _lobe_compose ps --status running --services 2>/dev/null | grep -qx lobehub; then _lobe_result container pass 'lobehub activo'; else _lobe_result container fail 'lobehub no está activo'; fail=$((fail + 1)); fi
   if _lobe_compose ps --status running --services 2>/dev/null | grep -qx rustfs; then _lobe_result rustfs pass 'RustFS activo'; else _lobe_result rustfs fail 'RustFS no está activo'; fail=$((fail + 1)); fi
   if _lobe_compose ps --status exited --services 2>/dev/null | grep -qx rustfs-init; then _lobe_result rustfs_init pass 'init terminó'; else _lobe_result rustfs_init warn 'init no aparece como exited'; fi
