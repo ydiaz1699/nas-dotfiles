@@ -153,13 +153,32 @@ sudo sed -i \
   -e "s|^DOCKER_BASE=.*|DOCKER_BASE=$DOCKER_BASE|" \
   -e "s|^MCP_SOCKET_GID=.*|MCP_SOCKET_GID=$MCP_SOCKET_GID|" \
   /etc/nas/lobehub-mcp-helper.env
+# El helper corre como aadm y necesita leer solo los .env compartidos para
+# interpolar Compose y comprobar Redis/PostgreSQL. No hacerlos públicos: el
+# grupo dedicado nas-mcp es el único grupo adicional del helper.
+for shared_env in "$DOCKER_BASE/.env" "$DOCKER_BASE/datasql/.env"; do
+  test -f "$shared_env" || {
+    printf 'Falta el archivo requerido: %s\n' "$shared_env" >&2
+    exit 1
+  }
+  sudo chgrp nas-mcp "$shared_env"
+  sudo chmod 640 "$shared_env"
+  sudo -u aadm test -r "$shared_env" || {
+    printf 'aadm no puede leer %s; no arrancar el helper.\n' "$shared_env" >&2
+    exit 1
+  }
+done
+
 sudo systemctl daemon-reload
 ```
 
 El bloque escribe automáticamente en `/etc/nas/lobehub-mcp-helper.env`:
 `NAS_DOTFILES` detectado, `DOCKER_BASE` heredado de `dkco`, el socket fijo del
-helper, el GID real del grupo `nas-mcp` y el audit log. El helper no recibe el
-token MCP; solo lee manifests y ejecuta las cuatro comprobaciones fijas.
+helper, el GID real del grupo `nas-mcp` y el audit log. También concede al grupo
+privado `nas-mcp` lectura sobre el `.env` global y el `.env` de DataSQL, porque el
+helper se ejecuta como `aadm`; conserva el `.env` de LobeHub en `0600` propiedad
+de `aadm`. No se imprimen valores. El helper no recibe el token MCP; solo lee
+manifests y ejecuta las cuatro comprobaciones fijas.
 
 ### 2. Preparar el compose, el token y comprobar el resultado
 
@@ -529,10 +548,12 @@ Reglas para cualquier diagnóstico paste-safe:
   con un usuario que tenga permisos; desde `~` puede aparecer
   `open /docker/.env: permission denied`.
 
-La prueba de red sin autenticación debe hacerse con el nombre interno desde el
-servicio LobeHub, y debe devolver `401`; la prueba autenticada del manifest
-sobre `lobehub-mcp` debe devolver `200` y cinco tools. Un `401` sin token no es
-un fallo del gateway.
+Las respuestas de `lobehub_status`, `lobehub_verify` y `lobehub_preflight` incluyen
+un bloque no sensible `execution_context`. En una instalación correcta debe
+mostrar `executor: host-helper`, `framework: nas-dotfiles`, `entrypoint: available`
+y `docker_base: configured`. Si aparece `local-process`, el sidecar no está
+usando el helper del host; si aparece `host-helper` junto a `context` en estado
+`fail`, el helper sí alcanzó el NAS pero su usuario no tiene acceso al runtime.
 
 Comandos MCP paste-safe usando el CLI Python/Typer activo:
 
@@ -604,7 +625,7 @@ cree bases, haga backups, arregle permisos o detenga servicios.
 
 | Síntoma observado | Causa | Corrección segura |
 |---|---|---|
-| `Error al obtener el manifest: Streamable HTTP error: Error POSTing to endpoint` | Se intentó importar el endpoint desde un contexto que no puede resolver `lobehub-mcp`, o la autenticación se perdió al importar headers JSON | Configurar **Streamable HTTP + API Key** en la UI; el backend de LobeHub debe hacer el POST dentro de `lobe_storage`. No publicar `8790`. |
+| Todas las comprobaciones fallan desde LobeHub, pero `svc lobehub verify` funciona manualmente como root | El MCP sí llega al helper, pero `aadm` no puede leer `$dkco/.env`/`$dkco/datasql/.env`, acceder a Docker o está consultando otro checkout/proyecto Compose | Ejecutar `lobehub_preflight` y comprobar que `execution_context.executor` sea `host-helper`; corregir grupo `nas-mcp`, lectura restringida de los `.env`, rutas configuradas y reiniciar el helper. No hacer los secretos world-readable. |
 | No se puede abrir `http://lobehub-mcp:8790/mcp` en el navegador | `lobehub-mcp` es un hostname Docker interno y `/mcp` no es una página GET | Validar con POST JSON-RPC desde `svc exec`; `GET /mcp` puede devolver `405` por diseño. |
 | `sin_token_status=401` | La prueba omitió deliberadamente `Authorization` | Es el resultado esperado; confirma que el endpoint está protegido. Continuar con `tools/list` autenticado. |
 | `No such option: -T`, `-e`, `-c`, `-U` o `-d` | Se está usando el CLI Python/Typer y sus opciones están recibiendo flags del comando interno | Usar `NAS_CLI=python svc exec lobehub -- ...`; `--` separa Typer del comando. `-T` no es compatible con este CLI. |

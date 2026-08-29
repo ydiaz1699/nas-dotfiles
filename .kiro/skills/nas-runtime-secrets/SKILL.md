@@ -490,3 +490,8 @@ Cuando la credencial local sea `LOBEHUB_MCP_TOKEN`:
 - La configuración UI canónica es Streamable HTTP + API Key con `http://lobehub-mcp:8790/mcp`; el campo API Key recibe el valor sin `Bearer`. No publicar el puerto ni depender de que el navegador resuelva el hostname Docker.
 - La evidencia segura esperada es POST sin token `401` y `tools/list` autenticado `200` con cinco tools. Un `401` sin token confirma protección, no un fallo.
 - Si el bloque usa `NAS_CLI=python`, debe incluir `--` antes del servicio/comando interno; `-T`, `-e`, `-c`, `-U` y `-d` no deben llegar al parser Typer. Nunca reutilizar `svc exec lobehub lobehub-mcp -- python -c ...`, porque mezcla Bash con Python/Typer. Limpiar la variable temporal con `unset` al terminar, también tras un error.
+
+
+## Contexto de ejecución del MCP
+
+No asumir que una respuesta de `lobehub_verify` usa el NAS real solo porque el HTTP MCP responde. Confirmar el campo seguro `execution_context.executor=host-helper`; `local-process` indica fallback del proceso HTTP. El helper host necesita leer `$dkco/.env` y `$dkco/datasql/.env` mediante el grupo privado `nas-mcp` con modo `0640`; nunca cambiar secretos a permisos públicos. Si el helper reporta `context` fallido, distinguir permisos/rutas/socket Docker de un servicio realmente detenido.

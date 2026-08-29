@@ -39,6 +39,22 @@ _lobe_env_value() {
   awk -F= -v wanted="$key" '$1 == wanted {print substr($0, index($0, "=") + 1); exit}' "$file"
 }
 
+_lobe_context_check() {
+  local missing=0
+  local global_env="$BASE/.env"
+  local compose_file="$BASE/lobehub/compose.yml"
+  local service_env="$BASE/lobehub/.env"
+  local datasql_env="$BASE/datasql/.env"
+
+  [[ -r "$global_env" ]] || missing=1
+  [[ -r "$compose_file" ]] || missing=1
+  [[ -r "$service_env" ]] || missing=1
+  [[ -r "$datasql_env" ]] || missing=1
+  command -v docker >/dev/null 2>&1 || missing=1
+  docker info >/dev/null 2>&1 || missing=1
+  return "$missing"
+}
+
 _lobe_result() {
   local label="$1" state="$2" detail="$3"
   case "$state" in
@@ -84,6 +100,13 @@ _lobe_preflight() {
   local rustfs_dir="$service_dir/data/rustfs"
 
   echo 'LobeHub preflight (solo lectura)'
+
+  if _lobe_context_check; then
+    _lobe_result context pass 'contexto host y archivos legibles'
+  else
+    _lobe_result context fail 'el helper no puede acceder al runtime real'
+    fail=$((fail + 1))
+  fi
 
   if [[ -f "$compose_file" ]]; then _lobe_result compose pass 'compose.yml existe'; else _lobe_result compose fail 'falta compose.yml'; fail=$((fail + 1)); fi
   if [[ -f "$env_file" ]]; then _lobe_result env pass '.env existe'; else _lobe_result env fail 'falta .env'; fail=$((fail + 1)); fi
@@ -167,6 +190,7 @@ _lobe_verify() {
   local server_ip="${SERVER_IP:-$(_lobe_env_value "$BASE/.env" SERVER_IP)}"
   echo 'LobeHub verify (solo lectura)'
 
+  if _lobe_context_check; then _lobe_result context pass 'contexto host y archivos legibles'; else _lobe_result context fail 'el helper no puede acceder al runtime real'; fail=$((fail + 1)); fi
   if _lobe_compose ps --status running --services 2>/dev/null | grep -qx lobehub; then _lobe_result container pass 'lobehub activo'; else _lobe_result container fail 'lobehub no está activo'; fail=$((fail + 1)); fi
   if _lobe_compose ps --status running --services 2>/dev/null | grep -qx rustfs; then _lobe_result rustfs pass 'RustFS activo'; else _lobe_result rustfs fail 'RustFS no está activo'; fail=$((fail + 1)); fi
   if _lobe_compose ps --status exited --services 2>/dev/null | grep -qx rustfs-init; then _lobe_result rustfs_init pass 'init terminó'; else _lobe_result rustfs_init warn 'init no aparece como exited'; fi
