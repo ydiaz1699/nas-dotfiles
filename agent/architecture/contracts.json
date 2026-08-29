@@ -66,12 +66,25 @@
       }
     },
     "mcp_gateway": {
-      "description": "Gateway MCP independiente con allowlist read-only para LobeHub.",
+      "description": "Gateway MCP histórico read-only integrado con LobeHub; se mantiene por compatibilidad.",
       "discovery": {
         "implementation": "agent/lobehub_mcp.py",
         "sidecar_dockerfile": "agent/mcp/Dockerfile",
         "helper_systemd": "systemd/lobehub-mcp-helper.service",
         "documentation": "docs/lobehub-mcp-gateway.md"
+      }
+    },
+    "nas_mcp_gateway": {
+      "description": "Gateway MCP independiente read-only con front-door lazy y helper host allowlisted.",
+      "discovery": {
+        "implementation": "agent/nas_mcp_gateway.py",
+        "worker": "agent/nas_mcp_worker.py",
+        "manifest": "agent/nas_mcp_manifest.json",
+        "sidecar_dockerfile": "agent/mcp/nas-gateway.Dockerfile",
+        "helper_systemd": "systemd/nas-mcp-helper.service",
+        "catalog": "agent/catalog/services/nas-mcp-gateway/compose.yml",
+        "documentation": "docs/nas-mcp-gateway.md",
+        "skill": ".kiro/skills/nas-mcp-gateway/SKILL.md"
       }
     },
     "draft": {
@@ -203,6 +216,23 @@
         "systemd/lobehub-mcp-helper.service",
         "agent/catalog/services/lobehub/compose.yml",
         "docs/lobehub-mcp-gateway.md"
+      ]
+    },
+    {
+      "id": "nas-mcp-gateway-lazy-frontdoor",
+      "entity": "nas_mcp_gateway",
+      "name": "nas-mcp-gateway lazy read-only MCP",
+      "level": "functional",
+      "required": [
+        "agent/nas_mcp_gateway.py",
+        "agent/nas_mcp_worker.py",
+        "agent/nas_mcp_manifest.json",
+        "agent/.dockerignore",
+        "agent/mcp/nas-gateway.Dockerfile",
+        "systemd/nas-mcp-helper.service",
+        "agent/catalog/services/nas-mcp-gateway/compose.yml",
+        "docs/nas-mcp-gateway.md",
+        ".kiro/skills/nas-mcp-gateway/SKILL.md"
       ]
     }
   ],

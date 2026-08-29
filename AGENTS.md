@@ -65,7 +65,8 @@ nas                 →  dashboard del servidor
 | `svc catalog-sync [svc]` | Generar docs en cascada (ficha, guía, script DebMenux) |
 | `svc capabilities [consulta]` | Descubrir capacidades reales desde manifests e índice dinámico |
 | `svc lobehub <acción>` | Preflight, verify, proveedores, DB, RustFS y backup lógico |
-| `lobehub-mcp` | Gateway MCP interno read-only; sidecar sin Docker socket + helper host allowlisted |
+| `lobehub-mcp` | Gateway MCP interno read-only histórico de LobeHub |
+| `nas-mcp-gateway` | Gateway MCP independiente read-only; front-door lazy + helper host; preparado, no desplegado |
 | `svc scan` | Detectar lagunas del proyecto (servicios, CLI, docs) |
 | `svc snapshot <svc>` | Guardar compose+.env antes de cambios (liviano, rotación 10) |
 | `svc rollback <svc>` | Restaurar config desde snapshot anterior (fzf + confirmación) |
@@ -236,7 +237,8 @@ svc diff <svc>             # Compose en disco vs resuelta (interpolada)
 | Flowise (prueba con DataSQL) | `docs/services/flowise-guide.md` |
 | n8n (auditoría, PostgreSQL y handoff a LobeHub) | `docs/services/n8n-guide.md` |
 | LobeHub (instalación auditada, DataSQL, RustFS y verificación) | `docs/services/lobehub-guide.md` |
-| LobeHub ↔ nas-dotfiles por MCP read-only | `docs/lobehub-mcp-gateway.md` |
+| LobeHub ↔ nas-dotfiles por MCP read-only histórico | `docs/lobehub-mcp-gateway.md` |
+| nas-mcp-gateway independiente, manifest y activación lazy | `docs/nas-mcp-gateway.md` |
 | Troubleshooting | `docs/troubleshooting.md` |
 | Skill completa (para LLMs) | `docker-nas/references/nas-context.md` |
 | Comandos shell | `docker-nas/references/entorno.md` |

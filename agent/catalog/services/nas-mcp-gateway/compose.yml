@@ -1,0 +1,72 @@
+# Gateway MCP independiente. No pertenece al compose de LobeHub.
+# En el NAS se despliega como $dkco/nas-mcp-gateway/compose.yml.
+services:
+  nas-mcp-gateway:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    build:
+      context: ${NAS_DOTFILES:-/nas-dotfiles}/agent
+      dockerfile: mcp/nas-gateway.Dockerfile
+    image: nas-dotfiles/nas-mcp-gateway:0.1.0
+    container_name: nas-mcp-gateway
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      NAS_DOTFILES: ${NAS_DOTFILES:-/nas-dotfiles}
+      DOCKER_BASE: ${DOCKER_BASE:-/docker}
+      NAS_MCP_MODE: http
+      NAS_MCP_IDLE_SECONDS: ${NAS_MCP_IDLE_SECONDS:-600}
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8791
+      MCP_PATH: /mcp
+      MCP_SERVICE_TOKEN: ${NAS_MCP_SERVICE_TOKEN}
+      MCP_HELPER_SOCKET: /run/nas/nas-mcp-gateway.sock
+      MCP_ALLOWED_ORIGINS: ${MCP_ALLOWED_ORIGINS:-}
+    user: "65532:65532"
+    group_add:
+      - ${MCP_SOCKET_GID}
+    read_only: true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:mode=1777,size=16m
+    volumes:
+      - type: bind
+        source: ${MCP_HELPER_SOCKET:-/run/nas/nas-mcp-gateway.sock}
+        target: /run/nas/nas-mcp-gateway.sock
+        read_only: true
+        bind:
+          create_host_path: false
+    labels:
+      - homepage.group=Infraestructura
+      - homepage.name=nas-mcp-gateway
+      - homepage.icon=mdi-api
+      - homepage.description=Gateway MCP read-only bajo demanda (interno)
+    networks:
+      - nas_mcp_net
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8791/health', timeout=2)
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+
+networks:
+  nas_mcp_net:
+    name: nas_mcp_net

@@ -1,0 +1,39 @@
+# Helper host read-only de nas-mcp-gateway.
+# El gateway y sus clientes nunca reciben el Docker socket.
+
+[Unit]
+Description=nas-mcp-gateway read-only helper
+Documentation=https://github.com/ydiaz1699/nas-dotfiles/blob/main/docs/nas-mcp-gateway.md
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=aadm
+SupplementaryGroups=docker nas-mcp
+Environment=NAS_DOTFILES=/nas-dotfiles
+Environment=DOCKER_BASE=/docker
+Environment=MCP_HELPER_SOCKET=/run/nas/nas-mcp-gateway.sock
+Environment=MCP_SOCKET_GID=__configura_gid_del_grupo_nas_mcp__
+EnvironmentFile=-/etc/nas/nas-mcp-helper.env
+ExecStart=/usr/bin/python3 ${NAS_DOTFILES}/agent/nas_mcp_worker.py --mode helper
+
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadOnlyPaths=/nas-dotfiles /docker
+ReadWritePaths=/run/nas /var/lib/nas/nas-mcp
+RuntimeDirectory=nas
+RuntimeDirectoryMode=0750
+MemoryMax=128M
+CPUQuota=10%
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target
