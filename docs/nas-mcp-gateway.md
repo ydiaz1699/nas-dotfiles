@@ -29,13 +29,13 @@ svc + framework nas-dotfiles
 
 ## Qué está implementado
 
-- `agent/nas_mcp_manifest.json`: fuente canónica de nombres, descripciones,
+- `agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json`: fuente canónica de nombres, descripciones,
   esquemas, timeouts y política lazy.
-- `agent/nas_mcp_gateway.py`: front-door MCP compatible con `stdio` y un modo
-  HTTP interno opcional.
-- `agent/nas_mcp_worker.py`: worker cliente y helper host con allowlist fija.
+- `agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py`: front-door MCP compatible con
+  `stdio` y un modo HTTP interno opcional.
+- `agent/mcp/nas_mcp_gateway/nas_mcp_worker.py`: worker cliente y helper host con allowlist fija.
 - `systemd/nas-mcp-helper.service`: unidad host separada de LobeHub.
-- `agent/mcp/nas-gateway.Dockerfile`: imagen mínima del front-door HTTP.
+- `agent/mcp/nas_mcp_gateway/Dockerfile`: imagen mínima del front-door HTTP.
 - `agent/catalog/services/nas-mcp-gateway/`: compose, ficha y ejemplo de
   entorno para un despliegue posterior.
 - `.kiro/skills/nas-mcp-gateway/SKILL.md`: reglas de uso y activación del
@@ -75,7 +75,7 @@ La Skill no mantiene una segunda lista manual de herramientas. El archivo
 canónico es:
 
 ```text
-agent/nas_mcp_manifest.json
+agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json
 ```
 
 La Skill lo referencia y describe cómo decidir cuándo solicitar una capacidad.
@@ -94,7 +94,7 @@ NAS_DOTFILES="${NAS_DOTFILES:?carga el entorno del repositorio}"
 NAS_MCP_MODE=stdio \
 NAS_MCP_IDLE_SECONDS=600 \
 MCP_HELPER_SOCKET=/run/nas/nas-mcp-gateway.sock \
-python3 "$NAS_DOTFILES/agent/nas_mcp_gateway.py" --mode stdio
+python3 "$NAS_DOTFILES/agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py" --mode stdio
 ```
 
 El proceso `stdio` necesita poder conectarse al socket del helper. Para un
@@ -132,7 +132,7 @@ Usa el socket independiente:
 
 El helper se ejecuta como `aadm` con grupos `docker nas-mcp`, elimina y recrea
 el socket al iniciar, y ejecuta únicamente los argumentos constantes definidos
-en `agent/nas_mcp_worker.py`. El gateway no recibe Docker socket.
+en `agent/mcp/nas_mcp_gateway/nas_mcp_worker.py`. El gateway no recibe Docker socket.
 
 Antes de instalarlo en el NAS hay que crear la configuración local desde el
 example y completar el GID real de `nas-mcp`; no copiar secretos al chat:

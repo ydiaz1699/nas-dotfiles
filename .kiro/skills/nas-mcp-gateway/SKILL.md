@@ -16,10 +16,10 @@ sustituye al transporte MCP.
 El archivo canónico que la Skill debe consultar es:
 
 ```text
-agent/nas_mcp_manifest.json
+agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json
 ```
 
-# [[file:agent/nas_mcp_manifest.json]]
+# [[file:agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json]]
 
 No copiar manualmente nombres o esquemas en esta Skill. Si una herramienta no
 está en el manifest y en `tools/list`, no está disponible.
