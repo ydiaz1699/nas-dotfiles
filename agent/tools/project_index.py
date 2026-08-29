@@ -321,6 +321,137 @@ def _extract_capabilities() -> Dict[str, Any]:
     return {"manifests": manifests, "operations": operations}
 
 
+def _extract_mcp_gateways() -> Dict[str, List[Dict[str, Any]]]:
+    """Inventaría gateways MCP y valida manifest ↔ worker ↔ catálogo.
+
+    MCP es una superficie de protocolo independiente de ``ALL_TOOLS`` y de los
+    manifests de capacidades de servicios. Por eso se publica en claves
+    separadas del índice y no se mezcla con ``capabilities``.
+    """
+    gateways: List[Dict[str, Any]] = []
+    tools: List[Dict[str, Any]] = []
+    mcp_root = NAS_DOTFILES / "agent" / "mcp"
+    if not mcp_root.exists():
+        return {"gateways": gateways, "tools": tools}
+
+    for manifest_path in sorted(mcp_root.glob("**/nas_mcp_manifest.json")):
+        gateway_dir = manifest_path.parent
+        manifest_rel = _relative(manifest_path, NAS_DOTFILES)
+        errors: List[str] = []
+        data: Dict[str, Any] = {}
+        try:
+            data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            errors.append("manifest_invalid_json")
+
+        server = data.get("server") if isinstance(data, dict) else None
+        server_name = server.get("name", "") if isinstance(server, dict) else ""
+        server_version = server.get("version", "") if isinstance(server, dict) else ""
+        manifest_tools = data.get("tools", []) if isinstance(data, dict) else []
+        if not isinstance(server_name, str) or not server_name:
+            errors.append("server_name_missing")
+            server_name = gateway_dir.name
+        if not isinstance(server_version, str) or not server_version:
+            errors.append("server_version_missing")
+        if not isinstance(manifest_tools, list) or not manifest_tools:
+            errors.append("tools_missing")
+            manifest_tools = []
+
+        names: Set[str] = set()
+        operations: Set[str] = set()
+        for item in manifest_tools:
+            if not isinstance(item, dict):
+                errors.append("tool_invalid")
+                continue
+            name = item.get("name")
+            operation = item.get("operation")
+            if not isinstance(name, str) or not name:
+                errors.append("tool_name_missing")
+                continue
+            if name in names:
+                errors.append(f"duplicate_tool:{name}")
+            names.add(name)
+            if not isinstance(operation, str) or not operation:
+                errors.append(f"operation_missing:{name}")
+                continue
+            if operation in operations:
+                errors.append(f"duplicate_operation:{operation}")
+            operations.add(operation)
+            if not isinstance(item.get("input_schema"), dict):
+                errors.append(f"input_schema_missing:{name}")
+            tools.append(
+                {
+                    "gateway": server_name,
+                    "name": name,
+                    "operation": operation,
+                    "manifest": manifest_rel,
+                    "timeout_seconds": item.get("timeout_seconds"),
+                }
+            )
+
+        worker_path = gateway_dir / "nas_mcp_worker.py"
+        frontdoor_path = gateway_dir / "nas_mcp_gateway.py"
+        dockerfile_path = gateway_dir / "Dockerfile"
+        worker_text = _read_text(worker_path)
+        dockerfile_text = _read_text(dockerfile_path)
+        worker_operations = set(
+            re.findall(r'^\s*"([a-z][\w-]*)"\s*:\s*\{\s*"svc_args"', worker_text, re.MULTILINE)
+        )
+        if not frontdoor_path.is_file():
+            errors.append("frontdoor_missing")
+        if not worker_path.is_file():
+            errors.append("worker_missing")
+        if not dockerfile_path.is_file():
+            errors.append("dockerfile_missing")
+        if dockerfile_path.is_file() and not re.search(r"^\s*FROM\s+", dockerfile_text, re.MULTILINE):
+            errors.append("dockerfile_invalid")
+        if dockerfile_path.is_file() and "nas_mcp_gateway.py" not in dockerfile_text:
+            errors.append("dockerfile_frontdoor_missing")
+        if worker_operations != operations:
+            errors.append("manifest_worker_operations_mismatch")
+
+        catalog_dir = NAS_DOTFILES / "agent" / "catalog" / "services" / server_name
+        guide_path = NAS_DOTFILES / "docs" / "services" / f"{server_name}-guide.md"
+        catalog_compose = catalog_dir / "compose.yml"
+        catalog_ficha = catalog_dir / "ficha.md"
+        catalog_text = _read_text(catalog_ficha)
+        missing_catalog_tools = sorted(
+            str(item.get("name"))
+            for item in manifest_tools
+            if isinstance(item, dict)
+            and isinstance(item.get("name"), str)
+            and item["name"] not in catalog_text
+        )
+        if not catalog_compose.is_file():
+            errors.append("catalog_compose_missing")
+        if not catalog_ficha.is_file():
+            errors.append("catalog_ficha_missing")
+        if missing_catalog_tools:
+            errors.append("catalog_tools_missing")
+        if not guide_path.is_file():
+            errors.append("guide_missing")
+
+        gateway = {
+            "name": server_name,
+            "version": server_version,
+            "manifest": manifest_rel,
+            "frontdoor": _relative(frontdoor_path, NAS_DOTFILES),
+            "worker": _relative(worker_path, NAS_DOTFILES),
+            "dockerfile": _relative(dockerfile_path, NAS_DOTFILES),
+            "catalog": _relative(catalog_dir, NAS_DOTFILES) if catalog_dir.exists() else None,
+            "guide": _relative(guide_path, NAS_DOTFILES) if guide_path.exists() else None,
+            "tool_count": len(manifest_tools),
+            "manifest_tools": sorted(operations),
+            "worker_operations": sorted(worker_operations),
+            "catalog_tools_missing": missing_catalog_tools,
+            "valid": not errors,
+            "errors": sorted(set(errors)),
+        }
+        gateways.append(gateway)
+
+    return {"gateways": gateways, "tools": tools}
+
+
 def _extract_service_ids() -> Dict[str, Dict[str, Any]]:
     catalog: Dict[str, Dict[str, Any]] = {}
     catalog_root = NAS_DOTFILES / "agent" / "catalog" / "services"
@@ -481,11 +612,12 @@ def build_index() -> Dict[str, Any]:
     files = _file_records()
     service_data = _extract_service_ids()
     capabilities = _extract_capabilities()
+    mcp_data = _extract_mcp_gateways()
     cli = _cli_index()
     connections = _contract_connections(contracts)
 
     return {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "roots": {
             "nas_dotfiles": str(NAS_DOTFILES),
@@ -498,6 +630,9 @@ def build_index() -> Dict[str, Any]:
             "debmenux_files": sum(1 for item in files if item["repo"] == "debmenux"),
             "services": len(service_data["services"]),
             "capabilities": len(capabilities["operations"]),
+            "mcp_gateways": len(mcp_data["gateways"]),
+            "mcp_tools": len(mcp_data["tools"]),
+            "invalid_mcp_gateways": sum(1 for item in mcp_data["gateways"] if not item["valid"]),
             "contract_connections": len(connections),
             "broken_contract_connections": sum(1 for item in connections if not item["complete"]),
         },
@@ -505,6 +640,8 @@ def build_index() -> Dict[str, Any]:
         "cli": cli,
         "services": service_data["services"],
         "capabilities": capabilities,
+        "mcp": mcp_data["gateways"],
+        "mcp_tools": mcp_data["tools"],
         "debmenux_registry": service_data["registry"],
         "connections": connections,
     }
@@ -534,6 +671,8 @@ def main() -> int:
             "Project index: "
             f"{index['summary']['files']} archivos, "
             f"{index['summary']['services']} servicios, "
+            f"{index['summary']['mcp_gateways']} gateway(s) MCP, "
+            f"{index['summary']['mcp_tools']} tools MCP, "
             f"{index['summary']['broken_contract_connections']} conexiones rotas"
         )
         return 0
@@ -542,6 +681,7 @@ def main() -> int:
     print(f"✅ Índice estructural generado: {args.output}")
     print(f"   Archivos: {index['summary']['files']}")
     print(f"   Servicios: {index['summary']['services']}")
+    print(f"   MCP: {index['summary']['mcp_gateways']} gateway(s), {index['summary']['mcp_tools']} tools")
     print(f"   Conexiones rotas: {index['summary']['broken_contract_connections']}")
     return 0
 

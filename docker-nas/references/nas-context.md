@@ -150,6 +150,7 @@ volúmenes ni redes conjeturadas; confirmarlos primero en la fuente oficial.
 | node-red | 1880 | iot_net | `docs/services/node-red-guide.md` |
 | iobroker | 8181 (preparado) | iot_net | `docs/services/iobroker-guide.md` |
 | usb-api | 8091 | nativo (systemd) | `agent/catalog/services/usb-api/ficha.md` |
+| nas-mcp-gateway (preparado) | 8791 interno | nas_mcp_net | `docs/nas-mcp-gateway.md` + `.kiro/skills/nas-mcp-gateway/SKILL.md` |
 
 ### Servicios nuevos que dependen de DataSQL
 
@@ -216,8 +217,9 @@ Dependency-map DOCUMENTA → las reglas para que el próximo LLM sepa qué casca
 | **Catalog-sync** | `svc catalog-sync [svc]` | Genera ficha, guía, script DebMenux en cascada |
 | **Capability index** | `svc capabilities [consulta]` | Descubre comandos reales desde manifests e índice; no depende de una lista fija del prompt |
 | **LobeHub operations** | `svc lobehub <acción>` | Preflight, verify, provider diagnostics, reconciliación DB, permisos RustFS y dump lógico |
-| **Dependency-map** | `docs/dependency-map.md` | Reglas estáticas (grafos A–I) de qué conecta con qué |
+| **Dependency-map** | `docs/dependency-map.md` | Reglas estáticas (grafos A–L) de qué conecta con qué |
 | **Compare catalog** | Tool `compare_catalog("svc")` | Detecta drift: compose real vs catálogo |
+| **Project index** | `python3 agent/tools/project_index.py` | Inventaría archivos, CLI, capacidades y gateways MCP sin ejecutar Docker |
 
 ### Scanner — modos de uso
 
@@ -258,6 +260,28 @@ solo `lobehub_preflight`, `lobehub_verify`, `lobehub_status`,
 publica puertos y no monta Docker socket; un helper host ejecuta las cuatro
 acciones `svc lobehub` con argumentos constantes. Backups y mutaciones quedan
 fuera de esta interfaz.
+
+### Gateway MCP general del NAS
+
+`nas-mcp-gateway` es una superficie distinta y no reemplaza al gateway de
+LobeHub. Su implementación ejecutable está agrupada en
+`agent/mcp/nas_mcp_gateway/`, con el manifest canónico
+`nas_mcp_manifest.json`, front-door lazy, worker y Dockerfile. El helper host
+independiente es `systemd/nas-mcp-helper.service` y usa un socket distinto.
+
+Tools publicadas: `nas_services`, `nas_health`, `nas_capabilities` y
+`nas_diagnostics`. El transporte recomendado es `stdio`; HTTP queda interno en
+`http://nas-mcp-gateway:8791/mcp` y requiere Bearer token. `initialize` y
+`tools/list` no inician el worker; el primer `tools/call` lo activa y solo puede
+solicitar operaciones fijas read-only al helper. El catálogo y la skill están
+preparados, pero el gateway sigue **preparado, no desplegado**: no iniciar el
+helper, crear el socket ni ejecutar `svc up nas-mcp-gateway` durante una
+actualización documental.
+
+El índice estructural lo registra separado de las tools del agente: las claves
+`mcp` y `mcp_tools` de `agent/cache/project-index.json` validan
+manifest ↔ worker ↔ Dockerfile ↔ catálogo. No añadir estas tools a
+`ALL_TOOLS` ni a `agent/capabilities/*.json`.
 
 ### Cómo descubrir una capacidad nueva
 

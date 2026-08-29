@@ -1,7 +1,7 @@
 # Compilación de conocimiento del framework
 
 > **Estado:** documento canónico de arquitectura y continuidad
-> **Fecha de esta compilación:** 2026-08-17
+> **Fecha de esta compilación:** 2026-08-29
 > **Alcance:** `nas-dotfiles` + `DebMenux-` como un solo sistema interconectado
 > **Propósito:** conservar las ideas, decisiones, arquitectura objetivo, gaps y criterios de verificación de la conversación sin copiar el chat completo.
 
@@ -96,7 +96,23 @@ Al encontrar discrepancias, el LLM debe aplicar esta precedencia y registrar el 
 
 Cada estado de este documento debe distinguir `verificado` (comprobado en código o comando indicado), `declarado` (documentado pero no comprobado en esta sesión) y `pendiente`.
 
-## 4. Ownership: qué documento posee cada cosa
+### 3.3 Superficies MCP separadas
+
+El framework mantiene dos gateways MCP con ownership y fronteras distintas:
+
+- `agent/lobehub_mcp.py` es el gateway histórico read-only específico de LobeHub.
+  Conserva `agent/mcp/Dockerfile`, su helper systemd y el compose de LobeHub.
+- `agent/mcp/nas_mcp_gateway/` es el gateway general read-only del NAS. Agrupa
+  front-door, worker, manifest y Dockerfile; se integra con su helper systemd,
+  catálogo, Skill y guía propios.
+
+El gateway nuevo publica únicamente `nas_services`, `nas_health`,
+`nas_capabilities` y `nas_diagnostics`. `stdio` es el transporte recomendado y
+HTTP queda interno y autenticado. Su manifest no pertenece a `ALL_TOOLS` ni a
+`agent/capabilities/*.json`; `project_index.py` lo inventaría como `mcp` y
+`mcp_tools`. Su estado actual es **preparado, no desplegado**.
+
+
 
 | Documento/componente | Posee | No posee | Consumidores |
 |---|---|---|---|

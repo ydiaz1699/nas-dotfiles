@@ -215,8 +215,33 @@ agent --model gemini-2.5-flash  # cambio directo
 | `diagnostic_tools.py` | service_health, port_conflicts, troubleshoot |
 | `search_tools.py` | search_service_info (web fallback) |
 | `memory_tools.py` | remember, recall, learn_skill, update_user_model, memory_stats |
+| `project_scanner.py` | project_scan — detectar lagunas e inconsistencias |
+| `capability_tools.py` | discover_capabilities — descubrir comandos y guards desde manifests |
+| `compare_tools.py` | compare_catalog — detectar drift entre despliegue y catálogo |
 
-### Plugins (agent/plugins/)
+### Gateways MCP
+
+El framework mantiene dos gateways MCP separados:
+
+- `agent/lobehub_mcp.py`: gateway histórico read-only de LobeHub, con su propio
+  helper systemd y documentación. Se conserva por compatibilidad.
+- `agent/mcp/nas_mcp_gateway/`: gateway general read-only del NAS, con manifest,
+  front-door lazy, worker y helper host allowlisted. Publica `nas_services`,
+  `nas_health`, `nas_capabilities` y `nas_diagnostics`.
+
+El gateway nuevo recomienda `stdio` para clientes locales/SSH y ofrece HTTP
+interno opcional. Está preparado, pero no desplegado. Su manifest no se mezcla
+con `ALL_TOOLS` ni con `agent/capabilities/*.json`; `project_index.py` lo
+inventaría por separado bajo `mcp` y `mcp_tools`.
+
+### Índice estructural y scanner
+
+`agent/tools/project_index.py` descubre archivos, comandos, servicios,
+capacidades y gateways MCP sin ejecutar Docker. `project_scan()` compara ese
+estado con los contratos y detecta conexiones faltantes. `project-index.json`
+es el inventario estructural; `project-snapshot.json` es el baseline incremental.
+
+
 
 | Plugin | Función |
 |--------|---------|

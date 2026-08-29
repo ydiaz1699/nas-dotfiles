@@ -14,7 +14,8 @@ Framework completo para administrar un servidor Linux/NAS con Docker. Convierte 
 | **CLI Bash** (`docker/cli/`) | Administracion de servicios Docker (`svc`) | Bash |
 | **CLI Python** (`svc_py/`) | CLI alternativa con Rich + InquirerPy (`svc`) | Python |
 | **Agente** (`agent/`) | Administracion con lenguaje natural + tools + memoria + plugins | Python |
-| **Gateway MCP** (`agent/lobehub_mcp.py`) | Consultas read-only de nas-dotfiles desde LobeHub | Python/HTTP |
+| **Gateway MCP histórico** (`agent/lobehub_mcp.py`) | Integración read-only específica de LobeHub, mantenida por compatibilidad | Python/HTTP |
+| **Gateway MCP NAS** (`agent/mcp/nas_mcp_gateway/`) | Frontera MCP read-only independiente con manifest, front-door lazy, worker y helper host allowlisted | Python/stdio+HTTP |
 | **Daemon** (`agent/daemon.py`) | Scheduler + plugins corriendo 24/7 (systemd) | Python |
 
 ## Instalacion
@@ -82,8 +83,14 @@ nas-dotfiles/
 ├── agent/              Agente IA (tools, memoria, plugins, MQTT, scheduler)
 │   ├── core/           Managers + MemoryManager
 │   ├── tools/          Tools (@tool), scanner, índice y autodescubrimiento
-│   ├── lobehub_mcp.py  Gateway MCP read-only independiente para LobeHub
-│   ├── mcp/             Dockerfile del sidecar MCP sin Docker socket
+│   ├── lobehub_mcp.py  Gateway MCP histórico read-only para LobeHub
+│   ├── mcp/
+│   │   ├── Dockerfile  sidecar histórico del gateway LobeHub
+│   │   └── nas_mcp_gateway/  Gateway MCP NAS independiente
+│   │       ├── nas_mcp_gateway.py  front-door lazy (stdio/HTTP)
+│   │       ├── nas_mcp_worker.py   worker + helper allowlisted
+│   │       ├── nas_mcp_manifest.json  contrato de tools MCP
+│   │       └── Dockerfile           sidecar HTTP interno
 │   ├── capabilities/   Manifests versionados de operaciones por servicio
 │   ├── architecture/   Contratos verificables del framework
 │   ├── plugins/        Plugins (docker, backup, network, memory, notification)
@@ -152,8 +159,11 @@ TZ=America/La_Paz
 | [`docs/services/flowise-guide.md`](docs/services/flowise-guide.md) | Flowise: integración con DataSQL y prueba inicial |
 | [`docs/services/n8n-guide.md`](docs/services/n8n-guide.md) | n8n: reparación PostgreSQL, auditoría runtime y handoff a LobeHub |
 | [`docs/services/lobehub-guide.md`](docs/services/lobehub-guide.md) | LobeHub: PostgreSQL, Redis, RustFS, comandos operativos y verificación |
-| [`docs/lobehub-mcp-gateway.md`](docs/lobehub-mcp-gateway.md) | Integración MCP read-only de LobeHub con nas-dotfiles |
+| [`docs/lobehub-mcp-gateway.md`](docs/lobehub-mcp-gateway.md) | Integración MCP read-only histórica de LobeHub con nas-dotfiles |
+| [`docs/nas-mcp-gateway.md`](docs/nas-mcp-gateway.md) | Gateway MCP independiente: manifest, front-door lazy, worker y helper host |
 | [docs/architecture-consistency.md](docs/architecture-consistency.md) | Contratos e índice de conexiones del framework |
+| [docs/framework-audit.md](docs/framework-audit.md) | Inventario ejecutivo actualizado del framework |
+| [docs/framework-knowledge-compilation.md](docs/framework-knowledge-compilation.md) | Mapa canónico de arquitectura, ownership y gaps |
 | [docs/services/homepage-guide.md](docs/services/homepage-guide.md) | Homepage: dashboard (labels vs services.yaml) |
 | [docs/github-cli.md](docs/github-cli.md) | Instalación y autenticación de gh |
 

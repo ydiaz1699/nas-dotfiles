@@ -2,7 +2,7 @@
 
 > **Mapa canónico de arquitectura, estado, gaps y criterios:** [`docs/framework-knowledge-compilation.md`](framework-knowledge-compilation.md). Este archivo conserva la orientación ejecutiva e inventario rápido; no sustituye contratos ni verificaciones.
 
-> **Última actualización:** 2026-08-28
+> **Última actualización:** 2026-08-29
 > **Propósito:** Evitar que el LLM relea todo el proyecto en cada sesión.
 > Leer SOLO este archivo para tener el mapa completo.
 > Para detalles de un archivo específico → usar lazy loading.
@@ -36,11 +36,14 @@
 │  Daemon: systemd → scheduler + plugins 24/7                                │
 └────────────────────────────────────────────────────────────────────────────┘
          │
+         ├── MCP histórico LobeHub: agent/lobehub_mcp.py
+         └── MCP NAS independiente: agent/mcp/nas_mcp_gateway/ (preparado)
+         │
          ▼
 ┌── Verificación (scanner + catalog-sync + compare + capabilities) ───────────┐
 │  svc scan          → DETECTA lagunas (Git + snapshot incremental)            │
 │  svc catalog-sync  → GENERA lo que falta (ficha, guía, script)               │
-│  dependency-map.md → DOCUMENTA las reglas (grafos A–I)                       │
+│  dependency-map.md → DOCUMENTA las reglas (grafos A–L)                       │
 │  compare_catalog() → DETECTA drift (compose real vs catálogo)                │
 │  discover_capabilities() → DESCUBRE comandos y guards desde manifests       │
 └────────────────────────────────────────────────────────────────────────────┘
@@ -129,6 +132,7 @@ incremental ya operativo. El diseño histórico se conserva en
 | `tools/search_tools.py` | search_service_info (web fallback) |
 | `tools/memory_tools.py` | remember, recall, learn_skill, update_user_model, memory_stats |
 | `tools/project_scanner.py` | project_scan (incremental git-based) |
+| `tools/project_index.py` | Índice estructural: archivos, CLI, servicios, capacidades y MCP |
 | `tools/compare_tools.py` | compare_catalog (drift detection) |
 | `tools/capabilities.py` | Inventario de manifests y guards; índice fresco con fallback fail-closed |
 | `tools/capability_tools.py` | discover_capabilities (consulta sin mutaciones) |
@@ -138,6 +142,16 @@ incremental ya operativo. El diseño histórico se conserva en
 | `plugins/network_plugin.py` | Monitoreo de redes |
 | `plugins/memory_plugin.py` | Persistencia de memoria |
 | `plugins/ha_discovery_plugin.py` | Descubrimiento Home Assistant |
+
+### Gateways MCP
+
+| Gateway | Archivos principales | Tools/estado |
+|---------|----------------------|--------------|
+| Histórico LobeHub | `agent/lobehub_mcp.py`, `agent/mcp/Dockerfile`, helper y compose de LobeHub | Operaciones LobeHub read-only; conservado |
+| NAS independiente | `agent/mcp/nas_mcp_gateway/{nas_mcp_gateway.py,nas_mcp_worker.py,nas_mcp_manifest.json,Dockerfile}` | `nas_services`, `nas_health`, `nas_capabilities`, `nas_diagnostics`; preparado, no desplegado |
+
+El índice estructural registra el gateway NAS fuera de `ALL_TOOLS` y de los
+manifests de capacidades, en `mcp` y `mcp_tools`.
 
 ### Catálogo (`agent/catalog/services/`)
 
@@ -154,6 +168,7 @@ incremental ya operativo. El diseño histórico se conserva en
 | ntfy | ✅ | ✅ | ✅ | ✅ | ✅ |
 | lobehub | ✅ | ✅ | ✅ | ✅ | ❌ |
 | usb-api | ✅ | ✅ | ✅ | ⚠️ | ✅ |
+| nas-mcp-gateway | ✅ | ✅ | ✅ | ✅ | ❌ |
 | adguard | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 ### Documentación (`docs/`)
@@ -161,7 +176,7 @@ incremental ya operativo. El diseño histórico se conserva en
 | Archivo | Propósito |
 |---------|-----------|
 | `docker-entorno.md` | **LEER ANTES de tocar compose** — reglas env_file, redes, convenciones |
-| `dependency-map.md` | **LEER DESPUÉS de cualquier cambio** — grafos A–I, tabla CLI |
+| `dependency-map.md` | **LEER DESPUÉS de cualquier cambio** — grafos A–L, tabla CLI |
 | `ideas-decisions.md` | Historial de 15 decisiones (problema → solución → learning) |
 | `nas-manual.md` | Hardware, IPs, puertos, redes del NAS real |
 | `catalog-sync-pipeline.md` | Cómo funciona el pipeline auto-docs |
