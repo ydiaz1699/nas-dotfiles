@@ -59,3 +59,14 @@ En Python, el primer argumento después de `svc exec` selecciona el compose. Par
 - Las respuestas MCP de `lobehub_preflight`, `lobehub_verify` y `lobehub_status` deben incluir `execution_context.executor=host-helper`, `framework=nas-dotfiles`, `entrypoint=available` y `docker_base=configured`. El check `context` debe detallar únicamente estados como `global_env`, `compose`, `common`, `lobehub_env`, `datasql_env`, `docker_cli` y `docker_access`, nunca sus valores.
 - Si el executor es `local-process`, el sidecar no está usando el helper host. Si es `host-helper` pero `context` falla, el helper llegó al NAS y el problema está en permisos/rutas/Socket Docker del usuario `aadm`, no en el estado real de los contenedores.
 - El helper necesita lectura restringida de `$dkco/.env` y `$dkco/datasql/.env`; usar el grupo privado `nas-mcp` con modo `0640`, nunca permisos públicos. El `.env` de LobeHub puede permanecer `0600` si es propiedad de `aadm`.
+
+
+
+## Cierre de sesión MCP LobeHub: permisos, socket y proveedores
+
+- El helper systemd se ejecuta como `aadm` con grupos suplementarios `docker nas-mcp`. Para reproducir su lectura de archivos, usar `sudo -u aadm -g nas-mcp test -r "$dkco/.env"` y el equivalente para `"$dkco/datasql/.env"`; `sudo -u aadm test -r` no incluye el grupo suplementario y no es una prueba equivalente.
+- Los `.env` compartidos con el helper deben usar grupo privado `nas-mcp` y modo `0640`; nunca relajar secretos a `0644`/`0777` ni imprimirlos.
+- Si después de reiniciar `lobehub-mcp-helper` el helper está activo pero MCP devuelve `helper_unavailable`, comprobar el socket del host y recrear el sidecar con `svc recreate lobehub`. El helper puede haber eliminado y recreado el socket Unix mientras el contenedor conservaba el bind mount del inode anterior. Esto es una hipótesis hasta verificar el runtime real.
+- Secuencia de reanudación: `test -S /run/nas/lobehub-mcp.sock`, `svc config lobehub`, `svc recreate lobehub`, `svc ps lobehub`, y después `lobehub_preflight` desde LobeHub. No declarar resuelto el problema sin la prueba real del NAS.
+- Un `429 RESOURCE_EXHAUSTED` con `provider=google`, modelo Gemini y cuota `limit=0` pertenece al proveedor Google; no diagnosticarlo como fallo del gateway MCP.
+- Los bloques paste-safe no deben incluir prompts de la shell ni etiquetas UI (`Endpoint:`, `Auth type:`, `API Key:`). No pegar `set -e`/`exit` directamente en la shell interactiva root; mantener Bash y Python/Typer separados mediante `NAS_CLI` y `--`.
