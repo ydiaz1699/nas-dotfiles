@@ -678,3 +678,200 @@ sudo systemctl disable --now lobehub-mcp-helper
 - `systemd/lobehub-mcp-helper.env.example`: configuración no secreta del helper.
 - `agent/catalog/services/lobehub/compose.yml`: sidecar interno sin puerto LAN.
 - `agent/catalog/services/lobehub/.env.example`: variables del token y socket.
+
+
+
+## Estado de pausa / handoff 2026-08-29
+
+La integración queda pausada en este punto. Esta sección conserva la evidencia
+operativa y el procedimiento exacto para reanudarla sin repetir diagnósticos ni
+compartir secretos.
+
+### Resultado MCP confirmado antes de la pausa
+
+- La petición POST JSON-RPC sin `Authorization` devolvió `401`; esto confirmó
+  que el endpoint estaba protegido.
+- La petición autenticada de `tools/list` devolvió `200`,
+  `application/json; charset=utf-8` y `tools_count=5`.
+- Las cinco herramientas publicadas fueron `lobehub_preflight`,
+  `lobehub_verify`, `lobehub_status`, `lobehub_providers` y `capabilities`.
+- `svc lobehub verify` terminó con `Resultado: 0 fallos` en la sesión de
+  validación anterior.
+- La configuración de LobeHub que funcionó fue **Streamable HTTP**, endpoint
+  interno `http://lobehub-mcp:8790/mcp` y **API Key sin el prefijo `Bearer`**.
+  El hostname solo es resoluble desde el backend Docker de LobeHub; no debe
+  abrirse desde el navegador ni publicarse el puerto `8790`.
+
+La evidencia anterior confirma el contrato MCP, pero no garantiza que una
+respuesta posterior esté usando el NAS real. Siempre comprobar primero
+`execution_context.executor=host-helper`.
+
+### Permisos y grupos corregidos
+
+El fallo inicial se observó como:
+
+```text
+context: global_env=missing;compose=ok;common=ok;lobehub_env=ok;datasql_env=missing;docker_cli=ok;docker_access=ok
+compose_resolved: compose config falló: permission_denied
+```
+
+La sesión manual se estaba ejecutando como `root`, mientras que el helper corre
+como `aadm`. La corrección aplicada en el NAS fue asignar el grupo privado
+`nas-mcp` a los archivos compartidos y dejarlos en modo `0640`:
+
+```bash
+chgrp nas-mcp "$dkco/.env" "$dkco/datasql/.env"
+chmod 640 "$dkco/.env" "$dkco/datasql/.env"
+```
+
+La comprobación equivalente al contexto real de systemd es:
+
+```bash
+sudo -u aadm -g nas-mcp test -r "$dkco/.env"
+sudo -u aadm -g nas-mcp test -r "$dkco/datasql/.env"
+```
+
+El resultado observado después de corregirlo fue lectura confirmada para:
+
+```text
+$dkco/.env
+$dkco/datasql/.env
+$dkco/lobehub/.env
+$dkco/lobehub/compose.yml
+$dkco/_common.yml
+```
+
+`sudo -u aadm test -r ...` **no es una prueba equivalente**: omite el grupo
+suplementario `nas-mcp` que sí recibe el servicio systemd. En la sesión, la
+unidad mostró `User=aadm` y `SupplementaryGroups=docker nas-mcp`. El `.env` de
+LobeHub conserva su protección local; no se debe cambiar ningún secreto a
+`0644` o `0777`, ni imprimir el contenido de los archivos.
+
+### Estado posterior al reinicio del helper
+
+Después de corregir permisos se ejecutó el reinicio del helper y se confirmó
+`helper_activo`, pero la siguiente llamada MCP devolvió:
+
+```text
+helper_unavailable
+El helper read-only del NAS no está disponible.
+```
+
+La explicación técnica pendiente es el ciclo de vida del socket Unix: el
+helper elimina y vuelve a crear `/run/nas/lobehub-mcp.sock`; el contenedor
+`lobehub-mcp` ya estaba creado con el bind mount del socket anterior y puede
+conservar el inode/socket antiguo. Esto es una **hipótesis compatible con la
+secuencia observada**, no una resolución confirmada: no se tiene acceso SSH al
+NAS desde este entorno.
+
+### Paso pendiente para reanudar
+
+Ejecutar en el NAS, en este orden y sin mostrar variables sensibles:
+
+```bash
+test -S /run/nas/lobehub-mcp.sock && echo "socket_host_ok"
+svc config lobehub >/dev/null 2>&1 && echo "compose_ok"
+svc recreate lobehub
+svc ps lobehub
+```
+
+La recreación es necesaria para que el sidecar vuelva a montar el socket que
+el helper creó después del reinicio. A continuación, desde LobeHub, ejecutar:
+
+```text
+Usa nas-dotfiles y ejecuta lobehub_preflight.
+```
+
+El estado esperado, si la hipótesis era correcta y el stack está sano, es:
+
+```text
+executor: host-helper
+context: global_env=ok;compose=ok;common=ok;lobehub_env=ok;datasql_env=ok;docker_cli=ok;docker_access=ok
+compose_resolved: compose resoluble
+```
+
+Si continúa `helper_unavailable`, conservar únicamente el código sanitizado,
+el estado de la unidad y `test -S`; no copiar logs crudos, tokens ni el
+contenido de `.env`. No declarar resuelto el socket hasta ejecutar esta prueba
+real en el NAS.
+
+### Error de proveedor Google separado del MCP
+
+LobeHub también devolvió un error del proveedor Google:
+
+```text
+code=429
+status=RESOURCE_EXHAUSTED
+provider=google
+model=gemini-3.1-pro
+metric=generate_content_free_tier_requests
+limit=0
+```
+
+Esto indica cuota o facturación del proveedor, no un fallo del gateway MCP, del
+helper ni de la red Docker. La acción pendiente es revisar cuota/billing,
+modelo o proveedor en la configuración de Google. No modificar el gateway para
+resolver este error y no incluir una API key en diagnósticos o documentación.
+
+### Errores de pegado observados
+
+La terminal recibió texto duplicado o etiquetas de la interfaz, por ejemplo
+`getent grougetent`, `sudo systemsudo`, `sudo -u aadsudo`, `echo "Peecho` y
+`bash: nas-mcp: orden no encontrada`. También se pegó un prompt parcial y la
+shell quedó esperando continuación.
+
+Para evitar repetirlo:
+
+- pegar un bloque completo, desde su primera línea hasta su última línea;
+- no pegar `root@Nas ... #`, etiquetas de salida ni campos UI como `Endpoint:`,
+  `Auth type:` o `API Key:` en Bash;
+- separar los bloques de terminal de las instrucciones para LobeHub;
+- no usar `set -e` ni `exit` directamente en la shell interactiva root;
+- si el bloque falla, detenerse y reportar solo la salida sanitizada relevante.
+
+### Sintaxis CLI que debe conservarse
+
+Las dos entradas de `svc` tienen gramáticas distintas:
+
+```bash
+# Bash
+NAS_CLI=bash svc exec lobehub lobehub-mcp python -c 'print("ok")'
+
+# Python/Typer
+NAS_CLI=python svc exec lobehub -- lobehub-mcp python -c 'print("ok")'
+```
+
+No reutilizar esta forma inválida:
+
+```bash
+svc exec lobehub lobehub-mcp -- python -c ...
+```
+
+Tampoco agregar `-T` al CLI Python ni repetir `lobehub` como servicio interno.
+
+### Procedimiento de reanudación y criterio de cierre
+
+1. Ejecutar los cuatro comandos del apartado **Paso pendiente para reanudar**
+   en el NAS.
+2. Ejecutar `lobehub_preflight` desde LobeHub.
+3. Confirmar `executor=host-helper`, todos los estados del contexto en `ok` y
+   `compose_resolved=compose resoluble`.
+4. Si el preflight es correcto, ejecutar `lobehub_verify` y comprobar la
+   evidencia MCP sin mostrar secretos.
+5. Tratar cualquier `429` de Google como incidencia independiente del MCP.
+6. Solo después de esas comprobaciones decidir si se reanuda la configuración
+   de agentes en LobeHub.
+
+### Auditoría de fuentes y variantes
+
+| Fuente | Tipo | Confianza | Contenido/variante | Decisión y clasificación |
+|---|---|---:|---|---|
+| Resultados MCP de la sesión | HECHO | ALTA | `401` sin token; `200` autenticado; cinco tools | INTEGRADO: evidencia de contrato MCP |
+| Diagnósticos `lobehub_preflight` | HECHO | ALTA | `global_env`/`datasql_env` ausentes y `permission_denied` en el contexto del helper | INTEGRADO: causa inicial observada |
+| Comprobaciones manuales de grupos | HECHO | ALTA | `aadm` con `SupplementaryGroups=docker nas-mcp`; lectura con `sudo -u aadm -g nas-mcp` | INTEGRADO: prueba canónica de permisos |
+| Reinicio del helper + llamada MCP | HECHO | ALTA | `helper_activo` seguido de `helper_unavailable` | INTEGRADO: estado de pausa |
+| Ciclo de vida del bind mount Unix | INFERENCIA NO CONFIRMADA | MEDIA | socket stale tras recreación del inode | PENDIENTE: validar con `svc recreate lobehub` |
+| Error del proveedor Google | HECHO | ALTA | `429 RESOURCE_EXHAUSTED`, cuota free tier `limit=0` | FUERA_DE_ALCANCE: revisar cuota/billing del proveedor |
+| Variantes `NAS_CLI=bash` y `NAS_CLI=python` | HECHO | ALTA | dos sintaxis válidas; variante mezclada inválida | INTEGRADO: conservar separadas |
+| Errores de pegado | HECHO | ALTA | duplicación de comandos y etiquetas UI en Bash | INTEGRADO: reglas paste-safe |
+| Acceso SSH/runtime desde este entorno | DESCONOCIDO | ALTA | no disponible | BLOQUEADO: la recreación debe ejecutarse en el NAS |

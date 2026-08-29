@@ -495,3 +495,23 @@ Cuando la credencial local sea `LOBEHUB_MCP_TOKEN`:
 ## Contexto de ejecución del MCP
 
 No asumir que una respuesta de `lobehub_verify` usa el NAS real solo porque el HTTP MCP responde. Confirmar el campo seguro `execution_context.executor=host-helper`; `local-process` indica fallback del proceso HTTP. El check `context` debe mostrar estados seguros por nombre (`global_env`, `compose`, `common`, `lobehub_env`, `datasql_env`, `docker_cli`, `docker_access`) sin imprimir rutas o valores. El helper host necesita leer `$dkco/.env` y `$dkco/datasql/.env` mediante el grupo privado `nas-mcp` con modo `0640`; nunca cambiar secretos a permisos públicos. Si el helper reporta `context` fallido, distinguir permisos/rutas/socket Docker de un servicio realmente detenido.
+
+
+
+## Handoff MCP: identidad efectiva y socket recreado
+
+- Para validar lectura del helper, reproducir la identidad completa de systemd:
+  `sudo -u aadm -g nas-mcp test -r "$dkco/.env"` y el mismo comando para
+  `"$dkco/datasql/.env"`. No presentar `sudo -u aadm test -r` como equivalente,
+  porque omite `SupplementaryGroups=nas-mcp`.
+- Si el helper se reinicia y después aparece `helper_unavailable` aunque el
+  servicio esté activo, comprobar el socket del host y usar `svc recreate
+  lobehub` para refrescar el bind mount del sidecar. La causa de socket stale
+  debe marcarse como hipótesis hasta confirmarla en el NAS; no pedir ni mostrar
+  el token para diagnosticarla.
+- Mantener separados los errores de proveedor: `429 RESOURCE_EXHAUSTED` con
+  `provider=google` y cuota `limit=0` requiere revisar cuota/billing/modelo de
+  Google, no cambiar MCP ni sus permisos.
+- En comandos paste-safe, no incluir prompts, etiquetas de LobeHub ni bloques
+  truncados; conservar `NAS_CLI=bash` y `NAS_CLI=python` como variantes
+  separadas, y limpiar siempre variables temporales con `unset`.
