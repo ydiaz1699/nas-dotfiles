@@ -260,9 +260,11 @@ def _run_svc(action: str, timeout: int) -> Dict[str, Any]:
     if not repo.exists() or not script.is_file():
         return _error("framework_unavailable", "No está disponible el entrypoint del framework.")
 
+    docker_base = os.environ.get("DOCKER_BASE", "").strip() or "/docker"
     env = os.environ.copy()
     env["NAS_DOTFILES"] = str(repo)
-    env.setdefault("DOCKER_BASE", "/docker")
+    env["DOCKER_BASE"] = docker_base
+    env["NAS_CLI"] = "bash"
     env["LC_ALL"] = "C.UTF-8"
     started = time.monotonic()
     try:
@@ -283,6 +285,12 @@ def _run_svc(action: str, timeout: int) -> Dict[str, Any]:
         return _error("framework_unavailable", "No se pudo iniciar la comprobación del framework.")
 
     duration_ms = int((time.monotonic() - started) * 1000)
+    execution_context = {
+        "executor": "host-helper" if os.environ.get("MCP_MODE") == "helper" else "local-process",
+        "framework": "nas-dotfiles",
+        "entrypoint": "available",
+        "docker_base": "configured" if docker_base else "missing",
+    }
     if action == "status":
         payload: Dict[str, Any] = {
             "ok": completed.returncode == 0,
@@ -295,6 +303,7 @@ def _run_svc(action: str, timeout: int) -> Dict[str, Any]:
             "operation": f"lobehub_{action if action != 'providers' else 'providers'}",
             "checks": _check_lines(completed.stdout),
         }
+    payload["execution_context"] = execution_context
     if completed.returncode != 0 and not payload.get("checks") and not payload.get("services"):
         payload["error"] = "operation_failed"
         payload["message"] = "La comprobación read-only terminó con error; consulte el NAS."

@@ -52,3 +52,10 @@ En Python, el primer argumento después de `svc exec` selecciona el compose. Par
 - Evidencia de aceptación: POST sin token devuelve `401`; `tools/list` autenticado devuelve `200`, `application/json; charset=utf-8` y `tools_count=5`. `svc lobehub verify` debe terminar con `Resultado: 0 fallos`; `QSTASH_TOKEN not set` es un aviso opcional.
 - “Migración PostgreSQL” significa que LobeHub migró `lobehub_db` dentro de `datapostgres` de DataSQL; no implica crear otro PostgreSQL. Mantener `lobehub_user` dedicado y mínimo privilegio.
 - En una sesión interactiva, texto como `Endpoint:`/`Auth type:`/`API Key:` se copia solo en la UI, nunca en Bash. Si aparece `csl: orden no encontrada`, se pegó contenido de presentación en la terminal.
+
+
+## Verificación de contexto del helper
+
+- Las respuestas MCP de `lobehub_preflight`, `lobehub_verify` y `lobehub_status` deben incluir `execution_context.executor=host-helper`, `framework=nas-dotfiles`, `entrypoint=available` y `docker_base=configured`.
+- Si el executor es `local-process`, el sidecar no está usando el helper host. Si es `host-helper` pero `context` falla, el helper llegó al NAS y el problema está en permisos/rutas/Socket Docker del usuario `aadm`, no en el estado real de los contenedores.
+- El helper necesita lectura restringida de `$dkco/.env` y `$dkco/datasql/.env`; usar el grupo privado `nas-mcp` con modo `0640`, nunca permisos públicos. El `.env` de LobeHub puede permanecer `0600` si es propiedad de `aadm`.
