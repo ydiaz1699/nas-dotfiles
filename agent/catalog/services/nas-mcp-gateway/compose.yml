@@ -7,7 +7,7 @@ services:
       service: _defaults
     build:
       context: ${NAS_DOTFILES:-/nas-dotfiles}/agent
-      dockerfile: mcp/nas-gateway.Dockerfile
+      dockerfile: mcp/nas_mcp_gateway/Dockerfile
     image: nas-dotfiles/nas-mcp-gateway:0.1.0
     container_name: nas-mcp-gateway
     env_file:

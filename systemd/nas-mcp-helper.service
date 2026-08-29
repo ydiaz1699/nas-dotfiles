@@ -16,7 +16,7 @@ Environment=DOCKER_BASE=/docker
 Environment=MCP_HELPER_SOCKET=/run/nas/nas-mcp-gateway.sock
 Environment=MCP_SOCKET_GID=__configura_gid_del_grupo_nas_mcp__
 EnvironmentFile=-/etc/nas/nas-mcp-helper.env
-ExecStart=/usr/bin/python3 ${NAS_DOTFILES}/agent/nas_mcp_worker.py --mode helper
+ExecStart=/usr/bin/python3 ${NAS_DOTFILES}/agent/mcp/nas_mcp_gateway/nas_mcp_worker.py --mode helper
 
 Restart=on-failure
 RestartSec=5
