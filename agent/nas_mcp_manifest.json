@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "server": {
+    "name": "nas-mcp-gateway",
+    "version": "0.1.0",
+    "description": "Gateway MCP read-only del framework nas-dotfiles con activación lazy"
+  },
+  "activation": {
+    "mode": "lazy-worker",
+    "idle_seconds": 600,
+    "helper_socket": "/run/nas/nas-mcp-gateway.sock"
+  },
+  "tools": [
+    {
+      "name": "nas_services",
+      "operation": "nas_services",
+      "description": "Lista los servicios conocidos del NAS y su estado resumido. Solo lectura.",
+      "timeout_seconds": 30,
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "nas_health",
+      "operation": "nas_health",
+      "description": "Consulta la salud de los servicios Docker del NAS sin modificar el runtime.",
+      "timeout_seconds": 60,
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "nas_capabilities",
+      "operation": "nas_capabilities",
+      "description": "Descubre las capacidades read-only conectadas del framework nas-dotfiles.",
+      "timeout_seconds": 30,
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "nas_diagnostics",
+      "operation": "nas_diagnostics",
+      "description": "Ejecuta el diagnóstico seguro del NAS y devuelve solo salida sanitizada.",
+      "timeout_seconds": 120,
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    }
+  ]
+}

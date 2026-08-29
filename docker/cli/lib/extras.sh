@@ -1040,6 +1040,9 @@ _svc_cron_remove() {
 DOCTOR_LOG="${DOCKER_BASE:-/docker}/backups/doctor-history.log"
 
 _svc_doctor_log() {
+  # El helper MCP puede ejecutar el diagnóstico, pero esa superficie es
+  # estrictamente read-only y no debe crear doctor-history.log.
+  [[ "${SVC_DOCTOR_NO_HISTORY:-0}" == "1" ]] && return 0
   local issues="$1"
   local warnings="$2"
   local timestamp

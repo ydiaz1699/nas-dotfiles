@@ -44,3 +44,6 @@ agent/memory/sessions/*.md
 !.kiro/steering/
 .kiro/steering/*
 !.kiro/steering/svc-cli-runtime.md
+
+!.kiro/skills/nas-mcp-gateway/
+!.kiro/skills/nas-mcp-gateway/SKILL.md

@@ -1,5 +1,9 @@
 # El contexto del sidecar contiene solo el módulo MCP y su Dockerfile.
 *
 !lobehub_mcp.py
+!nas_mcp_gateway.py
+!nas_mcp_worker.py
+!nas_mcp_manifest.json
 !mcp/
 !mcp/Dockerfile
+!mcp/nas-gateway.Dockerfile
