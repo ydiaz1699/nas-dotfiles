@@ -1,0 +1,64 @@
+# VS Code Server — configuración canónica para exportar a $dkco/vscode/compose.yml.
+# En el catálogo extends apunta a ../../_common.yml; al desplegar en el NAS
+# la ruta se transforma a ../_common.yml.
+services:
+  vscode:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: ghcr.io/coder/code-server:4.135.0-39
+    container_name: vscode
+    user: "${VSCODE_UID}:${VSCODE_GID}"
+    env_file:
+      - ../.env
+      - .env
+    ports:
+      - "8443:8080"
+    volumes:
+      - type: bind
+        source: ./config
+        target: /home/coder/.config
+        read_only: false
+      - type: bind
+        source: ./local
+        target: /home/coder/.local
+        read_only: false
+      - type: bind
+        source: ./workspace
+        target: /home/coder/project/workspace
+        read_only: false
+      - type: bind
+        source: ${NAS_DOTFILES}
+        target: /home/coder/project/nas-dotfiles
+        read_only: false
+      - type: bind
+        source: ../homeassistant/data
+        target: /home/coder/project/homeassistant
+        read_only: false
+    # Se evita el entrypoint oficial porque ejecuta fixuid/sudo y falla con
+    # no-new-privileges cuando el contenedor ya tiene UID/GID explícitos.
+    entrypoint:
+      - /usr/bin/code-server
+    command:
+      - --config
+      - /home/coder/.config/code-server/config.yaml
+      - --bind-addr
+      - 0.0.0.0:8080
+      - --disable-telemetry
+      - /home/coder/project
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -fsS
+        - http://127.0.0.1:8080/healthz
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    labels:
+      - homepage.group=Herramientas
+      - homepage.name=VS Code Server
+      - homepage.icon=code-server
+      - homepage.href=http://${SERVER_IP}:8443
+      - homepage.description=Editor VS Code en el navegador
