@@ -18,10 +18,11 @@ Esta guía incorpora la configuración real compartida en la [guía de Home Assi
 4. [Integración opcional con PostgreSQL/DataSQL](#integración-opcional-con-postgresql-datasql)
 5. [Verificación y operación diaria](#verificación-y-operación-diaria)
 6. [Organización con includes](#organización-con-includes)
-7. [Integración con ntfy (notificaciones push)](#integración-con-ntfy)
-8. [Automatización: Cámara → snapshot → ntfy](#automatización-cámara--snapshot--ntfy)
-9. [TvOverlay (notificaciones en TV)](#tvoverlay)
-10. [Troubleshooting](#troubleshooting)
+7. [secrets.yaml](#secretsyaml)
+8. [Integración con ntfy (notificaciones push)](#integración-con-ntfy)
+9. [Automatización: Cámara → snapshot → ntfy](#automatización-cámara--snapshot--ntfy)
+10. [TvOverlay (notificaciones en TV)](#tvoverlay)
+11. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -32,14 +33,21 @@ $dkco/homeassistant/
 ├── compose.yml
 ├── .env                            ← HOMEASSISTANT_TOKEN (para Homepage widget)
 └── data/                           ← montado como /config dentro del contenedor
-    ├── configuration.yaml          ← config principal (con !includes)
+    ├── configuration.yaml          ← raíz, solo incluye módulos
+    ├── secrets.yaml                ← secretos de Home Assistant (no subir a git)
     ├── automations.yaml            ← automatizaciones
     ├── scripts.yaml
     ├── scenes.yaml
-    ├── includes/                   ← configs separadas por tema
+    ├── core/                       ← ajustes base del sistema
+    │   ├── homeassistant.yaml
+    │   ├── recorder.yaml
+    │   ├── http.yaml
+    │   ├── zeroconf.yaml
+    │   └── panel_custom.yaml
+    ├── includes/                   ← integraciones
     │   ├── shell_commands.yaml     ← ntfy, utilidades
     │   ├── tvoverlay_commands.yaml ← TvOverlay (rest_command)
-    │   └── notify.yaml            ← plataformas de notificación
+    │   └── notify.yaml             ← plataformas de notificación
     └── www/
         └── snapshots/              ← imágenes de cámara (temporales)
             └── alarma.jpg          ← se sobreescribe en cada detección
@@ -204,35 +212,99 @@ motivo actual, deténlo con `svc stop homeassistant` y después consulta
 
 ## Organización con includes
 
-En vez de meter todo en `configuration.yaml` (que se vuelve enorme), usar `!include`:
+En vez de meter todos los ajustes en `configuration.yaml` (que se vuelve enorme), la configuración se separa en dos carpetas mediante `!include`:
 
-### configuration.yaml (limpio)
+- `core/` contiene los ajustes base del sistema: `homeassistant`, `recorder`, `http`, `zeroconf` y `panel_custom`.
+- `includes/` contiene integraciones y acciones separadas: `shell_command`, `rest_command` y `notify`.
+
+Los archivos `homeassistant.yaml`, `recorder.yaml`, `http.yaml` y `zeroconf.yaml` son **mapas YAML**: contienen pares `clave: valor` y no empiezan con guion. En cambio, `panel_custom.yaml` es una **lista YAML**: empieza con `-` porque esa integración espera una lista de paneles, aunque aquí solo se defina uno. No se debe igualar el formato entre estos archivos.
+
+### configuration.yaml (raíz, solo includes)
 
 ```yaml
-# Solo lo esencial + includes
-homeassistant:
-  name: Home
-  unit_system: metric
-  time_zone: America/La_Paz
-
-# Includes organizados
-shell_command: !include includes/shell_commands.yaml
-rest_command: !include includes/tvoverlay_commands.yaml
-notify: !include includes/notify.yaml
-
-# Estos ya los genera HA automáticamente
+default_config:
+homeassistant: !include core/homeassistant.yaml
+frontend:
+  themes: !include_dir_merge_named themes
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+recorder: !include core/recorder.yaml
+http: !include core/http.yaml
+zeroconf: !include core/zeroconf.yaml
+ssdp:
+shell_command: !include includes/shell_commands.yaml
+rest_command: !include includes/tvoverlay_commands.yaml
+notify: !include includes/notify.yaml
+panel_custom: !include core/panel_custom.yaml
 ```
 
-### Crear archivos includes
+`default_config:` y `ssdp:` son claves válidas sin contenido adicional. `configuration.yaml` ya no contiene directamente los valores de `homeassistant`, `recorder`, `http` ni `zeroconf`; solo conecta cada integración con su archivo de `core/` o `includes/`.
+
+### Archivos de `core/`
+
+Crear `$dkco/homeassistant/data/core/` y guardar estos archivos completos:
+
+#### `core/homeassistant.yaml`
+
+```yaml
+name: Home
+unit_system: metric
+time_zone: America/La_Paz
+allowlist_external_dirs:
+  - "/config/www/snapshots"
+```
+
+#### `core/recorder.yaml`
+
+```yaml
+db_url: !secret recorder_db_url
+purge_keep_days: 10
+auto_purge: true
+commit_interval: 1
+```
+
+El password no se escribe en este archivo. La referencia `!secret recorder_db_url` se resuelve desde `secrets.yaml`; consulta la sección [secrets.yaml](#secretsyaml).
+
+#### `core/http.yaml`
+
+```yaml
+use_x_forwarded_for: true
+trusted_proxies:
+  - 192.168.1.0/24
+  - 127.0.0.1
+```
+
+#### `core/zeroconf.yaml`
+
+```yaml
+default_interface: true
+ipv6: false
+```
+
+#### `core/panel_custom.yaml`
+
+```yaml
+- name: panel_develop
+  sidebar_title: Developer Tools
+  sidebar_icon: mdi:hammer
+  url_path: 'config/developer-tools'
+  module_url: /api/hassio/app/entrypoint.js
+  embed_iframe: true
+  require_admin: true
+```
+
+> **Nota sobre `panel_custom` y Developer Tools:** `module_url: /api/hassio/app/entrypoint.js` es una ruta pensada para Home Assistant OS con Supervisor. En una instalación Docker Container pura, como la de esta guía, se esperaría que fallara. Sin embargo, **confirmado en producción:** el panel personalizado sí aparece y funciona correctamente en la barra lateral de este entorno Docker Container, por lo que se mantiene como válido para este setup específico. Si en algún momento deja de cargar al hacer clic, Developer Tools ya existe de forma nativa gracias a `default_config:` y queda disponible como respaldo.
+
+### Crear archivos de integración en `includes/`
 
 Desde el NAS (la ruta `$dkco/homeassistant/data/` es `/config` dentro de HA):
 
 ```bash
-# Crear carpeta
+# Crear carpetas antes de crear archivos
+mkdir -p $dkco/homeassistant/data/core
 mkdir -p $dkco/homeassistant/data/includes
+mkdir -p $dkco/homeassistant/data/www/snapshots
 
 # Crear shell_commands.yaml
 cat > $dkco/homeassistant/data/includes/shell_commands.yaml << 'EOF'
@@ -370,29 +442,35 @@ cat > $dkco/homeassistant/data/includes/notify.yaml << 'EOF'
     corner: "{{ data.corner | default(null) }}"
     duration: "{{ data.duration | default(7) }}"
 EOF
-
-# Crear carpeta de snapshots
-mkdir -p $dkco/homeassistant/data/www/snapshots
 ```
 
-### Agregar includes a configuration.yaml
+La secuencia es intencional: primero se crean las carpetas, después los archivos. Los permisos, si fueran necesarios, se aplican solo después de que existan los archivos.
+
+### Configurar `configuration.yaml`
+
+Escribir la configuración raíz completa —no añadir fragmentos a una versión antigua— para evitar duplicados:
 
 ```bash
-# Agregar al final de configuration.yaml (si no están ya)
-cat >> $dkco/homeassistant/data/configuration.yaml << 'EOF'
-
-# ================================================================
-# Includes organizados (ver carpeta includes/)
-# ================================================================
+cat > $dkco/homeassistant/data/configuration.yaml << 'EOF'
+default_config:
+homeassistant: !include core/homeassistant.yaml
+frontend:
+  themes: !include_dir_merge_named themes
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+recorder: !include core/recorder.yaml
+http: !include core/http.yaml
+zeroconf: !include core/zeroconf.yaml
+ssdp:
 shell_command: !include includes/shell_commands.yaml
 rest_command: !include includes/tvoverlay_commands.yaml
 notify: !include includes/notify.yaml
+panel_custom: !include core/panel_custom.yaml
 EOF
 ```
 
-> ⚠️ **IMPORTANTE:** Si ya tienes `shell_command:`, `rest_command:` o `notify:` 
-> definidos directamente en `configuration.yaml`, **borrar esas secciones** antes
-> de agregar los includes. No pueden coexistir ambos.
+> ⚠️ **IMPORTANTE:** Si ya tienes `shell_command:`, `rest_command:` o `notify:` definidos directamente en `configuration.yaml`, reemplaza el archivo por la versión completa anterior o borra esas secciones directas antes de usar los includes. No pueden coexistir las definiciones directas con sus respectivos `!include`.
 
 ### Aplicar cambios
 
@@ -401,6 +479,39 @@ EOF
 svc restart homeassistant
 
 # O desde HA: Herramientas para desarrolladores → YAML → Recargar todo
+```
+
+---
+
+## secrets.yaml
+
+El password de PostgreSQL usado por Recorder **ya no se escribe en texto plano dentro de `core/recorder.yaml`**. Ese archivo solo contiene `db_url: !secret recorder_db_url`; el valor real vive en `$dkco/homeassistant/data/secrets.yaml`, que Home Assistant carga como `/config/secrets.yaml`.
+
+Crear o editar el archivo con el URI real del usuario dedicado:
+
+```yaml
+recorder_db_url: "postgresql://ha_user:TU_PASSWORD@127.0.0.1:5432/homeassistant_db"
+```
+
+Sustituir `TU_PASSWORD` por el password real de `ha_user`. `secrets.yaml` contiene credenciales y **nunca debe subirse a git ni compartirse**. Mantenerlo solo en el NAS y revisar que no se incluya accidentalmente en capturas, logs, commits o mensajes de soporte.
+
+Si se pierde el password, resetearlo en PostgreSQL y después actualizar el mismo valor en `data/secrets.yaml`:
+
+```bash
+svc exec datasql postgres
+```
+
+Dentro de la sesión SQL de PostgreSQL:
+
+```sql
+ALTER ROLE ha_user WITH PASSWORD 'nueva_password';
+```
+
+Después, reemplazar el valor de `TU_PASSWORD` en `recorder_db_url` por `nueva_password` y validar la configuración antes de reiniciar HA:
+
+```bash
+svc config homeassistant
+svc restart homeassistant
 ```
 
 ---
@@ -642,16 +753,18 @@ svc logs homeassistant
 Revisar primero `configuration.yaml`, la URL del Recorder, la disponibilidad de
 DataSQL y los permisos del bind `./data:/config`.
 
-### `curl: cannot open '/config/www/snapshots/alarma.jpg'`
+### `Cannot write /config/www/snapshots/alarma.jpg` o `allowlist_external_dirs`
 
-La carpeta no existe. Crear desde el NAS:
+La ruta autorizada para los snapshots de cámara es `/config/www/snapshots`, declarada en `core/homeassistant.yaml` y equivalente a `$dkco/homeassistant/data/www/snapshots` en el NAS. Es la misma ruta que usa la automatización cámara → ntfy porque permanece dentro de `/config`.
+
+Si la carpeta no existe, crearla desde el NAS:
+
 ```bash
 mkdir -p $dkco/homeassistant/data/www/snapshots
 ```
 
-### `Cannot write /tmp/alarma.jpg, allowlist_external_dirs`
+`/tmp` **nunca fue necesario para este caso de uso**. Si aparece `/tmp` en una configuración o en un diagnóstico antiguo, eliminarlo y cambiar el `filename` a `/config/www/snapshots/alarma.jpg`.
 
-HA no tiene permiso para escribir en `/tmp/`. Usar `/config/www/snapshots/` en vez de `/tmp/`.
 
 ### `extra keys not allowed @ data['image']` en ntfy.publish
 
@@ -672,6 +785,27 @@ O reiniciar HA: `svc restart homeassistant`
 
 No pueden coexistir `shell_command:` definido directamente en `configuration.yaml`
 Y también como `!include`. Borrar la definición directa y dejar solo el include.
+
+### `!include`, `!secret` o `!include_dir_merge_named` aparecen como `unknown tag`
+
+Si un editor de archivos como Filebrowser, Cockpit u otro linter genérico marca líneas con `!include`, `!secret` o `!include_dir_merge_named` como `unknown tag`, o muestra un ícono de error, no es un error real de Home Assistant. Son etiquetas personalizadas que el linter YAML genérico del editor no reconoce. La validación real de esta configuración es siempre:
+
+```bash
+svc config homeassistant
+```
+
+### Error de ruta relativa al crear archivos con `cat`
+
+Al crear archivos con un heredoc como `cat > archivo.yaml << 'EOF'` dentro del NAS, comprobar primero la carpeta actual con `pwd` o con la ruta mostrada en el prompt. Si ya estás dentro de `data/core/`, usa solo el nombre del archivo:
+
+```bash
+pwd
+cat > homeassistant.yaml << 'EOF'
+# contenido
+EOF
+```
+
+No uses en ese caso `cat > data/core/homeassistant.yaml << 'EOF'`: intentaría crear una subcarpeta `data/core/` dentro de la carpeta en la que ya estás y puede fallar con `No existe el fichero o el directorio`. Si estás en `$dkco/homeassistant/`, entonces sí puedes usar la ruta completa `$dkco/homeassistant/data/core/homeassistant.yaml`.
 
 ### Snapshot se ejecuta pero shell_command falla
 
