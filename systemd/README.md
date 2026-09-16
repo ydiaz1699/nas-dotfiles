@@ -25,24 +25,27 @@ sudo systemctl enable --now nas-agent
 
 ## Arranque escalonado de Docker
 
-El arranque de Compose está separado del daemon del agente. Para instalar el
-coordinador por capas, copia `docker-boot-staged.service` a `/etc/systemd/system`
-después de crear `$dkco/scripts/layers.conf` y sigue
+El arranque de Compose está separado del daemon del agente. La unidad se
+**genera desde una plantilla** con las rutas reales de la instalación
+(`NAS_DOTFILES` y `DOCKER_BASE`), no se copia con rutas fijas. Tras crear
+`$dkco/scripts/layers.conf`, sigue
 [`docs/docker-boot-staged-guide.md`](../docs/docker-boot-staged-guide.md).
 La unidad requiere `docker.service`, espera red/montajes y ejecuta
 `$NAS_DOTFILES/shell/scripts/boot-order.sh` como root. No se debe habilitar hasta
 probar primero el script manualmente.
 
 ```bash
-sudo cp "$NAS_DOTFILES/systemd/docker-boot-staged.service" \
-  /etc/systemd/system/docker-boot-staged.service
-sudo systemctl daemon-reload
+# Genera /etc/systemd/system/docker-boot-staged.service con tus rutas
+sudo NAS_DOTFILES="$NAS_DOTFILES" DOCKER_BASE="$DOCKER_BASE" \
+  "$NAS_DOTFILES/shell/scripts/install-boot-service.sh"
+# Habilitar cuando el arranque manual ya funcione
 sudo systemctl enable docker-boot-staged.service
 sudo systemctl start docker-boot-staged.service
 ```
 
 Ver el resultado con `sudo systemctl status docker-boot-staged.service` y el
-log operativo en `$dkco/scripts/boot-order.log`.
+log operativo en `$dkco/scripts/boot-order.log`. El unit file en `/etc` es
+generado: no editarlo a mano, regenerarlo con el instalador si cambian las rutas.
 
 ## Comandos
 
