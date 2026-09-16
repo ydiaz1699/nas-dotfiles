@@ -1,6 +1,6 @@
 # Arranque escalonado de contenedores Docker
 
-Esta implementación evita que Docker arranque todos los Compose en paralelo al reiniciar el NAS. Los servicios se agrupan en capas en `$dkco/scripts/layers.conf`; dentro de una capa se arrancan en paralelo, pero la siguiente espera a que todos los contenedores estén `running` y, cuando tienen healthcheck, `healthy`.
+Esta implementación evita que Docker arranque todos los Compose en paralelo al reiniciar el NAS. Los servicios se agrupan en capas en `$dkco/scripts/layers.conf`; por defecto se arrancan **uno a uno dentro de cada capa** (arranque secuencial), esperando que cada contenedor esté `running` y, cuando tiene healthcheck, `healthy`, antes de pasar al siguiente. La siguiente capa no empieza hasta terminar la actual. Con `BOOT_ORDER_SERIAL=0` los servicios de una misma capa arrancan en paralelo.
 
 ## Diferencias importantes respecto al borrador original
 
@@ -110,15 +110,15 @@ El servicio usa `RequiresMountsFor=/docker`, espera `network-online.target` y ex
 | `BOOT_ORDER_DAEMON_TIMEOUT` | `60` | Segundos máximos de espera a que Docker responda |
 | `BOOT_ORDER_REQUIRE_ALL` | `1` | Falla si un Compose de `$dkco` no está en `layers.conf` |
 | `BOOT_ORDER_ALLOW_MISSING` | `0` | Con `1`, omite (en vez de fallar) servicios de `layers.conf` sin Compose |
-| `BOOT_ORDER_SERIAL` | `0` | Con `1`, arranca los servicios de cada capa uno a uno esperando readiness entre ellos, en vez de en paralelo |
+| `BOOT_ORDER_SERIAL` | `1` | Default: arranca los servicios de cada capa uno a uno esperando readiness entre ellos. Con `0`, arranca toda la capa en paralelo |
 
 ## Operación
 
 - Agregar un servicio: añadir su nombre en la capa adecuada de `$dkco/scripts/layers.conf`.
 - Quitar un servicio: eliminar/comentar su línea. Si el Compose sigue instalado y `BOOT_ORDER_REQUIRE_ALL=1`, el script lo considerará omitido; para retirarlo del boot hay que retirar también el Compose o mantener una decisión documentada de no arrancarlo.
 - Reordenar: mover el servicio a otro bloque separado por una línea en blanco.
-- Arranque manual: `NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/boot-order.sh"`.
-- Arranque manual secuencial (menor pico de I/O): `BOOT_ORDER_SERIAL=1 NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/boot-order.sh"`.
+- Arranque manual (secuencial por defecto): `NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/boot-order.sh"`.
+- Arranque manual en paralelo dentro de capa: `BOOT_ORDER_SERIAL=0 NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/boot-order.sh"`.
 - Log: `cat "$dkco/scripts/boot-order.log"`.
 - Estado: `svc health`.
 - Estado de systemd: `sudo systemctl status docker-boot-staged.service`.
