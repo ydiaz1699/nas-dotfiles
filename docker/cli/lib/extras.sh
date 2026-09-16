@@ -307,7 +307,7 @@ services:
   app:
     image: IMAGE:TAG
     container_name: SERVICE_NAME
-    restart: unless-stopped
+    restart: on-failure:5
     ports:
       - "PORT:PORT"
     volumes:

@@ -3,7 +3,7 @@ services:
   homepage:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
-    restart: unless-stopped
+    restart: on-failure:5
     env_file:
       - ../.env
       - .env

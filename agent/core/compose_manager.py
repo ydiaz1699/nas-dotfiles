@@ -195,10 +195,12 @@ class ComposeManager:
                 advertencias.append(f"⚠️  {svc_name}: falta container_name")
 
             restart = svc_config.get("restart", "")
-            if restart == "unless-stopped":
-                ok.append("✅ restart: unless-stopped")
+            if restart == "on-failure:5":
+                ok.append("✅ restart: on-failure:5")
+            elif restart == "no":
+                ok.append("✅ restart: no (job one-shot)")
             elif restart:
-                advertencias.append(f"⚠️  restart='{restart}' (usar unless-stopped)")
+                advertencias.append(f"⚠️  restart='{restart}' (usar on-failure:5; no para jobs one-shot)")
             else:
                 errores.append(f"❌ {svc_name}: falta restart policy")
 

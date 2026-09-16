@@ -66,7 +66,7 @@ Entrega siempre en este orden exacto:
 7. `svc catalog-sync <svc>` después de confirmar que funciona
 
 Restricciones: `compose.yml` (nombre preferido) · `.env` solo secretos ·
-variables triviales inline · `unless-stopped` · puertos 8100-8999 ·
+variables triviales inline · `on-failure:5` para servicios persistentes · `restart: no` solo para jobs one-shot documentados · puertos 8100-8999 ·
 nunca 22/53/80/443 · nombres `^[a-z0-9][a-z0-9._-]{0,63}$`
 
 Para plantillas y estructura de carpetas, ver `references/svc.md`.

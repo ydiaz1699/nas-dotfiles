@@ -61,5 +61,5 @@
 - **Puertos nuevos**: 8100-8999
 - **Puertos reservados**: 22, 53, 80, 443 (nunca)
 - **Secrets**: en `.env`, nunca inline
-- **Restart policy**: `unless-stopped`
+- **Restart policy**: `on-failure:5` para permitir el arranque escalonado; jobs one-shot pueden usar `no`
 - **Nombres servicio**: `^[a-z0-9][a-z0-9._-]{0,63}$`

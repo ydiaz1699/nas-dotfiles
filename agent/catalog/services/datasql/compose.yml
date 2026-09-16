@@ -51,7 +51,7 @@ services:
     # pgAdmin usa sudo internamente; no heredar security_opt/cap_drop.
     image: dpage/pgadmin4:9.17
     container_name: datapgadmin
-    restart: unless-stopped
+    restart: on-failure:5
     logging:
       driver: json-file
       options:

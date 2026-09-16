@@ -328,7 +328,7 @@ El agente incluye instrucciones de razonamiento paso a paso:
 - **Nombres de servicio**: `^[a-z0-9][a-z0-9._-]{0,63}$`
 - **Puertos nuevos**: rango 8100-8999
 - **Puertos reservados**: 22, 53, 80, 443 (nunca asignar)
-- **Restart policy**: `unless-stopped` siempre
+- **Restart policy**: `on-failure:5` para servicios persistentes; jobs one-shot pueden usar `no`
 - **Secrets**: en `.env`, nunca inline en compose
 - **Commits**: conventional commits (feat:, fix:, security:, docs:)
 

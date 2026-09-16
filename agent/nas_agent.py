@@ -446,7 +446,7 @@ BLOCK_CREACION = """
 ## Reglas de configuración
 - Puertos reservados: 22, 53, 80, 443 — NUNCA
 - Rango servicios nuevos: 8100-8999
-- Restart policy: SIEMPRE unless-stopped
+- Restart policy: `on-failure:5` para permitir arranque escalonado; jobs one-shot pueden usar `no`
 - Secrets: SIEMPRE en .env, NUNCA inline en compose
 - Healthcheck: agregar si expone HTTP
 - Formato: seguir _rules.md del catálogo

@@ -227,7 +227,7 @@ def create_service(
     compose_lines = [anchors_block, "", "services:", f"  {service_name}:"]
     compose_lines.append(f"    image: {image}")
     compose_lines.append(f"    container_name: {service_name}")
-    compose_lines.append(f"    restart: unless-stopped")
+    compose_lines.append(f"    restart: on-failure:5")
     compose_lines.append(f"    <<: [*security-defaults, *resource-defaults]")
     compose_lines.append(f"    environment:")
     compose_lines.append(f"      <<: *common-env")

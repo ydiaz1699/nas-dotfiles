@@ -68,7 +68,7 @@ def create(name: str = typer.Argument(None, help="Nombre del servicio")):
   app:
     image: {image}
     container_name: {name}
-    restart: unless-stopped
+    restart: on-failure:5
     ports:
       - "{port}:{port}"
     volumes:

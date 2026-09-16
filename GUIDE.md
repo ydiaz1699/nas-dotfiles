@@ -55,7 +55,11 @@ nas-dotfiles/
     shell/
         init.sh                 Loader principal
         scripts/
-            start-all.sh        Levantar servicios en orden
+            start-all.sh        Compatibilidad con el arranque escalonado
+            boot-order.sh       Arranque por capas + health gates
+            layers.conf.example Plantilla de capas runtime
+            find-no-extends.sh  Detectar Compose especiales
+            apply-restart-policy.sh  Migrar policies existentes
             stop-all.sh         Detener + apagar NAS
             restart-all.sh      Detener + reiniciar NAS
             install_docker.sh   Instalar Docker Engine en Debian

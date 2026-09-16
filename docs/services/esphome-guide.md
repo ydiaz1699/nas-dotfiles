@@ -100,7 +100,7 @@ services:
   esphome:
     image: ghcr.io/esphome/esphome:latest
     container_name: esphome
-    restart: unless-stopped
+    restart: on-failure:5
     network_mode: host          # Necesario para mDNS (descubrimiento de ESPs)
     privileged: true            # Necesario para acceso a USB serial
     volumes:
