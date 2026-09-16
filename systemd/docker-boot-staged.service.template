@@ -30,11 +30,18 @@ Environment=BOOT_ORDER_HEALTH_TIMEOUT=480
 # Arranque secuencial dentro de cada capa (uno a uno). Es el comportamiento por
 # defecto (menor pico de I/O). Para arrancar cada capa en paralelo, poner 0:
 Environment=BOOT_ORDER_SERIAL=1
+# Espera inicial tras el boot antes de la primera capa: deja que kernel/systemd/
+# dockerd se estabilicen antes de sumar la carga de los contenedores.
+Environment=BOOT_ORDER_INITIAL_DELAY=30
+# Pausa entre servicios (y entre capas) para que el CPU del anterior se asiente
+# antes del siguiente. Clave en hardware con pocos cores (evita CPU al 100%).
+Environment=BOOT_ORDER_SETTLE_DELAY=10
 ExecStart={{NAS_DOTFILES}}/shell/scripts/boot-order.sh
 RemainAfterExit=yes
-# Debe superar la suma de esperas posibles (BOOT_ORDER_HEALTH_TIMEOUT por
-# contenedor, secuencial). Con timeout de health 480s, 30 min da holgura.
-TimeoutStartSec=1800
+# Debe superar la suma de esperas posibles: INITIAL_DELAY + (SETTLE_DELAY por
+# servicio/capa) + HEALTH_TIMEOUT por contenedor lento, todo secuencial.
+# 40 min da holgura amplia para arranque en frío en hardware modesto.
+TimeoutStartSec=2400
 
 [Install]
 WantedBy=multi-user.target
