@@ -184,10 +184,11 @@ wait_service_ready() {
             log "$svc ($cid): listo${health:+, health=$health}."
             break
           fi
-          if [[ "$health" == "unhealthy" ]]; then
-            log "ERROR: $svc ($cid) quedó unhealthy."
-            return 1
-          fi
+          # 'unhealthy' o 'starting' durante el arranque en frío puede ser
+          # transitorio: los primeros health checks tardan/fallan mientras el
+          # servicio aún inicializa (dentro de su start_period/retries). NO se
+          # aborta aquí; se sigue esperando hasta agotar HEALTH_TIMEOUT y solo
+          # entonces se considera fallo (ver comprobación de timeout abajo).
           ;;
         exited)
           # Jobs one-shot como lobehub-rustfs-init terminan correctamente y no
