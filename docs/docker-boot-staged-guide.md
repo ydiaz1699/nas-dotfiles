@@ -28,19 +28,47 @@ Dependencias hacia servicios de **otro** compose (ej. consumidores de `datapostg
 
 La política `on-failure:5` es intencional: Docker documenta que `on-failure` reinicia solo ante salida con error y no vuelve a arrancar un contenedor simplemente porque se reinició el daemon. Así, `docker-boot-staged.service` recupera el control del orden después de un reboot. Durante la operación normal, los fallos siguen teniendo hasta cinco reintentos automáticos. Fuente: [Docker — Start containers automatically](https://docs.docker.com/config/containers/start-containers-automatically/).
 
-## Archivos
+## Mapa completo de archivos y rutas
 
-| Archivo | Propósito |
+Separación estricta: el **código** vive en `$NAS_DOTFILES` (versionado en Git) y
+la **configuración/estado runtime** vive en `$dkco` (por-NAS, NO versionado).
+
+### Código del framework — `$NAS_DOTFILES` (repo, se actualiza con `gpl`)
+
+| Ruta | Propósito |
 |---|---|
-| `shell/scripts/boot-order.sh` | Orquestador por capas, health gates, timeout y lock |
-| `shell/scripts/layers.conf.example` | Plantilla editable de capas |
-| `shell/scripts/find-no-extends.sh` | Detecta Compose que no usan `extends` |
-| `shell/scripts/apply-restart-policy.sh` | Migra contenedores existentes sin arrancarlos todos |
-| `shell/scripts/install-boot-service.sh` | Genera e instala la unidad systemd con las rutas reales |
+| `shell/scripts/boot-order.sh` | Orquestador de ARRANQUE por capas: health gates, timeout, lock, pausas de estabilización, tolerancia a unhealthy transitorio, salto de `.no-boot` |
+| `shell/scripts/stop-order.sh` | Orquestador de APAGADO en orden INVERSO (dependientes primero, datasql al final). Contraparte de boot-order.sh |
+| `shell/scripts/start-all.sh` | Compatibilidad: delega en `boot-order.sh` |
+| `shell/scripts/stop-all.sh` | Baja todo (stop-order) + `poweroff`, con confirmación |
+| `shell/scripts/restart-all.sh` | Baja todo (stop-order) + `reboot`, con confirmación |
+| `shell/scripts/layers.conf.example` | Plantilla editable de capas (se copia a `$dkco/scripts/layers.conf`) |
+| `shell/scripts/find-no-extends.sh` | Diagnóstico: Compose que no heredan `_common.yml` |
+| `shell/scripts/apply-restart-policy.sh` | Migra contenedores existentes a `on-failure:5` sin arrancarlos todos |
+| `shell/scripts/install-boot-service.sh` | Genera e instala la unidad systemd con las rutas reales de la instalación |
 | `systemd/docker-boot-staged.service.template` | Plantilla de la unidad (placeholders `{{NAS_DOTFILES}}`/`{{DOCKER_BASE}}`) |
-| `$dkco/scripts/layers.conf` | Configuración runtime del NAS |
+| `docker/cli/lib/extras.sh` | Contiene `svc_no_boot` / `svc_boot_enable` (comandos `svc no-boot`/`boot-enable`) |
+| `agent/catalog/_common.yml` | Defaults heredados por los servicios (`restart: on-failure:5`); se despliega a `$dkco/_common.yml` |
+| `.kiro/skills/docker-boot-order/SKILL.md` | Skill para el LLM: reglas al crear/eliminar/detener servicios |
+| `docs/docker-boot-staged-guide.md` | Esta guía |
+
+### Configuración y estado runtime — `$dkco` (por-NAS, NO versionado)
+
+| Ruta | Propósito |
+|---|---|
+| `$dkco/scripts/layers.conf` | Configuración de capas del NAS (qué servicio en qué capa) |
 | `$dkco/scripts/boot-order.log` | Log del último/actual arranque |
-| `$dkco/scripts/restart-policy-report.txt` | Resultado de la migración de policies |
+| `$dkco/scripts/stop-order.log` | Log del último apagado escalonado |
+| `$dkco/scripts/boot-order.lock` | Lock para evitar arranques simultáneos |
+| `$dkco/scripts/restart-policy-report.txt` | Resultado de `apply-restart-policy.sh` |
+| `$dkco/_common.yml` | Copia runtime de los defaults (`on-failure:5`) |
+| `$dkco/<svc>/.no-boot` | Marcador: excluye ese servicio del arranque (`svc no-boot`) |
+
+### Instalado en el sistema (fuera de ambos)
+
+| Ruta | Propósito |
+|---|---|
+| `/etc/systemd/system/docker-boot-staged.service` | Unidad generada por `install-boot-service.sh` (arranca en cada boot) |
 
 ## Instalación en el NAS
 
@@ -148,6 +176,51 @@ mano en `/etc`: regenéralo con el instalador si cambian las rutas.
 | `BOOT_ORDER_SERIAL` | `1` | Default: arranca los servicios de cada capa uno a uno esperando readiness entre ellos. Con `0`, arranca toda la capa en paralelo |
 | `BOOT_ORDER_INITIAL_DELAY` | `30` | Segundos de espera antes de la primera capa, para que el sistema recién booteado (kernel/systemd/dockerd) se estabilice antes de cargar CPU con contenedores. Poner `0` en arranque manual |
 | `BOOT_ORDER_SETTLE_DELAY` | `10` | Segundos de pausa entre servicios y entre capas, para que el CPU del anterior se asiente antes del siguiente. Evita saturar CPU al 100% en hardware con pocos cores. Poner `0` en arranque manual |
+
+## Cómo saber si el arranque ya terminó (no juzgar antes de tiempo)
+
+El arranque en frío es **lento a propósito**: con las pausas de estabilización y
+los tiempos de servicios pesados en frío, puede tardar **~10-12 minutos** en
+completar las 6 capas. NO hay que interpretar "faltan servicios" como fallo
+mientras el arranque sigue en curso.
+
+Para saber el estado real:
+
+```bash
+# ¿Terminó? active = sí; activating = aún en proceso; failed = falló
+systemctl is-active docker-boot-staged.service
+
+# La línea final del log lo confirma
+grep "Arranque completo" "$dkco/scripts/boot-order.log" | tail -1
+
+# Seguir el arranque en vivo (Ctrl+C para salir cuando veas "Arranque completo.")
+tail -f "$dkco/scripts/boot-order.log"
+```
+
+Solo cuando `systemctl is-active` diga `failed` (o el log muestre
+`ERROR: se aborta el arranque`) hay un problema real que investigar. Mientras
+diga `activating`, el orquestador está trabajando.
+
+## Apagado y reinicio ordenado
+
+El apagado también debe ser escalonado, pero en **orden inverso** (dependientes
+primero, `datasql` al final), para que ningún servicio quede escribiendo contra
+una base de datos ya detenida. Eso lo hace `stop-order.sh`, que lee el mismo
+`layers.conf`:
+
+```bash
+# Bajar todos los servicios en orden inverso (sin apagar el NAS)
+NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/stop-order.sh"          # svc down
+NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/stop-order.sh" --stop   # svc stop (conserva contenedores)
+
+# Bajar todo + apagar / reiniciar el NAS (piden confirmación)
+"$NAS_DOTFILES/shell/scripts/stop-all.sh"      # -> poweroff
+"$NAS_DOTFILES/shell/scripts/restart-all.sh"   # -> reboot
+```
+
+Tras un `reboot`, `docker-boot-staged.service` vuelve a levantar todo
+escalonadamente. No uses `docker stop` masivo ni `poweroff` directo con los
+servicios corriendo: `stop-order.sh` garantiza el orden seguro.
 
 ## Operación
 
