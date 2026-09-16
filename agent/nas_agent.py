@@ -442,6 +442,17 @@ BLOCK_CREACION = """
 6. create_service() → validate_compose()
 7. Ofrecer: "¿Lo levanto ahora?"
 8. auto_catalog() para futuras referencias
+9. Recordar al usuario añadir el servicio a $dkco/scripts/layers.conf (arranque
+   escalonado) en la capa según sus dependencias; al eliminarlo, quitar su línea
+
+## Arranque escalonado (boot-order.sh)
+- Tras un reboot, docker-boot-staged.service arranca los servicios por capas
+  desde $dkco/scripts/layers.conf esperando healthy. Policy on-failure:5.
+- Crear servicio ⇒ añadirlo a layers.conf (Home Assistant primero en la capa de
+  consumidores de DB por usar PostgreSQL). Eliminar ⇒ quitar su línea.
+- Detener uno a propósito ⇒ `svc no-boot <svc>` (el boot lo salta con aviso, no
+  bloquea la capa); revertir con `svc boot-enable <svc>`.
+- Guía: docs/docker-boot-staged-guide.md
 
 ## Reglas de configuración
 - Puertos reservados: 22, 53, 80, 443 — NUNCA

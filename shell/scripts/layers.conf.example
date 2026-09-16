@@ -10,18 +10,25 @@
 # compara `svc lista` con este archivo: agrega servicios reales y elimina los
 # que no estén instalados. No agregues flowise-worker: es un servicio interno
 # del Compose de flowise, no un proyecto que `svc` pueda arrancar por separado.
+#
+# Para dejar un servicio fuera del boot sin borrarlo de aquí, usa:
+#   svc no-boot <svc>      (boot-order.sh lo salta con aviso, no bloquea)
+#   svc boot-enable <svc>  (lo reactiva)
+# Un servicio con .no-boot se salta y el arranque continúa con el siguiente.
 
 # Capa 1 — PostgreSQL y Redis compartidos
 datasql
 
 # Capa 2 — Consumidores de DataSQL (Compose independiente)
-flowise
+# Home Assistant primero: usa PostgreSQL (Recorder) y debe conectar apenas
+# datasql esté healthy.
+homeassistant
 n8n
+flowise
 lobehub
 
 # Capa 3 — Broker IoT y servicios independientes con acceso host
 emqx
-homeassistant
 esphome
 
 # Capa 4 — Consumidores MQTT

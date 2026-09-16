@@ -74,6 +74,25 @@ Después de verificar `svc config`, `svc pull`, `svc ps`, `svc logs`, `svc healt
 placeholder y completar la guía operativa. El pipeline no convierte por sí solo
 un servicio no probado en una instalación correcta.
 
+### Arranque escalonado (obligatorio al crear/eliminar)
+
+El NAS arranca los servicios por capas tras un reboot mediante
+`docker-boot-staged.service` → `$NAS_DOTFILES/shell/scripts/boot-order.sh`, que
+lee `$dkco/scripts/layers.conf`. La restart policy es `on-failure:5` (no
+`unless-stopped`) para que systemd controle el orden.
+
+- **Al crear un servicio:** añadirlo a `$dkco/scripts/layers.conf` en la capa
+  correcta (Capa 1 `datasql`; Capa 2 consumidores de DB, con Home Assistant
+  primero por usar PostgreSQL; luego IoT, livianos y dashboard al final). Con
+  `BOOT_ORDER_REQUIRE_ALL=1` (default), un Compose en `$dkco` que falte en
+  `layers.conf` hace **fallar** el boot.
+- **Al eliminar un servicio:** quitar también su línea de `layers.conf`.
+- **Para detener uno a propósito:** `svc no-boot <svc>` (el boot lo salta con
+  aviso, sin bloquear la capa) y `svc boot-enable <svc>` para revertir.
+- `flowise-worker` es interno del Compose `flowise`; no se lista aparte.
+
+Detalle completo en `docs/docker-boot-staged-guide.md`.
+
 ---
 
 ## Componente 1: Shell Framework (`$NAS_DOTFILES/shell/`)
@@ -134,6 +153,8 @@ Comando principal: `svc` (definido como alias en init.sh).
 | `svc net` | Mapa de redes Docker con contenedores |
 | `svc watch` | Monitoreo continuo (refresh cada 5s) |
 | `svc create nombre` | Scaffolding de nuevo servicio |
+| `svc no-boot <svc>` | Excluir servicio del arranque escalonado (saltar-con-aviso) |
+| `svc boot-enable <svc>` | Reactivar servicio en el arranque escalonado |
 | `svc menu` | TUI interactivo con fzf |
 
 ### Comandos con servicio

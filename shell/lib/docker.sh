@@ -2,7 +2,7 @@
 # Autocompletado de svc
 
 # ── Comandos globales (no necesitan servicio) ──────────────────────────────
-_SVC_GLOBAL_CMDS="lista health update-all menu port-map size net watch create doctor diff catalog-sync capabilities lobehub scan backup-all logs-grep clone cron doctor-history lock unlock snapshot rollback --help -h"
+_SVC_GLOBAL_CMDS="lista health update-all menu port-map size net watch create doctor diff catalog-sync capabilities lobehub scan backup-all logs-grep clone cron doctor-history lock unlock no-boot boot-enable snapshot rollback --help -h"
 
 # ── Comandos que requieren un servicio ─────────────────────────────────────
 _SVC_SERVICE_CMDS="
@@ -44,6 +44,16 @@ _svc_complete() {
     COMPREPLY=($(compgen -W "$(_lobe_actions)" -- "$cur"))
     return
   fi
+
+  # Comandos globales que SÍ reciben un servicio como argumento.
+  case "$cmd" in
+    lock|unlock|no-boot|boot-enable|snapshot|rollback)
+      if [[ $COMP_CWORD -eq 2 ]]; then
+        COMPREPLY=($(compgen -W "$(_svc_services)" -- "$cur"))
+        return
+      fi
+      ;;
+  esac
 
   # svc <cmd_global> <TAB> → nada (no necesitan servicio)
   for gc in $_SVC_GLOBAL_CMDS; do

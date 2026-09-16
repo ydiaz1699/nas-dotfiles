@@ -1221,3 +1221,92 @@ _svc_lock_guard() {
   echo ""
   return 0
 }
+
+
+
+# ── svc no-boot / boot-enable — excluir un servicio del arranque escalonado ─
+# Marca un servicio para que boot-order.sh lo SALTE (saltar-con-aviso) sin
+# bloquear ni fallar la capa. El marcador es $DOCKER_BASE/<svc>/.no-boot.
+# Útil cuando detienes un servicio a propósito y no quieres que el próximo
+# reboot lo reviva ni que quede esperando su healthcheck.
+
+svc_no_boot() {
+  local svc="$1"
+  local base="${DOCKER_BASE:-/docker}"
+
+  if [[ -z "$svc" ]]; then
+    echo ""
+    echo "  Uso: svc no-boot <servicio>"
+    echo ""
+    echo "  Excluye un servicio del arranque escalonado (boot-order.sh)."
+    echo "  El servicio se salta con aviso; el resto de la capa continúa."
+    echo ""
+    echo "  Servicios excluidos del boot actualmente:"
+    _svc_no_boot_list
+    echo ""
+    return 0
+  fi
+
+  local f
+  f=$(svc_compose_file "$svc")
+  if [[ -z "$f" ]]; then
+    echo "  Servicio '$svc' no encontrado en $base/."
+    return 1
+  fi
+
+  local marker="$base/$svc/.no-boot"
+  if [[ -f "$marker" ]]; then
+    echo ""
+    echo -e "  \033[1;33m⚠ '$svc' ya estaba excluido del boot.\033[0m"
+    echo ""
+    return 0
+  fi
+
+  printf 'Excluido del arranque escalonado el %s\n' "$(date '+%F %T')" > "$marker"
+  echo ""
+  echo -e "  \033[0;32m⏻ '$svc' excluido del arranque escalonado.\033[0m"
+  echo "  boot-order.sh lo saltará hasta: svc boot-enable $svc"
+  echo "  Nota: esto NO detiene el servicio ahora; usa 'svc stop $svc' si quieres pararlo."
+  echo ""
+}
+
+svc_boot_enable() {
+  local svc="$1"
+  local base="${DOCKER_BASE:-/docker}"
+
+  if [[ -z "$svc" ]]; then
+    echo ""
+    echo "  Uso: svc boot-enable <servicio>"
+    echo ""
+    echo "  Servicios excluidos del boot actualmente:"
+    _svc_no_boot_list
+    echo ""
+    return 0
+  fi
+
+  local marker="$base/$svc/.no-boot"
+  if [[ ! -f "$marker" ]]; then
+    echo ""
+    echo "  '$svc' no estaba excluido del boot."
+    echo ""
+    return 0
+  fi
+
+  rm -f "$marker"
+  echo ""
+  echo -e "  \033[0;32m⏻ '$svc' reactivado en el arranque escalonado.\033[0m"
+  echo ""
+}
+
+_svc_no_boot_list() {
+  local base="${DOCKER_BASE:-/docker}"
+  local found=0 svc
+  for svc in $(svc_list); do
+    if [[ -f "$base/$svc/.no-boot" ]]; then
+      echo "    ⏻ $svc"
+      found=1
+    fi
+  done
+  ((found == 0)) && echo "    (ninguno)"
+  return 0
+}

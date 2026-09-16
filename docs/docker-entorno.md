@@ -337,11 +337,18 @@ contener todos los Compose instalados en ese NAS. La guía autocontenida es
 [`docs/docker-boot-staged-guide.md`](docker-boot-staged-guide.md).
 
 Reglas del coordinador:
-- Una línea en blanco separa capas; por defecto los servicios de una capa arrancan uno a uno (secuencial). Con `BOOT_ORDER_SERIAL=0` arrancan en paralelo.
+- Una línea en blanco separa capas; por defecto los servicios de una capa arrancan uno a uno (secuencial), en el orden en que están escritos. Con `BOOT_ORDER_SERIAL=0` arrancan en paralelo.
 - Un contenedor sin healthcheck debe quedar `running`; uno con healthcheck debe quedar `healthy`.
 - Un job `restart: no` que termina con código 0 se considera completado.
 - Un error o timeout detiene las capas dependientes y queda registrado en `$dkco/scripts/boot-order.log`.
 - `flowise-worker` es interno del Compose `flowise`; no se agrega como servicio independiente.
+- Home Assistant usa PostgreSQL (Recorder), así que va al **inicio de la Capa 2**, justo después de `datasql`.
+
+**Al crear un servicio nuevo:** añadirlo a `$dkco/scripts/layers.conf` en la capa correcta (según dependencias). Con `BOOT_ORDER_REQUIRE_ALL=1` (default), un Compose presente en `$dkco` que falte en `layers.conf` hace fallar el arranque.
+
+**Al eliminar un servicio:** quitar su línea de `layers.conf` junto con su carpeta de `$dkco`.
+
+**Para detener un servicio a propósito** sin que el reboot lo reviva ni bloquee su capa: `svc no-boot <svc>` (y `svc boot-enable <svc>` para revertir). El boot lo salta con aviso y sigue con el resto.
 
 ---
 

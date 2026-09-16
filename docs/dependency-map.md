@@ -370,6 +370,7 @@ Usuario escribe: svc <comando>
 | `cron` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
 | `doctor-history` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
 | `lock` / `unlock` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
+| `no-boot` / `boot-enable` | ✅ | ❌ | Solo bash; excluir/reactivar servicio en el arranque escalonado |
 | `snapshot` | ✅ | ✅ | Python registra el comando y delega a Bash mediante `bash_bridge.py` |
 | `rollback` | ✅ | ❌ | Bash; usar `NAS_CLI=bash svc rollback <svc>` desde Python mientras no tenga wrapper |
 | `depends` | ✅ | ✅ | Ambos |

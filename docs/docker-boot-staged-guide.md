@@ -114,9 +114,28 @@ El servicio usa `RequiresMountsFor=/docker`, espera `network-online.target` y ex
 
 ## Operación
 
-- Agregar un servicio: añadir su nombre en la capa adecuada de `$dkco/scripts/layers.conf`.
-- Quitar un servicio: eliminar/comentar su línea. Si el Compose sigue instalado y `BOOT_ORDER_REQUIRE_ALL=1`, el script lo considerará omitido; para retirarlo del boot hay que retirar también el Compose o mantener una decisión documentada de no arrancarlo.
-- Reordenar: mover el servicio a otro bloque separado por una línea en blanco.
+- **Agregar un servicio nuevo:** además de crearlo (compose, carpetas, `svc up`, `svc catalog-sync`), añadir su nombre a `$dkco/scripts/layers.conf` en la capa que corresponda según sus dependencias. Con `BOOT_ORDER_REQUIRE_ALL=1` (default), si el Compose existe en `$dkco` pero falta en `layers.conf`, el arranque **falla de forma visible** — por eso hay que registrarlo al crearlo.
+- **Eliminar un servicio:** quitar/comentar su línea de `layers.conf` **antes o junto con** eliminar su carpeta de `$dkco`. Si borras solo el Compose y dejas la línea, el boot lo trata como faltante (salta con aviso si `BOOT_ORDER_ALLOW_MISSING=1`, o falla si es `0`).
+- **Reordenar:** mover el servicio a otro bloque separado por una línea en blanco. Dentro de una capa (modo secuencial) el orden de las líneas es el orden de arranque.
+
+### Detener un servicio a propósito sin romper el boot
+
+Si paras un servicio deliberadamente y no quieres que el próximo reboot lo reviva ni que quede bloqueando su capa:
+
+```bash
+svc no-boot <svc>      # boot-order.sh lo salta con aviso (no bloquea, no falla)
+svc stop <svc>         # (opcional) detenerlo ahora mismo
+```
+
+Para reactivarlo en el arranque:
+
+```bash
+svc boot-enable <svc>
+svc up <svc>           # (opcional) levantarlo ahora
+```
+
+`svc no-boot` crea el marcador `$dkco/<svc>/.no-boot`; `boot-order.sh` lo detecta, registra `OMITIDO: <svc> tiene .no-boot` y **continúa con el siguiente servicio de la capa** sin esperar su healthcheck. Es la forma correcta de sacar un servicio del boot sin editar `layers.conf`.
+
 - Arranque manual (secuencial por defecto): `NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/boot-order.sh"`.
 - Arranque manual en paralelo dentro de capa: `BOOT_ORDER_SERIAL=0 NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/boot-order.sh"`.
 - Log: `cat "$dkco/scripts/boot-order.log"`.
