@@ -337,7 +337,7 @@ contener todos los Compose instalados en ese NAS. La guía autocontenida es
 [`docs/docker-boot-staged-guide.md`](docker-boot-staged-guide.md).
 
 Reglas del coordinador:
-- Una línea en blanco separa capas; los servicios de una capa arrancan en paralelo.
+- Una línea en blanco separa capas; por defecto los servicios de una capa arrancan uno a uno (secuencial). Con `BOOT_ORDER_SERIAL=0` arrancan en paralelo.
 - Un contenedor sin healthcheck debe quedar `running`; uno con healthcheck debe quedar `healthy`.
 - Un job `restart: no` que termina con código 0 se considera completado.
 - Un error o timeout detiene las capas dependientes y queda registrado en `$dkco/scripts/boot-order.log`.

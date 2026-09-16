@@ -1,8 +1,10 @@
 # Configuración de arranque escalonado para $dkco/scripts/layers.conf
 #
-# Cada bloque separado por una línea en blanco es una capa. Los servicios de
-# una misma capa arrancan en paralelo; la siguiente capa no empieza hasta que
-# todos los contenedores de la capa estén running/healthy.
+# Cada bloque separado por una línea en blanco es una capa. Por defecto, los
+# servicios de una misma capa arrancan uno a uno (secuencial), esperando que
+# cada uno esté running/healthy antes del siguiente; la siguiente capa no
+# empieza hasta terminar la actual. Con BOOT_ORDER_SERIAL=0 la capa arranca
+# en paralelo.
 #
 # Esta plantilla refleja los servicios catalogados. Antes de habilitar systemd,
 # compara `svc lista` con este archivo: agrega servicios reales y elimina los
