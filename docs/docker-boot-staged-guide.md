@@ -12,6 +12,20 @@ Esta implementación evita que Docker arranque todos los Compose en paralelo al 
 - La plantilla no conoce qué carpetas existen en el NAS real. `layers.conf` debe reflejar el resultado de `svc lista`; con `BOOT_ORDER_REQUIRE_ALL=1`, olvidar un Compose hace fallar el arranque de forma visible.
 - **Pausas de estabilización (hardware modesto):** en un NAS con pocos cores, arrancar contenedores mientras el sistema recién booteado aún está saturado hace que sus healthchecks tarden o fallen (CPU al 100%). Por eso el arranque espera `BOOT_ORDER_INITIAL_DELAY` antes de la primera capa y `BOOT_ORDER_SETTLE_DELAY` entre servicios/capas, dando margen a que el CPU se asiente. En el arranque manual con el sistema ya caliente, poner ambas a `0` para no esperar.
 
+## `depends_on` interno: usar `service_started`, no `service_healthy`
+
+Cuando un compose tiene varios contenedores y uno depende de otro del **mismo** compose (ej. un worker que depende del servicio principal, o un init de un sidecar), ese `depends_on` debe usar **`condition: service_started`**, no `service_healthy`.
+
+Motivo: `docker compose up -d` (lo que ejecuta `svc up`) **bloquea esperando** a que la dependencia esté `healthy` cuando la condición es `service_healthy`. En arranque en frío con CPU saturada, el servicio principal tarda en pasar su healthcheck y el wait interno de Compose se agota con `dependency failed to start: container X is unhealthy`, haciendo **fallar `svc up` y abortar el boot** — antes de que `boot-order.sh` pueda esperar con su propia tolerancia.
+
+Con `service_started`, el dependiente arranca en cuanto el principal **inicia** (no cuando está healthy); el health real lo vigila `boot-order.sh`. El contenedor conserva su propio `healthcheck`.
+
+Casos conocidos en el catálogo:
+- **flowise:** `flowise-worker` → `flowise` usa `service_started` (aplicado).
+- **lobehub:** `lobehub` → `rustfs` y `rustfs-init` → `rustfs` usan `service_healthy`. Pendiente de migrar a `service_started` cuando se reactive lobehub (hoy está en `.no-boot`).
+
+Dependencias hacia servicios de **otro** compose (ej. consumidores de `datapostgres`/`dataredis` por `db_net`) NO usan `depends_on` — el orden lo da `layers.conf`.
+
 La política `on-failure:5` es intencional: Docker documenta que `on-failure` reinicia solo ante salida con error y no vuelve a arrancar un contenedor simplemente porque se reinició el daemon. Así, `docker-boot-staged.service` recupera el control del orden después de un reboot. Durante la operación normal, los fallos siguen teniendo hasta cinco reintentos automáticos. Fuente: [Docker — Start containers automatically](https://docs.docker.com/config/containers/start-containers-automatically/).
 
 ## Archivos

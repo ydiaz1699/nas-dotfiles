@@ -47,6 +47,19 @@ falte en `layers.conf` **hace fallar el arranque** — por eso es obligatorio
 registrarlo al crearlo. `flowise-worker` NO va como línea: es interno del
 Compose `flowise`.
 
+### REGLA: depends_on interno = service_started (no service_healthy)
+
+Si un compose tiene un contenedor que depende de OTRO del MISMO compose (worker,
+sidecar, init), su `depends_on` debe usar `condition: service_started`, NO
+`service_healthy`. Con `service_healthy`, `docker compose up` (lo que corre
+`svc up`) bloquea esperando el health; en arranque en frío con CPU saturada se
+agota su wait interno con "dependency failed to start: container X is unhealthy"
+y el boot falla ANTES de que boot-order.sh pueda esperar con tolerancia. Con
+`service_started` el dependiente arranca cuando el principal inicia; el health
+real lo vigila boot-order.sh y el contenedor conserva su healthcheck.
+Dependencias hacia OTRO compose (por `db_net`) no usan `depends_on`.
+Caso aplicado: flowise-worker → flowise. Pendiente: lobehub → rustfs.
+
 ### Al ELIMINAR un servicio
 Quitar su línea de `$dkco/scripts/layers.conf` junto con su carpeta de `$dkco`.
 
