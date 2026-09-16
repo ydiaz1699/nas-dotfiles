@@ -90,7 +90,9 @@ Docker no levante todo en paralelo y ceda el orden a systemd. Reglas para el LLM
 - Dentro de una capa, en modo secuencial (default) el orden de las líneas es el
   orden de arranque; `flowise-worker` NO va como línea (es interno de flowise).
 
-Detalle completo en `docs/docker-boot-staged-guide.md`.
+Al crear/eliminar/detener un servicio, activar la skill `docker-boot-order`
+(`.kiro/skills/docker-boot-order/SKILL.md`): define el flujo obligatorio de
+`layers.conf` y `no-boot`. Detalle completo en `docs/docker-boot-staged-guide.md`.
 
 ### Servicio que usa DataSQL
 

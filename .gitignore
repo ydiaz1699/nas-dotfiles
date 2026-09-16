@@ -52,3 +52,6 @@ agent/memory/sessions/*.md
 !.kiro/skills/dotfile-skill/SKILL.md
 !.kiro/skills/dotfile-skill/references/
 !.kiro/skills/dotfile-skill/references/*.md
+
+!.kiro/skills/docker-boot-order/
+!.kiro/skills/docker-boot-order/SKILL.md
