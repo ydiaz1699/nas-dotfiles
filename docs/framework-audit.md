@@ -83,6 +83,24 @@ incremental ya operativo. El diseño histórico se conserva en
 | `lib/completions.sh` | TAB completions generales |
 | `lib/prompt.sh` | PS1 con contenedores + disco% |
 
+### Shell scripts (`shell/scripts/`) — arranque/apagado del NAS
+
+| Archivo | Función |
+|---------|---------|
+| `boot-order.sh` | Arranque escalonado por capas (health gates, timeout, lock, pausas, `.no-boot`). Lo ejecuta `docker-boot-staged.service` en cada boot |
+| `stop-order.sh` | Apagado escalonado en orden INVERSO (dependientes primero, datasql al final) |
+| `start-all.sh` | Compatibilidad: delega en `boot-order.sh` |
+| `stop-all.sh` | Baja todo (stop-order) + `poweroff`, con confirmación |
+| `restart-all.sh` | Baja todo (stop-order) + `reboot`, con confirmación |
+| `layers.conf.example` | Plantilla de capas (se copia a `$dkco/scripts/layers.conf`) |
+| `find-no-extends.sh` | Diagnóstico: Compose que no heredan `_common.yml` |
+| `apply-restart-policy.sh` | Migra contenedores a `on-failure:5` sin arrancarlos todos |
+| `install-boot-service.sh` | Genera e instala `docker-boot-staged.service` con las rutas reales |
+| `install_docker.sh` | Instala Docker Engine en Debian |
+
+> Guía completa del arranque/apagado escalonado: `docs/docker-boot-staged-guide.md`.
+> Config runtime (NO versionada): `$dkco/scripts/layers.conf`, `boot-order.log`, `.no-boot`.
+
 ### Docker CLI bash (`docker/cli/`)
 
 | Archivo | Función |
@@ -92,7 +110,7 @@ incremental ya operativo. El diseño histórico se conserva en
 | `lib/docker.sh` | svc_update_all |
 | `lib/health.sh` | svc_health, svc_lista, svc_doctor |
 | `lib/backup.sh` | svc_backup, svc_restore, svc_backup_all, svc_snapshot, svc_rollback |
-| `lib/extras.sh` | port-map, size, net, env, create, clone, cron, lock, doctor-history, watch, diff, open, depends |
+| `lib/extras.sh` | port-map, size, net, env, create, clone, cron, lock, no-boot, boot-enable, doctor-history, watch, diff, open, depends |
 | `lib/catalog-sync.sh` | Pipeline auto-docs en cascada |
 | `lib/notifications.sh` | ntfy_send() |
 | `lib/menu.sh` | TUI con fzf |
@@ -184,6 +202,21 @@ manifests de capacidades, en `mcp` y `mcp_tools`.
 | `troubleshooting.md` | Problemas resueltos con soluciones |
 | `framework-knowledge-compilation.md` | **MAPA CANÓNICO** — ideas, arquitectura, estado, gaps y criterios de aceptación |
 | `framework-audit.md` | **ESTE ARCHIVO** — mapa ejecutivo sin releer |
+
+### Skills del LLM (`.kiro/skills/`) — activar según el caso
+
+Índice de skills para que el LLM sepa cuál cargar. Se activan por sus palabras
+clave (`description`); no hay que recordarlas de memoria — están aquí listadas.
+
+| Skill | Activar cuando el trabajo trate de... |
+|-------|----------------------------------------|
+| `dotfile-skill` | Administración general del NAS: contenedor, servicio, compose, dk, adm, svc, agent, plugin |
+| `docker-boot-order` | Crear/eliminar/detener un servicio, `layers.conf`, arranque/apagado escalonado, `no-boot`, reboot, restart policy |
+| `datasql` | Crear base/rol o configurar Redis para un servicio (ParadeDB PostgreSQL + Redis compartidos) |
+| `nas-runtime-secrets` | Leer/transportar secretos de servicios sin exponerlos al LLM |
+| `nas-mcp-gateway` | Decidir cuándo activar el gateway MCP read-only independiente |
+| `documentation-evolution` | Unificar drafts, mejorar documentación/herramientas, scanner, gaps, contratos, evolución del framework |
+| `nas-dotfiles.md` (archivo suelto) | Overview de arquitectura de los 3 componentes (shell, svc, agente) |
 
 ### Skill Kiro (`docker-nas/references/`)
 
