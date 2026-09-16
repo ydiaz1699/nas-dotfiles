@@ -40,7 +40,7 @@ services:
       # Arranque en frío (reboot): ParadeDB + pg_search/pg_cron con disco frío y
       # CPU ocupada por el resto del boot puede tardar. Margen amplio para que
       # el healthcheck no falle antes de que Postgres acepte conexiones.
-      start_period: 90s
+      start_period: 120s
     deploy:
       resources:
         limits:
