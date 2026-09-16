@@ -20,11 +20,19 @@ HEALTH_TIMEOUT="${BOOT_ORDER_HEALTH_TIMEOUT:-480}"
 DAEMON_TIMEOUT="${BOOT_ORDER_DAEMON_TIMEOUT:-60}"
 REQUIRE_ALL="${BOOT_ORDER_REQUIRE_ALL:-1}"
 ALLOW_MISSING="${BOOT_ORDER_ALLOW_MISSING:-0}"
+# Espera inicial antes de la primera capa: deja que el sistema recién booteado
+# (kernel, systemd, dockerd) se estabilice antes de cargar CPU con contenedores.
+INITIAL_DELAY="${BOOT_ORDER_INITIAL_DELAY:-30}"
+# Pausa tras dejar listo cada servicio, antes del siguiente: da margen a que su
+# consumo de CPU se asiente. Clave en hardware con pocos cores.
+SETTLE_DELAY="${BOOT_ORDER_SETTLE_DELAY:-10}"
 
-if [[ ! "$HEALTH_TIMEOUT" =~ ^[0-9]+$ || ! "$DAEMON_TIMEOUT" =~ ^[0-9]+$ ]]; then
-  echo "ERROR: BOOT_ORDER_HEALTH_TIMEOUT y BOOT_ORDER_DAEMON_TIMEOUT deben ser enteros." >&2
-  exit 2
-fi
+for _v in HEALTH_TIMEOUT DAEMON_TIMEOUT INITIAL_DELAY SETTLE_DELAY; do
+  if [[ ! "${!_v}" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: BOOT_ORDER_${_v} debe ser un entero (valor: ${!_v})." >&2
+    exit 2
+  fi
+done
 
 mkdir -p "$(dirname "$CONFIG_FILE")" "$(dirname "$LOG_FILE")" "$(dirname "$LOCK_FILE")"
 touch "$LOG_FILE"
@@ -258,8 +266,16 @@ should_start() {
 run_layer_serial() {
   local svc
   local -a services=("$@")
+  local svc first=1
   for svc in "${services[@]}"; do
     should_start "$svc" || continue
+    # Pausa de asentamiento ANTES de arrancar el siguiente (no antes del
+    # primero de la capa): deja que el CPU del servicio anterior se estabilice.
+    if ((first == 0 && SETTLE_DELAY > 0)); then
+      log "  (pausa de ${SETTLE_DELAY}s para estabilizar CPU antes de $svc)"
+      sleep "$SETTLE_DELAY"
+    fi
+    first=0
     svc_up_one "$svc" || { log "ERROR: falló \`svc up $svc\`."; return 1; }
     wait_service_ready "$svc" || return 1
   done
@@ -315,7 +331,24 @@ validate_layers
 wait_for_docker
 
 log "Arranque escalonado iniciado (configuración: $CONFIG_FILE)."
+
+# Espera inicial: el sistema recién booteado (kernel, systemd, dockerd) aún está
+# cargando. Darle margen antes de sumar la carga de los contenedores evita
+# saturar la CPU en hardware con pocos cores. Se omite si el arranque es manual
+# con BOOT_ORDER_INITIAL_DELAY=0.
+if ((INITIAL_DELAY > 0)); then
+  log "Esperando ${INITIAL_DELAY}s a que el sistema se estabilice antes de la primera capa..."
+  sleep "$INITIAL_DELAY"
+fi
+
+_layer_num=0
 for layer in "${LAYER_SERVICES[@]}"; do
+  # Pausa de asentamiento entre capas (no antes de la primera).
+  if ((_layer_num > 0 && SETTLE_DELAY > 0)); then
+    log "  (pausa de ${SETTLE_DELAY}s para estabilizar CPU antes de la siguiente capa)"
+    sleep "$SETTLE_DELAY"
+  fi
+  _layer_num=$((_layer_num + 1))
   run_layer "$layer" || fail "se aborta el arranque para no iniciar capas dependientes."
 done
 log "Arranque completo."

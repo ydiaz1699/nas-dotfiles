@@ -10,6 +10,7 @@ Esta implementación evita que Docker arranque todos los Compose en paralelo al 
 - Un job one-shot como `lobehub-rustfs-init` puede terminar con código 0 sin bloquear el arranque; los servicios que terminan con error sí detienen las capas dependientes.
 - El timeout de health por contenedor es 120 segundos por defecto. Un fallo aborta las capas siguientes para no iniciar consumidores contra una dependencia rota.
 - La plantilla no conoce qué carpetas existen en el NAS real. `layers.conf` debe reflejar el resultado de `svc lista`; con `BOOT_ORDER_REQUIRE_ALL=1`, olvidar un Compose hace fallar el arranque de forma visible.
+- **Pausas de estabilización (hardware modesto):** en un NAS con pocos cores, arrancar contenedores mientras el sistema recién booteado aún está saturado hace que sus healthchecks tarden o fallen (CPU al 100%). Por eso el arranque espera `BOOT_ORDER_INITIAL_DELAY` antes de la primera capa y `BOOT_ORDER_SETTLE_DELAY` entre servicios/capas, dando margen a que el CPU se asiente. En el arranque manual con el sistema ya caliente, poner ambas a `0` para no esperar.
 
 La política `on-failure:5` es intencional: Docker documenta que `on-failure` reinicia solo ante salida con error y no vuelve a arrancar un contenedor simplemente porque se reinició el daemon. Así, `docker-boot-staged.service` recupera el control del orden después de un reboot. Durante la operación normal, los fallos siguen teniendo hasta cinco reintentos automáticos. Fuente: [Docker — Start containers automatically](https://docs.docker.com/config/containers/start-containers-automatically/).
 
@@ -131,6 +132,8 @@ mano en `/etc`: regenéralo con el instalador si cambian las rutas.
 | `BOOT_ORDER_REQUIRE_ALL` | `1` | Falla si un Compose de `$dkco` no está en `layers.conf` |
 | `BOOT_ORDER_ALLOW_MISSING` | `0` | Con `1`, omite (en vez de fallar) servicios de `layers.conf` sin Compose |
 | `BOOT_ORDER_SERIAL` | `1` | Default: arranca los servicios de cada capa uno a uno esperando readiness entre ellos. Con `0`, arranca toda la capa en paralelo |
+| `BOOT_ORDER_INITIAL_DELAY` | `30` | Segundos de espera antes de la primera capa, para que el sistema recién booteado (kernel/systemd/dockerd) se estabilice antes de cargar CPU con contenedores. Poner `0` en arranque manual |
+| `BOOT_ORDER_SETTLE_DELAY` | `10` | Segundos de pausa entre servicios y entre capas, para que el CPU del anterior se asiente antes del siguiente. Evita saturar CPU al 100% en hardware con pocos cores. Poner `0` en arranque manual |
 
 ## Operación
 
@@ -156,7 +159,8 @@ svc up <svc>           # (opcional) levantarlo ahora
 
 `svc no-boot` crea el marcador `$dkco/<svc>/.no-boot`; `boot-order.sh` lo detecta, registra `OMITIDO: <svc> tiene .no-boot` y **continúa con el siguiente servicio de la capa** sin esperar su healthcheck. Es la forma correcta de sacar un servicio del boot sin editar `layers.conf`.
 
-- Arranque manual (secuencial por defecto): `NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/boot-order.sh"`.
+- Arranque manual rápido (sin esperas de estabilización, útil cuando el sistema ya está caliente): `BOOT_ORDER_INITIAL_DELAY=0 BOOT_ORDER_SETTLE_DELAY=0 NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/boot-order.sh"`.
+- Arranque manual como en el boot real (con pausas de estabilización): `NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/boot-order.sh"`.
 - Arranque manual en paralelo dentro de capa: `BOOT_ORDER_SERIAL=0 NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/boot-order.sh"`.
 - Log: `cat "$dkco/scripts/boot-order.log"`.
 - Estado: `svc health`.
