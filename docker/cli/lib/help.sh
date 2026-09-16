@@ -15,6 +15,8 @@ _svc_ayuda() {
   echo "    create <nombre>     Scaffolding de nuevo servicio"
   echo "    capabilities [q]    Descubrir capacidades y comandos disponibles"
   echo "    lobehub <acción>    Preflight, verify, Redis/DB y recuperación segura"
+  echo "    no-boot <svc>       Excluir servicio del arranque escalonado (boot-order.sh)"
+  echo "    boot-enable <svc>   Reactivar servicio en el arranque escalonado"
   echo "    menu                Menu TUI interactivo con fzf"
   echo ""
   echo "  -- Comandos propios (requieren servicio) ───────────────────"

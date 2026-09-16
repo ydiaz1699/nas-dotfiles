@@ -51,6 +51,8 @@ NAS_CLI=python  # alternativo — usa $NAS_DOTFILES/svc_py/ (Rich + InquirerPy)
 | `svc cron` | agendar backups/updates via crontab (add/list/remove) |
 | `svc lock <svc>` | proteger servicio (doble confirmación para stop/down/kill/restore) |
 | `svc unlock <svc>` | quitar protección |
+| `svc no-boot <svc>` | excluir del arranque escalonado (boot-order.sh lo salta con aviso) |
+| `svc boot-enable <svc>` | reactivar en el arranque escalonado |
 | `svc catalog-sync [svc]` | generar docs en cascada (ficha, guía, script DebMenux) |
 | `svc scan` | detectar lagunas del proyecto (servicios, CLI, docs) |
 | `svc snapshot <svc>` | guardar compose+.env antes de cambios (liviano, rotación 10) |

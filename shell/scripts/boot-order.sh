@@ -231,6 +231,26 @@ svc_up_one() {
   return 1
 }
 
+# Un servicio queda fuera del boot (saltar-con-aviso) si el usuario lo detuvo
+# a propósito. Marcador explícito: $DOCKER_BASE/<svc>/.no-boot (lo crea
+# `svc no-boot <svc>` y lo borra `svc boot-enable <svc>`).
+is_no_boot() {
+  local svc="$1"
+  [[ -f "$DOCKER_BASE/$svc/.no-boot" ]]
+}
+
+# Devuelve 0 si el servicio debe procesarse; 1 si hay que saltarlo. El salto no
+# bloquea la capa ni cuenta como fallo: el arranque continúa con el siguiente.
+should_start() {
+  local svc="$1"
+  [[ -f "$(compose_file "$svc" 2>/dev/null || true)" ]] || return 1
+  if is_no_boot "$svc"; then
+    log "OMITIDO: $svc tiene .no-boot; no se arranca (svc boot-enable $svc para reactivar)."
+    return 1
+  fi
+  return 0
+}
+
 # Serial (default): arranca y espera ready servicio por servicio. Minimiza el
 # pico de I/O a costa de un boot más lento. Para arrancar toda la capa en
 # paralelo, usar BOOT_ORDER_SERIAL=0.
@@ -238,7 +258,7 @@ run_layer_serial() {
   local svc
   local -a services=("$@")
   for svc in "${services[@]}"; do
-    [[ -f "$(compose_file "$svc" 2>/dev/null || true)" ]] || continue
+    should_start "$svc" || continue
     svc_up_one "$svc" || { log "ERROR: falló \`svc up $svc\`."; return 1; }
     wait_service_ready "$svc" || return 1
   done
@@ -249,10 +269,11 @@ run_layer_serial() {
 # hasta terminar la actual.
 run_layer_parallel() {
   local svc pid index failed=0
-  local -a services=("$@") pids=()
+  local -a started=() pids=()
 
-  for svc in "${services[@]}"; do
-    [[ -f "$(compose_file "$svc" 2>/dev/null || true)" ]] || continue
+  for svc in "$@"; do
+    should_start "$svc" || continue
+    started+=("$svc")
     svc_up_one "$svc" &
     pids+=("$!")
   done
@@ -261,13 +282,12 @@ run_layer_parallel() {
     pid="${pids[$index]}"
     if ! wait "$pid"; then
       failed=1
-      log "ERROR: falló \`svc up ${services[$index]}\`."
+      log "ERROR: falló \`svc up ${started[$index]}\`."
     fi
   done
   ((failed == 0)) || return 1
 
-  for svc in "${services[@]}"; do
-    [[ -f "$(compose_file "$svc" 2>/dev/null || true)" ]] || continue
+  for svc in "${started[@]}"; do
     wait_service_ready "$svc" || return 1
   done
 }

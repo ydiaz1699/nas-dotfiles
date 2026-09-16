@@ -62,6 +62,8 @@ nas                 →  dashboard del servidor
 | `svc cron` | Helper para agendar backups/updates via crontab (add/list/remove) |
 | `svc lock <svc>` | Proteger servicio (doble confirmación para stop/down/kill/restore) |
 | `svc unlock <svc>` | Quitar protección |
+| `svc no-boot <svc>` | Excluir servicio del arranque escalonado (boot-order.sh lo salta con aviso) |
+| `svc boot-enable <svc>` | Reactivar servicio en el arranque escalonado |
 | `svc catalog-sync [svc]` | Generar docs en cascada (ficha, guía, script DebMenux) |
 | `svc capabilities [consulta]` | Descubrir capacidades reales desde manifests e índice dinámico |
 | `svc lobehub <acción>` | Preflight, verify, proveedores, DB, RustFS y backup lógico |
@@ -160,6 +162,10 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 6. `dk <svc> && svc config <svc>` para validar
 7. `svc up <svc>` y verificar health, logs y consumo
 8. `svc catalog-sync <svc>` — genera ficha, guía, script DebMenux
+9. **Registrar en el arranque escalonado:** añadir el servicio a `$dkco/scripts/layers.conf` en la capa según sus dependencias (Capa 1 = datasql; Capa 2 = consumidores de DB, Home Assistant primero por usar PostgreSQL; capas siguientes = IoT, livianos, dashboard). Con `BOOT_ORDER_REQUIRE_ALL=1` (default) un Compose presente en `$dkco` que falte en `layers.conf` **hace fallar el boot**. Ver `docs/docker-boot-staged-guide.md`.
+
+**Al eliminar un servicio:** quitar también su línea de `$dkco/scripts/layers.conf`.
+**Para detener uno a propósito** sin que el reboot lo reviva: `svc no-boot <svc>` (revertir con `svc boot-enable <svc>`).
 
 Si necesita PostgreSQL o Redis, leer `docs/services/datasql-guide.md` para el estado del stack, crear bases/roles y conectar consumidores; usar `db_net`, crear DB/usuario dedicados, no publicar DBs en la LAN y no usar `depends_on` contra un compose externo. `db_net` no prueba que una aplicación
 use una base: confirmar compose, configuración y runtime. Consumidores confirmados: Flowise (`flowise_db` + `dataredis`), Home Assistant

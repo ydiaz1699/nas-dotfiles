@@ -47,3 +47,8 @@ agent/memory/sessions/*.md
 
 !.kiro/skills/nas-mcp-gateway/
 !.kiro/skills/nas-mcp-gateway/SKILL.md
+
+!.kiro/skills/dotfile-skill/
+!.kiro/skills/dotfile-skill/SKILL.md
+!.kiro/skills/dotfile-skill/references/
+!.kiro/skills/dotfile-skill/references/*.md
