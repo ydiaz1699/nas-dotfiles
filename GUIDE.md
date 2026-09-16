@@ -55,13 +55,15 @@ nas-dotfiles/
     shell/
         init.sh                 Loader principal
         scripts/
-            start-all.sh        Compatibilidad con el arranque escalonado
-            boot-order.sh       Arranque por capas + health gates
+            boot-order.sh       Arranque escalonado por capas + health gates
+            stop-order.sh       Apagado escalonado en orden inverso
+            start-all.sh        Compatibilidad: delega en boot-order.sh
             layers.conf.example Plantilla de capas runtime
             find-no-extends.sh  Detectar Compose especiales
             apply-restart-policy.sh  Migrar policies existentes
-            stop-all.sh         Detener + apagar NAS
-            restart-all.sh      Detener + reiniciar NAS
+            install-boot-service.sh  Instalar la unidad systemd con rutas reales
+            stop-all.sh         Bajar todo (orden inverso) + apagar NAS
+            restart-all.sh      Bajar todo (orden inverso) + reiniciar NAS
             install_docker.sh   Instalar Docker Engine en Debian
         lib/
             aliases.sh          Aliases del sistema

@@ -1,13 +1,17 @@
-#!/bin/bash
-# Detiene servicios críticos en orden y reinicia el NAS
-echo "▼ Bajando homeassistant..."
-cd /docker/homeassistant && svc down homeassistant
+#!/usr/bin/env bash
+# Baja TODOS los servicios en orden inverso a las capas y reinicia el NAS.
+# Al volver, docker-boot-staged.service los levantará escalonadamente.
+set -Eeuo pipefail
 
-echo "▼ Bajando n8n..."
-cd /docker/n8n && svc down n8n
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "▼ Bajando datasql..."
-cd /docker/datasql && svc down datasql
+echo "Se bajarán todos los servicios (orden inverso) y se reiniciará el NAS."
+read -r -p "¿Continuar? Escribe 'reiniciar' para confirmar: " confirm
+if [[ "$confirm" != "reiniciar" ]]; then
+  echo "Cancelado."
+  exit 0
+fi
 
-echo "✔ Todo bajado"
+"$SCRIPT_DIR/stop-order.sh" --down
+echo "Servicios detenidos. Reiniciando..."
 reboot

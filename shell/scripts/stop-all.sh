@@ -1,13 +1,17 @@
-#!/bin/bash
-# Detiene servicios críticos en orden y apaga el NAS
-echo "▼ Bajando homeassistant..."
-cd /docker/homeassistant && svc down homeassistant
+#!/usr/bin/env bash
+# Baja TODOS los servicios en orden inverso a las capas y apaga el NAS.
+# Usa stop-order.sh (contraparte de boot-order.sh); ya no baja solo 3 servicios.
+set -Eeuo pipefail
 
-echo "▼ Bajando n8n..."
-cd /docker/n8n && svc down n8n
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "▼ Bajando datasql..."
-cd /docker/datasql && svc down datasql
+echo "Se bajarán todos los servicios (orden inverso) y se apagará el NAS."
+read -r -p "¿Continuar? Escribe 'apagar' para confirmar: " confirm
+if [[ "$confirm" != "apagar" ]]; then
+  echo "Cancelado."
+  exit 0
+fi
 
-echo "✔ Todo bajado"
+"$SCRIPT_DIR/stop-order.sh" --down
+echo "Servicios detenidos. Apagando..."
 poweroff
