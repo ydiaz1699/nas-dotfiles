@@ -1,0 +1,38 @@
+# Arranque escalonado de los Compose definidos en {{DOCKER_BASE}}/scripts/layers.conf.
+# NO editar a mano en /etc: este archivo se genera desde
+# systemd/docker-boot-staged.service.template con las rutas reales de la
+# instalación. Regenerar con: shell/scripts/install-boot-service.sh
+#
+# Placeholders sustituidos por install-boot-service.sh:
+#   {{NAS_DOTFILES}} -> ruta del código del framework (ej. /nas-dotfiles)
+#   {{DOCKER_BASE}}  -> ruta de datos Docker (ej. /docker)
+
+[Unit]
+Description=Arranque escalonado de contenedores Docker del NAS
+Documentation=https://github.com/ydiaz1699/nas-dotfiles/blob/main/docs/docker-boot-staged-guide.md
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+RequiresMountsFor={{DOCKER_BASE}}
+ConditionPathExists={{NAS_DOTFILES}}/shell/scripts/boot-order.sh
+ConditionPathExists={{DOCKER_BASE}}/scripts/layers.conf
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory={{NAS_DOTFILES}}
+Environment=NAS_DOTFILES={{NAS_DOTFILES}}
+Environment=DOCKER_BASE={{DOCKER_BASE}}
+Environment=BOOT_ORDER_CONFIG={{DOCKER_BASE}}/scripts/layers.conf
+Environment=BOOT_ORDER_LOG={{DOCKER_BASE}}/scripts/boot-order.log
+Environment=BOOT_ORDER_REQUIRE_ALL=1
+Environment=BOOT_ORDER_HEALTH_TIMEOUT=120
+# Arranque secuencial dentro de cada capa (uno a uno). Es el comportamiento por
+# defecto (menor pico de I/O). Para arrancar cada capa en paralelo, poner 0:
+Environment=BOOT_ORDER_SERIAL=1
+ExecStart={{NAS_DOTFILES}}/shell/scripts/boot-order.sh
+RemainAfterExit=yes
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target

@@ -21,7 +21,8 @@ La política `on-failure:5` es intencional: Docker documenta que `on-failure` re
 | `shell/scripts/layers.conf.example` | Plantilla editable de capas |
 | `shell/scripts/find-no-extends.sh` | Detecta Compose que no usan `extends` |
 | `shell/scripts/apply-restart-policy.sh` | Migra contenedores existentes sin arrancarlos todos |
-| `systemd/docker-boot-staged.service` | Unidad que ejecuta el orquestador en cada boot |
+| `shell/scripts/install-boot-service.sh` | Genera e instala la unidad systemd con las rutas reales |
+| `systemd/docker-boot-staged.service.template` | Plantilla de la unidad (placeholders `{{NAS_DOTFILES}}`/`{{DOCKER_BASE}}`) |
 | `$dkco/scripts/layers.conf` | Configuración runtime del NAS |
 | `$dkco/scripts/boot-order.log` | Log del último/actual arranque |
 | `$dkco/scripts/restart-policy-report.txt` | Resultado de la migración de policies |
@@ -81,13 +82,28 @@ La prueba debe terminar en `Arranque completo.`. Si una capa falla, las siguient
 
 ### 5. Instalar y habilitar systemd
 
-Primero crea la unidad en `/etc` y luego recarga/habilita:
+La unidad se **genera desde una plantilla** con las rutas reales de esta
+instalación (`NAS_DOTFILES` y `DOCKER_BASE`), en vez de copiar un archivo con
+rutas fijas. Usa el instalador:
 
 ```bash
-sudo cp "$NAS_DOTFILES/systemd/docker-boot-staged.service" \
-  /etc/systemd/system/docker-boot-staged.service
-sudo systemctl daemon-reload
+sudo NAS_DOTFILES="$NAS_DOTFILES" DOCKER_BASE="$DOCKER_BASE" \
+  "$NAS_DOTFILES/shell/scripts/install-boot-service.sh"
+```
+
+Esto escribe `/etc/systemd/system/docker-boot-staged.service` con tus rutas y
+hace `daemon-reload`, pero **no** lo habilita todavía (para que pruebes primero
+el Paso 4). Cuando estés conforme, habilítalo:
+
+```bash
 sudo systemctl enable docker-boot-staged.service
+```
+
+O en un solo paso, generar + habilitar:
+
+```bash
+sudo NAS_DOTFILES="$NAS_DOTFILES" DOCKER_BASE="$DOCKER_BASE" \
+  "$NAS_DOTFILES/shell/scripts/install-boot-service.sh" --enable
 ```
 
 Para probar la unidad sin reiniciar:
@@ -98,7 +114,11 @@ systemctl is-enabled docker-boot-staged.service
 sudo systemctl status docker-boot-staged.service --no-pager
 ```
 
-El servicio usa `RequiresMountsFor=/docker`, espera `network-online.target` y exige que todos los Compose descubiertos estén representados en `layers.conf`. Si el unit file se instala en una ruta distinta de `/nas-dotfiles`, no lo habilites hasta corregir `ExecStart` y `Environment`.
+El servicio usa `RequiresMountsFor=$DOCKER_BASE`, espera `network-online.target`
+y exige que todos los Compose descubiertos estén representados en `layers.conf`.
+El instalador falla si quedan placeholders sin sustituir, así que la unidad
+siempre queda con rutas coherentes con la instalación. No edites el unit file a
+mano en `/etc`: regenéralo con el instalador si cambian las rutas.
 
 ## Variables de entorno del arranque
 
