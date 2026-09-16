@@ -20,3 +20,4 @@ apt install -y eza
 apt-fast install -y unzip
 apt-fast install -y avahi-daemon
 apt-fast install -y acl
+apt-fast install -y iotop
