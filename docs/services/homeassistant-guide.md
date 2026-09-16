@@ -67,7 +67,7 @@ services:
   homeassistant:
     image: ghcr.io/home-assistant/home-assistant:stable
     container_name: homeassistant
-    restart: unless-stopped
+    restart: on-failure:5
     network_mode: host
     stop_grace_period: 60s
     dns:

@@ -93,7 +93,7 @@ services:
   nombre:
     image: imagen:tag
     container_name: nombre
-    restart: unless-stopped
+    restart: on-failure:5
     <<: [*security-defaults, *resource-defaults]
     env_file:
       - ../.env          # ← global: SERVER_IP, TZ (SIEMPRE)

@@ -469,7 +469,7 @@ nas-dotfiles/
 - **Idioma**: Código en inglés, UI/mensajes en español
 - **Nombres de servicio**: solo `[a-z0-9._-]`, máx 64 chars
 - **Puertos**: rango 8100-8999 para servicios nuevos, reservados: 22/53/80/443
-- **Restart policy**: siempre `unless-stopped`
+- **Restart policy**: `on-failure:5` para servicios persistentes; `no` solo en jobs one-shot documentados
 - **Secrets**: nunca inline en compose, siempre en `.env` + referencia `${VAR}`
 - **Commits**: convención conventional commits (`feat:`, `fix:`, `security:`, `docs:`)
 - **Ramas**: push directo a `main` (repo personal), o PR para cambios grandes

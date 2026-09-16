@@ -48,7 +48,7 @@ Cada servicio en /docker/ DEBE tener:
 
 3. SIEMPRE incluir `container_name:` explícito y único por servicio. En un stack multi-contenedor puede diferir del nombre del directorio; no renombrar automáticamente los servicios hijos al nombre del stack
 4. El nombre preferido es `compose.yml`; las herramientas también deben reconocer el legacy `docker-compose.yml`
-5. SIEMPRE `restart: unless-stopped` mediante `$dkco/_common.yml` o de forma local
+5. Usar `restart: on-failure:5` mediante `$dkco/_common.yml` o de forma local; jobs one-shot pueden usar `restart: "no"` documentándolo
 6. Usar los defaults actuales de `$dkco/_common.yml` mediante `extends`; los anchors YAML locales de `_compose_base.md` son legacy y no son un requisito
 7. Aplicar seguridad, logging y recursos por servicio, con excepciones documentadas cuando la imagen sea incompatible
 8. SIEMPRE healthcheck si el servicio expone HTTP/API o tiene una orden CLI de estado; registrar explícitamente `healthcheck: null` cuando la imagen no ofrezca una comprobación segura

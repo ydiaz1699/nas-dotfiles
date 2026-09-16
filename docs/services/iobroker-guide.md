@@ -52,7 +52,7 @@ las convenciones de `nas-dotfiles`, el catálogo y el funcionamiento real de `sv
 | Redis para objects/states | PENDIENTE | La imagen soporta `IOB_OBJECTSDB_*`/`IOB_STATESDB_*`, pero requiere diseño, credenciales, pruebas y decidir si se reutiliza `dataredis` de DataSQL. |
 | MariaDB, InfluxDB y Grafana | FUERA DE ALCANCE INICIAL | Son adapters/servicios opcionales. No se agregan bases ni dashboards sin un caso de uso y un contrato de backups. |
 | `IOB_MULTIHOST=master/slave` | PENDIENTE | Es una ruta oficial de crecimiento, pero exige objects/states externos, topología, pruebas de descubrimiento y cambios de operación; no equivale a réplicas Compose. |
-| `restart: always` y comandos Docker directos | RECHAZADO | El NAS usa `unless-stopped` vía `_common.yml` y opera Docker mediante `svc`. |
+| `restart: always` y comandos Docker directos | RECHAZADO | El NAS usa `on-failure:5` vía `_common.yml` para el arranque escalonado y opera Docker mediante `svc`. |
 
 La referencia primaria para tags, variables, persistencia y redes es la
 [documentación oficial de la imagen](https://docs.buanet.de/iobroker-docker-image/docs)

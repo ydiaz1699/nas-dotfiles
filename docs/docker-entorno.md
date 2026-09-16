@@ -116,7 +116,7 @@ services:
   nombre-servicio:
     image: imagen:tag
     container_name: nombre-servicio
-    restart: unless-stopped
+    restart: on-failure:5
     env_file:
       - ../.env          # global (SERVER_IP, TZ)
       - .env             # secretos locales
@@ -321,6 +321,27 @@ volumes:
 - chmod antes de mkdir
 - svc up antes de crear carpetas
 - Crear .env después de levantar (las variables no se cargan)
+
+---
+
+## Arranque escalonado en cada boot
+
+Los servicios persistentes usan `restart: on-failure:5` en `$dkco/_common.yml` o
+localmente. Esto evita que el daemon Docker los levante todos en paralelo al
+volver después de un reboot; `docker-boot-staged.service` ejecuta las capas de
+`$dkco/scripts/layers.conf` y espera los healthchecks antes de continuar.
+
+El código está en `$NAS_DOTFILES/shell/scripts/boot-order.sh`. La configuración
+no se deriva del catálogo porque `svc` descubre el runtime real en `$dkco`; debe
+contener todos los Compose instalados en ese NAS. La guía autocontenida es
+[`docs/docker-boot-staged-guide.md`](docker-boot-staged-guide.md).
+
+Reglas del coordinador:
+- Una línea en blanco separa capas; los servicios de una capa arrancan en paralelo.
+- Un contenedor sin healthcheck debe quedar `running`; uno con healthcheck debe quedar `healthy`.
+- Un job `restart: no` que termina con código 0 se considera completado.
+- Un error o timeout detiene las capas dependientes y queda registrado en `$dkco/scripts/boot-order.log`.
+- `flowise-worker` es interno del Compose `flowise`; no se agrega como servicio independiente.
 
 ---
 

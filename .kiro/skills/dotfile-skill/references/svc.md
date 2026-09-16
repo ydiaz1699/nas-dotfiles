@@ -122,7 +122,7 @@ services:
   <nombre>:
     image: <imagen>:<tag>
     container_name: <nombre>
-    restart: unless-stopped
+    restart: on-failure:5
     security_opt:
       - <<: *security-defaults
     deploy:
@@ -172,7 +172,7 @@ services:
   <nombre>:
     image: <imagen>:<tag>
     container_name: <nombre>
-    restart: unless-stopped
+    restart: on-failure:5
     env_file: .env
     environment:
       <<: *common-env

@@ -71,6 +71,11 @@ nas                 →  dashboard del servidor
 | `svc snapshot <svc>` | Guardar compose+.env antes de cambios (liviano, rotación 10) |
 | `svc rollback <svc>` | Restaurar config desde snapshot anterior (fzf + confirmación) |
 
+El arranque automático no es un comando `svc`: se instala como
+`docker-boot-staged.service` y ejecuta `$NAS_DOTFILES/shell/scripts/boot-order.sh`.
+La configuración de capas está en `$dkco/scripts/layers.conf`; la guía completa
+es [`docs/docker-boot-staged-guide.md`](docs/docker-boot-staged-guide.md).
+
 ### `svc` — Comandos con servicio
 
 | Comando | Acción |

@@ -23,6 +23,27 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now nas-agent
 ```
 
+## Arranque escalonado de Docker
+
+El arranque de Compose está separado del daemon del agente. Para instalar el
+coordinador por capas, copia `docker-boot-staged.service` a `/etc/systemd/system`
+después de crear `$dkco/scripts/layers.conf` y sigue
+[`docs/docker-boot-staged-guide.md`](../docs/docker-boot-staged-guide.md).
+La unidad requiere `docker.service`, espera red/montajes y ejecuta
+`$NAS_DOTFILES/shell/scripts/boot-order.sh` como root. No se debe habilitar hasta
+probar primero el script manualmente.
+
+```bash
+sudo cp "$NAS_DOTFILES/systemd/docker-boot-staged.service" \
+  /etc/systemd/system/docker-boot-staged.service
+sudo systemctl daemon-reload
+sudo systemctl enable docker-boot-staged.service
+sudo systemctl start docker-boot-staged.service
+```
+
+Ver el resultado con `sudo systemctl status docker-boot-staged.service` y el
+log operativo en `$dkco/scripts/boot-order.log`.
+
 ## Comandos
 
 ```bash

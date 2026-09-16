@@ -546,3 +546,26 @@ python3 agent/tools/project_index.py
 ```
 
 La primera versión verifica especialmente `catalog-sync`, `scan`, paridad Bash/Python y la relación scripts DebMenux ↔ `services.json`.
+
+
+
+## Arranque escalonado de contenedores
+
+El coordinador global de boot es código de `nas-dotfiles`, no una modificación
+manual de cada unidad de servicio:
+
+```
+shell/scripts/boot-order.sh
+    ├──→ shell/scripts/layers.conf.example       (plantilla)
+    ├──→ $dkco/scripts/layers.conf               (configuración runtime)
+    ├──→ docker/cli/svc.sh                       (levanta cada Compose)
+    ├──→ shell/scripts/find-no-extends.sh        (diagnóstico de excepciones)
+    ├──→ shell/scripts/apply-restart-policy.sh   (migración inicial)
+    ├──→ systemd/docker-boot-staged.service      (dispara el boot)
+    └──→ docs/docker-boot-staged-guide.md        (procedimiento operativo)
+```
+
+`layers.conf` es la fuente de verdad del orden del NAS real. `catalog.json` no
+se usa para arrancar porque puede describir servicios preparados que todavía no
+están instalados bajo `$dkco`. La policy persistente es `on-failure:5`, salvo
+jobs one-shot explícitos como `lobehub-rustfs-init`, que conservan `no`.

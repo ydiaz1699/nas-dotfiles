@@ -67,7 +67,7 @@ Un solo `_common.yml` global + extends en cada compose:
 # $dkco/_common.yml (NUEVO — único archivo global)
 services:
   _defaults:
-    restart: unless-stopped
+    restart: on-failure:5
     security_opt: [no-new-privileges:true]
     logging:
       driver: json-file

@@ -3,7 +3,7 @@ services:
   node-red:
     image: nodered/node-red:latest
     container_name: node-red
-    restart: unless-stopped
+    restart: on-failure:5
     env_file:
       - ../.env
       - .env

@@ -1,0 +1,41 @@
+# Configuración de arranque escalonado para $dkco/scripts/layers.conf
+#
+# Cada bloque separado por una línea en blanco es una capa. Los servicios de
+# una misma capa arrancan en paralelo; la siguiente capa no empieza hasta que
+# todos los contenedores de la capa estén running/healthy.
+#
+# Esta plantilla refleja los servicios catalogados. Antes de habilitar systemd,
+# compara `svc lista` con este archivo: agrega servicios reales y elimina los
+# que no estén instalados. No agregues flowise-worker: es un servicio interno
+# del Compose de flowise, no un proyecto que `svc` pueda arrancar por separado.
+
+# Capa 1 — PostgreSQL y Redis compartidos
+datasql
+
+# Capa 2 — Consumidores de DataSQL (Compose independiente)
+flowise
+n8n
+lobehub
+
+# Capa 3 — Broker IoT y servicios independientes con acceso host
+emqx
+homeassistant
+esphome
+
+# Capa 4 — Consumidores MQTT
+iobroker
+node-red
+
+# Capa 5 — Servicios de archivos y notificaciones
+filebrowser
+ntfy
+
+# Capa 6 — Dashboard y servicios auxiliares; Homepage queda al final
+vscode
+nas-mcp-gateway
+homepage
+
+# Opcionales no presentes en todos los NAS: descomentar solo si existen.
+# adguard
+# spacedrive
+# tasmoadmin

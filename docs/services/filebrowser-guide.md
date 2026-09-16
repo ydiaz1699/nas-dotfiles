@@ -100,7 +100,7 @@ services:
   filebrowser:
     image: filebrowser/filebrowser:latest
     container_name: filebrowser
-    restart: unless-stopped
+    restart: on-failure:5
     user: "0:0"
     env_file:
       - .env

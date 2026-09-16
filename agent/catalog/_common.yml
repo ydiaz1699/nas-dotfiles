@@ -19,7 +19,7 @@
 #             memory: 1g    # sobreescribe solo esto (deep merge)
 #
 # Lo que se hereda automáticamente (sin declarar nada):
-#   - restart: unless-stopped
+#   - restart: on-failure:5
 #   - security_opt: no-new-privileges
 #   - logging: json-file, 10m, 3 archivos
 #   - deploy.resources: 512m limit, 128m reservation
@@ -35,7 +35,7 @@
 
 services:
   _defaults:
-    restart: unless-stopped
+    restart: on-failure:5
     security_opt:
       - no-new-privileges:true
     logging:

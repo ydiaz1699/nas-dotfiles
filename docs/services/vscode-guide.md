@@ -215,7 +215,7 @@ Detalles importantes del compose:
 
 - `entrypoint: /usr/bin/code-server` evita `/usr/bin/entrypoint.sh`, que intenta ejecutar `fixuid` y `sudo`.
 - `user: "${VSCODE_UID}:${VSCODE_GID}"` mantiene el proceso como `aadm`; nunca sustituirlo por `root`.
-- `extends` hereda `restart: unless-stopped`, `no-new-privileges:true`, logging y el límite de recursos común del NAS.
+- `extends` hereda `restart: on-failure:5`, `no-new-privileges:true`, logging y el límite de recursos común del NAS.
 - No se declara `DOCKER_USER`, porque esa variable solo era útil para el entrypoint que se ha omitido.
 - Las labels de Homepage usan `${SERVER_IP}` y se aplican al recrear el contenedor.
 
