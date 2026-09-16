@@ -91,7 +91,9 @@ lee `$dkco/scripts/layers.conf`. La restart policy es `on-failure:5` (no
   aviso, sin bloquear la capa) y `svc boot-enable <svc>` para revertir.
 - `flowise-worker` es interno del Compose `flowise`; no se lista aparte.
 
-Detalle completo en `docs/docker-boot-staged-guide.md`.
+Al crear/eliminar/detener un servicio, activar la skill `docker-boot-order`
+(`.kiro/skills/docker-boot-order/SKILL.md`), que define el flujo obligatorio de
+`layers.conf` y `no-boot`. Detalle completo en `docs/docker-boot-staged-guide.md`.
 
 ---
 

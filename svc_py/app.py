@@ -102,6 +102,27 @@ def lobehub(
     raise typer.Exit(svc_passthrough("lobehub", *args))
 
 
+@app.command("no-boot")
+def no_boot(service: Optional[str] = typer.Argument(None)):
+    """Excluir un servicio del arranque escalonado (boot-order.sh lo salta).
+
+    Sin argumento, lista los servicios excluidos. Delega en el CLI Bash, que
+    es la fuente de verdad del marcador $DOCKER_BASE/<svc>/.no-boot.
+    """
+    args = [service] if service else []
+    raise typer.Exit(svc_passthrough("no-boot", *args))
+
+
+@app.command("boot-enable")
+def boot_enable(service: Optional[str] = typer.Argument(None)):
+    """Reactivar un servicio en el arranque escalonado (borra su .no-boot).
+
+    Sin argumento, lista los servicios excluidos. Delega en el CLI Bash.
+    """
+    args = [service] if service else []
+    raise typer.Exit(svc_passthrough("boot-enable", *args))
+
+
 # Menu
 app.command("menu")(menu_mod.menu)
 
