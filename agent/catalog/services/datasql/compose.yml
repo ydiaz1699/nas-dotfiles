@@ -36,8 +36,11 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
-      retries: 6
-      start_period: 30s
+      retries: 10
+      # Arranque en frío (reboot): ParadeDB + pg_search/pg_cron con disco frío y
+      # CPU ocupada por el resto del boot puede tardar. Margen amplio para que
+      # el healthcheck no falle antes de que Postgres acepte conexiones.
+      start_period: 90s
     deploy:
       resources:
         limits:
