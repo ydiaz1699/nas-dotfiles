@@ -127,7 +127,15 @@ services:
       - db_net
     depends_on:
       flowise:
-        condition: service_healthy
+        # service_started (no service_healthy) a propósito: el worker solo
+        # necesita que flowise EXISTA para arrancar, no que esté healthy. Con
+        # service_healthy, `docker compose up` bloquea esperando el health de
+        # flowise y, en arranque en frío (CPU saturada), se agota su wait
+        # interno con "dependency failed to start: container flowise is
+        # unhealthy", haciendo fallar el boot escalonado. El health real lo
+        # vigila boot-order.sh (tolerante, con timeout). El worker conserva su
+        # propio healthcheck abajo.
+        condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5566/healthz"]
       interval: 15s
