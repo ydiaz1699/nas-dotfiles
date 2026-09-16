@@ -26,13 +26,15 @@ Environment=DOCKER_BASE={{DOCKER_BASE}}
 Environment=BOOT_ORDER_CONFIG={{DOCKER_BASE}}/scripts/layers.conf
 Environment=BOOT_ORDER_LOG={{DOCKER_BASE}}/scripts/boot-order.log
 Environment=BOOT_ORDER_REQUIRE_ALL=1
-Environment=BOOT_ORDER_HEALTH_TIMEOUT=240
+Environment=BOOT_ORDER_HEALTH_TIMEOUT=480
 # Arranque secuencial dentro de cada capa (uno a uno). Es el comportamiento por
 # defecto (menor pico de I/O). Para arrancar cada capa en paralelo, poner 0:
 Environment=BOOT_ORDER_SERIAL=1
 ExecStart={{NAS_DOTFILES}}/shell/scripts/boot-order.sh
 RemainAfterExit=yes
-TimeoutStartSec=900
+# Debe superar la suma de esperas posibles (BOOT_ORDER_HEALTH_TIMEOUT por
+# contenedor, secuencial). Con timeout de health 480s, 30 min da holgura.
+TimeoutStartSec=1800
 
 [Install]
 WantedBy=multi-user.target

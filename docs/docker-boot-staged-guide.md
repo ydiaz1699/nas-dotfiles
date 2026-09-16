@@ -126,7 +126,7 @@ mano en `/etc`: regenéralo con el instalador si cambian las rutas.
 |---|---|---|
 | `BOOT_ORDER_CONFIG` | `$dkco/scripts/layers.conf` | Ruta del archivo de capas |
 | `BOOT_ORDER_LOG` | `$dkco/scripts/boot-order.log` | Log del arranque |
-| `BOOT_ORDER_HEALTH_TIMEOUT` | `240` | Segundos máximos de espera de readiness por contenedor. Margen amplio para arranque en frío en hardware modesto (2 cores); el arranque secuencial evita competencia de CPU/IO pero cada servicio pesado tarda más en frío |
+| `BOOT_ORDER_HEALTH_TIMEOUT` | `480` | Segundos máximos de espera de readiness por contenedor. Margen amplio para arranque en frío en hardware modesto (2 cores); el arranque secuencial evita competencia de CPU/IO pero cada servicio pesado tarda más en frío |
 | `BOOT_ORDER_DAEMON_TIMEOUT` | `60` | Segundos máximos de espera a que Docker responda |
 | `BOOT_ORDER_REQUIRE_ALL` | `1` | Falla si un Compose de `$dkco` no está en `layers.conf` |
 | `BOOT_ORDER_ALLOW_MISSING` | `0` | Con `1`, omite (en vez de fallar) servicios de `layers.conf` sin Compose |
