@@ -64,12 +64,33 @@ Entrega siempre en este orden exacto:
 5. `dk <svc> && svc config <svc>` para validar
 6. `svc up <svc>`; verificar salud, logs y consumo
 7. `svc catalog-sync <svc>` después de confirmar que funciona
+8. Registrar el servicio en `$dkco/scripts/layers.conf` (arranque escalonado) en la capa según sus dependencias
 
 Restricciones: `compose.yml` (nombre preferido) · `.env` solo secretos ·
 variables triviales inline · `on-failure:5` para servicios persistentes · `restart: no` solo para jobs one-shot documentados · puertos 8100-8999 ·
 nunca 22/53/80/443 · nombres `^[a-z0-9][a-z0-9._-]{0,63}$`
 
 Para plantillas y estructura de carpetas, ver `references/svc.md`.
+
+### Arranque escalonado (boot-order.sh)
+
+Tras un reboot, `docker-boot-staged.service` arranca los servicios por **capas**
+definidas en `$dkco/scripts/layers.conf`, esperando que cada dependencia esté
+`healthy`. La restart policy es `on-failure:5` (no `unless-stopped`) para que
+Docker no levante todo en paralelo y ceda el orden a systemd. Reglas para el LLM:
+
+- **Crear un servicio** ⇒ añadir su nombre a `layers.conf` en la capa correcta
+  (Capa 1 `datasql`; Capa 2 consumidores de DB, con Home Assistant primero por
+  usar PostgreSQL; luego IoT, livianos, dashboard al final). Con
+  `BOOT_ORDER_REQUIRE_ALL=1` (default) un Compose sin línea en `layers.conf`
+  **hace fallar el boot**.
+- **Eliminar un servicio** ⇒ quitar también su línea de `layers.conf`.
+- **Detener uno a propósito** ⇒ `svc no-boot <svc>` (el boot lo salta con aviso,
+  no bloquea ni falla la capa) y `svc boot-enable <svc>` para revertir.
+- Dentro de una capa, en modo secuencial (default) el orden de las líneas es el
+  orden de arranque; `flowise-worker` NO va como línea (es interno de flowise).
+
+Detalle completo en `docs/docker-boot-staged-guide.md`.
 
 ### Servicio que usa DataSQL
 
