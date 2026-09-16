@@ -90,13 +90,22 @@ svc boot-enable <svc>   # reactivarlo
 ## Comandos de referencia
 
 ```bash
-# Aplicar/actualizar el arranque escalonado
-NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/boot-order.sh"          # arranque manual
+# Arranque / apagado escalonado
+NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/boot-order.sh"           # arranque manual
+NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/stop-order.sh"           # apagado orden inverso
 NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/apply-restart-policy.sh" # migrar policies
 NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/find-no-extends.sh"      # compose sin extends
 cat "$dkco/scripts/boot-order.log"                                 # log del arranque
+
+# ¿El arranque terminó o sigue en proceso? (NO juzgar a mitad — tarda ~11 min en frío)
+systemctl is-active docker-boot-staged.service                     # active / activating / failed
+grep "Arranque completo" "$dkco/scripts/boot-order.log" | tail -1
 
 # Excluir/reactivar en el boot
 svc no-boot <svc>
 svc boot-enable <svc>
 ```
+
+Apagar/reiniciar el NAS con orden inverso: `stop-all.sh` (poweroff) /
+`restart-all.sh` (reboot), ambos con confirmación. Nunca `poweroff` directo con
+los servicios corriendo.
