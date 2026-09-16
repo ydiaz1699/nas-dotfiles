@@ -22,9 +22,9 @@ Environment=BOOT_ORDER_CONFIG=/docker/scripts/layers.conf
 Environment=BOOT_ORDER_LOG=/docker/scripts/boot-order.log
 Environment=BOOT_ORDER_REQUIRE_ALL=1
 Environment=BOOT_ORDER_HEALTH_TIMEOUT=120
-# Arranque secuencial dentro de cada capa (menor pico de I/O, boot más lento).
-# Descomentar para activarlo:
-#Environment=BOOT_ORDER_SERIAL=1
+# Arranque secuencial dentro de cada capa (uno a uno). Es el comportamiento por
+# defecto (menor pico de I/O). Para arrancar cada capa en paralelo, poner 0:
+Environment=BOOT_ORDER_SERIAL=1
 ExecStart=/nas-dotfiles/shell/scripts/boot-order.sh
 RemainAfterExit=yes
 TimeoutStartSec=900

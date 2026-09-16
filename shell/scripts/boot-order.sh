@@ -231,8 +231,9 @@ svc_up_one() {
   return 1
 }
 
-# Serial: arranca y espera ready servicio por servicio. Minimiza el pico de I/O
-# a costa de un boot más lento. Se activa con BOOT_ORDER_SERIAL=1.
+# Serial (default): arranca y espera ready servicio por servicio. Minimiza el
+# pico de I/O a costa de un boot más lento. Para arrancar toda la capa en
+# paralelo, usar BOOT_ORDER_SERIAL=0.
 run_layer_serial() {
   local svc
   local -a services=("$@")
@@ -243,8 +244,9 @@ run_layer_serial() {
   done
 }
 
-# Paralelo (default): arranca todos los servicios de la capa a la vez y luego
-# espera la readiness de cada uno. La siguiente capa no empieza hasta terminar.
+# Paralelo (BOOT_ORDER_SERIAL=0): arranca todos los servicios de la capa a la
+# vez y luego espera la readiness de cada uno. La siguiente capa no empieza
+# hasta terminar la actual.
 run_layer_parallel() {
   local svc pid index failed=0
   local -a services=("$@") pids=()
@@ -278,10 +280,10 @@ run_layer() {
   ((${#services[@]} > 0)) || return 0
   log "Iniciando capa: ${services[*]}"
 
-  if [[ "${BOOT_ORDER_SERIAL:-0}" == "1" ]]; then
-    run_layer_serial "${services[@]}" || return 1
-  else
+  if [[ "${BOOT_ORDER_SERIAL:-1}" == "0" ]]; then
     run_layer_parallel "${services[@]}" || return 1
+  else
+    run_layer_serial "${services[@]}" || return 1
   fi
 
   log "Capa lista: ${services[*]}"
