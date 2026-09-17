@@ -28,6 +28,7 @@
 14. [Dual CLI: bash = verdad, Python = interfaz](#14-dual-cli-bash--verdad-python--interfaz)
 15. [El LLM no auto-documenta lo que crea](#15-el-llm-no-auto-documenta-lo-que-crea-validación-cruzada)
 17. [Flowise como prueba de integración con DataSQL](#17-flowise-como-prueba-de-integración-con-datasql)
+18. [Arranque escalonado de Docker en el boot (saga completa)](#18-arranque-escalonado-de-docker-en-el-boot-saga-completa)
 ---
 
 ## 1. ntfy reemplaza notify-send
@@ -547,3 +548,42 @@ Instalar Flowise como prueba, conectándolo a PostgreSQL de DataSQL en lugar de 
 - Una skill externa puede aportar variables oficiales, pero debe auditarse contra `docs/docker-entorno.md`, la guía DataSQL y el compose real antes de incorporarla.
 - La configuración oficial de Flowise usa `DATABASE_TYPE=postgres`, puerto interno `3000`, `/home/node/.flowise` para persistencia y `/api/v1/ping` para healthcheck.
 - La instalación real requiere primero validar DataSQL, la red y el puerto; el sandbox solo puede preparar y validar archivos, no operar el NAS.
+
+
+
+---
+
+## 18. Arranque escalonado de Docker en el boot (saga completa)
+
+**Problema:**
+Al reiniciar el NAS, los 17 contenedores arrancaban en paralelo (por `restart: unless-stopped`), saturando un hardware de 2 cores: pico de `%wa` ~86% y `load average` ~9.6. Se necesitaba arrancarlos en orden, esperando que las dependencias (sobre todo la DB) estuvieran realmente listas.
+
+**Idea del usuario:**
+Escalonar el arranque por capas con systemd + un script que lea una lista editable de servicios, sin tener que tocar systemd al agregar/quitar servicios. Más adelante: arranque secuencial dentro de cada capa, y respetar servicios detenidos a propósito.
+
+**Proceso de solución (varias iteraciones, cada reboot en frío reveló una capa distinta del problema):**
+1. `shell/scripts/boot-order.sh` lee `$dkco/scripts/layers.conf` (capas separadas por línea en blanco) y arranca por capas con health gates. Una sola unidad `docker-boot-staged.service` (generada con rutas reales por `install-boot-service.sh`), NO 3 unidades hardcodeadas.
+2. Policy `unless-stopped` → `on-failure:5` (Docker no revive todo al iniciar el daemon; systemd controla el orden). Jobs one-shot conservan `no`. `apply-restart-policy.sh` migra contenedores vivos con `docker update` sin arranque masivo.
+3. Arranque **secuencial** por defecto dentro de capa (`BOOT_ORDER_SERIAL=1`).
+4. `svc no-boot`/`boot-enable` (marcador `$dkco/<svc>/.no-boot`): saltar-con-aviso servicios detenidos a propósito, sin bloquear la capa. Paridad en CLI Python (delega a bash).
+5. Timeouts para arranque en frío: Postgres `start_period` 30→120s; `BOOT_ORDER_HEALTH_TIMEOUT` 120→480s; `TimeoutStartSec` systemd → 2400s.
+6. `unhealthy` transitorio ya no aborta: se espera hasta agotar el timeout (los primeros health checks fallan mientras el servicio inicializa).
+7. Pausas de estabilización de CPU: `BOOT_ORDER_INITIAL_DELAY` (30s antes de la 1ª capa) y `BOOT_ORDER_SETTLE_DELAY` (10s entre servicios/capas). Ambas `0` en arranque manual.
+8. **Causa raíz final:** `flowise-worker` tenía `depends_on: flowise condition: service_healthy`. `docker compose up` bloqueaba esperando ese health y en frío fallaba con `dependency failed to start` ANTES de que boot-order pudiera actuar. Fix: `condition: service_started` (el health lo vigila boot-order). Mismo patrón pendiente en lobehub→rustfs.
+9. `stop-order.sh` + `stop-all.sh`/`restart-all.sh` reescritos: apagado escalonado en orden INVERSO (los viejos solo bajaban 3 servicios y mataban el resto con poweroff).
+
+**Decisión:**
+Home Assistant primero en la Capa 2 (usa PostgreSQL). `flowise-worker` NO va en `layers.conf` (interno del compose flowise). El arranque en frío tarda ~11 min a propósito (pausas + servicios lentos): NO juzgar como fallo hasta que `systemctl is-active docker-boot-staged.service` diga `failed` o el log muestre `ERROR: se aborta`.
+
+**Alternativas descartadas:**
+- 3 unidades systemd (`docker-layer1/2/3.service`) con servicios hardcodeados: frágil, hay que tocar systemd al cambiar servicios. Se usó 1 unidad + `layers.conf`.
+- `restart: "no"` global: pierde la recuperación en runtime. Se usó `on-failure:5`.
+- `--no-deps` en `svc up` para saltar el wait interno: riesgo de dejar contenedores sin arrancar. Mejor `service_started` + pausas.
+- Relajar el gate de boot-order a "tolerante siempre": ocultaría fallos reales. Se mantiene estricto pero con timeout amplio.
+
+**Aprendizaje:**
+- El arranque en frío de hardware modesto solo se diagnostica en el reboot REAL; ni tests ni teoría lo capturan del todo.
+- `docker compose up` respeta `depends_on: service_healthy` INTERNO y bloquea; para orquestación externa usar `service_started` y dejar el health al orquestador.
+- Separar código (`$NAS_DOTFILES`) de config/estado runtime (`$dkco`): `layers.conf`, logs y `.no-boot` viven en `$dkco`.
+- Regla de verificación: el arranque escalonado es lento a propósito; usar `systemctl is-active` / `grep "Arranque completo"`, no juzgar a mitad.
+- Al reescribir scripts de sistema (stop/restart), revisar si ya existían con lógica vieja (los originales bajaban solo 3 servicios). El mapa `framework-audit.md` ahora lista `shell/scripts/` para que el LLM no los desconozca.
