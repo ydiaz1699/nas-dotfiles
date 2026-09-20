@@ -51,6 +51,7 @@ case "$cmd" in
   unlock) svc_unlock "$1" ; exit 0 ;;
   no-boot) svc_no_boot "$1" ; exit 0 ;;
   boot-enable) svc_boot_enable "$1" ; exit 0 ;;
+  boot-status) svc_boot_status ; exit 0 ;;
   snapshot) svc_snapshot "$1" ; exit 0 ;;
   rollback) svc_rollback "$1" ; exit 0 ;;
   ""|"-h"|"--help") _svc_ayuda ; exit 0 ;;

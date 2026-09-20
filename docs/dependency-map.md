@@ -371,6 +371,7 @@ Usuario escribe: svc <comando>
 | `doctor-history` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
 | `lock` / `unlock` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
 | `no-boot` / `boot-enable` | ✅ | ✅ | Ambos; Python delega a Bash vía `svc_passthrough`. Excluir/reactivar servicio en el arranque escalonado |
+| `boot-status` | ✅ | ✅ | Ambos; Python delega a Bash. Estado del arranque: en proceso/terminado/falló |
 | `snapshot` | ✅ | ✅ | Python registra el comando y delega a Bash mediante `bash_bridge.py` |
 | `rollback` | ✅ | ❌ | Bash; usar `NAS_CLI=bash svc rollback <svc>` desde Python mientras no tenga wrapper |
 | `depends` | ✅ | ✅ | Ambos |

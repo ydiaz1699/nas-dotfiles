@@ -64,6 +64,7 @@ nas                 →  dashboard del servidor
 | `svc unlock <svc>` | Quitar protección |
 | `svc no-boot <svc>` | Excluir servicio del arranque escalonado (boot-order.sh lo salta con aviso) |
 | `svc boot-enable <svc>` | Reactivar servicio en el arranque escalonado |
+| `svc boot-status` | Estado del arranque escalonado: en proceso / terminado / falló |
 | `svc catalog-sync [svc]` | Generar docs en cascada (ficha, guía, script DebMenux) |
 | `svc capabilities [consulta]` | Descubrir capacidades reales desde manifests e índice dinámico |
 | `svc lobehub <acción>` | Preflight, verify, proveedores, DB, RustFS y backup lógico |
