@@ -110,7 +110,7 @@ incremental ya operativo. El diseño histórico se conserva en
 | `lib/docker.sh` | svc_update_all |
 | `lib/health.sh` | svc_health, svc_lista, svc_doctor |
 | `lib/backup.sh` | svc_backup, svc_restore, svc_backup_all, svc_snapshot, svc_rollback |
-| `lib/extras.sh` | port-map, size, net, env, create, clone, cron, lock, no-boot, boot-enable, doctor-history, watch, diff, open, depends |
+| `lib/extras.sh` | port-map, size, net, env, create, clone, cron, lock, no-boot, boot-enable, boot-status, doctor-history, watch, diff, open, depends |
 | `lib/catalog-sync.sh` | Pipeline auto-docs en cascada |
 | `lib/notifications.sh` | ntfy_send() |
 | `lib/menu.sh` | TUI con fzf |

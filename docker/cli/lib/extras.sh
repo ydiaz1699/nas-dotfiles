@@ -1310,3 +1310,62 @@ _svc_no_boot_list() {
   ((found == 0)) && echo "    (ninguno)"
   return 0
 }
+
+
+
+# ── svc boot-status — estado del arranque escalonado de un vistazo ─────────
+# Responde de forma inequívoca si el arranque: sigue EN PROCESO, ya TERMINÓ,
+# o FALLÓ. Evita tener que interpretar systemctl o el log a mano.
+svc_boot_status() {
+  local base="${DOCKER_BASE:-/docker}"
+  local log="$base/scripts/boot-order.log"
+  local unit="docker-boot-staged.service"
+  local state last
+
+  # Estado de la unidad systemd (si está instalada).
+  if command -v systemctl >/dev/null 2>&1 && systemctl cat "$unit" >/dev/null 2>&1; then
+    state=$(systemctl is-active "$unit" 2>/dev/null || true)
+  else
+    state="sin-systemd"
+  fi
+
+  # Última línea significativa del log (arranque más reciente).
+  if [[ -f "$log" ]]; then
+    last=$(grep -E 'Iniciando capa|Capa lista|Arranque completo|ERROR|OMITIDO|Esperando' "$log" | tail -1)
+  fi
+
+  echo ""
+  case "$state" in
+    activating)
+      echo -e "  \033[1;33m⏳ EN PROCESO\033[0m — el arranque escalonado sigue trabajando."
+      echo "     No es un fallo; el arranque en frío tarda varios minutos."
+      [[ -n "$last" ]] && echo "     Último paso: ${last#*] }"
+      echo "     Sigue en vivo con:  tail -f $log"
+      ;;
+    active)
+      echo -e "  \033[0;32m✔ TERMINADO\033[0m — el arranque escalonado completó."
+      [[ -n "$last" ]] && echo "     ${last#*] }"
+      ;;
+    failed)
+      echo -e "  \033[0;31m✗ FALLÓ\033[0m — el arranque se abortó. Revisar:"
+      [[ -n "$last" ]] && echo "     ${last#*] }"
+      echo "     Detalle:  systemctl status $unit --no-pager"
+      echo "     Log:      $log"
+      ;;
+    inactive)
+      echo -e "  \033[0;37m○ INACTIVO\033[0m — la unidad no está corriendo ni marcada activa."
+      echo "     Arranque manual:  NAS_CLI=bash \$NAS_DOTFILES/shell/scripts/boot-order.sh"
+      ;;
+    sin-systemd)
+      echo -e "  \033[1;33m⚠ systemd no configurado\033[0m — docker-boot-staged.service no instalado."
+      if [[ -n "$last" ]]; then
+        echo "     Último arranque manual registrado: ${last#*] }"
+      fi
+      ;;
+    *)
+      echo -e "  Estado de $unit: ${state:-desconocido}"
+      [[ -n "$last" ]] && echo "     Último paso: ${last#*] }"
+      ;;
+  esac
+  echo ""
+}

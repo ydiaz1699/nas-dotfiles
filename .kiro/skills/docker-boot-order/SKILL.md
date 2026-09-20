@@ -97,7 +97,8 @@ NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/apply-restart-policy.sh" # migrar poli
 NAS_CLI=bash "$NAS_DOTFILES/shell/scripts/find-no-extends.sh"      # compose sin extends
 cat "$dkco/scripts/boot-order.log"                                 # log del arranque
 
-# ¿El arranque terminó o sigue en proceso? (NO juzgar a mitad — tarda ~11 min en frío)
+# ¿El arranque terminó o sigue en proceso? (NO juzgar a mitad — tarda ~11-14 min en frío)
+svc boot-status                                                    # en proceso / terminado / falló
 systemctl is-active docker-boot-staged.service                     # active / activating / failed
 grep "Arranque completo" "$dkco/scripts/boot-order.log" | tail -1
 

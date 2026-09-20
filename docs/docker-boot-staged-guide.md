@@ -184,7 +184,14 @@ los tiempos de servicios pesados en frío, puede tardar **~10-12 minutos** en
 completar las 6 capas. NO hay que interpretar "faltan servicios" como fallo
 mientras el arranque sigue en curso.
 
-Para saber el estado real:
+La forma más simple: **`svc boot-status`**. Responde de un vistazo si el
+arranque sigue EN PROCESO, ya TERMINÓ o FALLÓ, con el último paso registrado:
+
+```bash
+svc boot-status
+```
+
+Equivalencias manuales (lo que hace por dentro):
 
 ```bash
 # ¿Terminó? active = sí; activating = aún en proceso; failed = falló

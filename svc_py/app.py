@@ -123,6 +123,15 @@ def boot_enable(service: Optional[str] = typer.Argument(None)):
     raise typer.Exit(svc_passthrough("boot-enable", *args))
 
 
+@app.command("boot-status")
+def boot_status():
+    """Estado del arranque escalonado: en proceso / terminado / falló.
+
+    Evita interpretar systemctl o el log a mano. Delega en el CLI Bash.
+    """
+    raise typer.Exit(svc_passthrough("boot-status"))
+
+
 # Menu
 app.command("menu")(menu_mod.menu)
 
