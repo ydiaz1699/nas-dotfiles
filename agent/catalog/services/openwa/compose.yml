@@ -1,0 +1,87 @@
+# OpenWA — Gateway self-hosted de WhatsApp (API REST + dashboard).
+# En el NAS este archivo se despliega como $dkco/openwa/compose.yml y la ruta
+# de extends cambia a ../_common.yml.
+#
+# EXCEPCIÓN DE SEGURIDAD (documentada en la guía y la ficha):
+# OpenWA ejecuta Chromium/Puppeteer (motor whatsapp-web.js). Su imagen oficial
+# corre con root FS de solo lectura + tmpfs + un conjunto MÍNIMO de capabilities.
+# Por eso NO se aplica `cap_drop: [ALL]` a secas (rompería el arranque de
+# Chromium). Se replica la postura de hardening de la imagen upstream: read_only,
+# tmpfs /tmp, pids_limit y solo las caps que el proceso necesita.
+services:
+  openwa:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: ghcr.io/rmyndharis/openwa:0.23.5
+    container_name: openwa
+    env_file:
+      - ../.env
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: "2785"
+      # Motor por defecto: whatsapp-web.js (estable). Alternativa: baileys (más
+      # ligero, mejor para eventos de llamadas). Se controla desde .env.
+      ENGINE_TYPE: ${ENGINE_TYPE:-whatsapp-web.js}
+      # Base de datos: SQLite local autocontenido (bot personal/single-tenant).
+      DATABASE_TYPE: sqlite
+      DATABASE_NAME: /app/data/openwa.sqlite
+      DATABASE_SYNCHRONIZE: "true"
+      SESSION_DATA_PATH: /app/data/sessions
+      STORAGE_TYPE: local
+      STORAGE_LOCAL_PATH: /app/data/media
+      PLUGINS_DIR: /app/data/plugins
+      PUPPETEER_HEADLESS: "true"
+      PUPPETEER_ARGS: "--no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage,--disable-gpu"
+      # Arranca sesiones ya autenticadas al reiniciar el contenedor.
+      AUTO_START_SESSIONS: "true"
+      # Clave maestra de la API (obligatoria para producción). Ver .env.
+      API_MASTER_KEY: ${API_MASTER_KEY}
+    ports:
+      # Publicado en la LAN para acceder al dashboard/API y para que n8n (en
+      # db_net) lo alcance por http://openwa:2785 internamente.
+      - "2785:2785"
+    volumes:
+      - ./data:/app/data
+    networks:
+      - db_net
+    # --- Hardening replicado de la imagen oficial (Chromium) ---
+    read_only: true
+    tmpfs:
+      - /tmp
+    pids_limit: 2048
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    # Chromium arranca varios procesos: parada con margen para no matar sesiones.
+    stop_grace_period: 45s
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2785/api/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - homepage.group=IA y Automatización
+      - homepage.name=OpenWA
+      - homepage.icon=whatsapp
+      - homepage.href=http://${SERVER_IP}:2785
+      - homepage.description=Gateway self-hosted de WhatsApp (API + dashboard)
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+
+networks:
+  db_net:
+    external: true
