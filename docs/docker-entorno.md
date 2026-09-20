@@ -168,6 +168,35 @@ services:
 Primero levantar, verificar que funciona, medir consumo con `docker stats`, y después
 agregar restricciones si se necesitan.
 
+**Límites y `extends: _common.yml` — no duplicar claves entre nivel servicio y `deploy`:**
+Docker Compose trata algunas claves de nivel servicio como equivalentes a su
+versión en `deploy.resources.limits`. Si un compose hace `extends` de
+`_common.yml` (que ya define `deploy.resources`) y además declara la clave a
+nivel servicio, el merge falla con
+`can't set distinct values on '<clave>' and 'deploy.resources.limits.<clave>'`.
+Poner el límite **solo** dentro de `deploy.resources.limits`:
+
+| ❌ NO (nivel servicio) | ✅ SÍ (dentro de `deploy.resources.limits`) |
+|---|---|
+| `pids_limit: 2048` | `pids: 2048` |
+| `mem_limit: 2g` | `memory: 2G` |
+| `cpus: "2"` | `cpus: "2"` |
+
+Ejemplo correcto para un servicio que hereda de `_common.yml`:
+
+```yaml
+    # ❌ NO poner aquí: pids_limit / mem_limit / cpus (chocan con deploy)
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+          pids: 2048        # ← aquí, no como pids_limit a nivel servicio
+```
+
+Referencia real: el servicio `openwa` (Chromium) necesita un tope de PIDs;
+va en `deploy.resources.limits.pids`, nunca como `pids_limit:` suelto.
+
 **Servicios que SÍ toleran cap_drop:**
 - ntfy, filebrowser, redis, pgadmin, homepage, postgres
 
@@ -393,6 +422,7 @@ ntfy_send "topic" "título" "mensaje" "prioridad" "tags"
 | TZ duplicado (global + environment) | Redundancia | Quitar de `environment:`, heredar de `../.env` |
 | `endpoint already exists in network` | Ya está conectado | Ignorar — no es error real |
 | Compose desactualizado en catálogo | Cambios no sincronizados | `svc catalog-sync <svc>` |
+| `can't set distinct values on 'pids_limit' and 'deploy.resources.limits.pids'` | Se declaró `pids_limit:` a nivel servicio junto a `deploy.resources` (que hereda de `_common.yml`); Compose las considera la misma clave y el merge del `extends` choca | Usar **solo** `deploy.resources.limits.pids: N`; nunca `pids_limit:` a nivel servicio en un compose que hace `extends: _common.yml` |
 | Servicio no aparece en Homepage | Labels no se aplicaron | `svc recreate <svc>` (no basta restart) |
 | Mount fantasma USB | Desconexión sin desmontar | `umount -l /path && rmdir /path` |
 

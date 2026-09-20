@@ -50,7 +50,6 @@ services:
     read_only: true
     tmpfs:
       - /tmp
-    pids_limit: 2048
     cap_drop:
       - ALL
     cap_add:
@@ -78,6 +77,11 @@ services:
         limits:
           cpus: "2"
           memory: 2G
+          # Guarda contra fork-bomb (Chromium es multiproceso). Va aquí, en
+          # deploy.resources.limits.pids, y NO como pids_limit a nivel servicio:
+          # tener ambas rutas entra en conflicto al hacer merge con _common.yml
+          # ("can't set distinct values on 'pids_limit' and ...pids").
+          pids: 2048
         reservations:
           cpus: "0.5"
           memory: 512M
