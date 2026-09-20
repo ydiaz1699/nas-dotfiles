@@ -24,6 +24,7 @@ datasql
 # datasql esté healthy.
 homeassistant
 n8n
+openwa
 flowise
 lobehub
 
