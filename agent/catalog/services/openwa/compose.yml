@@ -38,6 +38,16 @@ services:
       AUTO_START_SESSIONS: "true"
       # Clave maestra de la API (obligatoria para producción). Ver .env.
       API_MASTER_KEY: ${API_MASTER_KEY}
+      # Pepper para el hashing HMAC de las API keys (más seguro que SHA-256
+      # plano). Al activarlo/cambiarlo, las keys existentes dejan de validar y
+      # hay que re-emitirlas. Ver .env.
+      API_KEY_PEPPER: ${API_KEY_PEPPER}
+      # El dashboard se sirve por HTTP plano en la LAN: sin esto, el navegador
+      # fuerza https:// en los assets y el dashboard se ve EN BLANCO.
+      CSP_UPGRADE_INSECURE_REQUESTS: "false"
+      # Origen permitido del dashboard/API (evita bloqueos cross-origin del
+      # navegador). Se hereda SERVER_IP del .env global.
+      CORS_ORIGINS: http://${SERVER_IP}:2785
     ports:
       # Publicado en la LAN para acceder al dashboard/API y para que n8n (en
       # db_net) lo alcance por http://openwa:2785 internamente.
