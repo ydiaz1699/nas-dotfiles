@@ -1,0 +1,100 @@
+{
+  "name": "OpenWA — Auto-respuesta",
+  "nodes": [
+    {
+      "parameters": {
+        "sessionId": "3db78128-6aa9-4355-85c2-91235dc512ed",
+        "events": ["message.received"]
+      },
+      "id": "b1a1c0de-0001-4001-8001-000000000001",
+      "name": "On message received",
+      "type": "@rmyndharis/n8n-nodes-openwa.openWaTrigger",
+      "typeVersion": 1,
+      "position": [260, 300],
+      "credentials": {
+        "openWaApi": {
+          "id": "REEMPLAZA_ID_CREDENCIAL",
+          "name": "OpenWA API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c0nd1-0001-4001-8001-000000000001",
+              "leftValue": "={{ $json.data.body }}",
+              "rightValue": "hola",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b1a1c0de-0002-4001-8001-000000000002",
+      "name": "¿Contiene 'hola'?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendText",
+        "sessionId": "3db78128-6aa9-4355-85c2-91235dc512ed",
+        "chatId": "={{ $json.data.chatId }}",
+        "message": "¡Hola! 👋 Soy un bot automático del NAS. Recibí tu mensaje."
+      },
+      "id": "b1a1c0de-0003-4001-8001-000000000003",
+      "name": "Responder (Send Text)",
+      "type": "@rmyndharis/n8n-nodes-openwa.openWa",
+      "typeVersion": 2,
+      "position": [760, 300],
+      "credentials": {
+        "openWaApi": {
+          "id": "REEMPLAZA_ID_CREDENCIAL",
+          "name": "OpenWA API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "On message received": {
+      "main": [
+        [
+          {
+            "node": "¿Contiene 'hola'?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Contiene 'hola'?": {
+      "main": [
+        [
+          {
+            "node": "Responder (Send Text)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "pinData": {}
+}
