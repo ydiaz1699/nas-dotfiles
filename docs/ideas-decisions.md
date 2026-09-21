@@ -29,6 +29,7 @@
 15. [El LLM no auto-documenta lo que crea](#15-el-llm-no-auto-documenta-lo-que-crea-validación-cruzada)
 17. [Flowise como prueba de integración con DataSQL](#17-flowise-como-prueba-de-integración-con-datasql)
 18. [Arranque escalonado de Docker en el boot (saga completa)](#18-arranque-escalonado-de-docker-en-el-boot-saga-completa)
+19. [OpenWA: gateway WhatsApp desde chat LLM (saga de verificación)](#19-openwa-gateway-whatsapp-desde-chat-llm-saga-de-verificación)
 ---
 
 ## 1. ntfy reemplaza notify-send
@@ -587,3 +588,74 @@ Home Assistant primero en la Capa 2 (usa PostgreSQL). `flowise-worker` NO va en 
 - Separar código (`$NAS_DOTFILES`) de config/estado runtime (`$dkco`): `layers.conf`, logs y `.no-boot` viven en `$dkco`.
 - Regla de verificación: el arranque escalonado es lento a propósito; usar `systemctl is-active` / `grep "Arranque completo"`, no juzgar a mitad.
 - Al reescribir scripts de sistema (stop/restart), revisar si ya existían con lógica vieja (los originales bajaban solo 3 servicios). El mapa `framework-audit.md` ahora lista `shell/scripts/` para que el LLM no los desconozca.
+
+
+---
+
+## 19. OpenWA: gateway WhatsApp desde chat LLM (saga de verificación)
+
+**Problema:**
+El usuario pidió instalar un gateway self-hosted de WhatsApp (`rmyndharis/OpenWA`)
+en el NAS e integrarlo con n8n. El punto de partida era una guía previa de un
+chat que mezclaba datos correctos con inventados (endpoints, header de API,
+nombre del repo), y no estaba adaptada al framework nas-dotfiles.
+
+**Idea del usuario:**
+No clonar el repo ni construir la imagen: usar la imagen publicada y empaquetar
+el servicio siguiendo las convenciones del NAS (catálogo + guía + skill + boot).
+Verificar todo contra la fuente real antes de afirmar nada.
+
+**Proceso de solución:**
+1. Verificar el repo real por API: existe, MIT, 14.4k estrellas. Comparado
+   contra una alternativa (`MultiWA`): OpenWA gana por madurez, nodo oficial de
+   n8n y Baileys estable.
+2. Leer fuentes reales: `openapi.json` (header `X-API-Key`, endpoints de
+   sesión/mensajes), `Dockerfile` (root FS read-only + tmpfs + caps mínimas),
+   `docker-compose.dev.yml` (puerto 2785, red), `docs/22-n8n-integration.md`
+   (nodo oficial), y la doc oficial `docs.open-wa.org` (v0.23.5).
+3. Crear el servicio en el catálogo: `compose.yml` (imagen pineada
+   `ghcr.io/rmyndharis/openwa:0.23.5`, `db_net`, hardening de Chromium),
+   `.env.example`, `ficha.md`, guía `docs/services/openwa-guide.md`, y registro
+   en `layers.conf`.
+4. Runtime en el NAS reveló varios fallos que la teoría no capturó, corregidos
+   en cascada (código → guía → doc del entorno):
+   - `pids_limit` a nivel servicio choca con `deploy.resources` heredado de
+     `_common.yml` (`can't set distinct values on 'pids_limit'...`). Fix:
+     `deploy.resources.limits.pids`.
+   - Dashboard en blanco por HTTP → `CSP_UPGRADE_INSECURE_REQUESTS=false` +
+     `CORS_ORIGINS`.
+   - `Invalid API key` tras añadir `API_KEY_PEPPER`: el pepper invalida el hash
+     de las keys ya sembradas. Fix: re-sembrar `data/main.sqlite` (sin perder
+     sesiones, que viven en `data/openwa.sqlite` y `data/sessions/`).
+   - `Validation failed (uuid is expected)` / `Session is not active`: la API
+     usa el `id` (UUID) de la sesión en las URLs, NO el `name`.
+   - El mensaje no llegaba: el número de ejemplo (`34600111222`) era ficticio y
+     se resolvía a un `@lid`. Con un número real y `@c.us`, envío OK
+     (`messageId` con sufijo `_out`).
+5. Crear `wa-send.sh` para enviar desde terminal resolviendo el UUID solo.
+
+**Decisión:**
+SQLite local (single-tenant), motor `whatsapp-web.js`, red `db_net` (n8n llega
+por `http://openwa:2785`), imagen pineada. Excepción de seguridad documentada:
+Chromium necesita `read_only`+`tmpfs`+caps mínimas (no `cap_drop:[ALL]` a secas).
+
+**Alternativas descartadas:**
+- Clonar el repo y `docker compose up` (la guía vieja): innecesario, hay imagen
+  en GHCR. Se pinea el tag en vez de `latest`.
+- MultiWA: proyecto mucho más joven (33 estrellas) y Baileys experimental.
+- PostgreSQL de DataSQL para OpenWA: se dejó SQLite por simplicidad; migrable.
+
+**Aprendizaje:**
+- **Verificar contra la fuente real, no contra guías heredadas.** La guía previa
+  tenía endpoints y detalles inventados; la única verdad es el repo + doc oficial.
+- **La API de OpenWA opera por UUID, no por name** — un LLM lo adivinaría mal.
+- **`API_KEY_PEPPER` es destructivo para las keys existentes**: ponerlo desde el
+  principio o re-sembrar tras cambiarlo.
+- **Chromium rompe el patrón de hardening estándar del NAS**: excepción
+  documentada en ficha y guía.
+- **Nunca dejar valores de ejemplo que parezcan reales** (como un número de
+  teléfono) sin marcarlos claramente como CAMBIAR: el usuario ejecutó el comando
+  tal cual y el mensaje no llegaba porque el número era ficticio. En adelante,
+  usar `TUNUMERO`/`<CAMBIAR>` bien visible en los comandos.
+- **En este entorno los PR se "congelan" si se hace push justo tras crearlos**:
+  tras cada merge, rebasar la rama sobre `main` y abrir un PR limpio.

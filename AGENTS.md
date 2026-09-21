@@ -123,6 +123,7 @@ todavía ejecuta un checkout anterior y aparece `No such command 'snapshot'`, us
 | node-red | 1880 | iot_net | ✅ labels |
 | iobroker | 8181 (preparado) | iot_net | ✅ labels |
 | usb-api (systemd) | 8091 | nativo | services.yaml |
+| openwa | 2785 | db_net | ✅ labels (gateway WhatsApp no oficial; runtime confirmado) |
 | spacedrive | — | spacedrive_default | — |
 
 > Flowise está activo en el NAS y usa `flowise_db` + `dataredis`; n8n está activo,
@@ -132,6 +133,11 @@ todavía ejecuta un checkout anterior y aparece `No such command 'snapshot'`, us
 > (OpenAI/DeepSeek) si se van a usar, y QStash/marketplace solo para esas funciones.
 > La ficha, guía y compose objetivo de n8n están catalogados; queda verificar su
 > hardening y pin `2.36.7` antes de declararlos aplicados.
+> OpenWA (gateway WhatsApp no oficial) está activo con SQLite en `db_net`; runtime
+> confirmado (dashboard, sesión vinculada y envío OK). La API usa el `id` (UUID)
+> de la sesión en las URLs (no el `name`), auth por `X-API-Key`, y
+> `API_KEY_PEPPER` invalida los hashes de las keys al cambiarlo. Guía completa en
+> `docs/services/openwa-guide.md`; envío desde terminal con `$dkco/openwa/wa-send.sh`.
 
 ## Redes Docker
 
