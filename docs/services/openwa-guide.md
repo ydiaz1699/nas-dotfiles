@@ -433,6 +433,34 @@ armar los webhooks a mano (fuente: `docs/22-n8n-integration.md` del repo).
 `http://openwa:2785` funciona porque n8n y OpenWA comparten `db_net`. No uses
 `localhost` ni `${SERVER_IP}` desde el nodo.
 
+### 9.2.1 ⚠️ REQUISITO: permitir el host de n8n en el guard anti-SSRF
+
+**Sin este paso, el Trigger de n8n falla** con
+`400 Bad Request: Destination address is not allowed`.
+
+OpenWA valida la URL de destino del webhook **al registrarlo** (no solo al
+entregar) y, con la protección SSRF activa por defecto, **rechaza direcciones
+privadas/internas**. n8n construye la URL del webhook desde su
+`WEBHOOK_URL` (en este NAS: `http://${SERVER_IP}:5678`), que es una IP privada
+de la LAN → OpenWA la bloquea. Fuente oficial:
+`docs/06-api-specification.md` (validación de webhooks en registro;
+`WEBHOOK_SSRF_PROTECT` / `SSRF_ALLOWED_HOSTS`).
+
+Solución: el compose del catálogo incluye `SSRF_ALLOWED_HOSTS: ${SERVER_IP}`
+en el `environment:`. Debe estar presente antes de usar el Trigger:
+
+```bash
+grep -n "SSRF_ALLOWED_HOSTS" "$dkco/openwa/compose.yml"
+# Si falta, añadirlo al environment: y recrear
+svc config openwa      # verificar SSRF_ALLOWED_HOSTS: 192.168.1.200 interpolado
+svc recreate openwa
+```
+
+> Alternativa (más "pura" pero con efectos colaterales): cambiar el
+> `WEBHOOK_URL` de n8n a `http://n8n:5678` para que el webhook use la red interna
+> Docker. No se eligió porque `WEBHOOK_URL` afecta a TODOS los webhooks de n8n
+> (incluidos los que se llaman desde fuera de la LAN).
+
 ### 9.3 Nodos disponibles
 
 - **OpenWA** — ejecuta acciones: enviar texto/imagen/documento/ubicación,
@@ -563,6 +591,9 @@ desde el backup.
 | El contenedor no arranca, Chromium crashea | Se aplicó `cap_drop: [ALL]` sin `cap_add`, o se quitó `read_only`/`tmpfs` | Restaurar el bloque de hardening del compose del catálogo |
 | `401 Unauthorized` en la API | Falta o no coincide la cabecera `X-API-Key` | Enviar `X-API-Key: <API_MASTER_KEY>` |
 | n8n no alcanza OpenWA | Se usó `localhost` o `${SERVER_IP}` en el nodo | Usar `http://openwa:2785` (ambos en `db_net`) |
+| Trigger n8n: `Bad request — Destination address is not allowed` | El guard anti-SSRF de OpenWA rechaza el webhook a la IP privada de n8n | Añadir `SSRF_ALLOWED_HOSTS: ${SERVER_IP}` al `environment:` del compose y `svc recreate openwa` (ver §9.2.1) |
+| Trigger no llega y probabas escribiendo tú | `message.received` solo se dispara con mensajes de OTROS | Probar desde OTRO número; `fromMe:false` en el payload |
+| Activaste el filtro y no llegan mensajes de grupo | Filtro `isGroup=false` descarta grupos | Vaciar Filters (recibe todo) o ajustar la condición |
 | El Trigger de n8n recibe un evento y calla | Se registró la URL de test, no la de producción | Activar el workflow y usar la URL de producción |
 | Healthcheck en `starting` mucho tiempo | Primer arranque de Chromium es lento | Esperar el `start_period` (40s) y revisar `svc logs openwa` |
 | `Validation failed (uuid is expected)` | Se usó el `name` de la sesión en la URL | Usar el `id` (UUID) — ver §8, resolver name→id con `GET /api/sessions` |

@@ -48,6 +48,14 @@ services:
       # Origen permitido del dashboard/API (evita bloqueos cross-origin del
       # navegador). Se hereda SERVER_IP del .env global.
       CORS_ORIGINS: http://${SERVER_IP}:2785
+      # Escape-hatch del guard anti-SSRF. OpenWA valida la URL de destino de los
+      # webhooks AL REGISTRARLOS y rechaza direcciones privadas/internas con
+      # "400 Bad Request: Destination address is not allowed". La integración con
+      # n8n entrega los eventos a http://${SERVER_IP}:5678 (IP privada de la LAN),
+      # así que hay que permitir ese host explícitamente o el Trigger de n8n
+      # falla al registrar su webhook. Doc oficial: docs/06-api-specification.md
+      # §Webhooks (validación en registro) — WEBHOOK_SSRF_PROTECT/SSRF_ALLOWED_HOSTS.
+      SSRF_ALLOWED_HOSTS: ${SERVER_IP}
     ports:
       # Publicado en la LAN para acceder al dashboard/API y para que n8n (en
       # db_net) lo alcance por http://openwa:2785 internamente.

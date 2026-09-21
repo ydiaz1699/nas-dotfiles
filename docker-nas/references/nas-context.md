@@ -215,8 +215,20 @@ Aprendizajes verificados en runtime que NO se pueden adivinar:
 6. **Seguridad:** NO `cap_drop:[ALL]` a secas (Chromium) — usa `read_only`+`tmpfs`
    +caps mínimas. **No** poner `pids_limit` a nivel servicio con `extends`
    (choca): va en `deploy.resources.limits.pids`.
-7. **Integración n8n:** nodo oficial `@rmyndharis/n8n-nodes-openwa`; n8n llega
-   por `http://openwa:2785` (ambos en `db_net`), no `localhost`.
+7. **Integración n8n:** nodo oficial `@rmyndharis/n8n-nodes-openwa` (paquete CON
+   scope; un JSON con tipo sin scope crea un 2º paquete duplicado). n8n llega a
+   OpenWA por `http://openwa:2785` (ambos en `db_net`), no `localhost`.
+8. **SSRF (requisito para el Trigger de n8n):** OpenWA valida la URL del webhook
+   al registrarla y con SSRF activo por defecto rechaza IPs privadas →
+   `400 Bad Request: Destination address is not allowed`. Como n8n entrega a
+   `http://${SERVER_IP}:5678` (IP LAN), hay que poner
+   `SSRF_ALLOWED_HOSTS: ${SERVER_IP}` en el `environment:` del compose y
+   `svc recreate openwa`. Sin esto el Trigger no puede registrar su webhook.
+9. **Probar el Trigger:** `message.received` solo se dispara con mensajes de
+   OTROS (`fromMe:false`); escribir desde el propio número vinculado NO lo
+   dispara. El `chatId` entrante puede ser `@lid`; para RESPONDER usar
+   `{{ $json.data.chatId }}` tal cual (responder a un `@lid` de un chat existente
+   funciona; iniciar un envío nuevo necesita `@c.us`).
 
 ### USB Automount
 
