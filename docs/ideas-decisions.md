@@ -30,6 +30,7 @@
 17. [Flowise como prueba de integración con DataSQL](#17-flowise-como-prueba-de-integración-con-datasql)
 18. [Arranque escalonado de Docker en el boot (saga completa)](#18-arranque-escalonado-de-docker-en-el-boot-saga-completa)
 19. [OpenWA: gateway WhatsApp desde chat LLM (saga de verificación)](#19-openwa-gateway-whatsapp-desde-chat-llm-saga-de-verificación)
+20. [Servicio nuevo sin registrar en layers.conf rompe el boot](#20-servicio-nuevo-sin-registrar-en-layersconf-rompe-el-boot)
 ---
 
 ## 1. ntfy reemplaza notify-send
@@ -659,3 +660,34 @@ Chromium necesita `read_only`+`tmpfs`+caps mínimas (no `cap_drop:[ALL]` a secas
   usar `TUNUMERO`/`<CAMBIAR>` bien visible en los comandos.
 - **En este entorno los PR se "congelan" si se hace push justo tras crearlos**:
   tras cada merge, rebasar la rama sobre `main` y abrir un PR limpio.
+
+
+
+---
+
+## 20. Servicio nuevo sin registrar en layers.conf rompe el boot
+
+**Problema:**
+Se creó el servicio `openwa` en otra sesión LLM. Al reiniciar, el arranque escalonado abortó: `svc boot-status` mostró `✗ FALLÓ — openwa existe en /docker pero no está en layers.conf`. El servicio nuevo no se añadió a `$dkco/scripts/layers.conf`, y con `BOOT_ORDER_REQUIRE_ALL=1` el boot falla a propósito para avisar.
+
+**Idea del usuario:**
+Automatizar el registro y que el LLM no dependa de "recordar" la skill: (A) que `svc create` avise/ayude a añadir a layers.conf, (B) que el error del boot dé el comando exacto para arreglarlo, y (C) que `dotfile-skill` sea una skill router que cargue `docker-boot-order` solo cuando se crea/elimina un servicio, sin saturar tokens cargando todas las skills.
+
+**Proceso de solución:**
+1. Fix inmediato del NAS: añadir `openwa` a la Capa 5 de `layers.conf` (usa `db_net` pero SQLite local → independiente, no consumidor de datasql healthy).
+2. (A) `svc create`/`svc clone` llaman a `_svc_layers_reminder`: si el servicio no está en layers.conf, muestran el comando exacto para añadirlo o `svc no-boot`.
+3. (B) `boot-order.sh`: cuando un servicio descubierto falta en layers.conf, el error ahora incluye las 2 opciones de arreglo y el comando de reintento (antes solo decía "no está en layers.conf").
+4. (C) `dotfile-skill` convertida en router: tabla "cuándo cargar cuál skill" y regla de cargar `docker-boot-order` ANTES de terminar de crear un servicio.
+
+**Decisión:**
+El comportamiento de fallar el boot NO se relaja (es la protección correcta: mejor fallar visible que arrancar dejando un servicio fuera en silencio). Lo que se mejora es la GUÍA hacia la solución (recordatorio + error accionable + router de skills).
+
+**Alternativas descartadas:**
+- Poner `BOOT_ORDER_REQUIRE_ALL=0` por defecto: ocultaría servicios olvidados; se pierde la red de seguridad.
+- Que `svc create` edite `layers.conf` automáticamente sin preguntar: no sabe en qué capa va (depende de las dependencias del servicio); mejor recordar + mostrar el comando.
+
+**Aprendizaje:**
+- Crear un servicio SIEMPRE incluye registrarlo en `layers.conf` (o `svc no-boot`). Ahora el propio `svc create` lo recuerda.
+- El error del boot debe ser accionable: decir QUÉ hacer, no solo qué falló.
+- Las skills deben tener una de ENTRADA (`dotfile-skill`) que enrute a las específicas; no cargar todas siempre (satura tokens) ni depender de que el LLM adivine cuál activar.
+- `svc boot-status` fue clave para diagnosticar rápido (dijo exactamente qué servicio faltaba).

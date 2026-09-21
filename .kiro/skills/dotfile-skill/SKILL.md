@@ -3,14 +3,39 @@ name: dotfile-skill
 description: >
   Administra un NAS/Homelab Debian con Docker mediante tres capas: shell
   personalizado (aliases, navegación, prompt), CLI Docker (comando svc), y
-  agente IA Python (Strands SDK, herramientas registradas y capacidades dinámicas). Usar cuando el usuario mencione
-  NAS, homelab, contenedor, servicio, compose, dk, adm, svc, agent, plugin,
-  o cualquier comando del entorno bash personalizado del servidor.
+  agente IA Python (Strands SDK, herramientas registradas y capacidades dinámicas). Es la skill de
+  ENTRADA/router del NAS: actívala para cualquier tarea del servidor y desde
+  ella carga la skill específica que corresponda (docker-boot-order, datasql,
+  nas-runtime-secrets, nas-mcp-gateway, documentation-evolution). Usar cuando el
+  usuario mencione NAS, homelab, contenedor, servicio, compose, dk, adm, svc,
+  agent, plugin, o cualquier comando del entorno bash personalizado del servidor.
 ---
 
 # dotfile-skill
 
-Framework de administración para NAS Debian con Docker.
+Framework de administración para NAS Debian con Docker. **Esta es la skill de
+entrada (router):** se activa para cualquier tarea del NAS y decide qué skill
+específica cargar, para no saturar el contexto con todas a la vez.
+
+## Router de skills — cargar la específica SEGÚN la tarea
+
+No cargar todas las skills siempre. Desde aquí, activar la que corresponda:
+
+| Cuando la tarea trata de... | Cargar la skill |
+|---|---|
+| **Crear / eliminar / detener / reordenar un servicio**, arranque o apagado, `layers.conf`, reboot, restart policy, `no-boot`, `boot-status` | `docker-boot-order` |
+| Crear base/rol PostgreSQL o configurar Redis para un servicio | `datasql` |
+| Leer o transportar secretos (.env, PGPASSWORD, tokens) sin exponerlos | `nas-runtime-secrets` |
+| Activar el gateway MCP read-only | `nas-mcp-gateway` |
+| Unificar drafts, mejorar docs/herramientas, scanner, gaps, contratos | `documentation-evolution` |
+
+**Regla clave:** al **crear un servicio nuevo**, cargar `docker-boot-order`
+ANTES de terminar — porque hay que registrarlo en `$dkco/scripts/layers.conf` o
+el próximo reboot fallará (`BOOT_ORDER_REQUIRE_ALL=1`). Este fue un problema real:
+se creó `openwa` sin añadirlo a `layers.conf` y el arranque abortó.
+
+Para el inventario completo de componentes (scripts, CLI, docs) sin releer el
+proyecto: `docs/framework-audit.md`.
 
 ## Servidor
 
