@@ -389,6 +389,11 @@ desde el backup.
 | El Trigger de n8n recibe un evento y calla | Se registró la URL de test, no la de producción | Activar el workflow y usar la URL de producción |
 | Healthcheck en `starting` mucho tiempo | Primer arranque de Chromium es lento | Esperar el `start_period` (40s) y revisar `svc logs openwa` |
 | El QR no aparece | La sesión no se arrancó | `POST /api/sessions/<name>/start` y luego `GET .../qr` |
+| Dashboard se ve **en blanco** por HTTP | CSP fuerza `https://` en los assets | `CSP_UPGRADE_INSECURE_REQUESTS=false` (ya en el compose) |
+| Peticiones del navegador bloqueadas (CORS) | Falta el origen permitido | `CORS_ORIGINS=http://${SERVER_IP}:2785` (ya en el compose) |
+| Aviso `API_KEY_PEPPER is not set` | Las keys se guardan con SHA-256 plano | Definir `API_KEY_PEPPER` y re-emitir las keys |
+| Tras poner/cambiar `API_KEY_PEPPER`, las keys dan 401 | El pepper cambia el hash de todas las keys | Re-emitir la API key desde el dashboard (Auth → API Keys) |
+| Aparece una API key en los logs del primer arranque | OpenWA crea una key inicial en la DB y la imprime | Revocarla desde el dashboard; usar tu `API_MASTER_KEY` |
 
 ---
 
