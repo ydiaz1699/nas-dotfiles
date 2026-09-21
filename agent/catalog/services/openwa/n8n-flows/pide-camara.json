@@ -1,0 +1,131 @@
+{
+  "name": "OpenWA — Pide cámara (WhatsApp → foto de HA)",
+  "nodes": [
+    {
+      "parameters": {
+        "sessionId": "3db78128-6aa9-4355-85c2-91235dc512ed",
+        "events": ["message.received"]
+      },
+      "id": "cam00001-0001-4001-8001-000000000001",
+      "name": "On message received",
+      "type": "@rmyndharis/n8n-nodes-openwa.openWaTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "credentials": {
+        "openWaApi": {
+          "id": "REEMPLAZA_ID_CREDENCIAL_OPENWA",
+          "name": "OpenWA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-cam-0001-4001-8001-000000000001",
+              "leftValue": "={{ $json.data.body.toLowerCase().trim() }}",
+              "rightValue": "camara",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cam00002-0002-4001-8001-000000000002",
+      "name": "¿Pidió 'camara'?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "resource": "cameraProxy",
+        "cameraEntityId": "camera.REEMPLAZA_ENTIDAD",
+        "additionalFields": {}
+      },
+      "id": "cam00003-0003-4001-8001-000000000003",
+      "name": "HA: Camera screenshot",
+      "type": "n8n-nodes-base.homeAssistant",
+      "typeVersion": 1,
+      "position": [720, 220],
+      "credentials": {
+        "homeAssistantApi": {
+          "id": "REEMPLAZA_ID_CREDENCIAL_HA",
+          "name": "Home Assistant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendImage",
+        "sessionId": "3db78128-6aa9-4355-85c2-91235dc512ed",
+        "chatId": "={{ $('On message received').item.json.data.chatId }}",
+        "imageSource": "binary",
+        "imageBinaryProperty": "data",
+        "caption": "📷 Cámara del NAS"
+      },
+      "id": "cam00004-0004-4001-8001-000000000004",
+      "name": "OpenWA: Send Image",
+      "type": "@rmyndharis/n8n-nodes-openwa.openWa",
+      "typeVersion": 2,
+      "position": [960, 220],
+      "credentials": {
+        "openWaApi": {
+          "id": "REEMPLAZA_ID_CREDENCIAL_OPENWA",
+          "name": "OpenWA account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "On message received": {
+      "main": [
+        [
+          {
+            "node": "¿Pidió 'camara'?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Pidió 'camara'?": {
+      "main": [
+        [
+          {
+            "node": "HA: Camera screenshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HA: Camera screenshot": {
+      "main": [
+        [
+          {
+            "node": "OpenWA: Send Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "pinData": {}
+}
