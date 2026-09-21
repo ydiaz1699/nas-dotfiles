@@ -34,13 +34,18 @@
 
 ### Fuentes verificadas
 
-Los datos se verificaron contra el repositorio real `rmyndharis/OpenWA`:
+Los datos se verificaron contra la **documentación oficial**
+(https://docs.open-wa.org, v0.23.5) y el repositorio real `rmyndharis/OpenWA`:
 
+- Doc oficial — modelo de API keys (`API_MASTER_KEY` verbatim, formato
+  `owa_k1_...`, el pepper invalida hashes), flujo de sesión con `qr_ready`.
 - `openapi.json` — endpoints y `securityScheme` (`X-API-Key`, `in: header`).
 - `docker-compose.dev.yml` — puerto `2785`, red `openwa-network`, hardening.
 - `Dockerfile` — imagen con root FS de solo lectura, tmpfs, caps mínimas.
 - `.env.minimal` — variables de la configuración SQLite single-tenant.
 - `docs/22-n8n-integration.md` — nodo oficial de n8n.
+- **Runtime confirmado en el NAS:** la API usa el `id` (UUID) en las URLs, no el
+  `name`; el envío de texto funciona (`messageId` con sufijo `_out`).
 
 ## Redes y exposición
 
@@ -218,70 +223,207 @@ Debe responder JSON (una lista de sesiones, probablemente vacía al inicio).
 
 ---
 
-## 7. Conectar un número de WhatsApp
+## 7. API keys — cómo funcionan (LEER antes de conectar)
 
-El flujo recomendado es por el **dashboard**:
+> Fuente: documentación oficial `docs.open-wa.org` (v0.23.5) y
+> `docs/04-security-design.md` del repo. Esta sección resume el modelo real de
+> claves para evitar el error de "Invalid API key".
 
-1. Abre `http://${SERVER_IP}:2785` en el navegador.
-2. Crea una sesión (por ejemplo `my-bot`), arráncala y escanea el QR con
-   WhatsApp del número dedicado (Dispositivos vinculados → Vincular
-   dispositivo).
+OpenWA maneja **dos tipos de clave**, y conviene no confundirlos:
 
-Equivalente por API (verificado en `openapi.json`), leyendo la clave sin
-imprimirla:
+| Tipo | De dónde sale | Formato | Uso |
+|---|---|---|---|
+| **Seed key** (`API_MASTER_KEY`) | La variable de tu `.env`, tomada **verbatim** (tal cual) | Lo que tú pongas | Clave de bootstrap/administración |
+| **Key normal** | La crea OpenWA (primer arranque o desde el dashboard) y la guarda hasheada en `main.sqlite` | `owa_k1_<64 hex>` | Uso diario en API/dashboard/n8n |
+
+Reglas oficiales que hay que respetar:
+
+- El header **siempre** es `X-API-Key` (nunca en la URL ni como query param).
+- En el **primer arranque** OpenWA imprime en el log una key nueva
+  (`🔑 API Key (newly created)`). Esa key vive en `main.sqlite`.
+- **`API_KEY_PEPPER` es sensible:** rotarlo o añadirlo **invalida el hash de
+  TODAS las keys ya existentes** (doc oficial). Si defines el pepper *después*
+  de que ya se sembró una key, esa key deja de validar → "Invalid API key".
+
+### 7.1 Si aparece "Invalid API key" tras activar `API_KEY_PEPPER`
+
+Es el caso más común. Causa: la key se sembró antes del pepper. Solución limpia
+(re-sembrar las keys; NO borra sesiones de WhatsApp, que viven en `openwa.sqlite`
+y `sessions/`):
+
+```bash
+dk openwa
+svc stop openwa
+
+# Backup de la DB de auth por si acaso
+cp "$dkco/openwa/data/main.sqlite" "$dkco/openwa/data/main.sqlite.bak"
+
+# Borrar SOLO la DB de auth (se recrea con el pepper ya activo)
+rm -f "$dkco/openwa/data/main.sqlite"
+
+# Poner una API_MASTER_KEY nueva y limpia (no reutilizar la del log)
+ENV_FILE="$dkco/openwa/.env"
+( umask 077; sed -i "s/^API_MASTER_KEY=.*/API_MASTER_KEY=$(openssl rand -hex 32)/" "$ENV_FILE" )
+unset ENV_FILE
+chmod 600 "$dkco/openwa/.env"
+
+svc up openwa
+svc logs openwa      # copia la key nueva del bloque "🔑 API Key (newly created)"
+```
+
+Verifica cuál valida:
 
 ```bash
 API_KEY="$(grep '^API_MASTER_KEY=' "$dkco/openwa/.env" | cut -d= -f2-)"
-
-# Crear sesión (requiere "name")
-curl -s -X POST http://127.0.0.1:2785/api/sessions \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: $API_KEY" \
-  -d '{"name":"my-bot"}'
-
-# Arrancar la sesión
-curl -s -X POST http://127.0.0.1:2785/api/sessions/my-bot/start \
-  -H "X-API-Key: $API_KEY"
-
-# Obtener el QR (o mira el estado con .../status)
-curl -s http://127.0.0.1:2785/api/sessions/my-bot/qr \
-  -H "X-API-Key: $API_KEY"
-
+curl -s -o /dev/null -w "HTTP %{http_code}\n" -H "X-API-Key: $API_KEY" http://127.0.0.1:2785/api/sessions
 unset API_KEY
 ```
 
-El estado de la sesión pasa a `ready` (en minúsculas) cuando el número queda
-vinculado.
-
-### Enviar un mensaje de prueba
-
-`chatId` es el número internacional sin `+`, con sufijo `@c.us` para chats
-individuales (`@g.us` para grupos). Endpoint y body verificados en
-`openapi.json` (`SendTextMessageDto` requiere `chatId` y `text`):
-
-```bash
-API_KEY="$(grep '^API_MASTER_KEY=' "$dkco/openwa/.env" | cut -d= -f2-)"
-curl -s -X POST http://127.0.0.1:2785/api/sessions/my-bot/messages/send-text \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: $API_KEY" \
-  -d '{"chatId":"34600111222@c.us","text":"Hola desde OpenWA"}'
-unset API_KEY
-```
+`HTTP 200` → usa esa `API_MASTER_KEY` en el campo "Clave API" del dashboard. Si
+da `401`, usa la key `newly created` que salió en el log.
 
 ---
 
-## 8. Integración con n8n (nodo oficial)
+## 8. Conectar un número de WhatsApp
+
+Hay dos métodos oficiales: **QR** (recomendado) y **pairing-code** (por número).
+
+> ⚠️ **CRÍTICO — la API usa el `id` (UUID) de la sesión en las URLs, NO el
+> `name`.** Confirmado en runtime: usar el name da
+> `Validation failed (uuid is expected)`. El `name` solo se usa al **crear** la
+> sesión (`POST /api/sessions`); a partir de ahí, todas las rutas
+> `/api/sessions/{sessionId}/...` esperan el UUID que devuelve esa creación (o
+> el campo `id` de `GET /api/sessions`).
+
+Patrón recomendado: resolver el UUID a una variable a partir del `name`:
+
+```bash
+API_KEY="$(grep '^API_MASTER_KEY=' "$dkco/openwa/.env" | cut -d= -f2-)"
+SID="$(curl -s http://127.0.0.1:2785/api/sessions -H "X-API-Key: $API_KEY" \
+  | python3 -c "import sys,json; print(next(s['id'] for s in json.load(sys.stdin) if s['name']=='prueba'))")"
+echo "$SID"   # p.ej. 3db78128-6aa9-4355-85c2-91235dc512ed
+```
+
+### 8.1 Por el dashboard (recomendado)
+
+1. Abre `http://${SERVER_IP}:2785` y entra con la API key (sección 7).
+2. Crea una sesión, arráncala y **escanea el QR** con el número dedicado
+   (WhatsApp → Dispositivos vinculados → Vincular dispositivo).
+
+### 8.2 Por API — flujo oficial con estado `qr_ready`
+
+El estado correcto a esperar es **`qr_ready`** (no `ready` todavía). Fuente:
+`docs/examples/session-phone-number-pairing.md`. Se crea con el `name`, luego se
+opera con `$SID` (UUID).
+
+```bash
+API_KEY="$(grep '^API_MASTER_KEY=' "$dkco/openwa/.env" | cut -d= -f2-)"
+
+# 1. Crear sesión (requiere "name"); DEVUELVE el id — guárdalo
+curl -s -X POST http://127.0.0.1:2785/api/sessions \
+  -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" \
+  -d '{"name":"prueba"}'
+
+# 2. Resolver el UUID a $SID (ver patrón arriba)
+SID="$(curl -s http://127.0.0.1:2785/api/sessions -H "X-API-Key: $API_KEY" \
+  | python3 -c "import sys,json; print(next(s['id'] for s in json.load(sys.stdin) if s['name']=='prueba'))")"
+
+# 3. Arrancar la sesión (por UUID)
+curl -s -X POST "http://127.0.0.1:2785/api/sessions/$SID/start" -H "X-API-Key: $API_KEY"
+
+# 4. Esperar hasta status == qr_ready (y engineLoaded == true)
+curl -s "http://127.0.0.1:2785/api/sessions/$SID" -H "X-API-Key: $API_KEY"
+
+# 5. Obtener el QR
+curl -s "http://127.0.0.1:2785/api/sessions/$SID/qr" -H "X-API-Key: $API_KEY"
+
+unset API_KEY SID
+```
+
+### 8.3 Alternativa: pairing-code (vincular por número, sin QR)
+
+Solo cuando `status` sea `qr_ready` (usa `$SID`, no el name):
+
+```bash
+curl -s -X POST "http://127.0.0.1:2785/api/sessions/$SID/pairing-code" \
+  -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" \
+  -d '{"phoneNumber":"34600111222"}'
+```
+
+Devuelve un código de 8 caracteres. En el teléfono: WhatsApp → Ajustes →
+Dispositivos vinculados → **Vincular con número de teléfono** → introducir el
+código. `phoneNumber` = dígitos en formato internacional, sin `+`, espacios ni
+guiones.
+
+> ⚠️ **whatsapp-web.js:** pedir pairing-code para un número que YA tiene una
+> sesión vinculada puede hacer que WhatsApp **desvincule** ese dispositivo. Si
+> una sesión de ese número debe seguir viva, vincula la nueva por QR. (Baileys
+> no se ve afectado.)
+
+Cuando el número queda vinculado, `status` pasa a `ready`.
+
+### 8.4 Enviar un mensaje (por API)
+
+`chatId` = número internacional sin `+`, sufijo `@c.us` (individual) o `@g.us`
+(grupo). `SendTextMessageDto` requiere `chatId` y `text`. Usa `$SID`:
+
+```bash
+API_KEY="$(grep '^API_MASTER_KEY=' "$dkco/openwa/.env" | cut -d= -f2-)"
+SID="$(curl -s http://127.0.0.1:2785/api/sessions -H "X-API-Key: $API_KEY" \
+  | python3 -c "import sys,json; print(next(s['id'] for s in json.load(sys.stdin) if s['name']=='prueba'))")"
+
+curl -s -X POST "http://127.0.0.1:2785/api/sessions/$SID/messages/send-text" \
+  -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" \
+  -d '{"chatId":"34600111222@c.us","text":"Hola desde OpenWA"}'
+
+unset API_KEY SID
+```
+
+Respuesta OK: `{"messageId":"...","timestamp":...}`. Un `messageId` con sufijo
+`_out` confirma que el mensaje salió.
+
+> La sesión debe estar activa. Si sale `Session ... is not active` o
+> `Session is not started`, arráncala con `POST /api/sessions/$SID/start`.
+
+### 8.5 Envío rápido con `wa-send.sh`
+
+Para no repetir el `curl` ni resolver el UUID a mano, el servicio incluye un
+script que hace todo (resuelve name→id, lee la key sin imprimirla, `unset` al
+final). Se despliega junto al servicio:
+
+```bash
+# Instalación (una vez), tras crear la carpeta del servicio:
+cp "$NAS_DOTFILES/agent/catalog/services/openwa/wa-send.sh" "$dkco/openwa/wa-send.sh"
+chmod 700 "$dkco/openwa/wa-send.sh"
+```
+
+Uso:
+
+```bash
+dk openwa
+./wa-send.sh prueba 34600111222 "Hola desde el NAS"
+#            ^sesión  ^número      ^mensaje
+```
+
+- Añade `@c.us` automáticamente si el número no trae sufijo (respeta `@g.us` /
+  `@lid` si los pones).
+- Variables opcionales: `OPENWA_URL` (default `http://127.0.0.1:2785`) y
+  `OPENWA_ENV_FILE` (default `$dkco/openwa/.env`).
+
+---
+
+## 9. Integración con n8n (nodo oficial)
 
 OpenWA publica un **nodo de comunidad oficial** para n8n, así que no hay que
 armar los webhooks a mano (fuente: `docs/22-n8n-integration.md` del repo).
 
-### 8.1 Instalar el nodo en n8n
+### 9.1 Instalar el nodo en n8n
 
 1. En n8n: **Settings → Community Nodes → Install**.
 2. Paquete: `@rmyndharis/n8n-nodes-openwa`.
 3. Acepta el aviso e instala. Reinicia n8n si te lo pide (`svc restart n8n`).
 
-### 8.2 Credenciales del nodo
+### 9.2 Credenciales del nodo
 
 | Campo | Valor |
 |---|---|
@@ -291,7 +433,7 @@ armar los webhooks a mano (fuente: `docs/22-n8n-integration.md` del repo).
 `http://openwa:2785` funciona porque n8n y OpenWA comparten `db_net`. No uses
 `localhost` ni `${SERVER_IP}` desde el nodo.
 
-### 8.3 Nodos disponibles
+### 9.3 Nodos disponibles
 
 - **OpenWA** — ejecuta acciones: enviar texto/imagen/documento/ubicación,
   comprobar si un número existe, gestionar webhooks, etc.
@@ -299,7 +441,7 @@ armar los webhooks a mano (fuente: `docs/22-n8n-integration.md` del repo).
   (`message.received`, `session.status`, `session.disconnected`, etc.). Crea y
   borra el webhook en OpenWA automáticamente al activar/desactivar el workflow.
 
-### 8.4 Nota sobre el Trigger
+### 9.4 Nota sobre el Trigger
 
 Cuando uses el nodo Trigger, **activa el workflow** y deja que registre la URL
 de producción del webhook. La URL de test de n8n solo recibe un evento y luego
@@ -308,7 +450,7 @@ deja de escuchar. Para deduplicar reintentos, añade un paso keyed en
 
 ---
 
-## 9. Registrar en el arranque escalonado
+## 10. Registrar en el arranque escalonado
 
 OpenWA no depende de DataSQL (usa SQLite), pero comparte `db_net` y encaja bien
 junto a n8n. Añádelo a `$dkco/scripts/layers.conf` en la **Capa 2**
@@ -332,7 +474,7 @@ Para dejarlo fuera del boot temporalmente sin borrarlo: `svc no-boot openwa`
 
 ---
 
-## 10. Generar documentación en cascada
+## 11. Generar documentación en cascada
 
 ```bash
 svc catalog-sync openwa
@@ -340,7 +482,7 @@ svc catalog-sync openwa
 
 ---
 
-## 11. Operación y mantenimiento
+## 12. Operación y mantenimiento
 
 ### Estado y diagnóstico
 
@@ -379,7 +521,7 @@ desde el backup.
 
 ---
 
-## 12. Errores comunes
+## 13. Errores comunes
 
 | Síntoma | Causa | Solución |
 |---|---|---|
@@ -388,12 +530,16 @@ desde el backup.
 | n8n no alcanza OpenWA | Se usó `localhost` o `${SERVER_IP}` en el nodo | Usar `http://openwa:2785` (ambos en `db_net`) |
 | El Trigger de n8n recibe un evento y calla | Se registró la URL de test, no la de producción | Activar el workflow y usar la URL de producción |
 | Healthcheck en `starting` mucho tiempo | Primer arranque de Chromium es lento | Esperar el `start_period` (40s) y revisar `svc logs openwa` |
-| El QR no aparece | La sesión no se arrancó | `POST /api/sessions/<name>/start` y luego `GET .../qr` |
+| `Validation failed (uuid is expected)` | Se usó el `name` de la sesión en la URL | Usar el `id` (UUID) — ver §8, resolver name→id con `GET /api/sessions` |
+| `Session '<x>' is not active` / `is not started` | El motor de la sesión no está corriendo | `POST /api/sessions/$SID/start` y esperar unos segundos |
+| El QR no aparece | La sesión no se arrancó | `POST /api/sessions/$SID/start` (por UUID) y luego `GET .../qr` |
 | Dashboard se ve **en blanco** por HTTP | CSP fuerza `https://` en los assets | `CSP_UPGRADE_INSECURE_REQUESTS=false` (ya en el compose) |
 | Peticiones del navegador bloqueadas (CORS) | Falta el origen permitido | `CORS_ORIGINS=http://${SERVER_IP}:2785` (ya en el compose) |
 | Aviso `API_KEY_PEPPER is not set` | Las keys se guardan con SHA-256 plano | Definir `API_KEY_PEPPER` y re-emitir las keys |
-| Tras poner/cambiar `API_KEY_PEPPER`, las keys dan 401 | El pepper cambia el hash de todas las keys | Re-emitir la API key desde el dashboard (Auth → API Keys) |
+| Tras poner/cambiar `API_KEY_PEPPER`, las keys dan 401/Invalid | El pepper cambia el hash de todas las keys | Re-sembrar: borrar `data/main.sqlite` (backup antes) y recrear — ver §7.1 |
+| `Invalid API key` en el dashboard | La key se sembró antes del pepper | Re-sembrar la DB de auth (§7.1) o usar la key `newly created` del log |
 | Aparece una API key en los logs del primer arranque | OpenWA crea una key inicial en la DB y la imprime | Revocarla desde el dashboard; usar tu `API_MASTER_KEY` |
+| `chatId` con `@lid` no envía bien | El `@lid` es un id de privacidad, no el número | Iniciar envíos con `<numero>@c.us` (número internacional sin `+`) |
 
 ---
 
