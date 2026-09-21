@@ -371,6 +371,31 @@ EOF
   echo "  Siguiente paso: edita docker-compose.yml con la imagen real"
   echo "    nano $svc_dir/docker-compose.yml"
   echo ""
+
+  # Registro en el arranque escalonado: recordatorio obligatorio + ayuda.
+  # Con BOOT_ORDER_REQUIRE_ALL=1, un servicio sin línea en layers.conf hace
+  # fallar el boot; por eso se avisa aquí, al crearlo.
+  _svc_layers_reminder "$name"
+}
+
+# ── _svc_layers_reminder — recuerda añadir el servicio a layers.conf ───────
+# Se llama al crear/clonar un servicio. Si layers.conf existe y el servicio no
+# está, muestra el comando exacto para añadirlo (o marcarlo no-boot).
+_svc_layers_reminder() {
+  local name="$1"
+  local conf="${DOCKER_BASE:-/docker}/scripts/layers.conf"
+
+  [[ -f "$conf" ]] || return 0
+  grep -qxF "$name" "$conf" 2>/dev/null && return 0
+
+  echo -e "  \033[1;33m⚠ Falta registrar '$name' en el arranque escalonado.\033[0m"
+  echo "    Con BOOT_ORDER_REQUIRE_ALL=1, el próximo reboot FALLARÁ si no se añade."
+  echo ""
+  echo "    Añádelo a la capa que corresponda según sus dependencias:"
+  echo "      nano $conf"
+  echo "    O, si aún no quieres que arranque en el boot:"
+  echo "      svc no-boot $name"
+  echo ""
 }
 
 # ── svc watch — monitoreo continuo ─────────────────────────────────────────
@@ -855,6 +880,7 @@ svc_clone() {
   echo "    2. Editar compose.yml: cambiar puertos, redes, etc."
   echo "    3. Levantar: dk $nuevo && svc up $nuevo"
   echo ""
+  _svc_layers_reminder "$nuevo"
 }
 
 # ── svc cron — helper para agendar backups/updates via crontab ─────────────

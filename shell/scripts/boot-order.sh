@@ -149,7 +149,12 @@ validate_layers() {
   if [[ "$REQUIRE_ALL" == "1" ]]; then
     for svc in "${!DISCOVERED[@]}"; do
       if [[ -z "${CONFIGURED[$svc]+x}" ]]; then
-        fail "$svc existe en $DOCKER_BASE pero no está en layers.conf."
+        log "ERROR: '$svc' existe en $DOCKER_BASE pero no está en $CONFIG_FILE."
+        log "  Arréglalo con UNA de estas opciones:"
+        log "    1) Añádelo a una capa:  nano $CONFIG_FILE   (agrega la línea: $svc)"
+        log "    2) Exclúyelo del boot:  svc no-boot $svc"
+        log "  Luego reintenta:  NAS_CLI=bash $NAS_DOTFILES/shell/scripts/boot-order.sh"
+        fail "servicio '$svc' sin registrar en layers.conf (ver instrucciones arriba)."
       fi
     done
   else
