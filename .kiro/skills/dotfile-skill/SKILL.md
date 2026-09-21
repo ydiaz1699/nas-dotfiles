@@ -29,6 +29,23 @@ No cargar todas las skills siempre. Desde aquí, activar la que corresponda:
 | Activar el gateway MCP read-only | `nas-mcp-gateway` |
 | Unificar drafts, mejorar docs/herramientas, scanner, gaps, contratos | `documentation-evolution` |
 
+### Carga CONDICIONAL, no por categoría (evita gastar tokens)
+
+Cargar una skill solo si la TAREA CONCRETA la necesita — no "por si acaso".
+Al crear un servicio, las skills a cargar dependen de lo que ESE servicio use:
+
+| El servicio nuevo... | Cargar |
+|---|---|
+| Siempre (todo servicio va a `layers.conf`) | `docker-boot-order` |
+| Usa PostgreSQL o Redis (crea base/rol) | **+ `datasql`** |
+| Tiene secretos/.env que transportar | **+ `nas-runtime-secrets`** |
+| No usa DB ni secretos (ej. openwa con SQLite local) | solo `docker-boot-order` — **NO cargar `datasql`** |
+
+Ejemplo (idea del usuario): crear `openwa` (SQLite local, sin PostgreSQL) →
+cargar `docker-boot-order` para registrarlo en `layers.conf`, pero **NO** cargar
+`datasql` porque no toca la base de datos compartida. Cargar `datasql` ahí sería
+gastar contexto en vano.
+
 **Regla clave:** al **crear un servicio nuevo**, cargar `docker-boot-order`
 ANTES de terminar — porque hay que registrarlo en `$dkco/scripts/layers.conf` o
 el próximo reboot fallará (`BOOT_ORDER_REQUIRE_ALL=1`). Este fue un problema real:

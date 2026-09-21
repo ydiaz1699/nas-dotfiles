@@ -31,6 +31,7 @@
 18. [Arranque escalonado de Docker en el boot (saga completa)](#18-arranque-escalonado-de-docker-en-el-boot-saga-completa)
 19. [OpenWA: gateway WhatsApp desde chat LLM (saga de verificación)](#19-openwa-gateway-whatsapp-desde-chat-llm-saga-de-verificación)
 20. [Servicio nuevo sin registrar en layers.conf rompe el boot](#20-servicio-nuevo-sin-registrar-en-layersconf-rompe-el-boot)
+21. [Skill router: carga condicional de skills para no gastar tokens](#21-skill-router-carga-condicional-de-skills-para-no-gastar-tokens)
 ---
 
 ## 1. ntfy reemplaza notify-send
@@ -691,3 +692,34 @@ El comportamiento de fallar el boot NO se relaja (es la protección correcta: me
 - El error del boot debe ser accionable: decir QUÉ hacer, no solo qué falló.
 - Las skills deben tener una de ENTRADA (`dotfile-skill`) que enrute a las específicas; no cargar todas siempre (satura tokens) ni depender de que el LLM adivine cuál activar.
 - `svc boot-status` fue clave para diagnosticar rápido (dijo exactamente qué servicio faltaba).
+
+
+
+---
+
+## 21. Skill router: carga condicional de skills para no gastar tokens
+
+**Problema:**
+De dónde surge: en otra sesión se creó `openwa` sin registrarlo en `layers.conf` y el boot falló (ver #20). La causa de fondo no fue solo el olvido, sino que **el LLM no sabía qué skill activar ni cuándo**: la skill correcta (`docker-boot-order`) solo servía si el LLM la cargaba, y nada lo garantizaba. Además, cargar TODAS las skills siempre satura el contexto (tokens) de cualquier LLM.
+
+**Idea del usuario:**
+1. Que exista una skill principal que actúe como **router**: se activa siempre para tareas del NAS y desde ella se cargan las específicas solo cuando hacen falta, sin que el LLM tenga que adivinar.
+2. Refinamiento: la carga debe ser **condicional según la tarea concreta**, no por categoría. Ejemplo textual del usuario: *"cuando te pido que me crees un nuevo servicio no es necesario cargar la skill de base de datos"* — solo se carga `datasql` si ESE servicio usa PostgreSQL/Redis.
+
+**Proceso de solución:**
+1. `dotfile-skill` convertida en skill de ENTRADA/router: su `description` lo declara y su cuerpo tiene una tabla "cuándo cargar cuál skill".
+2. Se añadió la sección "Carga CONDICIONAL, no por categoría": al crear un servicio se carga siempre `docker-boot-order` (todo servicio va a `layers.conf`), pero `datasql` solo si usa DB, `nas-runtime-secrets` solo si tiene secretos. Ejemplo openwa (SQLite local) → NO cargar `datasql`.
+3. Refuerzo con el auto-recordatorio de `svc create` (#20) para que el paso de `layers.conf` no dependa solo de la memoria del LLM.
+
+**Decisión:**
+Una sola skill router (`dotfile-skill`), no una skill nueva "índice". La carga de skills específicas es condicional a la necesidad real de la tarea. El inventario completo de componentes vive en `docs/framework-audit.md` (que también tiene el índice de skills), no duplicado en la router.
+
+**Alternativas descartadas:**
+- Cargar todas las skills en cada sesión: satura tokens, justo lo que se quiere evitar.
+- Crear una skill "índice de skills" separada: duplicaría el índice que ya está en `framework-audit.md`; la router enlaza, no copia.
+- Cargar por categoría amplia (ej. "cualquier servicio → datasql"): carga skills innecesarias (openwa no usa DB).
+
+**Aprendizaje:**
+- Regla de carga de skills: **condicional a la tarea concreta**, no por categoría ni "por si acaso". Menos tokens, más preciso.
+- Una skill router de entrada evita que el LLM adivine o cargue todo; le dice explícitamente qué activar y cuándo.
+- El ejemplo del usuario (crear servicio ≠ cargar datasql) es el patrón general: cargar solo lo que la acción realmente toca.
