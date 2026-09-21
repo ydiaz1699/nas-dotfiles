@@ -448,6 +448,41 @@ de producción del webhook. La URL de test de n8n solo recibe un evento y luego
 deja de escuchar. Para deduplicar reintentos, añade un paso keyed en
 `idempotencyKey` (viene en el body y en la cabecera `X-OpenWA-Idempotency-Key`).
 
+El campo **"Session Name or ID"** de los nodos es un desplegable que lista tus
+sesiones y usa el **UUID** internamente: eliges el name y el nodo pone el id
+correcto. Esto evita el error `uuid is expected` — con el nodo NO hay que
+resolver el UUID a mano (a diferencia de las llamadas curl de la §8). El campo
+del texto en `Message → Send Text` se llama **Message** (no "Text").
+
+### 9.5 ⚠️ Gotcha del scope del paquete (importante)
+
+El paquete oficial es **con scope**: `@rmyndharis/n8n-nodes-openwa`. Los tipos de
+nodo internos son `@rmyndharis/n8n-nodes-openwa.openWa` y
+`@rmyndharis/n8n-nodes-openwa.openWaTrigger`.
+
+Si un workflow JSON trae el tipo SIN el scope (`n8n-nodes-openwa.*`), al
+importarlo n8n intenta instalar un **segundo paquete** con ese nombre y quedan
+DOS paquetes duplicados en conflicto (síntomas: al editar un nodo pide
+"instalar" aunque ya esté instalado, y el workflow da `Bad request`). Solución:
+Settings → Community Nodes → desinstalar el duplicado sin scope y dejar solo
+`@rmyndharis/n8n-nodes-openwa`; usar JSON con el tipo correcto (con scope).
+
+### 9.6 Workflows de ejemplo (JSON para importar)
+
+En el catálogo hay flujos listos para importar, con los tipos de nodo correctos:
+
+```text
+agent/catalog/services/openwa/n8n-flows/
+├── README.md          ← instrucciones de import y ajustes
+├── auto-reply.json    ← recibe → si contiene "hola" → responde
+└── echo-simple.json   ← recibe cualquier mensaje → responde con eco
+```
+
+Importar: n8n → menú **⋮** → **Import from File / Clipboard**. Tras importar,
+en cada nodo OpenWA seleccionar la credencial **OpenWA API** y elegir la sesión
+en el desplegable (los placeholders `REEMPLAZA_ID_CREDENCIAL` y el UUID se
+sustituyen así). Ver el README de la carpeta para el detalle.
+
 ---
 
 ## 10. Registrar en el arranque escalonado
