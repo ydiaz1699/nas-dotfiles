@@ -31,6 +31,7 @@
 18. [Arranque escalonado de Docker en el boot (saga completa)](#18-arranque-escalonado-de-docker-en-el-boot-saga-completa)
 19. [OpenWA: gateway WhatsApp desde chat LLM (saga de verificación)](#19-openwa-gateway-whatsapp-desde-chat-llm-saga-de-verificación)
 20. [Servicio nuevo sin registrar en layers.conf rompe el boot](#20-servicio-nuevo-sin-registrar-en-layersconf-rompe-el-boot)
+21. [OpenWA → n8n: el guard anti-SSRF bloquea el webhook](#21-openwa--n8n-el-guard-anti-ssrf-bloquea-el-webhook)
 21. [Skill router: carga condicional de skills para no gastar tokens](#21-skill-router-carga-condicional-de-skills-para-no-gastar-tokens)
 ---
 
@@ -723,3 +724,58 @@ Una sola skill router (`dotfile-skill`), no una skill nueva "índice". La carga 
 - Regla de carga de skills: **condicional a la tarea concreta**, no por categoría ni "por si acaso". Menos tokens, más preciso.
 - Una skill router de entrada evita que el LLM adivine o cargue todo; le dice explícitamente qué activar y cuándo.
 - El ejemplo del usuario (crear servicio ≠ cargar datasql) es el patrón general: cargar solo lo que la acción realmente toca.
+
+
+---
+
+## 21. OpenWA → n8n: el guard anti-SSRF bloquea el webhook
+
+**Problema:**
+Al activar el nodo OpenWA Trigger en n8n para recibir mensajes de WhatsApp, el
+registro del webhook fallaba con `400 Bad Request — Destination address is not
+allowed`. Se perdió tiempo persiguiendo pistas falsas: el campo Filters (que
+quedaba en un estado inválido al importar el JSON), el modo Fixed/Expression, la
+selección de sesión. El error real solo apareció al abrir "Show Details".
+
+**Idea del usuario:**
+Exigir el mensaje de error exacto en vez de seguir adivinando, y verificar la
+documentación oficial para que el compose salga válido a la primera.
+
+**Proceso de solución:**
+1. "Show Details" reveló el error real: `Destination address is not allowed`.
+2. Diagnóstico: OpenWA tiene un guard anti-SSRF que valida la URL del webhook
+   **al registrarla** (no solo al entregar) y rechaza direcciones
+   privadas/internas por defecto.
+3. n8n construye la URL desde su `WEBHOOK_URL` = `http://${SERVER_IP}:5678`
+   (IP privada de la LAN) → OpenWA la bloquea.
+4. Fix: añadir `SSRF_ALLOWED_HOSTS: ${SERVER_IP}` al `environment:` del compose
+   de OpenWA y `svc recreate openwa`. Confirmado en runtime: el Trigger recibe
+   eventos.
+5. Verificado contra la doc oficial `docs/06-api-specification.md`: la
+   validación en registro y las variables `WEBHOOK_SSRF_PROTECT` /
+   `SSRF_ALLOWED_HOSTS` estaban documentadas.
+
+**Decisión:**
+Permitir la IP del NAS en `SSRF_ALLOWED_HOSTS` (cambio mínimo, no toca n8n).
+
+**Alternativas descartadas:**
+- Cambiar `WEBHOOK_URL` de n8n a `http://n8n:5678` (red interna): afecta a TODOS
+  los webhooks de n8n, incluidos los que se llaman desde fuera de la LAN.
+- Desactivar el SSRF por completo (`WEBHOOK_SSRF_PROTECT=false`): baja la
+  seguridad sin necesidad; el allowlist es más quirúrgico.
+
+**Aprendizaje:**
+- **Leer la doc NO basta: hay que APLICARLA al caso concreto.** La variable
+  `SSRF_ALLOWED_HOSTS` y el guard SSRF estaban en la doc que se exploró al armar
+  el compose, pero no se conectó "OpenWA entrega webhooks a n8n en IP privada" +
+  "OpenWA bloquea IPs privadas por SSRF" = "hay que permitir esa IP". El compose
+  inicial se entregó incompleto por no razonar esa implicación. Al preparar
+  archivos que deben funcionar a la primera, revisar las variables de seguridad
+  (SSRF, CORS, CSP) contra el escenario real de despliegue, no solo listarlas.
+- **Pedir el error exacto antes que adivinar.** Se dieron varias vueltas con el
+  campo Filters cuando el error real era otro; "Show Details" lo resolvió en un
+  paso. Ante un `Bad request` genérico, exigir el detalle antes de proponer fixes.
+- Un `chatId` entrante puede ser `@lid` (id de privacidad). Para responder sirve
+  tal cual; para iniciar un envío nuevo se necesita `@c.us`.
+- `message.received` solo se dispara con mensajes de OTROS (`fromMe:false`):
+  probar desde otro número, no desde el propio vinculado.
