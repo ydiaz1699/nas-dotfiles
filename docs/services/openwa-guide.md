@@ -28,7 +28,9 @@
 
 - **Imagen:** `ghcr.io/rmyndharis/openwa:0.23.5` (verificada accesible en GHCR).
 - **Base de datos:** SQLite local en `./data/openwa.sqlite` (autocontenido).
-- **Motor:** `whatsapp-web.js` por defecto; `baileys` como alternativa.
+- **Motor:** `baileys` por defecto. ⚠️ `whatsapp-web.js` tiene ROTO el envío de
+  imágenes/media con la versión actual de WhatsApp Web (verificado en runtime);
+  ver §14.
 - **Red:** `db_net` externa (la misma que n8n), para integración interna.
 - **Autenticación:** cabecera `X-API-Key` con el valor de `API_MASTER_KEY`.
 
@@ -141,14 +143,19 @@ unset ENV_FILE
 No pongas `SERVER_IP` ni `TZ` en este archivo: se heredan del `.env` global
 mediante `env_file: [../.env, .env]`.
 
-### Elegir el motor (opcional)
+### Elegir el motor
 
-Por defecto `whatsapp-web.js`. Para usar `baileys` (más ligero, mejor soporte de
-eventos de llamadas), edita `$dkco/openwa/.env`:
+Por defecto **`baileys`** (más ligero, sin Chromium). ⚠️ **No uses
+`whatsapp-web.js` si vas a enviar imágenes:** tiene roto el envío de media con la
+versión actual de WhatsApp Web (ver §14). Para pinearlo explícitamente en
+`$dkco/openwa/.env`:
 
 ```text
 ENGINE_TYPE=baileys
 ```
+
+Cambiar de motor **obliga a re-escanear el QR** (cada motor guarda su sesión por
+separado en `data/`).
 
 ---
 
@@ -606,6 +613,61 @@ desde el backup.
 | `Invalid API key` en el dashboard | La key se sembró antes del pepper | Re-sembrar la DB de auth (§7.1) o usar la key `newly created` del log |
 | Aparece una API key en los logs del primer arranque | OpenWA crea una key inicial en la DB y la imprime | Revocarla desde el dashboard; usar tu `API_MASTER_KEY` |
 | `chatId` con `@lid` no envía bien | El `@lid` es un id de privacidad, no el número | Iniciar envíos con `<numero>@c.us` (número internacional sin `+`) |
+| `send-image` da 500 `Data passed to getter must include an id property` | Bug de media en `whatsapp-web.js` con la versión actual de WA Web | Cambiar a `ENGINE_TYPE=baileys` y re-escanear QR (§14) |
+| Enviar imagen a tu PROPIO número (self-chat) falla | whatsapp-web.js/baileys no resuelven bien el self-chat para media | Enviar a un número destino DISTINTO del vinculado |
+| `send-image` por URL da `Destination address is not allowed` | El SSRF guard bloquea el fetch de la imagen externa | Usar `base64`/binario, o ampliar `SSRF_ALLOWED_HOSTS` con el host de la imagen |
+| `svc logs openwa` se queda colgado / imprime cientos de líneas | Hace follow y OpenWA loguea ~200 rutas al arrancar | `docker logs --tail 300 openwa 2>&1 \| grep -iE "ready\|error\|qr" \| tail -20` |
+
+---
+
+## 14. Envío de imágenes / cámaras de Home Assistant
+
+Verificado en runtime. Para enviar imágenes (p.ej. una cámara de HA a WhatsApp):
+
+1. **Motor `baileys` obligatorio.** `whatsapp-web.js` falla al enviar media con
+   la versión actual de WhatsApp Web (error `Data passed to getter must include
+   an id property`). El texto funciona en ambos; solo el media falla en wweb.js.
+   Cambiar el motor obliga a re-escanear el QR.
+2. **Fuente de la imagen:** usar **binario** o **base64**, NO una URL externa —
+   el guard SSRF bloquea el fetch de URLs externas (`Destination address is not
+   allowed`) salvo que se añada ese host a `SSRF_ALLOWED_HOSTS`.
+3. **Destino:** enviar a un número **distinto** del vinculado. Enviarte media a
+   tu propio número (self-chat) falla.
+
+Prueba directa por API (base64, a un número real distinto del vinculado):
+
+```bash
+API_KEY="$(grep '^API_MASTER_KEY=' "$dkco/openwa/.env" | cut -d= -f2-)"
+SID="<UUID_de_la_sesion>"
+B64="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+curl -s -X POST "http://127.0.0.1:2785/api/sessions/$SID/messages/send-image" \
+  -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" \
+  -d "{\"chatId\":\"<NUMERO_REAL>@c.us\",\"base64\":\"$B64\",\"mimetype\":\"image/png\",\"caption\":\"prueba\"}"
+echo ""
+unset API_KEY SID B64
+```
+
+Respuesta OK: `{"messageId":"...","timestamp":...}` (con baileys, sin sufijo
+`_lid`) y la imagen llega al número.
+
+### Flujo n8n "pide cámara" (WhatsApp → foto de HA)
+
+Flujo de ejemplo en `agent/catalog/services/openwa/n8n-flows/pide-camara.json`:
+
+```
+[On message received] → [IF: ¿"camara"?] → [HA: Camera Proxy screenshot] → [OpenWA: Send Image]
+```
+
+- **HA: Camera Proxy** (nodo `Home Assistant`, operación *Get the camera
+  screenshot*) devuelve la imagen como binario en la propiedad `data`.
+  Credencial: URL `http://${SERVER_IP}:8123` + token de larga duración de HA.
+- **OpenWA: Send Image**: `Image Source = Binary Data`, `Binary Property = data`.
+  - **Chat Name or ID:** para recibir la foto en un número fijo, poner
+    `<TU_NUMERO>@c.us` (no el `@lid` del remitente, y no el número vinculado).
+  - **Vaciar** `Quoted Message ID` y `Mentions` (los valores de ejemplo rompen
+    el envío).
+- Al importar el JSON, seleccionar a mano las credenciales OpenWA y HA, y la
+  sesión; el nodo no las vincula solo.
 
 ---
 

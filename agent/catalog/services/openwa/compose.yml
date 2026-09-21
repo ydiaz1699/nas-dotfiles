@@ -21,9 +21,14 @@ services:
     environment:
       NODE_ENV: production
       PORT: "2785"
-      # Motor por defecto: whatsapp-web.js (estable). Alternativa: baileys (más
-      # ligero, mejor para eventos de llamadas). Se controla desde .env.
-      ENGINE_TYPE: ${ENGINE_TYPE:-whatsapp-web.js}
+      # Motor por defecto: BAILEYS. Verificado en runtime que whatsapp-web.js
+      # tiene ROTO el envío de media (imágenes) con la versión actual de
+      # WhatsApp Web (error "Data passed to getter must include an id property"
+      # en Client.sendMessage → sendMediaMessage). Baileys no usa Chromium, no
+      # tiene ese bug y es más ligero. El texto sí funcionaba en ambos motores;
+      # solo el media fallaba en whatsapp-web.js. Cambiar de motor obliga a
+      # re-escanear el QR (cada motor guarda su sesión por separado).
+      ENGINE_TYPE: ${ENGINE_TYPE:-baileys}
       # Base de datos: SQLite local autocontenido (bot personal/single-tenant).
       DATABASE_TYPE: sqlite
       DATABASE_NAME: /app/data/openwa.sqlite

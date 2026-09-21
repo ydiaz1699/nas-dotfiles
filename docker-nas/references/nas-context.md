@@ -195,7 +195,7 @@ Antes de crear una aplicación que necesite PostgreSQL o Redis compartido:
 ### OpenWA (gateway WhatsApp) — gotchas operativos
 
 Gateway WhatsApp no oficial en `db_net`, puerto `2785`, SQLite en `./data`,
-motor `whatsapp-web.js`. Guía completa: `docs/services/openwa-guide.md`.
+motor **`baileys`** (por defecto). Guía completa: `docs/services/openwa-guide.md`.
 Aprendizajes verificados en runtime que NO se pueden adivinar:
 
 1. **La API usa el `id` (UUID) de la sesión en las URLs, NO el `name`.** Usar el
@@ -212,6 +212,13 @@ Aprendizajes verificados en runtime que NO se pueden adivinar:
 5. **Enviar mensajes:** `chatId` = `<numero_internacional_sin_+>@c.us`. El `@lid`
    es id de privacidad, no sirve para iniciar envíos. `messageId` con sufijo
    `_out` = enviado OK. Script listo: `$dkco/openwa/wa-send.sh <sesion> <num> "<txt>"`.
+   **MEDIA (imágenes):** requiere motor `baileys` — `whatsapp-web.js` tiene ROTO
+   el envío de media con la versión actual de WA Web (`Data passed to getter must
+   include an id property`); el texto sí funciona en ambos. NO enviar media al
+   propio número (self-chat falla) ni por URL externa (el SSRF guard la bloquea:
+   usar binario/base64). Cambiar de motor obliga a re-escanear QR.
+   **Logs sin colgarse:** `docker logs --tail 300 openwa 2>&1 | grep -iE "ready|error|qr" | tail -20`
+   (`svc logs` hace follow y OpenWA loguea ~200 rutas al arrancar).
 6. **Seguridad:** NO `cap_drop:[ALL]` a secas (Chromium) — usa `read_only`+`tmpfs`
    +caps mínimas. **No** poner `pids_limit` a nivel servicio con `extends`
    (choca): va en `deploy.resources.limits.pids`.

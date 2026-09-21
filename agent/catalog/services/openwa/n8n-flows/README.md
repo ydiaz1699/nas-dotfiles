@@ -22,6 +22,13 @@ Instalar el nodo community **oficial** en n8n:
 |---|---|
 | `auto-reply.json` | Recibe mensaje → si contiene "hola" → responde al remitente |
 | `echo-simple.json` | Recibe cualquier mensaje → responde con eco (sin filtro) |
+| `pide-camara.json` | Recibe "camara" → HA Camera Proxy screenshot → envía la foto (requiere motor `baileys`; ver la guía §14) |
+
+> **Envío de imágenes:** requiere `ENGINE_TYPE=baileys` (whatsapp-web.js tiene
+> roto el media). En `pide-camara.json`, el nodo Send Image usa `Binary Data` /
+> propiedad `data`; poner tu número con `@c.us` en Chat ID y vaciar
+> `Quoted Message ID` y `Mentions`. Credencial HA: `http://${SERVER_IP}:8123` +
+> token de larga duración.
 
 ## Cómo importar
 

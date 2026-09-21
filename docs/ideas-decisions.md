@@ -33,6 +33,7 @@
 20. [Servicio nuevo sin registrar en layers.conf rompe el boot](#20-servicio-nuevo-sin-registrar-en-layersconf-rompe-el-boot)
 21. [OpenWA → n8n: el guard anti-SSRF bloquea el webhook](#21-openwa--n8n-el-guard-anti-ssrf-bloquea-el-webhook)
 21. [Skill router: carga condicional de skills para no gastar tokens](#21-skill-router-carga-condicional-de-skills-para-no-gastar-tokens)
+22. [OpenWA: whatsapp-web.js rompe el media → cambiar a baileys](#22-openwa-whatsapp-webjs-rompe-el-media--cambiar-a-baileys)
 ---
 
 ## 1. ntfy reemplaza notify-send
@@ -779,3 +780,62 @@ Permitir la IP del NAS en `SSRF_ALLOWED_HOSTS` (cambio mínimo, no toca n8n).
   tal cual; para iniciar un envío nuevo se necesita `@c.us`.
 - `message.received` solo se dispara con mensajes de OTROS (`fromMe:false`):
   probar desde otro número, no desde el propio vinculado.
+
+
+---
+
+## 22. OpenWA: whatsapp-web.js rompe el media → cambiar a baileys
+
+**Problema:**
+Con OpenWA en el motor `whatsapp-web.js`, enviar **texto** funcionaba pero enviar
+**imágenes** (para mandar cámaras de Home Assistant a WhatsApp) fallaba con
+`500 Internal server error`. El objetivo del usuario era controlar el NAS y
+recibir domótica por WhatsApp (flujo "pide cámara → recibe foto").
+
+**Idea del usuario:**
+Usar WhatsApp (OpenWA) + n8n + el nodo Home Assistant (Camera Proxy) para el
+flujo. Exigir el error real y no adivinar.
+
+**Proceso de solución:**
+1. Se aisló el fallo probando la API directamente (no solo n8n).
+2. `docker logs --tail 300 openwa | grep -iE "error|media"` reveló el error real:
+   `Data passed to getter must include an id property (it's how we memoize) but
+   got undefined` en `Client.sendMessage → sendMediaMessage → sendImage`. Es un
+   bug de `whatsapp-web.js` con la versión actual de WhatsApp Web (OpenWA pineaba
+   una `2.3000...-alpha`).
+3. Se comprobó la matriz: texto a otro número → llega; imagen a otro número →
+   falla; imagen al propio número → falla. Conclusión: el media está roto en
+   wweb.js, no era el destino.
+4. Fix: `ENGINE_TYPE=baileys` + `svc recreate openwa` + re-escanear QR (cada
+   motor guarda su sesión aparte). Con baileys, el envío de imagen base64 a un
+   número real **funcionó** (`messageId` sin `_lid`).
+5. Hallazgos colaterales verificados: (a) enviar media al propio número
+   (self-chat) falla; usar un destino distinto. (b) `send-image` por URL externa
+   se bloquea por el SSRF guard (`Destination address is not allowed`) con
+   `SSRF_ALLOWED_HOSTS` restringido; usar binario/base64. (c) `svc logs` hace
+   follow y OpenWA loguea ~200 rutas al arrancar → usar
+   `docker logs --tail N openwa | grep ... | tail` para ver solo lo importante.
+
+**Decisión:**
+Motor por defecto `baileys` en el compose del catálogo. `whatsapp-web.js` queda
+como alternativa documentada pero con el media roto. Envío de cámaras HA por
+binario (no URL). Flujo `n8n-flows/pide-camara.json` con Send Image binario.
+
+**Alternativas descartadas:**
+- Quedarse en whatsapp-web.js y pinear otra versión de WA Web: frágil, depende de
+  que exista un build sin el bug; baileys lo evita de raíz y es más ligero.
+- Enviar la cámara por URL (HA camera proxy URL): choca con el SSRF guard; el
+  binario es más simple y no expone la URL interna.
+
+**Aprendizaje:**
+- **whatsapp-web.js puede tener el media roto según la versión de WA Web**; para
+  enviar imágenes fiablemente en OpenWA, usar **baileys** (además más ligero,
+  mejor para el NAS de 8GB).
+- **No enviarse media a uno mismo**: el self-chat con media falla. Para "que ME
+  llegue la foto" hace falta un número destino distinto del vinculado (idealmente
+  un número dedicado para el bot y el personal como destino).
+- **El SSRF guard también afecta al envío de media por URL**, no solo a webhooks.
+- **Para leer logs de OpenWA sin colgarse**, no usar `svc logs` (follow) sino
+  `docker logs --tail N | grep`. Documentado en la guía §13/§14.
+- Regla reforzada de toda la saga: **pedir el error exacto y aislar (API directa
+  vs n8n) antes de proponer fixes**; ahorró varias vueltas.
