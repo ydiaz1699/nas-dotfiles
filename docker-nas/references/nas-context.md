@@ -18,7 +18,7 @@ trigger: >
   - Servicios: Docker, contenedor, compose, imagen, puerto, red, volumen
   - Comandos: dk, adm, nasfk, svc, instal, pipins, gpl, gs, nas, bat
   - Servicios específicos: emqx, ntfy, adguard, filebrowser, esphome,
-    homepage, datasql, aipostgres, datapostgres, datapgadmin, dataredis, pgadmin, redis, flowise, n8n, lobehub, ioBroker, usb-api, spacedrive, rustfs
+    homepage, datasql, aipostgres, datapostgres, datapgadmin, dataredis, pgadmin, redis, flowise, n8n, lobehub, ioBroker, usb-api, spacedrive, rustfs, openwa, whatsapp
   - Infra: homelab, servidor, backup, cron, systemd, USB, mount
   - IoT: MQTT, broker, ESP32, Home Assistant, alarma, sensor
   - Redes: macvlan, bridge, iot_net, db_net, homepage_net, DNS
@@ -150,6 +150,7 @@ volúmenes ni redes conjeturadas; confirmarlos primero en la fuente oficial.
 | node-red | 1880 | iot_net | `docs/services/node-red-guide.md` |
 | iobroker | 8181 (preparado) | iot_net | `docs/services/iobroker-guide.md` |
 | usb-api | 8091 | nativo (systemd) | `agent/catalog/services/usb-api/ficha.md` |
+| openwa | 2785 | db_net | `docs/services/openwa-guide.md` + `agent/catalog/services/openwa/` (runtime confirmado; gateway WhatsApp no oficial) |
 | nas-mcp-gateway (preparado) | 8791 interno | nas_mcp_net | `docs/nas-mcp-gateway.md` + `.kiro/skills/nas-mcp-gateway/SKILL.md` |
 
 ### Servicios nuevos que dependen de DataSQL
@@ -190,6 +191,32 @@ Antes de crear una aplicación que necesite PostgreSQL o Redis compartido:
 | `db_net` | Apps ↔ DBs (interno) | No exponer bases a la LAN; PostgreSQL puede usar `127.0.0.1:5432:5432` solo para Home Assistant host-network; LobeHub usa datapostgres/dataredis aquí |
 | `lobe_storage` | LobeHub ↔ RustFS S3 | Red privada del compose; RustFS publica solo el endpoint S3 LAN necesario en `9000` y consola loopback en `9001` |
 | `homepage_net` | Homepage ↔ servicios (widgets) | Para APIs internas |
+
+### OpenWA (gateway WhatsApp) — gotchas operativos
+
+Gateway WhatsApp no oficial en `db_net`, puerto `2785`, SQLite en `./data`,
+motor `whatsapp-web.js`. Guía completa: `docs/services/openwa-guide.md`.
+Aprendizajes verificados en runtime que NO se pueden adivinar:
+
+1. **La API usa el `id` (UUID) de la sesión en las URLs, NO el `name`.** Usar el
+   name da `Validation failed (uuid is expected)`. El name solo sirve al crear
+   (`POST /api/sessions`); resolver name→id con `GET /api/sessions`.
+2. **Header de auth: `X-API-Key`** con `API_MASTER_KEY` (se toma verbatim del
+   `.env`). Las keys normales tienen formato `owa_k1_<64hex>`.
+3. **`API_KEY_PEPPER` invalida el hash de TODAS las keys** al añadirlo/cambiarlo
+   → produce `Invalid API key`. Reparar re-sembrando: parar, backup y borrar
+   `data/main.sqlite` (NO borra sesiones: viven en `data/openwa.sqlite` y
+   `data/sessions/`), recrear.
+4. **Dashboard por HTTP:** requiere `CSP_UPGRADE_INSECURE_REQUESTS=false` y
+   `CORS_ORIGINS=http://${SERVER_IP}:2785` o se ve en blanco.
+5. **Enviar mensajes:** `chatId` = `<numero_internacional_sin_+>@c.us`. El `@lid`
+   es id de privacidad, no sirve para iniciar envíos. `messageId` con sufijo
+   `_out` = enviado OK. Script listo: `$dkco/openwa/wa-send.sh <sesion> <num> "<txt>"`.
+6. **Seguridad:** NO `cap_drop:[ALL]` a secas (Chromium) — usa `read_only`+`tmpfs`
+   +caps mínimas. **No** poner `pids_limit` a nivel servicio con `extends`
+   (choca): va en `deploy.resources.limits.pids`.
+7. **Integración n8n:** nodo oficial `@rmyndharis/n8n-nodes-openwa`; n8n llega
+   por `http://openwa:2785` (ambos en `db_net`), no `localhost`.
 
 ### USB Automount
 
