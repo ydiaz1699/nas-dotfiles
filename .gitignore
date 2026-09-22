@@ -55,3 +55,6 @@ agent/memory/sessions/*.md
 
 !.kiro/skills/docker-boot-order/
 !.kiro/skills/docker-boot-order/SKILL.md
+
+!.kiro/skills/nas-diagnostics/
+!.kiro/skills/nas-diagnostics/SKILL.md

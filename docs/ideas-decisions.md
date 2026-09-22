@@ -839,3 +839,62 @@ binario (no URL). Flujo `n8n-flows/pide-camara.json` con Send Image binario.
   `docker logs --tail N | grep`. Documentado en la guía §13/§14.
 - Regla reforzada de toda la saga: **pedir el error exacto y aislar (API directa
   vs n8n) antes de proponer fixes**; ahorró varias vueltas.
+
+
+
+---
+
+## 23. Skill nueva `nas-diagnostics` — operar/diagnosticar servicios existentes
+
+**Problema:**
+El sistema de skills tenía entrada (`dotfile-skill` router), creación/arranque
+(`docker-boot-order`), datos (`datasql`), secretos (`nas-runtime-secrets`), MCP
+(`nas-mcp-gateway`) y evolución documental (`documentation-evolution`), pero
+**no había una skill específica para diagnosticar/operar un servicio que YA
+existe** cuando falla, va lento, queda `unhealthy` o el arranque escalonado se
+quedó a medias. El conocimiento existía disperso en `references/diagnostic.md`
+(recetas) y `docs/troubleshooting.md` (casos resueltos), pero sin un punto de
+entrada que el router pudiera activar por sus triggers. Caso vivo: `tasmoadmin`
+`unhealthy` en `.no-boot`.
+
+**Idea del usuario:**
+Seguir la evolución de skills del handoff `SESSION-2026-09-20`; empezar por el
+hueco #1 (skill de operar/diagnosticar servicios existentes).
+
+**Proceso de solución:**
+1. Se verificó el estado real: las 6 skills + `nas-dotfiles.md` siguen el patrón
+   (`description` con triggers + cuerpo que enlaza a la guía dueña) y el router
+   de `dotfile-skill` no se contradice con el índice de `framework-audit.md`.
+2. Se leyeron las guías dueñas candidatas (`references/diagnostic.md` y
+   `docs/troubleshooting.md`) para NO duplicar contenido: la skill nueva solo
+   aporta el flujo de decisión y enlaza.
+3. Se creó `.kiro/skills/nas-diagnostics/SKILL.md` con: regla de arranque
+   (distinguir "boot en proceso" de fallo real con `svc boot-status`), flujo de
+   decisión (health → boot-status → ps → logs → doctor), tabla síntoma→receta,
+   `svc` vs `agent`, reglas seguras (no `network prune`, `down/up` recrea red,
+   `NAS_CLI=bash` fallback, rate limit ≠ problema del NAS) y casos abiertos.
+4. Se conectó a las tres capas de índice sin duplicar: router de `dotfile-skill`
+   (fila en la tabla + sección "Diagnóstico" ahora delega a la skill), índice de
+   `docs/framework-audit.md`, y el overview suelto `nas-dotfiles.md`.
+
+**Decisión:**
+`nas-diagnostics` = skill de entrada para diagnosticar/operar servicios
+EXISTENTES. Frontera explícita: NO crear/eliminar/reordenar (eso es
+`docker-boot-order`) ni configurar bases/secretos (`datasql` /
+`nas-runtime-secrets`). Las guías dueñas siguen siendo `references/diagnostic.md`
+y `docs/troubleshooting.md`; la skill nunca copia su contenido.
+
+**Alternativas descartadas:**
+- Ampliar la sección "Diagnóstico" de `dotfile-skill` en vez de crear skill:
+  rompía el patrón router (una skill específica por dominio) y no daba triggers
+  propios para autoactivarse cuando el usuario reporta un fallo.
+- Meter el flujo en `docker-boot-order`: mezcla dos intenciones opuestas (crear
+  vs diagnosticar) y satura esa skill.
+
+**Aprendizaje:**
+- Una skill nueva debe conectarse a TODAS las capas de índice a la vez (router,
+  framework-audit, overview suelto) o el índice queda desincronizado.
+- Frontera clara en la `description` (qué NO cubre, con la skill alternativa)
+  evita solapes de activación entre skills vecinas.
+- El diagnóstico debe empezar por `svc boot-status`: en frío el boot tarda
+  ~11–14 min y "aún no arriba" no es fallo.

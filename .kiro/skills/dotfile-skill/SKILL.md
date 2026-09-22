@@ -24,6 +24,7 @@ No cargar todas las skills siempre. Desde aquí, activar la que corresponda:
 | Cuando la tarea trata de... | Cargar la skill |
 |---|---|
 | **Crear / eliminar / detener / reordenar un servicio**, arranque o apagado, `layers.conf`, reboot, restart policy, `no-boot`, `boot-status` | `docker-boot-order` |
+| **Un servicio EXISTENTE falla / está unhealthy / lento / se reinicia / no arranca**, conflicto de puerto, OOM, o revisar el estado del boot | `nas-diagnostics` |
 | Crear base/rol PostgreSQL o configurar Redis para un servicio | `datasql` |
 | Leer o transportar secretos (.env, PGPASSWORD, tokens) sin exponerlos | `nas-runtime-secrets` |
 | Activar el gateway MCP read-only | `nas-mcp-gateway` |
@@ -207,10 +208,15 @@ Si necesitas razonamiento, búsqueda o decisión → `agent`.
 
 ## Diagnóstico
 
-Cuando algo falla, seguir un orden de investigación estructurado.
+Cuando un servicio EXISTENTE falla, está unhealthy, se reinicia, va lento o el
+arranque quedó a medias, la skill específica es
+`.kiro/skills/nas-diagnostics/SKILL.md`: aporta el flujo de decisión (incluido
+distinguir "boot en proceso" de fallo real con `svc boot-status`) y enlaza a las
+recetas y a los problemas ya resueltos.
 
-Para recetas completas (OOM, crash loop, conflicto de puerto, servicio
-lento, healthcheck, red), ver `references/diagnostic.md`.
+Para las recetas completas por escenario (OOM, crash loop, conflicto de puerto,
+servicio lento, healthcheck, red), ver `references/diagnostic.md`; para casos
+reales resueltos, `docs/troubleshooting.md`.
 
 ---
 

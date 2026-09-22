@@ -212,6 +212,7 @@ clave (`description`); no hay que recordarlas de memoria — están aquí listad
 |-------|----------------------------------------|
 | `dotfile-skill` | Administración general del NAS: contenedor, servicio, compose, dk, adm, svc, agent, plugin |
 | `docker-boot-order` | Crear/eliminar/detener un servicio, `layers.conf`, arranque/apagado escalonado, `no-boot`, reboot, restart policy |
+| `nas-diagnostics` | Un servicio EXISTENTE falla/unhealthy/lento/crash loop/no arranca, conflicto de puerto, OOM, red entre servicios, o revisar `boot-status` |
 | `datasql` | Crear base/rol o configurar Redis para un servicio (ParadeDB PostgreSQL + Redis compartidos) |
 | `nas-runtime-secrets` | Leer/transportar secretos de servicios sin exponerlos al LLM |
 | `nas-mcp-gateway` | Decidir cuándo activar el gateway MCP read-only independiente |
