@@ -5,7 +5,7 @@ Tres capas: Shell personalizado, CLI Docker (`svc`), Agente IA Python.
 
 ## Entorno
 
-- **IP:** 192.168.1.200
+- **IP:** 192.168.X.X
 - **Hostname:** `Nas` (acceso: `ssh aadm@Nas.local` via avahi/mDNS)
 - **OS:** Debian 13 Trixie, kernel 6.12
 - **Shell:** Bash 5.x + framework nas-dotfiles
