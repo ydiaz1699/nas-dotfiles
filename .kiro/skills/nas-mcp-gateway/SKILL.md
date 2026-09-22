@@ -4,6 +4,13 @@ description: >
   Decide cuándo activar el gateway MCP read-only independiente de nas-dotfiles.
   Usa el catálogo canónico para conocer las herramientas y evita iniciar el
   worker si la solicitud no requiere consultar el NAS.
+license: MIT
+metadata:
+  author: ydiaz1699
+  version: "1.0"
+  scope: [mcp]
+  auto_invoke:
+    - "Decidir si activar el gateway MCP read-only del NAS"
 ---
 
 # Skill nas-mcp-gateway

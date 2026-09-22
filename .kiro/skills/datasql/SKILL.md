@@ -4,6 +4,14 @@ description: >
   Procedimiento canónico para usar el stack ParadeDB PostgreSQL y Redis
   compartidos al instalar servicios en el NAS. Activar antes de crear una
   base, un rol o configurar Redis para otra aplicación.
+license: MIT
+metadata:
+  author: ydiaz1699
+  version: "1.0"
+  scope: [data]
+  auto_invoke:
+    - "Crear base/rol PostgreSQL o configurar Redis para un servicio"
+    - "Conectar un consumidor a datapostgres/dataredis en db_net"
 ---
 
 # Skill `datasql`

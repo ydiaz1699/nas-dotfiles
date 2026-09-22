@@ -898,3 +898,67 @@ y `docs/troubleshooting.md`; la skill nunca copia su contenido.
   evita solapes de activación entre skills vecinas.
 - El diagnóstico debe empezar por `svc boot-status`: en frío el boot tarda
   ~11–14 min y "aún no arriba" no es fallo.
+
+
+
+---
+
+## 24. Adoptar el estándar Agent Skills (frontmatter + skill-creator + auto-invoke manual)
+
+**Problema:**
+Las skills de nas-dotfiles solo tenían `name` + `description`, sin metadatos
+estructurados. El router (`dotfile-skill`) y el índice (`framework-audit.md`) se
+mantenían a mano y podían desincronizarse, y no había un patrón uniforme para
+crear skills nuevas (la reciente `nas-diagnostics` se escribió a mano). Además,
+los modelos no auto-activan las skills de forma fiable solo con el `description`.
+
+**Idea del usuario:**
+A partir de un video de Gentleman Programming (arquitectura AGENTS.md + skills +
+subagentes) y los repos de ejemplo (Prowler, agents.md, Gentleman.Dots), mejorar
+el sistema de skills. Decisión acordada: aplicar Fase A (frontmatter enriquecido)
++ Fase B (skill-creator) y **auto-invoke MANUAL** (sin `skill-sync` automático).
+
+**Proceso de solución:**
+1. Se analizó el video (concepto: contexto en 3 niveles, skills por trigger,
+   auto-invoke porque los modelos tratan el trigger como sugerencia) y Prowler
+   como implementación de referencia: `skills/<n>/{SKILL.md,references/,assets/}`,
+   frontmatter con `license` + `metadata.{author,version,scope,auto_invoke}` +
+   `allowed-tools`, meta-skills `skill-creator`/`skill-sync`, `setup.sh`
+   multi-agente y sección "Auto-invoke Skills" en cada `AGENTS.md`.
+2. **Fase A:** se enriqueció el frontmatter de las 7 skills con `license: MIT`,
+   `metadata.author: ydiaz1699`, `version`, `scope` y `auto_invoke`. Scopes
+   propios del framework (no `ui/api/sdk` de Prowler, que es monorepo): `root`
+   (dotfile-skill, skill-creator), `services` (docker-boot-order, nas-diagnostics),
+   `data` (datasql, nas-runtime-secrets), `mcp` (nas-mcp-gateway), `docs`
+   (documentation-evolution). Validado con PyYAML.
+3. **Fase B:** se creó `.kiro/skills/skill-creator/SKILL.md` +
+   `assets/SKILL-TEMPLATE.md` con las reglas del framework (enlazar-no-duplicar,
+   capas guía→ficha→skill, tabla de scopes, procedimiento con `.gitignore` y
+   conexión a índices A MANO, checklist en la plantilla).
+4. **Auto-invoke manual:** sección `## Auto-invoke Skills` en `AGENTS.md` (tabla
+   acción→skill de las 8 skills) + `skill-creator` añadida al router de
+   `dotfile-skill` y al índice de `framework-audit.md`.
+
+**Decisión:**
+Adoptar el estándar Agent Skills adaptado. `allowed-tools` de Prowler NO se
+adopta (Kiro no lo consume). `setup.sh` multi-agente (Claude/Gemini/Codex/
+Copilot) NO se adopta: el entorno es Kiro con `.kiro/skills/`; la portabilidad
+puntual ya la cubre `docs/llm-context-bootstrap.md`. `skill-sync` automático NO
+se implementa ahora (auto-invoke se mantiene a mano); queda como mejora futura
+documentada en `skill-creator` (referencia: Prowler `skills/skill-sync`).
+
+**Alternativas descartadas:**
+- Implementar `skill-sync` ya: con ~8 skills el mantenimiento manual es asumible;
+  automatizar añade un `sync.sh` que mantener. Reevaluar si crecen las skills.
+- Copiar los scopes `ui/api/sdk` de Prowler: no aplica, nas-dotfiles no es un
+  monorepo por features; hoy todos los scopes mapean al `AGENTS.md` raíz.
+
+**Aprendizaje:**
+- Los campos extra de frontmatter (`license`, `metadata.*`) no rompen la
+  activación en Kiro (usa `name`+`description`); habilitan router/índice y un
+  futuro sync sin coste hoy.
+- El `description` con triggers NO basta: hay que reforzar con una tabla
+  auto-invoke en `AGENTS.md` que ORDENE cargar la skill antes de actuar.
+- Una skill nueva debe conectarse a las tres capas (router, framework-audit,
+  auto-invoke en AGENTS.md) o el índice se desincroniza; `skill-creator` lo
+  vuelve un checklist repetible.

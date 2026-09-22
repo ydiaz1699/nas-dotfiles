@@ -6,6 +6,14 @@ description: >
   comandos ni configuración. Usar cuando el usuario mencione drafts, fragmentos,
   unificar, meta-prompt, mejorar documentación, errores documentales, scanner,
   gaps, contratos, herramientas del LLM o evolución del framework.
+license: MIT
+metadata:
+  author: ydiaz1699
+  version: "1.0"
+  scope: [docs]
+  auto_invoke:
+    - "Unificar drafts/fragmentos con el meta-prompt"
+    - "Detectar y cerrar huecos de docs/herramientas (scanner, contratos, gaps)"
 ---
 
 # Evolución documental y de herramientas

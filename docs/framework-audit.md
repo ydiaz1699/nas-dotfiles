@@ -217,6 +217,7 @@ clave (`description`); no hay que recordarlas de memoria — están aquí listad
 | `nas-runtime-secrets` | Leer/transportar secretos de servicios sin exponerlos al LLM |
 | `nas-mcp-gateway` | Decidir cuándo activar el gateway MCP read-only independiente |
 | `documentation-evolution` | Unificar drafts, mejorar documentación/herramientas, scanner, gaps, contratos, evolución del framework |
+| `skill-creator` | Crear una skill nueva o estandarizar una existente (frontmatter scope+auto_invoke, plantilla, enlazar-no-duplicar) |
 | `nas-dotfiles.md` (archivo suelto) | Overview de arquitectura de los 3 componentes (shell, svc, agente) |
 
 ### Skill Kiro (`docker-nas/references/`)

@@ -9,6 +9,13 @@ description: >
   nas-runtime-secrets, nas-mcp-gateway, documentation-evolution). Usar cuando el
   usuario mencione NAS, homelab, contenedor, servicio, compose, dk, adm, svc,
   agent, plugin, o cualquier comando del entorno bash personalizado del servidor.
+license: MIT
+metadata:
+  author: ydiaz1699
+  version: "1.0"
+  scope: [root]
+  auto_invoke:
+    - "Cualquier tarea del NAS: enrutar a la skill específica que corresponda"
 ---
 
 # dotfile-skill
@@ -29,6 +36,7 @@ No cargar todas las skills siempre. Desde aquí, activar la que corresponda:
 | Leer o transportar secretos (.env, PGPASSWORD, tokens) sin exponerlos | `nas-runtime-secrets` |
 | Activar el gateway MCP read-only | `nas-mcp-gateway` |
 | Unificar drafts, mejorar docs/herramientas, scanner, gaps, contratos | `documentation-evolution` |
+| **Crear una skill nueva o estandarizar una existente** | `skill-creator` |
 
 ### Carga CONDICIONAL, no por categoría (evita gastar tokens)
 

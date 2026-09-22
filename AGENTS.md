@@ -231,6 +231,28 @@ svc diff <svc>             # Compose en disco vs resuelta (interpolada)
 - **SIEMPRE**, si la petición trata de `_drafts`, unificación o evolución de herramientas, leer `.kiro/skills/documentation-evolution/SKILL.md` antes de responder
 - **SIEMPRE** compose.yml (nunca docker-compose.yml)
 
+## Auto-invoke Skills
+
+Los modelos NO auto-activan las skills de forma fiable solo con su `description`.
+Cuando la tarea encaje con una acción de abajo, **cargar esa skill PRIMERO**
+(`.kiro/skills/<skill>/SKILL.md`) antes de actuar. La skill de entrada es
+`dotfile-skill` (router); desde ella se carga la específica.
+
+| Cuando la acción sea... | Cargar skill |
+|---|---|
+| Cualquier tarea del NAS (enrutar a la específica) | `dotfile-skill` |
+| Crear/eliminar/detener/reordenar un servicio; `layers.conf`; restart policy; arranque escalonado | `docker-boot-order` |
+| Un servicio EXISTENTE falla/unhealthy/lento/crash loop/no arranca; conflicto de puerto; OOM; red; revisar `boot-status` | `nas-diagnostics` |
+| Crear base/rol PostgreSQL o configurar Redis; conectar consumidor a datapostgres/dataredis en db_net | `datasql` |
+| Leer/transportar secretos sin exponerlos; sincronizar una credencial `.env` entre servicios | `nas-runtime-secrets` |
+| Decidir si activar el gateway MCP read-only del NAS | `nas-mcp-gateway` |
+| Unificar drafts/fragmentos; cerrar huecos de docs/herramientas (scanner, contratos, gaps) | `documentation-evolution` |
+| Crear una skill nueva o estandarizar una existente | `skill-creator` |
+
+> Esta tabla se mantiene **a mano** (no hay `skill-sync`). Al crear/modificar una
+> skill, copiar aquí sus entradas de `metadata.auto_invoke`. La fuente de cada
+> fila es el frontmatter de la skill correspondiente.
+
 ## Documentación adicional
 
 | Tema | Archivo |
