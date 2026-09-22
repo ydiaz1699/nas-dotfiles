@@ -962,3 +962,55 @@ documentada en `skill-creator` (referencia: Prowler `skills/skill-sync`).
 - Una skill nueva debe conectarse a las tres capas (router, framework-audit,
   auto-invoke en AGENTS.md) o el índice se desincroniza; `skill-creator` lo
   vuelve un checklist repetible.
+
+
+
+---
+
+## 25. Consolidar `nas-dotfiles.md`: de tercer overview a puntero
+
+**Problema:**
+`.kiro/skills/nas-dotfiles.md` (~393 líneas) era un tercer overview de la
+arquitectura de los 3 componentes que **duplicaba** contenido de tres fuentes
+dueñas: `AGENTS.md` (entorno, svc, servicios, redes, reglas, servicio nuevo),
+`CONTRIBUTING.md` (cómo extender: comando svc/tool/plugin, variables de entorno,
+estructura del proyecto) y `dotfile-skill/SKILL.md` (rutas, boot, datasql). Al no
+tener frontmatter, NO es una skill activable —Kiro no la carga—, así que nadie la
+mantenía y ya estaba desfasada (p. ej. providers del agente decían
+`gemini-2.5-flash` mientras `CONTRIBUTING.md` §8 dice `gemini-3.1-flash-lite`).
+
+**Idea del usuario:**
+Continuar la evolución de skills (punto #2 del handoff
+`SESSION-2026-09-20`): consolidar la duplicación entre `nas-dotfiles.md` y
+`dotfile-skill`.
+
+**Proceso de solución:**
+1. Se verificó que TODO el contenido de `nas-dotfiles.md` ya tiene dueño en otra
+   parte (AGENTS.md, CONTRIBUTING.md, framework-audit.md, dotfile-skill) y que
+   parte ya estaba desactualizada → mantenerlo solo añade drift.
+2. Se degradó a un **índice/puntero** (~42 líneas) con una tabla "a dónde ir
+   según lo que necesites" que enlaza a cada fuente dueña, más el resumen de
+   skills que remite al router. Enlaces relativos verificados (resuelven todos).
+3. Se conservó su único valor real: ser el archivo que alguien abre en
+   `.kiro/skills/` o pega en un chat sin historial. Se explicita que NO es una
+   skill activable (sin frontmatter a propósito) y que NO se debe actualizar
+   contenido ahí, sino en la fuente dueña.
+4. Se actualizó su descripción en el índice de `docs/framework-audit.md`.
+
+**Decisión:**
+`nas-dotfiles.md` = puntero de entrada, no overview. Regla reforzada: cada tema
+tiene UNA fuente dueña; el puntero solo enlaza. La skill de entrada real es
+`dotfile-skill` (router).
+
+**Alternativas descartadas:**
+- Borrarlo por completo: `framework-audit.md` lo lista y su nombre coincide con
+  el repo; alguien puede buscarlo dentro de `.kiro/skills/`. Mejor un puntero que
+  un 404.
+- Convertirlo en skill activable (con frontmatter): solaparía con el router
+  `dotfile-skill`, que ya cumple esa función; tendríamos dos entradas generales.
+
+**Aprendizaje:**
+- Un documento sin dueño claro y sin mecanismo que lo mantenga se desincroniza:
+  o se le da dueño o se degrada a puntero hacia el dueño real.
+- Un `.md` dentro de `.kiro/skills/` SIN frontmatter no lo carga Kiro; sirve solo
+  como archivo suelto (para abrir/pegar), no como skill.
