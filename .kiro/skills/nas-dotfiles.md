@@ -95,6 +95,15 @@ Al crear/eliminar/detener un servicio, activar la skill `docker-boot-order`
 (`.kiro/skills/docker-boot-order/SKILL.md`), que define el flujo obligatorio de
 `layers.conf` y `no-boot`. Detalle completo en `docs/docker-boot-staged-guide.md`.
 
+### Diagnosticar un servicio existente
+
+Si un servicio YA EXISTENTE falla, está `unhealthy`, se reinicia, va lento o el
+arranque quedó a medias, activar la skill `nas-diagnostics`
+(`.kiro/skills/nas-diagnostics/SKILL.md`), que aporta el flujo de decisión y
+enlaza a las recetas (`references/diagnostic.md`) y a los problemas ya resueltos
+(`docs/troubleshooting.md`). No confundir con crear/reordenar servicios
+(`docker-boot-order`).
+
 ---
 
 ## Componente 1: Shell Framework (`$NAS_DOTFILES/shell/`)
