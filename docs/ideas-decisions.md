@@ -1014,3 +1014,75 @@ tiene UNA fuente dueña; el puntero solo enlaza. La skill de entrada real es
   o se le da dueño o se degrada a puntero hacia el dueño real.
 - Un `.md` dentro de `.kiro/skills/` SIN frontmatter no lo carga Kiro; sirve solo
   como archivo suelto (para abrir/pegar), no como skill.
+
+
+
+---
+
+## 26. Evaluación de ideas de los videos SDD/Agent-Skills contra nas-dotfiles
+
+**Problema:**
+Tras catalogar en `Varios_tools/tool_catalog` dos videos de Gentleman Programming
+(Agent Skills + Spec-Driven Development) y recursos como Prowler, Gentleman.Dots
+y Engram, la pregunta es: **¿qué de todo eso aplica realmente para mejorar
+nas-dotfiles, y qué NO?** Se registra el análisis SIN implementar nada, para
+decidir con calma. Nota: no se adopta nada aún; esto es solo la evaluación.
+
+**Idea del usuario:**
+Antes de tocar código, dejar por escrito qué ideas de los videos valen la pena
+para nas-dotfiles y cuáles descartar, evaluadas contra el estado real del repo.
+
+**Proceso de solución (verificado contra el repo, 2026-09-22):**
+Se revisó el estado real de nas-dotfiles y se cruzó con las ideas de los videos.
+
+Estado real confirmado:
+- Índice de skills / "skill registry": YA existe → `docs/framework-audit.md` +
+  router en `.kiro/skills/dotfile-skill/SKILL.md` + tabla Auto-invoke en
+  `AGENTS.md`.
+- Memoria del agente / Learning Loop: YA implementado →
+  `agent/core/memory.py`, `agent/memory/{MEMORY,USER,SKILLS}.md`, `test_memory.py`.
+- Auto-invoke + scope + skill-creator: YA aplicados (PRs #148/#149).
+- `AGENTS.md`: 302 líneas (bajo el límite ~500 del video). No es monorepo.
+- Tests: existen (`tests/` con pytest) pero NO hay regla de "test primero".
+- Subagentes/orquestador: el agente (Strands SDK) NO los usa.
+
+**Decisión (veredicto por idea):**
+
+APLICAR (buena relación valor/esfuerzo, encaja con hábitos ya existentes):
+- **Briefing previo a cambios grandes ("pre-research" de SDD).** Antes de un
+  servicio nuevo/complejo, un documento corto con approaches, tradeoffs y
+  decisiones. Encaja con `docs/ideas-decisions.md` (que ya se usa). Formalizarlo
+  como paso previo recomendado en `CONTRIBUTING.md` para cambios grandes.
+- **Strict TDD documentado como regla para tools nuevas del agente.** Ya hay
+  `tests/` con pytest; falta la regla "test primero → hacer pasar → cubrir edge
+  → evidencia" al crear una `@tool`. Añadir a la sección de crear tools de
+  `CONTRIBUTING.md`. Fuente: `spec-driven-development.md`.
+
+DIFERIR (anotado, no implementar ahora):
+- **Subagentes/orquestador.** El agente no los usa; el NAS es 2 cores/8GB y las
+  tareas son puntuales, no "editar 500 archivos". Reevaluar si aparece una tarea
+  repetitiva/paralela real. Fuente: `agents-md-and-subagents.md`.
+
+DESCARTAR (no aplica a nas-dotfiles):
+- **Engram** (memoria de agente lista-para-usar): ya hay memoria propia
+  funcionando; adoptarlo sería reemplazar algo que funciona. Se conserva su ficha
+  en el catálogo solo como referencia/comparación.
+- **Multi-AGENTS.md por feature + root que enruta:** `AGENTS.md` tiene 302
+  líneas (< 500) y el repo no es monorepo por features. Dividir sin necesidad.
+- **PRs encadenadas + auto-forecast, Genspark:** sobreingeniería para este repo.
+
+**Alternativas descartadas:**
+- Implementar ya el protocolo spec-lite: se prefirió registrar primero el
+  análisis (esta entrada) y dejar que el usuario elija qué implementar.
+
+**Aprendizaje:**
+- Antes de "aplicar las ideas de un video", cruzarlas SIEMPRE contra el estado
+  real del repo: varias ya estaban implementadas (skill registry, memoria) y
+  recomendarlas habría sido trabajo redundante.
+- El valor de los videos para nas-dotfiles no es tecnología nueva, sino
+  **formalizar hábitos a medias** (briefing previo, test-first) que ya se hacen
+  informalmente.
+- Fuentes destiladas (no releer): `Varios_tools/tools_AI/skills/skill-creator/
+  references/{spec-driven-development, agents-md-and-subagents,
+  prowler-case-study, gentleman-dots-case-study}.md` y las fichas en
+  `Varios_tools/tool_catalog/entries/gentleman-programming/`.
