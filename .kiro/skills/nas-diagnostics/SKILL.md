@@ -12,6 +12,14 @@ description: >
   boot-status, arranque a medias, diagnosticar, revisar servicio.
   NO usar para CREAR/eliminar/reordenar servicios (usar docker-boot-order) ni
   para configurar bases/secretos (usar datasql / nas-runtime-secrets).
+license: MIT
+metadata:
+  author: ydiaz1699
+  version: "1.0"
+  scope: [services]
+  auto_invoke:
+    - "Un servicio EXISTENTE falla/unhealthy/lento/crash loop/no arranca"
+    - "Conflicto de puerto, OOM, red entre servicios o revisar boot-status"
 ---
 
 # Skill `nas-diagnostics`

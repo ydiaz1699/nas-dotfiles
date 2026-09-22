@@ -7,6 +7,14 @@ description: >
   recuerde registrar el servicio en layers.conf y usar los comandos correctos.
   Palabras clave: crear servicio, eliminar servicio, layers.conf, boot-order,
   arranque, reboot, restart policy, no-boot, capa, boot-enable.
+license: MIT
+metadata:
+  author: ydiaz1699
+  version: "1.0"
+  scope: [services]
+  auto_invoke:
+    - "Crear/eliminar/detener/reordenar un servicio (registrar en layers.conf)"
+    - "Ajustar restart policy o el arranque escalonado (systemd/boot-order)"
 ---
 
 # Skill `docker-boot-order`

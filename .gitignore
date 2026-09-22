@@ -58,3 +58,8 @@ agent/memory/sessions/*.md
 
 !.kiro/skills/nas-diagnostics/
 !.kiro/skills/nas-diagnostics/SKILL.md
+
+!.kiro/skills/skill-creator/
+!.kiro/skills/skill-creator/SKILL.md
+!.kiro/skills/skill-creator/assets/
+!.kiro/skills/skill-creator/assets/*

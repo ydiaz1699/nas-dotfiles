@@ -6,6 +6,14 @@ description: >
   temporales, sincroniza consumidores, verifica el resultado con evidencia
   segura y limpia la sesión. Activar al configurar o modificar credenciales,
   PostgreSQL, Redis, .env, PGPASSWORD, REDISCLI_AUTH o secretos de servicios.
+license: MIT
+metadata:
+  author: ydiaz1699
+  version: "1.0"
+  scope: [data]
+  auto_invoke:
+    - "Leer/transportar secretos de un servicio sin exponerlos al LLM"
+    - "Sincronizar una credencial .env entre servicios y verificarla"
 ---
 
 # Skill `nas-runtime-secrets`
