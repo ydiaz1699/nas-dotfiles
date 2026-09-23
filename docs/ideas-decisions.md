@@ -34,6 +34,7 @@
 21. [OpenWA → n8n: el guard anti-SSRF bloquea el webhook](#21-openwa--n8n-el-guard-anti-ssrf-bloquea-el-webhook)
 21. [Skill router: carga condicional de skills para no gastar tokens](#21-skill-router-carga-condicional-de-skills-para-no-gastar-tokens)
 22. [OpenWA: whatsapp-web.js rompe el media → cambiar a baileys](#22-openwa-whatsapp-webjs-rompe-el-media--cambiar-a-baileys)
+23. [.no-boot no salvaba el boot en la validación REQUIRE_ALL (kiro-cli)](#23-no-boot-no-salvaba-el-boot-en-la-validación-require_all-kiro-cli)
 ---
 
 ## 1. ntfy reemplaza notify-send
@@ -1086,3 +1087,55 @@ DESCARTAR (no aplica a nas-dotfiles):
   references/{spec-driven-development, agents-md-and-subagents,
   prowler-case-study, gentleman-dots-case-study}.md` y las fichas en
   `Varios_tools/tool_catalog/entries/gentleman-programming/`.
+
+
+## 23. .no-boot no salvaba el boot en la validación REQUIRE_ALL (kiro-cli)
+
+**Problema:**
+Se montó un servicio nuevo (`kiro-cli`, contenedor bajo demanda para correr Kiro
+CLI + MCP de rclone) directamente en `$dkco/kiro-cli/` (con `nano` + `docker
+build`, NO con `svc create`). Al reiniciar, `docker-boot-staged.service` abortó
+TODO el arranque con `ERROR: servicio 'kiro-cli' sin registrar en layers.conf`,
+dejando casi todos los servicios caídos. Se marcó `svc no-boot kiro-cli` (creó el
+`.no-boot`), pero el boot **seguía fallando** por el mismo servicio.
+
+**Idea del usuario:**
+Que un servicio excluido a propósito con `.no-boot` NO haga fallar el boot, y que
+el framework recuerde/registre en `layers.conf` al crear un contenedor para no
+repetir este problema.
+
+**Proceso de solución:**
+1. Diagnóstico: el bloque `if [[ "$REQUIRE_ALL" == "1" ]]` de `boot-order.sh`
+   solo comprobaba si el servicio estaba en `CONFIGURED` (layers.conf) y llamaba
+   a `fail`. **No consultaba `is_no_boot()`**, aunque esa función ya existía y sí
+   se respetaba en la fase de arranque. Hueco: `.no-boot` se honraba al *arrancar*
+   pero no en la *validación* previa que aborta el boot.
+2. Fix en `shell/scripts/boot-order.sh`: dentro del bucle de `REQUIRE_ALL`, saltar
+   con `continue` (y aviso) los servicios que tengan `.no-boot` **antes** del
+   chequeo `CONFIGURED`.
+3. Decisión de arquitectura para `kiro-cli`: es interactivo (`stdin_open`/`tty`,
+   se lanza con `docker run -it` vía wrapper), NO un daemon → va en `.no-boot`,
+   NUNCA en `layers.conf`. Su daemon asociado `rclone-rcd` (que el MCP necesita
+   siempre) SÍ va en `layers.conf` (Capa 5, independiente).
+4. Verificado: tras el fix, `svc boot-status` → "TERMINADO"; todos los servicios
+   healthy y `kiro-cli` correctamente omitido con aviso.
+
+**Alternativas descartadas:**
+- Meter `kiro-cli` en `layers.conf`: incorrecto, el boot intentaría `svc up` de un
+  contenedor interactivo que no tiene sentido en background.
+- `BOOT_ORDER_REQUIRE_ALL=0`: desactiva la red de seguridad global; se prefirió
+  arreglar la causa (respetar `.no-boot` en la validación).
+
+**Aprendizaje:**
+- `.no-boot` debe respetarse en TODAS las fases (validación + arranque), no solo al
+  arrancar. Un marcador de exclusión que no se consulta en la validación es un
+  falso sentido de seguridad.
+- Servicios montados a mano (no con `svc create`) NO disparan
+  `_svc_layers_reminder`, así que nadie avisa de registrarlos → quedan huérfanos
+  hasta el siguiente reboot. **Mejora futura pendiente:** que el scanner
+  (`svc scan` / `project_scan`) detecte composes en `$dkco` ausentes de
+  `layers.conf` y sin `.no-boot`, y lo reporte como laguna (o que un hook al crear
+  compose lo registre/avise automáticamente). Relacionado con la entrada #20.
+- Al pegar comandos multilínea por SSH con prompt personalizado + bracketed paste,
+  el terminal puede duplicar el inicio del comando (`awk ' awk '`) y corromperlo;
+  preferir comandos de UNA línea o editar en `nano` para cambios delicados.

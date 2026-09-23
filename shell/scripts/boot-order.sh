@@ -148,6 +148,12 @@ validate_layers() {
 
   if [[ "$REQUIRE_ALL" == "1" ]]; then
     for svc in "${!DISCOVERED[@]}"; do
+      # Un servicio marcado .no-boot está excluido a propósito: no exige estar
+      # en layers.conf ni debe abortar el boot (antes REQUIRE_ALL lo ignoraba).
+      if is_no_boot "$svc"; then
+        log "AVISO: $svc tiene .no-boot; se excluye del arranque (no requiere estar en layers.conf)."
+        continue
+      fi
       if [[ -z "${CONFIGURED[$svc]+x}" ]]; then
         log "ERROR: '$svc' existe en $DOCKER_BASE pero no está en $CONFIG_FILE."
         log "  Arréglalo con UNA de estas opciones:"
