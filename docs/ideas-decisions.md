@@ -35,6 +35,7 @@
 21. [Skill router: carga condicional de skills para no gastar tokens](#21-skill-router-carga-condicional-de-skills-para-no-gastar-tokens)
 22. [OpenWA: whatsapp-web.js rompe el media → cambiar a baileys](#22-openwa-whatsapp-webjs-rompe-el-media--cambiar-a-baileys)
 23. [.no-boot no salvaba el boot en la validación REQUIRE_ALL (kiro-cli)](#23-no-boot-no-salvaba-el-boot-en-la-validación-require_all-kiro-cli)
+24. [Verificar la fuente real antes de entregar un Dockerfile (caso kiro-cli)](#24-verificar-la-fuente-real-antes-de-entregar-un-dockerfile-caso-kiro-cli)
 ---
 
 ## 1. ntfy reemplaza notify-send
@@ -1139,3 +1140,46 @@ repetir este problema.
 - Al pegar comandos multilínea por SSH con prompt personalizado + bracketed paste,
   el terminal puede duplicar el inicio del comando (`awk ' awk '`) y corromperlo;
   preferir comandos de UNA línea o editar en `nano` para cambios delicados.
+
+
+## 24. Verificar la fuente real antes de entregar un Dockerfile (caso kiro-cli)
+
+**Problema:**
+Al montar el contenedor `kiro-cli` (Kiro CLI + MCP de rclone/nextdns), el LLM entregó
+TRES Dockerfiles fallidos seguidos antes del correcto. El usuario preguntó, con razón,
+si era por trabajar de memoria, doc antigua, o no haber leído la doc.
+
+**Idea del usuario:**
+Que la lección quede disponible para el LLM potente (Kiro Web / Kiro CLI) que da la
+ayuda real — NO en `agent/memory/` (esa es del nas-agent Strands, con pocos recursos y
+que ni siquiera la usa; estaba vacía). Los sitios que el LLM potente sí lee: `AGENTS.md`,
+`.kiro/steering/`, `docs/ideas-decisions.md` y los learnings de Kiro.
+
+**Proceso — los 3 fallos, cada uno por una causa distinta:**
+1. Binario de Kiro CLI en `/home/kiro/.local/bin`: el volumen `./data:/home/kiro` lo
+   TAPA en runtime → `executable not found`. (Interacción volumen+instalación, no está
+   en ninguna doc; se preveía razonando el mapa de mounts.) Fix: instalar en `/opt/kiro`.
+2. `uv tool install nextdns-mcp`: el paquete NO está en PyPI (404). Fallo EVITABLE: no
+   se verificó el registro antes de afirmar. Fix: instalar desde git.
+3. `uv tool install` desde git: falla `No executables are provided` porque el paquete es
+   un MÓDULO (`python -m nextdns_mcp.server`), no declara `[project.scripts]`. Se veía
+   leyendo el `pyproject.toml` completo. Fix: `uv venv` + `uv pip install`.
+
+**Decisión:**
+Crear el steering `.kiro/steering/verificar-antes-de-entregar.md` con un checklist
+obligatorio ANTES de entregar un Dockerfile/instalación: (1) ¿el paquete existe donde
+asumo? (curl a PyPI/npm/registro); (2) ¿es comando o módulo? (leer pyproject/package.json
+completo); (3) ¿algún volumen tapa la ruta de instalación?; (4) ¿permisos/UID?; (5) leer
+archivos de config completos, no en trozos. Kiro carga el steering automáticamente.
+
+**Alternativas descartadas:**
+- Poner la lección en `agent/memory/MEMORY.md`: es del nas-agent (Strands), no del LLM
+  potente; además estaba vacío/sin uso. El LLM potente no lo lee por defecto.
+
+**Aprendizaje:**
+- Distinguir DÓNDE vive el contexto de cada agente: el LLM potente (Kiro) lee
+  `AGENTS.md` + `.kiro/steering/` + `docs/ideas-decisions.md` + learnings; el nas-agent
+  local lee `agent/memory/`. No confundirlos al querer "enseñarle" algo al que ayuda.
+- Verificar la fuente real ANTES de entregar evita el ciclo "probar y corregir". Las
+  iteraciones legítimas son por interacciones imprevisibles (punto 1), NO por no leer lo
+  que estaba disponible (puntos 2 y 3).
