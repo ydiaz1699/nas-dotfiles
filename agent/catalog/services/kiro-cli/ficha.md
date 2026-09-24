@@ -1,7 +1,7 @@
 ---
 id: "kiro-cli"
 name: "Kiro CLI (contenedor bajo demanda)"
-description: "Kiro CLI en contenedor aislado para consumir MCPs (rclone, nextdns) desde el NAS por lenguaje natural"
+description: "Kiro CLI en contenedor aislado para consumir MCPs (rclone, nextdns, n8n) desde el NAS por lenguaje natural"
 image: "kiro-cli-nas:local"
 category: "desarrollo"
 port_internal: 0
@@ -25,7 +25,8 @@ docs_url: "https://github.com/ydiaz1699/Varios_tools/tree/main/kiro-cli-nas"
 notes: >
   SERVICIO BAJO DEMANDA — NO arranca en el boot. Es un contenedor INTERACTIVO
   (stdin_open + tty), se lanza con `docker run -it` vía el wrapper
-  $aadm/.local/bin/kiro (network_mode: host, --v3, inyecta secretos desde .env).
+  $aadm/.local/bin/kiro (network_mode: host, --v3, inyecta secretos desde .env
+  con --env-file: nextdns.env y n8n.env).
   Está marcado con $dkco/kiro-cli/.no-boot y NO debe ir en layers.conf. Se
   construyó a mano (no con `svc create`), por eso no disparó el recordatorio de
   layers.conf y provocó el fallo de boot documentado en docs/ideas-decisions.md
@@ -48,8 +49,9 @@ security_extra: {}
 
 Contenedor aislado que corre **Kiro CLI** (agente de IA en terminal) para consumir
 servidores **MCP** desde el NAS por lenguaje natural: control total de rclone
-(`rclone-rcd`) y NextDNS multi-cuenta. Se eligió Docker por aislamiento total:
-borrado sin residuos y arranque **bajo demanda** (no permanente).
+(`rclone-rcd`), NextDNS multi-cuenta y gestión de workflows de **n8n**
+(`czlonkowski/n8n-mcp`). Se eligió Docker por aislamiento total: borrado sin
+residuos y arranque **bajo demanda** (no permanente).
 
 ## Estructura
 
@@ -59,6 +61,7 @@ borrado sin residuos y arranque **bajo demanda** (no permanente).
 ├── compose.yml             ← network_mode: host, stdin_open/tty, volumen ./data
 ├── .no-boot                ← marcador: excluido del arranque escalonado
 ├── nextdns.env             ← secretos NextDNS (chmod 600)
+├── n8n.env                 ← N8N_API_URL + N8N_API_KEY para el MCP de n8n (chmod 600)
 └── data/                   ← $HOME del contenedor (uid 1000): login, .kiro/settings, steering
 ```
 
@@ -86,4 +89,14 @@ borrado sin residuos y arranque **bajo demanda** (no permanente).
 - Construido a mano; si se re-crea, recordar `chown 1000:1000 data/` y que el
   binario va en `/opt/kiro` (el volumen tapa `/home/kiro/.local/bin`).
 - Guía operativa completa (no inferible del compose) en el repo Varios_tools:
-  `kiro-cli-nas/README.md` y `rclone-mcp-control-total/README.md`.
+  `kiro-cli-nas/README.md`, `rclone-mcp-control-total/README.md` y
+  `kiro-cli-nas/n8n-mcp.md` (MCP de n8n).
+- **MCP de n8n** (`czlonkowski/n8n-mcp`, `npx n8n-mcp`): permite a Kiro crear/gestionar
+  workflows de n8n. Requiere `n8n.env` (chmod 600) con `N8N_API_URL` +
+  `N8N_API_KEY` (API key REST de n8n, no el token del MCP nativo). URL con IP
+  privada `http://<SERVER_IP>:5678` porque kiro-cli está en `network_mode: host` y
+  no resuelve el nombre `n8n` de `db_net`. GOTCHA verificado: el guard SSRF del MCP
+  bloquea IPs privadas en modo `strict` (default); fix real
+  `WEBHOOK_SECURITY_MODE=permissive` en el `mcp_tools/n8n.json` (NO
+  `ALLOW_PRIVATE_IPS`, que no existe). Permisos V3: lectura/docs/validación=allow,
+  crear/modificar/borrar/ejecutar=ask. Verificado en runtime 2026-09-24.
