@@ -38,6 +38,7 @@ node-red
 
 # Capa 5 — Servicios de archivos y notificaciones
 filebrowser
+jdownloader
 ntfy
 
 # Capa 6 — Dashboard y servicios auxiliares; Homepage queda al final

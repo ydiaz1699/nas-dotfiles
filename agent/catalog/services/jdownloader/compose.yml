@@ -1,0 +1,62 @@
+services:
+  jdownloader:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: jlesage/jdownloader-2:v26.09.1
+    container_name: jdownloader
+    env_file:
+      - ../.env          # global: SERVER_IP, TZ (heredado, NO declarar inline)
+      - .env             # local: USER_ID/GROUP_ID y auth web opcional
+    environment:
+      # TZ NO va aquí: se hereda del ../.env global
+      USER_ID: ${JD_USER_ID:-1000}
+      GROUP_ID: ${JD_GROUP_ID:-1000}
+      UMASK: "0022"
+      KEEP_APP_RUNNING: "1"     # relanza JDownloader si se cae (uso headless/MCP)
+      DARK_MODE: "1"
+      # --- Auth de la GUI web (opcional; descomenta en .env local si expones el :5800) ---
+      # WEB_AUTHENTICATION: "1"
+      # WEB_AUTHENTICATION_ALLOW_INSECURE: "1"   # necesario para HTTP plano en LAN
+      # WEB_AUTHENTICATION_USERNAME: ${JD_WEB_USER}
+      # WEB_AUTHENTICATION_PASSWORD: ${JD_WEB_PASSWORD}
+    ports:
+      - "5800:5800"        # GUI web (noVNC) → http://${SERVER_IP}:5800
+      # - "3129:3129"      # SOLO modo MyJDownloader "Direct Connection" (LAN). El MCP
+                           #   proyec_jdw2 usa modo relay/nube → NO hace falta. Si lo
+                           #   activas, el puerto del host DEBE ser 3129 (se reporta a la nube).
+    volumes:
+      - ./config:/config:rw    # config, estado y SESIÓN MyJDownloader
+      # Destino FIJO en el NAS (permanente). Carpeta normal → sin rshared.
+      - type: bind
+        source: /NAS/Descargas       # CAMBIAR si prefieres otra ruta fija en el NAS
+        target: /output
+        read_only: false
+      # Destino en USB (cosas a mover). /NAS/USB recibe montajes dinámicos
+      # (automount DebMenux) → rshared para que JD vea el USB si se monta
+      # DESPUÉS de arrancar el contenedor, sin recrearlo.
+      - type: bind
+        source: /NAS/USB
+        target: /usb
+        read_only: false
+        bind:
+          propagation: rshared
+    # jlesage NO trae un healthcheck.sh propio (verificado en su Dockerfile y
+    # baseimage-gui). Comprobamos que la GUI web (5800) acepte conexión con nc,
+    # presente en la imagen Alpine/busybox.
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 5800 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2g           # sobreescribe el default 512m (JD2 consume RAM)
+    labels:
+      - homepage.group=Descargas
+      - homepage.name=JDownloader
+      - homepage.icon=jdownloader
+      - homepage.href=http://${SERVER_IP}:5800
+      - homepage.description=Gestor de descargas (controlable por MCP). Destinos /output (NAS fijo) y /usb
