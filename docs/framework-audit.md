@@ -205,6 +205,13 @@ manifests de capacidades, en `mcp` y `mcp_tools`.
 | `framework-knowledge-compilation.md` | **MAPA CANÓNICO** — ideas, arquitectura, estado, gaps y criterios de aceptación |
 | `framework-audit.md` | **ESTE ARCHIVO** — mapa ejecutivo sin releer |
 
+> **Cruce cross-repo (OTRO REPO):** el entorno **Kiro CLI** y sus MCPs (rclone,
+> nextdns, n8n, jdownloader) NO viven aquí — están en `Varios_tools/kiro-cli-nas/`
+> (`README.md` = mapa del entorno + patrón mcp_tools/mcp-build/permissions/wrapper;
+> `<mcp>.md` = guía por MCP). **LEER ANTES de montar/tocar cualquier MCP en kiro-cli**,
+> para no re-preguntar datos ya documentados ni romper el patrón. La fuente viva del
+> ecosistema completo es el índice `ydiaz1699/repo-index`.
+
 ### Skills del LLM (`.kiro/skills/`) — activar según el caso
 
 Índice de skills para que el LLM sepa cuál cargar. Se activan por sus palabras
