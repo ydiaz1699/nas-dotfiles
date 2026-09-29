@@ -33,6 +33,7 @@ agent/memory/sessions/*.md
 !.kiro/hooks/
 .kiro/hooks/*
 !.kiro/hooks/documentation-evolution-on-prompt.json
+!.kiro/hooks/dependency-cascade-on-save.json
 !.kiro/skills/
 .kiro/skills/*
 !.kiro/skills/documentation-evolution/
@@ -64,3 +65,6 @@ agent/memory/sessions/*.md
 !.kiro/skills/skill-creator/SKILL.md
 !.kiro/skills/skill-creator/assets/
 !.kiro/skills/skill-creator/assets/*
+
+!.kiro/skills/dependency-cascade/
+!.kiro/skills/dependency-cascade/SKILL.md

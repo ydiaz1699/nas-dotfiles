@@ -36,6 +36,7 @@ No cargar todas las skills siempre. Desde aquí, activar la que corresponda:
 | Leer o transportar secretos (.env, PGPASSWORD, tokens) sin exponerlos | `nas-runtime-secrets` |
 | Activar el gateway MCP read-only | `nas-mcp-gateway` |
 | Unificar drafts, mejorar docs/herramientas, scanner, gaps, contratos | `documentation-evolution` |
+| **Editaste un archivo del framework**: completar la cascada de derivados (ficha/guía/CLI dual/completions/prompt/AGENTS…) antes de entregar | `dependency-cascade` |
 | **Crear una skill nueva o estandarizar una existente** | `skill-creator` |
 
 ### Carga CONDICIONAL, no por categoría (evita gastar tokens)

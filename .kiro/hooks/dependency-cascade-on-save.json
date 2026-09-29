@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Cerrar la cascada de dependencias antes de terminar",
+      "trigger": "Stop",
+      "description": "Before ending the turn, if framework files were edited, force completing the edit-dependency cascade (dependency-map.md) so no derived file is left stale and the user does not discover the gap by running it.",
+      "action": {
+        "type": "agent",
+        "prompt": "Si en este turno editaste o creaste archivos del framework nas-dotfiles, NO cierres sin verificar la cascada de dependencias de edición. Aplica la skill `.kiro/skills/dependency-cascade/SKILL.md`:\n\n1. Lista los archivos que tocaste en esta sesión y clasifica cada uno por tipo de cambio (compose, script svc, módulo shell, tool/plugin del agente, doc, .env global, layers.conf, skill, hook).\n2. Para cada tipo, abre `docs/dependency-map.md` y localiza el grafo/fila correspondiente. Identifica los derivados OBLIGATORIOS.\n3. Comprueba, en el árbol de trabajo, si cada derivado obligatorio fue actualizado en esta sesión. La sola existencia del archivo NO prueba sincronización: si cambiaste un valor concreto (puerto, red, imagen, variable), verifica que el derivado mencione el valor NUEVO.\n4. Presta atención especial a: (a) CLI dual — un comando svc nuevo en Bash debe estar también en `svc_py/`, `completions.sh`, el prompt del agente y declarado en `contracts.json` si es de paridad obligatoria; (b) skill nueva/modificada — debe tener los 3 anclajes (router en dotfile-skill, índice en framework-audit.md, tabla auto-invoke en AGENTS.md) y su excepción en `.gitignore`; (c) hook nuevo — necesita su excepción en `.gitignore`.\n5. Si falta cerrar algún derivado obligatorio, complétalo AHORA en la misma sesión antes de terminar.\n6. Verifica con `python3 agent/tools/project_index.py --check` y, si el cambio afecta servicios/CLI/hooks/tools/conexiones, `python3 agent/tools/project_scanner.py --full`. Cierra los huecos que el scanner reporte sobre lo que tocaste.\n7. Reporta al usuario una lista de: archivos tocados, derivados actualizados y lo que quede PENDIENTE con su motivo.\n\nIMPORTANTE: no afirmes 'cascada completa' sin haberlo verificado con el índice/scanner. Si no editaste archivos del framework en este turno, o el cambio no tiene derivados, continúa sin más. No ejecutes operaciones runtime del NAS desde este hook; provee los comandos svc para la sesión autorizada. No es la skill documentation-evolution (esa unifica drafts) ni nas-diagnostics (esa diagnostica runtime)."
+      }
+    }
+  ]
+}
