@@ -55,6 +55,7 @@ NAS_CLI=python  # alternativo — usa $NAS_DOTFILES/svc_py/ (Rich + InquirerPy)
 | `svc boot-enable <svc>` | reactivar en el arranque escalonado |
 | `svc catalog-sync [svc]` | generar docs en cascada (ficha, guía, script DebMenux) |
 | `svc scan` | detectar lagunas del proyecto (servicios, CLI, docs) |
+| `svc code-map` | generar `docs/CODE-MAP.md` (qué hace cada archivo, símbolos, conexiones, usado-por) |
 | `svc snapshot <svc>` | guardar compose+.env antes de cambios (liviano, rotación 10) |
 | `svc rollback <svc>` | restaurar config desde snapshot anterior (fzf + confirmación) |
 

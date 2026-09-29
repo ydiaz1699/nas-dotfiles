@@ -368,6 +368,7 @@ Cuando pregunte sobre comandos Docker, MENCIONARLE SUS COMANDOS:
 - `svc scan` → detectar lagunas e inconsistencias del proyecto
 - `svc scan --full` → scan completo (ignorar snapshot)
 - `svc scan --changed` → solo listar qué archivos cambiaron
+- `svc code-map` → generar docs/CODE-MAP.md (qué hace cada archivo, símbolos, conexiones)
 - `svc capabilities [consulta]` → descubrir comandos/capacidades desde el índice dinámico
 - `svc capabilities --service lobehub` → listar operaciones LobeHub y sus guards
 - `svc lobehub preflight` → validar configuración sin mostrar secretos

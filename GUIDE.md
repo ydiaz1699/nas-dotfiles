@@ -479,6 +479,8 @@ svc lista           Lista servicios con estado (punto verde/rojo)
 svc health          Dashboard de salud de todos los servicios
 svc doctor          Chequeo de 6 puntos (disco, memoria, puertos, restarts)
 svc catalog-sync    Generar documentación en cascada (ficha, guía, script DebMenux)
+svc scan            Detectar lagunas e inconsistencias del proyecto
+svc code-map        Generar docs/CODE-MAP.md (qué hace cada archivo + conexiones)
 svc update-all      Pull + recrear TODOS los servicios
 svc port-map        Mapa global de puertos asignados
 svc size            Consumo de disco por servicio

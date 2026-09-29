@@ -114,6 +114,7 @@
       "capabilities",
       "lobehub",
       "scan",
+      "code-map",
       "menu",
       "backup",
       "restore",
@@ -184,6 +185,28 @@
         "agent/tools/project_scanner.py",
         "svc_py/app.py",
         "svc_py/commands/scanner.py"
+      ]
+    },
+    {
+      "id": "code-map-entrypoints",
+      "entity": "svc_command",
+      "name": "code-map",
+      "level": "functional",
+      "required": [
+        "docker/cli/svc.sh",
+        "agent/tools/project_index.py",
+        "svc_py/app.py",
+        "svc_py/commands/codemap.py"
+      ]
+    },
+    {
+      "id": "code-map-knowledge",
+      "entity": "svc_command",
+      "name": "code-map",
+      "level": "knowledge",
+      "required": [
+        "agent/nas_agent.py",
+        "docs/CODE-MAP.md"
       ]
     },
     {

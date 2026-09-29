@@ -44,6 +44,7 @@
 │  svc scan          → DETECTA lagunas (Git + snapshot incremental)            │
 │  svc catalog-sync  → GENERA lo que falta (ficha, guía, script)               │
 │  dependency-map.md → DOCUMENTA las reglas (grafos A–L)                       │
+│  svc code-map      → GENERA CODE-MAP.md (qué hace cada archivo + conexiones)  │
 │  compare_catalog() → DETECTA drift (compose real vs catálogo)                │
 │  discover_capabilities() → DESCUBRE comandos y guards desde manifests       │
 └────────────────────────────────────────────────────────────────────────────┘
@@ -195,6 +196,7 @@ manifests de capacidades, en `mcp` y `mcp_tools`.
 |---------|-----------|
 | `docker-entorno.md` | **LEER ANTES de tocar compose** — reglas env_file, redes, convenciones |
 | `dependency-map.md` | **LEER DESPUÉS de cualquier cambio** — grafos A–L, tabla CLI |
+| `CODE-MAP.md` | **GENERADO** (`svc code-map`) — qué hace cada archivo de código, símbolos, conexiones y "usado por". Consultar para saber QUÉ archivo tocar sin releer el repo |
 | `ideas-decisions.md` | Historial de 15 decisiones (problema → solución → learning) |
 | `nas-manual.md` | Hardware, IPs, puertos, redes del NAS real |
 | `catalog-sync-pipeline.md` | Cómo funciona el pipeline auto-docs |

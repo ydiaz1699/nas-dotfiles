@@ -654,12 +654,264 @@ def write_index(index: Dict[str, Any], output: Path = DEFAULT_OUTPUT) -> Path:
     return output
 
 
+# ---------------------------------------------------------------------------
+# CODE-MAP — mapa legible de qué hace cada archivo de código
+# ---------------------------------------------------------------------------
+#
+# Responde "¿qué es y qué hace X?" sin leer el archivo entero, igual que
+# n8n-mcp indexa los nodos: se consulta el mapa para saber QUÉ archivo tocar y
+# luego se abre solo ese archivo. Se GENERA desde el código (nunca se edita a
+# mano) para que no mienta. Salida: docs/CODE-MAP.md.
+
+CODE_MAP_OUTPUT = NAS_DOTFILES / "docs" / "CODE-MAP.md"
+# Directorios de código "vivo" del repo (alcance: todo el código, no docs/fichas).
+CODE_MAP_DIRS = ["shell", "docker", "agent", "svc_py", "systemd", "tests", "ui"]
+CODE_MAP_ROOT_FILES = ["install.sh", "uninstall.sh", "setup"]
+CODE_MAP_EXT = {".py", ".sh"}
+CODE_MAP_MAX_SYMS = 12
+# Líneas de comentario puramente decorativas que NO son el propósito del archivo.
+_DECOR_RE = re.compile(r"^[\s#=─—*·.\-_~]+$")
+
+
+def _cm_is_code_file(path: Path) -> bool:
+    if path.suffix in CODE_MAP_EXT:
+        return True
+    if path.suffix == "":
+        try:
+            return path.read_bytes()[:2] == b"#!"
+        except OSError:
+            return False
+    return False
+
+
+def _cm_iter_files() -> List[Path]:
+    files: List[Path] = []
+    for d in CODE_MAP_DIRS:
+        base = NAS_DOTFILES / d
+        if not base.exists():
+            continue
+        for path in sorted(base.rglob("*")):
+            if not path.is_file():
+                continue
+            if any(part in SKIP_DIRS for part in path.relative_to(NAS_DOTFILES).parts):
+                continue
+            if _cm_is_code_file(path):
+                files.append(path)
+    for name in CODE_MAP_ROOT_FILES:
+        path = NAS_DOTFILES / name
+        if path.is_file():
+            files.append(path)
+    return files
+
+
+def _cm_py_purpose(tree: ast.Module) -> str:
+    doc = ast.get_docstring(tree)
+    if not doc:
+        return ""
+    for line in doc.strip().splitlines():
+        line = line.strip()
+        if not line or _DECOR_RE.match(line):
+            continue
+        return re.sub(r"^[\w./-]+\.py\s*[—:\-]\s*", "", line)
+    return ""
+
+
+def _cm_py_symbols(tree: ast.Module) -> List[str]:
+    syms: List[str] = []
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef):
+            methods = [
+                n.name for n in node.body
+                if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and not n.name.startswith("_")
+            ]
+            suffix = f" ({', '.join(methods[:6])})" if methods else ""
+            syms.append(f"class {node.name}{suffix}")
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            deco = ""
+            for dec in node.decorator_list:
+                name = (
+                    getattr(dec, "id", None)
+                    or getattr(getattr(dec, "func", None), "id", None)
+                    or getattr(dec, "attr", None)
+                )
+                if name == "tool":
+                    deco = "@tool "
+            syms.append(f"{deco}{node.name}()")
+    return syms
+
+
+def _cm_py_imports(tree: ast.Module) -> List[str]:
+    conns: Set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith(("agent", "svc_py")):
+            conns.add(node.module)
+    return sorted(conns)
+
+
+def _cm_sh_purpose(text: str) -> str:
+    """Primer comentario con texto real tras el shebang, saltando decorativos."""
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#!"):
+            continue
+        if stripped.startswith("#"):
+            content = stripped.lstrip("#").strip()
+            if not content or _DECOR_RE.match(content) or re.match(r"^[\w./-]+\.sh$", content):
+                continue
+            # Comentario tipo "── nombre() — hace X ──": quedarse con "hace X".
+            content = content.strip("─—-= ")
+            content = re.sub(r"^[\w./-]+\.sh\s*[—:\-]\s*", "", content)
+            content = re.sub(r"^[\w-]+\(\)\s*[—:\-]\s*", "", content)
+            if content and not _DECOR_RE.match(content):
+                return content
+        elif stripped:
+            break
+    return ""
+
+
+def _cm_sh_symbols(text: str) -> List[str]:
+    names = re.findall(r"^\s*([a-zA-Z_][\w-]*)\s*\(\)\s*\{", text, re.MULTILINE)
+    names += re.findall(r"^\s*function\s+([a-zA-Z_][\w-]*)", text, re.MULTILINE)
+    seen: Set[str] = set()
+    out: List[str] = []
+    for name in names:
+        if name not in seen:
+            seen.add(name)
+            out.append(f"{name}()")
+    return out
+
+
+def _cm_sh_sources(text: str) -> List[str]:
+    raw = re.findall(r"^\s*(?:source|\.)\s+([^\s;]+)", text, re.MULTILINE)
+    cleaned: Set[str] = set()
+    for item in raw:
+        item = item.replace('"', "").replace("'", "")
+        item = re.sub(r"\$\{?[A-Za-z_]+\}?/", "", item)
+        cleaned.add(item)
+    return sorted(cleaned)
+
+
+def _cm_analyze(path: Path) -> Tuple[str, List[str], List[str]]:
+    text = _read_text(path)
+    if path.suffix == ".py":
+        try:
+            tree = ast.parse(text, filename=str(path))
+        except SyntaxError:
+            return ("(no parseable)", [], [])
+        return (_cm_py_purpose(tree), _cm_py_symbols(tree), _cm_py_imports(tree))
+    return (_cm_sh_purpose(text), _cm_sh_symbols(text), _cm_sh_sources(text))
+
+
+def _cm_module_name(path: Path) -> Optional[str]:
+    """Nombre de módulo Python importable (agent.core.x) para el grafo inverso."""
+    if path.suffix != ".py":
+        return None
+    rel_parts = path.relative_to(NAS_DOTFILES).with_suffix("").parts
+    if rel_parts and rel_parts[-1] == "__init__":
+        rel_parts = rel_parts[:-1]
+    return ".".join(rel_parts) if rel_parts else None
+
+
+def _cm_fmt_syms(syms: List[str]) -> str:
+    if not syms:
+        return "—"
+    if len(syms) > CODE_MAP_MAX_SYMS:
+        return ", ".join(syms[:CODE_MAP_MAX_SYMS]) + f", … (+{len(syms) - CODE_MAP_MAX_SYMS})"
+    return ", ".join(syms)
+
+
+def build_code_map() -> str:
+    """Construye el contenido Markdown del CODE-MAP a partir del código real."""
+    files = _cm_iter_files()
+
+    analyses: Dict[Path, Tuple[str, List[str], List[str]]] = {}
+    module_of: Dict[Path, Optional[str]] = {}
+    for path in files:
+        analyses[path] = _cm_analyze(path)
+        module_of[path] = _cm_module_name(path)
+
+    # Grafo inverso "quién me llama": para cada módulo, qué archivos lo importan.
+    module_to_path = {module_of[p]: p for p in files if module_of[p]}
+    called_by: Dict[Path, Set[str]] = {p: set() for p in files}
+    for path in files:
+        _purpose, _syms, imports = analyses[path]
+        importer = path.relative_to(NAS_DOTFILES).as_posix()
+        for imported in imports:
+            # Un import "agent.core.backup_manager" apunta a ese módulo o a un
+            # símbolo dentro de él; resolver al módulo o a su paquete padre.
+            target = module_to_path.get(imported)
+            if target is None:
+                parent = imported.rsplit(".", 1)[0]
+                target = module_to_path.get(parent)
+            if target is not None and target != path:
+                called_by[target].add(importer)
+
+    groups: Dict[str, List[Path]] = {}
+    for path in files:
+        top = path.relative_to(NAS_DOTFILES).parts[0]
+        groups.setdefault(top, []).append(path)
+
+    lines: List[str] = []
+    lines.append("# CODE-MAP — nas-dotfiles\n")
+    lines.append(
+        "> **Índice generado — no editar a mano.** Qué hace cada archivo de "
+        "código, sus símbolos y sus conexiones internas. Igual que n8n-mcp "
+        "indexa los nodos: consulta este mapa para saber QUÉ archivo tocar sin "
+        "releer todo el repo, y luego abre solo ese archivo. Complemento de "
+        "`docs/dependency-map.md` (qué actualizar en cascada al tocar un archivo).\n"
+    )
+    lines.append(
+        f"> Archivos de código mapeados: **{len(files)}**. "
+        "Regenerar con `svc code-map` (o `python3 agent/tools/project_index.py --code-map`).\n"
+    )
+    lines.append(
+        "> **Conexiones** = imports internos (Python) o `source` (Bash). "
+        "**Usado por** = quién importa este archivo (grafo inverso, solo Python). "
+        "Ambos son mejor-esfuerzo.\n"
+    )
+
+    for top in sorted(groups):
+        lines.append(f"\n## `{top}/`\n")
+        lines.append("| Archivo | Qué hace | Símbolos | Conexiones | Usado por |")
+        lines.append("|---|---|---|---|---|")
+        for path in sorted(groups[top]):
+            purpose, syms, conns = analyses[path]
+            rel_path = path.relative_to(NAS_DOTFILES).as_posix()
+            conn_s = ", ".join(f"`{c}`" for c in conns) if conns else "—"
+            users = sorted(called_by[path])
+            if users:
+                shown = users[:4]
+                users_s = ", ".join(f"`{u}`" for u in shown)
+                if len(users) > 4:
+                    users_s += f", … (+{len(users) - 4})"
+            else:
+                users_s = "—"
+            purpose_s = (purpose or "—").replace("|", "\\|")
+            syms_s = _cm_fmt_syms(syms).replace("|", "\\|")
+            lines.append(f"| `{rel_path}` | {purpose_s} | {syms_s} | {conn_s} | {users_s} |")
+
+    return "\n".join(lines) + "\n"
+
+
+def write_code_map(output: Path = CODE_MAP_OUTPUT) -> Path:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(build_code_map(), encoding="utf-8")
+    return output
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Genera el índice estructural de nas-dotfiles + DebMenux")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT, help="Ruta del índice JSON generado")
     parser.add_argument("--check", action="store_true", help="Generar en memoria y mostrar resumen sin escribir")
     parser.add_argument("--json", action="store_true", help="Imprimir el índice completo en stdout")
+    parser.add_argument("--code-map", action="store_true", help="Generar docs/CODE-MAP.md (mapa legible del código)")
     args = parser.parse_args()
+
+    if args.code_map:
+        path = write_code_map()
+        rel_path = path.relative_to(NAS_DOTFILES).as_posix() if path.is_relative_to(NAS_DOTFILES) else str(path)
+        print(f"✅ CODE-MAP generado: {rel_path}")
+        return 0
 
     index = build_index()
 

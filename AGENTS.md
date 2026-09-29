@@ -261,6 +261,8 @@ Cuando la tarea encaje con una acción de abajo, **cargar esa skill PRIMERO**
 | Guía de servicio | `docs/services/<svc>-guide.md` |
 | Ficha del catálogo | `agent/catalog/services/<svc>/ficha.md` |
 | Manual del NAS (hardware, redes, puertos) | `docs/nas-manual.md` |
+| Mapa del código: qué hace cada archivo (generado, `svc code-map`) | `docs/CODE-MAP.md` |
+| Cascada de edición: qué actualizar al tocar un archivo | `docs/dependency-map.md` |
 | Redes host y DNS (networkd, resolved, Avahi, IPv6, macvlan) | `docker-nas/references/networking.md` |
 | Instalación futura de red | `docker-nas/references/networking-install.md` |
 | Migración de backend o rango IP | `docker-nas/references/networking-migration.md` |

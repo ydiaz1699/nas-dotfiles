@@ -42,6 +42,7 @@ case "$cmd" in
   capabilities) python3 "${NAS_DOTFILES:-/nas-dotfiles}/agent/tools/capabilities.py" "$@" ; exit $? ;;
   lobehub) svc_lobehub "$@" ; exit $? ;;
   scan) python3 "${NAS_DOTFILES:-/nas-dotfiles}/agent/tools/project_scanner.py" "$@" ; exit $? ;;
+  code-map) python3 "${NAS_DOTFILES:-/nas-dotfiles}/agent/tools/project_index.py" --code-map "$@" ; exit $? ;;
   backup-all) svc_backup_all "$@" ; exit 0 ;;
   logs-grep) svc_logs_grep "$@" ; exit 0 ;;
   clone) svc_clone "$@" ; exit 0 ;;
