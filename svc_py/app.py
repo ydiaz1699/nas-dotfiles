@@ -21,6 +21,7 @@ from svc_py.commands import compose as compose_mod
 from svc_py.commands import menu as menu_mod
 from svc_py.commands import catalog as catalog_mod
 from svc_py.commands import scanner as scanner_mod
+from svc_py.commands import codemap as codemap_mod
 from svc_py.core.discovery import service_exists, svc_compose_file, svc_list
 from svc_py.core.docker import compose_passthrough, compose_run
 from svc_py.core.bash_bridge import svc_passthrough
@@ -71,6 +72,9 @@ app.command("catalog-sync")(catalog_mod.catalog_sync)
 
 # Scanner
 app.command("scan")(scanner_mod.scan)
+
+# Code map
+app.command("code-map")(codemap_mod.code_map)
 
 
 @app.command("capabilities")

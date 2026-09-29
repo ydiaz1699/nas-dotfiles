@@ -1,0 +1,27 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Regenerar CODE-MAP al crear un archivo de código",
+      "trigger": "PostFileCreate",
+      "description": "When a .py/.sh file is created, regenerate docs/CODE-MAP.md so the code map stays current. Fails silently if the generator or repo is absent (e.g. cloud sandbox).",
+      "matcher": "\\.(py|sh)$",
+      "action": {
+        "type": "command",
+        "command": "cd \"${NAS_DOTFILES:-$(git rev-parse --show-toplevel 2>/dev/null)}\" 2>/dev/null || exit 0; [ -f agent/tools/project_index.py ] || exit 0; NAS_DOTFILES=\"$(pwd)\" python3 agent/tools/project_index.py --code-map >/dev/null 2>&1 || exit 0",
+        "timeout": 30
+      }
+    },
+    {
+      "name": "Regenerar CODE-MAP al borrar un archivo de código",
+      "trigger": "PostFileDelete",
+      "description": "When a .py/.sh file is deleted, regenerate docs/CODE-MAP.md so it no longer lists the removed file. Fails silently if the generator or repo is absent.",
+      "matcher": "\\.(py|sh)$",
+      "action": {
+        "type": "command",
+        "command": "cd \"${NAS_DOTFILES:-$(git rev-parse --show-toplevel 2>/dev/null)}\" 2>/dev/null || exit 0; [ -f agent/tools/project_index.py ] || exit 0; NAS_DOTFILES=\"$(pwd)\" python3 agent/tools/project_index.py --code-map >/dev/null 2>&1 || exit 0",
+        "timeout": 30
+      }
+    }
+  ]
+}

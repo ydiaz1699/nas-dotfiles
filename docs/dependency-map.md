@@ -364,6 +364,7 @@ Usuario escribe: svc <comando>
 | `watch` | ✅ | ❌ | Solo bash |
 | `catalog-sync` | ✅ | ✅ | Ambos (Python wrapper via bash_bridge) |
 | `scan` | ✅ | ✅ | Ambos (Python: subprocess al scanner) |
+| `code-map` | ✅ | ✅ | Ambos (Python: subprocess a `project_index.py --code-map`) |
 | `backup-all` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
 | `logs-grep` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
 | `clone` | ✅ | ❌ | Solo bash; no hay fallback Python genérico |
@@ -548,6 +549,42 @@ python3 agent/tools/project_index.py
 ```
 
 La primera versión verifica especialmente `catalog-sync`, `scan`, paridad Bash/Python y la relación scripts DebMenux ↔ `services.json`.
+
+### CODE-MAP: qué HACE cada archivo (complemento de este mapa)
+
+Este `dependency-map.md` responde *"si toco X, ¿qué actualizo en cascada?"*.
+No responde *"¿qué hace X por dentro?"*. Esa segunda pregunta la cubre
+`docs/CODE-MAP.md`, un índice **generado** (no editar a mano) con, por cada
+archivo de código del repo: propósito, símbolos (funciones/clases), conexiones
+(imports internos / `source`) y "usado por" (grafo inverso).
+
+```
+docs/CODE-MAP.md      → QUÉ ES / QUÉ HACE cada archivo + sus símbolos
+docs/dependency-map.md → QUÉ ACTUALIZAR al tocarlo (cascada)
+```
+
+Igual que `n8n-mcp` indexa los ~525 nodos para no leerlos todos al crear un
+workflow, el CODE-MAP permite saber **qué archivo tocar sin releer el repo
+entero**: se consulta el mapa, se localiza el archivo, y solo entonces se abre
+ese archivo. Es también el artefacto que se pega a un LLM externo (Claude web)
+que no tiene el repo, para que ayude sin pedir archivos sueltos ni exceder su
+contexto.
+
+Se genera con:
+
+```bash
+svc code-map                                   # regenera docs/CODE-MAP.md
+python3 agent/tools/project_index.py --code-map
+```
+
+Cascada: al añadir/renombrar/borrar un archivo de código, el CODE-MAP debe
+regenerarse. Esto está **semiautomatizado** por el hook
+`.kiro/hooks/code-map-regen-on-file-change.json` (triggers `PostFileCreate` y
+`PostFileDelete` sobre `.py`/`.sh`), que ejecuta el generador y falla en
+silencio si el entorno no lo permite (p. ej. un sandbox sin el repo). Si se
+edita el generador o el hook no corrió, regenerar a mano con `svc code-map`. El
+generador vive en `agent/tools/project_index.py` (funciones
+`build_code_map`/`write_code_map`).
 
 
 
