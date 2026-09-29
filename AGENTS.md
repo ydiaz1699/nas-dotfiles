@@ -247,6 +247,7 @@ Cuando la tarea encaje con una acción de abajo, **cargar esa skill PRIMERO**
 | Leer/transportar secretos sin exponerlos; sincronizar una credencial `.env` entre servicios | `nas-runtime-secrets` |
 | Decidir si activar el gateway MCP read-only del NAS | `nas-mcp-gateway` |
 | Unificar drafts/fragmentos; cerrar huecos de docs/herramientas (scanner, contratos, gaps) | `documentation-evolution` |
+| Editaste un archivo del framework: completar la cascada de derivados obligatorios antes de entregar | `dependency-cascade` |
 | Crear una skill nueva o estandarizar una existente | `skill-creator` |
 
 > Esta tabla se mantiene **a mano** (no hay `skill-sync`). Al crear/modificar una

@@ -217,6 +217,7 @@ clave (`description`); no hay que recordarlas de memoria — están aquí listad
 | `nas-runtime-secrets` | Leer/transportar secretos de servicios sin exponerlos al LLM |
 | `nas-mcp-gateway` | Decidir cuándo activar el gateway MCP read-only independiente |
 | `documentation-evolution` | Unificar drafts, mejorar documentación/herramientas, scanner, gaps, contratos, evolución del framework |
+| `dependency-cascade` | Tras editar un archivo del framework, completar la cascada de derivados obligatorios (`dependency-map.md`) antes de entregar; verificar con índice/scanner |
 | `skill-creator` | Crear una skill nueva o estandarizar una existente (frontmatter scope+auto_invoke, plantilla, enlazar-no-duplicar) |
 | `nas-dotfiles.md` (archivo suelto, NO activable) | Índice/puntero de entrada a las fuentes dueñas (AGENTS.md, dotfile-skill, CONTRIBUTING.md, este audit). No duplica contenido |
 
