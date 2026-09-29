@@ -577,9 +577,14 @@ svc code-map                                   # regenera docs/CODE-MAP.md
 python3 agent/tools/project_index.py --code-map
 ```
 
-Cascada: al añadir/renombrar/borrar un archivo de código, regenerar el
-CODE-MAP para que no quede desactualizado. El generador vive en
-`agent/tools/project_index.py` (funciones `build_code_map`/`write_code_map`).
+Cascada: al añadir/renombrar/borrar un archivo de código, el CODE-MAP debe
+regenerarse. Esto está **semiautomatizado** por el hook
+`.kiro/hooks/code-map-regen-on-file-change.json` (triggers `PostFileCreate` y
+`PostFileDelete` sobre `.py`/`.sh`), que ejecuta el generador y falla en
+silencio si el entorno no lo permite (p. ej. un sandbox sin el repo). Si se
+edita el generador o el hook no corrió, regenerar a mano con `svc code-map`. El
+generador vive en `agent/tools/project_index.py` (funciones
+`build_code_map`/`write_code_map`).
 
 
 

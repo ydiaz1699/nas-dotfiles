@@ -34,6 +34,7 @@ agent/memory/sessions/*.md
 .kiro/hooks/*
 !.kiro/hooks/documentation-evolution-on-prompt.json
 !.kiro/hooks/dependency-cascade-on-save.json
+!.kiro/hooks/code-map-regen-on-file-change.json
 !.kiro/skills/
 .kiro/skills/*
 !.kiro/skills/documentation-evolution/
