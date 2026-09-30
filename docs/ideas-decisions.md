@@ -1183,3 +1183,58 @@ archivos de config completos, no en trozos. Kiro carga el steering automáticame
 - Verificar la fuente real ANTES de entregar evita el ciclo "probar y corregir". Las
   iteraciones legítimas son por interacciones imprevisibles (punto 1), NO por no leer lo
   que estaba disponible (puntos 2 y 3).
+
+
+---
+
+## 27. Servicio desplegado con `cp` manual no se registra en `layers.conf` real (recurrencia de #23)
+
+**Problema:**
+Al montar el servicio `jdownloader`, se desplegó copiando el compose del catálogo a
+`$dkco/jdownloader/` con `cp` manual (no con `svc create`). El compose quedó bien y la
+plantilla del repo `shell/scripts/layers.conf.example` se actualizó en su PR — pero el
+archivo REAL que lee el boot, `$dkco/scripts/layers.conf` (datos por-NAS, NO
+versionados), nunca se tocó. Al reiniciar, `docker-boot-staged.service` abortó todo el
+arranque: `ERROR: servicio 'jdownloader' sin registrar en layers.conf`. Es la MISMA
+clase de fallo que #23 (kiro-cli), reaparecida por otra vía.
+
+**Idea del usuario:**
+Que el paso de registrar en `layers.conf` se entregue SIEMPRE como comando ejecutable
+al desplegar un servicio (el asistente tiene la plantilla y sabe la estructura, no debe
+esperar a que el boot falle). Y recordar que existen herramientas propias para detectar
+desincronización local↔repo/catálogo que deben usarse (`compare_tools.py`,
+`_svc_layers_reminder`), en vez de repetir el hueco.
+
+**Proceso de solución:**
+1. Diagnóstico: `boot-order.sh` lee `$DOCKER_BASE/scripts/layers.conf` (real), no la
+   plantilla `.example` del repo. Editar solo la plantilla NO afecta el boot.
+2. Fix inmediato: `sed -i '/^filebrowser/a jdownloader' /docker/scripts/layers.conf`
+   (Capa 5, junto a filebrowser). Verificado con `grep`.
+3. Doc: se añadió el paso 4 explícito (con el `sed` ejecutable) DENTRO de la secuencia
+   de instalación de `docs/services/jdownloader-guide.md`, antes de `svc up`.
+
+**Por qué el mecanismo existente no lo evitó:**
+- `_svc_layers_reminder` (en `docker/cli/lib/extras.sh`) SÍ avisa "falta registrar en
+  layers.conf" con el comando exacto — pero solo se dispara en `svc create`/`svc clone`.
+  Desplegar con `cp` manual lo salta.
+- `compare_tools.py` detecta drift compose real↔catálogo, pero no cubre el
+  `layers.conf` runtime.
+
+**Decisión:**
+Al desplegar un servicio con `cp` manual (fuera de `svc create`), entregar SIEMPRE, como
+parte de la secuencia y en orden real (carpetas → archivos → permisos → **registrar en
+layers.conf** → levantar), el comando de registro en `$dkco/scripts/layers.conf` real, o
+`svc no-boot <svc>` si es bajo demanda. Reforzado en el steering
+`verificar-antes-de-entregar.md` (Paso 0 ya obliga a leer `docker-boot-staged-guide.md`
+al tocar arranque/layers).
+
+**Alternativas descartadas:**
+- Versionar `$dkco/scripts/layers.conf`: viola la separación código/datos (es estado
+  por-NAS). Se queda como no versionado; la plantilla `.example` es la referencia.
+
+**Aprendizaje:**
+- La cascada de docs/plantillas cubre el REPO, no el estado runtime de `$dkco`. Un
+  cambio en `.example` NO se propaga solo al `layers.conf` real del NAS.
+- Mejora futura (ya anotada): que `svc scan`/`project_scanner.py` detecte composes en
+  `$dkco` que falten en el `layers.conf` real y sin `.no-boot` — cerraría este hueco de
+  raíz para cualquier vía de despliegue, no solo `svc create`.

@@ -96,11 +96,24 @@ nano $dkco/jdownloader/.env      # ajustar JD_USER_ID / JD_GROUP_ID (ver con: id
 chmod 600 $dkco/jdownloader/.env
 chown 1000:1000 /NAS/Descargas   # usar el JD_USER_ID:JD_GROUP_ID que pusiste
 
-# 4. Levantar
+# 4. Registrar en el arranque escalonado REAL ($dkco/scripts/layers.conf, NO versionado).
+#    OBLIGATORIO con BOOT_ORDER_REQUIRE_ALL=1: sin esta línea el PRÓXIMO REBOOT FALLA
+#    ("servicio 'jdownloader' sin registrar en layers.conf"). Se añade en la Capa 5,
+#    junto a filebrowser. (Editar la plantilla del repo NO basta: el boot lee el real.)
+sed -i '/^filebrowser/a jdownloader' /docker/scripts/layers.conf
+grep -n jdownloader /docker/scripts/layers.conf     # verificar que quedó en la Capa 5
+#    Alternativa si NO quieres que arranque en el boot (bajo demanda):
+#      svc no-boot jdownloader
+
+# 5. Levantar
 dk jdownloader
 svc up jdownloader
 svc logs jdownloader
 ```
+
+> **Nota (hueco conocido):** desplegar con `cp` manual (como aquí) NO dispara el
+> recordatorio `_svc_layers_reminder` que sí muestra `svc create`/`svc clone`. Por eso
+> el paso 4 es explícito. Ver `docs/ideas-decisions.md` #27.
 
 ---
 
