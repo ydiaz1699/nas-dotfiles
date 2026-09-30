@@ -14,7 +14,7 @@ services:
       GROUP_ID: ${JD_GROUP_ID:-1000}
       UMASK: "0022"
       KEEP_APP_RUNNING: "1"     # relanza JDownloader si se cae (uso headless/MCP)
-      DARK_MODE: "1"
+      DARK_MODE: "0"            # tema claro (por defecto); cambiar a "1" para oscuro
       # --- Auth de la GUI web (opcional; descomenta en .env local si expones el :5800) ---
       # WEB_AUTHENTICATION: "1"
       # WEB_AUTHENTICATION_ALLOW_INSECURE: "1"   # necesario para HTTP plano en LAN

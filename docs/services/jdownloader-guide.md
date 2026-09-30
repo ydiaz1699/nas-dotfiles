@@ -153,7 +153,17 @@ svc open jdownloader      # abrir la GUI web
 
 - **Control por MCP:** el MCP propio `proyec_jdw2` (78 tools + auto-solver de
   captchas) es la vía recomendada. Montarlo en Kiro CLI se documenta en
-  `Varios_tools/kiro-cli-nas/`.
+  `Varios_tools/kiro-cli-nas/jdownloader-mcp.md` (verificado en runtime).
+- **Portapapeles en la GUI (noVNC):** pegar directo desde tu PC (Host Clipboard Sync)
+  requiere **HTTPS + navegador Chromium**; por HTTP plano el navegador bloquea el
+  portapapeles. Alternativas: usar el **panel de clipboard lateral** de noVNC (pestaña
+  en el borde izquierdo → cuadro Clipboard → pegar ahí → Ctrl+V en la app), o activar
+  `SECURE_CONNECTION=1`. Para añadir enlaces sin GUI: el MCP, `my.jdownloader.org` o la
+  extensión de navegador MyJDownloader.
+- **Rutas heredadas de Windows:** al restaurar un `.jd2backup` de un JDownloader de
+  Windows, la carpeta de descargas queda como `C:\...` (no existe en el contenedor).
+  Corregir en **Settings → General → Standard download folder → `/output`** (o `/usb`).
+- **`DARK_MODE`:** `0` = tema claro (por defecto en este compose), `1` = oscuro.
 - **`KEEP_APP_RUNNING=1`** relanza JDownloader si el proceso se cae dentro del
   contenedor (recomendado para uso headless controlado por MCP).
 - **RAM:** `memory: 2g` sobreescribe el default de `_common.yml`; JD2 puede consumir
