@@ -26,8 +26,16 @@ INITIAL_DELAY="${BOOT_ORDER_INITIAL_DELAY:-30}"
 # Pausa tras dejar listo cada servicio, antes del siguiente: da margen a que su
 # consumo de CPU se asiente. Clave en hardware con pocos cores.
 SETTLE_DELAY="${BOOT_ORDER_SETTLE_DELAY:-10}"
+# Reintentos por servicio ante un fallo TRANSITORIO de arranque antes de abortar
+# toda la capa. Caso real recurrente: datapostgres (datasql) queda 'unhealthy' en
+# frío cuando `svc up` opera sobre un contenedor ya existente y Docker Compose no
+# respeta el start_period; al reintentar (down + up limpio) arranca bien. Vale
+# también para flowise/n8n unhealthy transitorios. 0 = sin reintentos (comportamiento
+# anterior). Espera entre intentos: BOOT_ORDER_RETRY_DELAY segundos.
+RETRIES="${BOOT_ORDER_RETRIES:-2}"
+RETRY_DELAY="${BOOT_ORDER_RETRY_DELAY:-15}"
 
-for _v in HEALTH_TIMEOUT DAEMON_TIMEOUT INITIAL_DELAY SETTLE_DELAY; do
+for _v in HEALTH_TIMEOUT DAEMON_TIMEOUT INITIAL_DELAY SETTLE_DELAY RETRIES RETRY_DELAY; do
   if [[ ! "${!_v}" =~ ^[0-9]+$ ]]; then
     echo "ERROR: BOOT_ORDER_${_v} debe ser un entero (valor: ${!_v})." >&2
     exit 2
@@ -251,6 +259,30 @@ svc_up_one() {
   return 1
 }
 
+# Arranca UN servicio y espera a que esté ready, con reintentos ante fallo
+# transitorio. Entre intentos hace `svc down` para que el siguiente `up` recree
+# el contenedor desde cero (el start_period del healthcheck vuelve a contar) —
+# ataca la causa raíz del falso 'unhealthy' en frío sobre contenedores existentes.
+# Devuelve 0 si quedó ready en algún intento; 1 si agotó los reintentos.
+start_service_ready_retrying() {
+  local svc="$1"
+  local attempt=0 max=$((RETRIES + 1))
+  while :; do
+    attempt=$((attempt + 1))
+    if svc_up_one "$svc" && wait_service_ready "$svc"; then
+      ((attempt > 1)) && log "  $svc: OK en el intento $attempt."
+      return 0
+    fi
+    if ((attempt >= max)); then
+      log "ERROR: $svc no quedó ready tras $attempt intento(s)."
+      return 1
+    fi
+    log "  AVISO: $svc falló (intento $attempt/$max); reintentando en ${RETRY_DELAY}s (down + up limpio)..."
+    svc_cli down "$svc" >> "$LOG_FILE" 2>&1 || true
+    ((RETRY_DELAY > 0)) && sleep "$RETRY_DELAY"
+  done
+}
+
 # Un servicio queda fuera del boot (saltar-con-aviso) si el usuario lo detuvo
 # a propósito. Marcador explícito: $DOCKER_BASE/<svc>/.no-boot (lo crea
 # `svc no-boot <svc>` y lo borra `svc boot-enable <svc>`).
@@ -287,8 +319,7 @@ run_layer_serial() {
       sleep "$SETTLE_DELAY"
     fi
     first=0
-    svc_up_one "$svc" || { log "ERROR: falló \`svc up $svc\`."; return 1; }
-    wait_service_ready "$svc" || return 1
+    start_service_ready_retrying "$svc" || { log "ERROR: falló \`svc up $svc\` (reintentos agotados)."; return 1; }
   done
 }
 
@@ -316,7 +347,15 @@ run_layer_parallel() {
   ((failed == 0)) || return 1
 
   for svc in "${started[@]}"; do
-    wait_service_ready "$svc" || return 1
+    # Si quedó ready, listo. Si no, reintentar con down + up limpio (los reintentos
+    # son secuenciales aunque el arranque inicial de la capa fue en paralelo).
+    if ! wait_service_ready "$svc"; then
+      ((RETRIES > 0)) || return 1
+      log "  AVISO: $svc no quedó ready; reintentando (down + up limpio)..."
+      svc_cli down "$svc" >> "$LOG_FILE" 2>&1 || true
+      ((RETRY_DELAY > 0)) && sleep "$RETRY_DELAY"
+      start_service_ready_retrying "$svc" || return 1
+    fi
   done
 }
 

@@ -88,7 +88,7 @@ incremental ya operativo. El diseño histórico se conserva en
 
 | Archivo | Función |
 |---------|---------|
-| `boot-order.sh` | Arranque escalonado por capas (health gates, timeout, lock, pausas, `.no-boot`). Lo ejecuta `docker-boot-staged.service` en cada boot |
+| `boot-order.sh` | Arranque escalonado por capas (health gates, timeout, lock, pausas, `.no-boot`, **reintento con backoff por servicio** ante fallo transitorio). Lo ejecuta `docker-boot-staged.service` en cada boot |
 | `stop-order.sh` | Apagado escalonado en orden INVERSO (dependientes primero, datasql al final) |
 | `start-all.sh` | Compatibilidad: delega en `boot-order.sh` |
 | `stop-all.sh` | Baja todo (stop-order) + `poweroff`, con confirmación. Ejecuta el apagado DESACOPLADO de la sesión SSH (servicio systemd o `setsid`) → inmune a SIGHUP al cerrar la terminal |

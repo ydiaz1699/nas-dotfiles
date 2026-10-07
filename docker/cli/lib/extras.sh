@@ -1360,7 +1360,32 @@ svc_boot_status() {
     last=$(grep -E 'Iniciando capa|Capa lista|Arranque completo|ERROR|OMITIDO|Esperando' "$log" | tail -1)
   fi
 
+  # Resultado del ÚLTIMO run del log, aislado desde el último "Arranque escalonado
+  # iniciado" (ignora el histórico de runs anteriores). Sirve para detectar cuando
+  # systemd quedó en 'failed' por un run viejo pero un reintento MANUAL posterior
+  # (fuera de systemd) completó bien: ahí el estado de systemd está desincronizado.
+  local last_run_ok=""
+  if [[ -f "$log" ]]; then
+    if awk '/Arranque escalonado iniciado/{buf=""} {buf=buf $0 ORS} END{printf "%s", buf}' "$log" \
+         | grep -q 'Arranque completo.'; then
+      last_run_ok=1
+    fi
+  fi
+
   echo ""
+  # Caso especial: systemd dice 'failed' pero el último arranque del log SÍ completó.
+  # Típico tras recuperar a mano con `boot-order.sh` directo (no vía systemctl):
+  # el estado de systemd quedó anclado al fallo anterior.
+  if [[ "$state" == "failed" && -n "$last_run_ok" ]]; then
+    echo -e "  \033[1;33m⚠ DESINCRONIZADO\033[0m — systemd marca el service como 'failed', pero el"
+    echo "     último arranque del log completó correctamente (probable reintento manual)."
+    [[ -n "$last" ]] && echo "     Último paso: ${last#*] }"
+    echo "     Sincroniza systemd con la realidad:  sudo systemctl reset-failed $unit"
+    echo "     (o relanza vía systemd en vez de a mano:  sudo systemctl start $unit)"
+    echo ""
+    return 0
+  fi
+
   case "$state" in
     activating)
       echo -e "  \033[1;33m⏳ EN PROCESO\033[0m — el arranque escalonado sigue trabajando."
