@@ -1,0 +1,106 @@
+# Karakeep (antes Hoarder) — gestor de bookmarks "guárdalo todo" con IA.
+# Stack de 3 contenedores: app web + Meilisearch (full-text) + Chrome (archivo).
+# DB por defecto SQLite (recomendada por Karakeep) → persistida en ./data.
+# IA de tagging/resumen vía Ollama Cloud (endpoint OpenAI-compatible); ver .env.
+#
+# En el NAS este archivo se despliega como $dkco/karakeep/compose.yml y la ruta
+# de extends cambia de ../../_common.yml a ../_common.yml (lo hace el pipeline/cp).
+services:
+  karakeep:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: ghcr.io/karakeep-app/karakeep:0.33.2
+    container_name: karakeep
+    env_file:
+      - ../.env          # global: SERVER_IP, TZ (heredado, NO declarar inline)
+      - .env             # local: secretos (NEXTAUTH_SECRET, MEILI_MASTER_KEY, OPENAI_API_KEY...)
+    environment:
+      # --- Infra interna del stack (NO tocar) ---
+      DATA_DIR: /data                       # DON'T CHANGE: la persistencia va por el volumen de abajo
+      MEILI_ADDR: http://karakeep-meilisearch:7700
+      BROWSER_WEB_URL: http://karakeep-chrome:9222
+      # NEXTAUTH_URL debe apuntar a la URL por la que accedes a Karakeep.
+      NEXTAUTH_URL: http://${SERVER_IP}:3400
+      # --- IA: Ollama Cloud (endpoint OpenAI-compatible). Ver guía/.env ---
+      # Estas 3 vienen del .env local; se listan aquí solo como referencia:
+      #   OPENAI_API_KEY=<tu api key de ollama.com>
+      #   OPENAI_BASE_URL=https://ollama.com/v1
+      #   INFERENCE_TEXT_MODEL=gpt-oss:20b
+      # --- Opcional: desactivar registro de nuevos usuarios tras crear el tuyo ---
+      # DISABLE_SIGNUPS: "true"
+    ports:
+      - "3400:3000"      # GUI web → http://${SERVER_IP}:3400 (3000 lo usa Homepage)
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data
+        read_only: false
+    healthcheck:
+      # La imagen trae wget (busybox). /api/health responde cuando la app está lista.
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1g       # sobreescribe el default 512m de _common.yml
+    labels:
+      - homepage.group=Descargas
+      - homepage.name=Karakeep
+      - homepage.icon=karakeep
+      - homepage.href=http://${SERVER_IP}:3400
+      - homepage.description=Bookmarks "guárdalo todo" con IA (tagging/resumen vía Ollama Cloud)
+
+  karakeep-chrome:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: ghcr.io/karakeep-app/karakeep-chrome:0.33.2
+    container_name: karakeep-chrome
+    init: true
+    command:
+      - --disable-gpu
+      - --disable-dev-shm-usage
+      - --hide-scrollbars
+      - --disable-blink-features=AutomationControlled
+      - --window-size=1440,900
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9222/json/version || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1g       # Chromium headless; sobreescribe el default
+
+  karakeep-meilisearch:
+    extends:
+      file: ../../_common.yml
+      service: _defaults
+    image: getmeili/meilisearch:v1.41.0
+    container_name: karakeep-meilisearch
+    env_file:
+      - ../.env
+      - .env             # necesita MEILI_MASTER_KEY (mismo valor que usa la app)
+    environment:
+      MEILI_NO_ANALYTICS: "true"
+    volumes:
+      - type: bind
+        source: ./data/meilisearch
+        target: /meili_data
+        read_only: false
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:7700/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512m
