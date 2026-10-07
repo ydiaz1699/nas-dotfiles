@@ -1295,3 +1295,62 @@ unidad una vez con `install-shutdown-service.sh`.
 - Recurrencia del patrón ya visto con `boot-order.sh` lanzado a mano: ejecutar lógica de
   ciclo de vida FUERA de systemd deja estados inconsistentes (allí: `.service` en `failed`
   pese a arranque OK; aquí: apagado que no completa). La forma canónica es pasar por systemd.
+
+---
+
+## 29. El boot aborta por fallos transitorios y `boot-status` miente tras recuperar a mano
+
+**Problema (dos síntomas de la misma sesión):**
+1. `docker-boot-staged.service` abortó TODO el arranque porque `datapostgres` (capa
+   `datasql`) quedó `unhealthy`. Recurrente: 2026-09-16 08:29, 2026-09-22 09:19, 2026-10-06
+   16:54 (y variantes con `flowise`/`n8n`). Las veces que luego arrancó bien fue
+   simplemente **reintentando sin cambiar nada** → el fallo es transitorio.
+2. Tras recuperar el boot ejecutando `boot-order.sh` A MANO (no vía systemctl), `svc
+   boot-status` seguía mostrando `✗ FALLÓ` aunque el log decía `Arranque completo.`.
+
+**Causa (verificada contra el código real):**
+1. `svc up` ejecuta `docker compose up -d`, que **bloquea esperando** `service_healthy`
+   de la dependencia. En frío, sobre un contenedor YA existente, Compose evalúa el health
+   sin respetar el `start_period` y su wait interno se agota → `dependency failed to start:
+   container datapostgres is unhealthy` → `svc up` falla → `boot-order.sh` abortaba la capa
+   SIN reintentar (`run_layer_serial`/`parallel` hacían `return 1` al primer fallo). El
+   contenedor en sí estaba sano (healthy pocos segundos después).
+2. `svc_boot_status()` decidía el veredicto SOLO por `systemctl is-active`. Un reintento
+   manual con el script no pasa por systemd, así que el `.service` queda en `failed` del run
+   anterior. El `last` que ya extraía del log tenía la verdad, pero el `case` priorizaba systemd.
+
+**Idea del usuario:**
+Reintento automático por servicio antes de abortar (ataca el 100% de los falsos negativos
+transitorios sin tocar los composes), y que `boot-status` no mienta cuando el último run del
+log completó.
+
+**Proceso de solución:**
+1. `boot-order.sh`: variables `BOOT_ORDER_RETRIES` (default 2) y `BOOT_ORDER_RETRY_DELAY`
+   (15s). Nueva función `start_service_ready_retrying()` que envuelve `svc up` + readiness con
+   reintentos; entre intentos hace `svc down` para que el `up` recree el contenedor y el
+   `start_period` cuente desde cero (ataca la causa raíz). Usada en modo serial y paralelo.
+2. `svc_boot_status()` (docker/cli/lib/extras.sh): aísla el ÚLTIMO run del log (desde el
+   último "Arranque escalonado iniciado" con awk) y, si systemd dice `failed` PERO ese run
+   terminó en `Arranque completo.`, muestra "⚠ DESINCRONIZADO" + sugiere `systemctl
+   reset-failed`, en vez de `✗ FALLÓ`.
+3. Docs: variables nuevas en la guía + template systemd + sección "Reintentos ante fallos
+   transitorios" y "boot-status DESINCRONIZADO" en docs/docker-boot-staged-guide.md.
+
+**Decisión:**
+Reintento con backoff por servicio (down+up limpio) como default. `boot-status` cruza systemd
+con el log para no reportar un fallo ya superado. Regla operativa reforzada: recuperar un boot
+fallido vía `systemctl start`, no lanzando el script directo (así systemd registra el éxito).
+
+**Alternativas descartadas:**
+- Subir `retries`/`start_period` del healthcheck de postgres: no habría salvado el caso real,
+  porque el abort ocurrió por el wait INTERNO de Compose (no por el HEALTH_TIMEOUT de
+  boot-order), y en 27s, antes del start_period. El reintento con down+up sí lo cubre.
+- Que boot-status lea solo el log (ignorando systemd): perdería el estado `activating`
+  (arranque en curso), que es útil. Mejor cruzar ambas señales.
+
+**Aprendizaje:**
+- Un orquestador de arranque debe distinguir fallo TRANSITORIO (reintentable) de fallo real.
+  El reintento con recreación limpia es barato y mata una clase entera de falsos negativos.
+- Recurrencia del patrón de la entrada #28: ejecutar lógica de ciclo de vida FUERA de systemd
+  deja estados inconsistentes. Aquí se mitiga en dos frentes: el fix (boot-status cruza señales)
+  y la regla (recuperar vía systemctl).

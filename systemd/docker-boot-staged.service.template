@@ -30,6 +30,12 @@ Environment=BOOT_ORDER_HEALTH_TIMEOUT=480
 # Arranque secuencial dentro de cada capa (uno a uno). Es el comportamiento por
 # defecto (menor pico de I/O). Para arrancar cada capa en paralelo, poner 0:
 Environment=BOOT_ORDER_SERIAL=1
+# Reintentos por servicio ante un fallo TRANSITORIO antes de abortar la capa.
+# Entre intentos hace `svc down` + `up` limpio (el start_period del healthcheck
+# vuelve a contar). Cubre el caso recurrente de datapostgres/flowise 'unhealthy'
+# en frío. 0 = sin reintentos (comportamiento anterior).
+Environment=BOOT_ORDER_RETRIES=2
+Environment=BOOT_ORDER_RETRY_DELAY=15
 # Espera inicial tras el boot antes de la primera capa: deja que kernel/systemd/
 # dockerd se estabilicen antes de sumar la carga de los contenedores.
 Environment=BOOT_ORDER_INITIAL_DELAY=30

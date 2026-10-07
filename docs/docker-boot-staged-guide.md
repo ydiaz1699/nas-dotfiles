@@ -176,6 +176,8 @@ mano en `/etc`: regenéralo con el instalador si cambian las rutas.
 | `BOOT_ORDER_SERIAL` | `1` | Default: arranca los servicios de cada capa uno a uno esperando readiness entre ellos. Con `0`, arranca toda la capa en paralelo |
 | `BOOT_ORDER_INITIAL_DELAY` | `30` | Segundos de espera antes de la primera capa, para que el sistema recién booteado (kernel/systemd/dockerd) se estabilice antes de cargar CPU con contenedores. Poner `0` en arranque manual |
 | `BOOT_ORDER_SETTLE_DELAY` | `10` | Segundos de pausa entre servicios y entre capas, para que el CPU del anterior se asiente antes del siguiente. Evita saturar CPU al 100% en hardware con pocos cores. Poner `0` en arranque manual |
+| `BOOT_ORDER_RETRIES` | `2` | Reintentos por servicio ante un fallo **transitorio** antes de abortar la capa. Entre intentos hace `svc down` + `up` limpio (el `start_period` del healthcheck vuelve a contar desde cero). Cubre el caso recurrente de `datapostgres`/`flowise` que quedan `unhealthy` en frío al operar sobre un contenedor ya existente. `0` = sin reintentos (comportamiento anterior) |
+| `BOOT_ORDER_RETRY_DELAY` | `15` | Segundos de espera entre reintentos de un servicio |
 
 ## Cómo saber si el arranque ya terminó (no juzgar antes de tiempo)
 
@@ -207,6 +209,37 @@ tail -f "$dkco/scripts/boot-order.log"
 Solo cuando `systemctl is-active` diga `failed` (o el log muestre
 `ERROR: se aborta el arranque`) hay un problema real que investigar. Mientras
 diga `activating`, el orquestador está trabajando.
+
+### `boot-status` dice "DESINCRONIZADO" (systemd failed, pero el log completó)
+
+Si recuperas un boot fallido ejecutando `boot-order.sh` **a mano** (en vez de
+`sudo systemctl start docker-boot-staged.service`), systemd nunca se entera del
+éxito: su `.service` queda anclado al `failed` del run anterior aunque el último
+arranque del log diga `Arranque completo.`. `svc boot-status` detecta ese desajuste
+(compara el estado de systemd con el resultado del último run del log) y muestra
+**⚠ DESINCRONIZADO** con la solución:
+
+```bash
+sudo systemctl reset-failed docker-boot-staged.service   # sincroniza systemd con la realidad
+```
+
+Para evitarlo, recupera un boot fallido **vía systemd** (así el éxito queda
+registrado), no lanzando el script directamente:
+
+```bash
+sudo systemctl start docker-boot-staged.service
+```
+
+### Reintentos ante fallos transitorios
+
+`boot-order.sh` reintenta cada servicio hasta `BOOT_ORDER_RETRIES` veces (default 2)
+antes de abortar la capa. Entre intentos hace `svc down` + `up` limpio para que el
+`start_period` del healthcheck cuente desde cero. Esto cubre el fallo recurrente de
+`datapostgres` (y a veces `flowise`/`n8n`) que quedan `unhealthy` en frío cuando
+`svc up` opera sobre un contenedor ya existente y Compose agota su wait interno
+antes de que el servicio pase el healthcheck (ver la nota de la sección de arriba
+sobre `dependency failed to start`). Si un servicio aún falla tras los reintentos,
+ahí sí es un problema real (revisar `docker logs <contenedor>`).
 
 ## Apagado y reinicio ordenado
 
