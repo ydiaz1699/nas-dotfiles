@@ -1238,3 +1238,60 @@ al tocar arranque/layers).
 - Mejora futura (ya anotada): que `svc scan`/`project_scanner.py` detecte composes en
   `$dkco` que falten en el `layers.conf` real y sin `.no-boot` — cerraría este hueco de
   raíz para cualquier vía de despliegue, no solo `svc create`.
+
+---
+
+## 28. El apagado (`off`/`stop-all.sh`) se queda a medias al cerrar la sesión SSH
+
+**Problema:**
+Al ejecutar `off` (alias personal del usuario → `stop-all.sh`) el NAS se apaga bien **si
+se deja la terminal MobaXterm abierta**. Pero si el usuario lanza `off`, espera a que
+empiece y **cierra MobaXterm**, el NAS NO se apaga (sigue encendido 1h+). Mismo bug
+latente en `restart-all.sh` (reboot).
+
+**Causa (verificada contra el código real, no de memoria):**
+`stop-all.sh` corría como hijo directo de la sesión SSH: `read` de confirmación →
+`stop-order.sh --down` (baja ~15 servicios escalonados, varios minutos) → `poweroff`.
+Al cerrar la terminal, SSH envía `SIGHUP` a todo el árbol de la sesión y mata la cadena
+**a mitad de bajar contenedores, antes de llegar al `poweroff`**. Con la terminal abierta
+el proceso vive y sí llega a apagar. (Dato: `off` es alias personal del usuario, NO vive
+en el repo; el repo solo tiene `stop-all.sh`.)
+
+**Idea del usuario:**
+Hacer el apagado simétrico al arranque: el arranque ya es un servicio systemd oneshot
+(`docker-boot-staged.service`), inmune a SIGHUP. El apagado debería ser igual (opción A
+elegida sobre un simple `setsid`).
+
+**Proceso de solución:**
+1. Nuevo `systemd/docker-shutdown-staged.service.template` (gemelo del de boot): oneshot
+   que ejecuta `stop-order.sh --down` bajo PID 1. SOLO baja servicios; la acción final
+   (`poweroff`/`reboot`, instantánea) la lanza quien lo invoca con `systemctl`.
+2. Nuevo `shell/scripts/install-shutdown-service.sh` (gemelo de `install-boot-service.sh`,
+   mismo render con escape de `/`). NO habilita la unidad en el boot (es bajo demanda).
+3. `stop-all.sh` y `restart-all.sh` reescritos: mantienen el `read` de confirmación
+   interactivo, pero el trabajo pesado se ejecuta DESACOPLADO con preferencia (1) servicio
+   systemd vía `systemd-run` si está instalado, (2) fallback `setsid` si no. El prompt
+   vuelve de inmediato y la terminal se puede cerrar.
+4. Docs: sección "Apagado desacoplado de la sesión SSH" en `docs/docker-boot-staged-guide.md`
+   + filas actualizadas en `docs/framework-audit.md`.
+
+**Decisión:**
+El apagado escalonado NUNCA debe correr como hijo de la sesión SSH. Vía preferida: servicio
+systemd `docker-shutdown-staged`; fallback `setsid`. El alias `off` del usuario NO cambia
+(sigue apuntando a `stop-all.sh`, que ahora hace el desacople internamente). Instalar la
+unidad una vez con `install-shutdown-service.sh`.
+
+**Alternativas descartadas:**
+- Solo documentar "usa `nohup off`": depende de que el usuario lo recuerde cada vez; no
+  arregla el default.
+- Plantilla instanciada `@poweroff`/`@reboot`: complica el installer (dos unidades a
+  renderizar) sin beneficio real; el `poweroff`/`reboot` instantáneo mejor fuera del unit.
+
+**Aprendizaje:**
+- Cualquier tarea larga lanzada por SSH que deba sobrevivir al cierre de la terminal tiene
+  que desacoplarse (servicio systemd / `setsid` / `systemd-run`). Un `poweroff` al final de
+  una cadena larga es especialmente frágil: si la cadena muere antes, el equipo queda
+  encendido sin señal clara de error.
+- Recurrencia del patrón ya visto con `boot-order.sh` lanzado a mano: ejecutar lógica de
+  ciclo de vida FUERA de systemd deja estados inconsistentes (allí: `.service` en `failed`
+  pese a arranque OK; aquí: apagado que no completa). La forma canónica es pasar por systemd.

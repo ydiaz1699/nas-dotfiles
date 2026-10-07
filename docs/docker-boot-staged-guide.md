@@ -229,6 +229,41 @@ Tras un `reboot`, `docker-boot-staged.service` vuelve a levantar todo
 escalonadamente. No uses `docker stop` masivo ni `poweroff` directo con los
 servicios corriendo: `stop-order.sh` garantiza el orden seguro.
 
+### Apagado desacoplado de la sesión SSH (inmune a SIGHUP)
+
+El apagado escalonado tarda varios minutos (baja ~15 servicios con pausas). Si se
+ejecutara como hijo directo de la sesión SSH, al **cerrar MobaXterm/la terminal** el
+servidor SSH envía `SIGHUP` y mata la cadena **antes de llegar al `poweroff`/`reboot`
+final** → el NAS se queda encendido. Síntoma típico: "ejecuto el apagado, cierro la
+terminal, espero y el NAS sigue prendido".
+
+Por eso `stop-all.sh` y `restart-all.sh` ejecutan el apagado **desacoplado** de la
+sesión, con esta preferencia:
+
+1. **Servicio systemd `docker-shutdown-staged.service`** (si está instalado): corre bajo
+   PID 1, totalmente inmune a `SIGHUP`. Baja los servicios en orden inverso y, al
+   terminar, systemd ejecuta el `poweroff`/`reboot`. **Es la vía recomendada.**
+2. **Fallback `setsid`** (si el servicio no está instalado): lanza el apagado en una
+   sesión propia que también sobrevive al cierre de la terminal.
+
+En ambos casos el prompt vuelve de inmediato con un aviso de "en curso", y **puedes
+cerrar la terminal sin interrumpir el apagado**.
+
+Instalar el servicio (una sola vez, recomendado):
+
+```bash
+sudo NAS_DOTFILES=/nas-dotfiles DOCKER_BASE=/docker \
+  /nas-dotfiles/shell/scripts/install-shutdown-service.sh
+```
+
+Es un `oneshot` **bajo demanda**: NO se habilita en el boot (no tiene sentido apagar al
+arrancar); lo arrancan `stop-all.sh`/`restart-all.sh` cuando los invocas. Seguir el
+progreso: `journalctl -u docker-shutdown-staged.service -f` o
+`$dkco/scripts/stop-order.log`.
+
+> Si tienes un alias personal `off` apuntando a `stop-all.sh`, no necesitas cambiarlo:
+> `stop-all.sh` ya hace el desacople internamente.
+
 ## Operación
 
 - **Agregar un servicio nuevo:** además de crearlo (compose, carpetas, `svc up`, `svc catalog-sync`), añadir su nombre a `$dkco/scripts/layers.conf` en la capa que corresponda según sus dependencias. Con `BOOT_ORDER_REQUIRE_ALL=1` (default), si el Compose existe en `$dkco` pero falta en `layers.conf`, el arranque **falla de forma visible** — por eso hay que registrarlo al crearlo.

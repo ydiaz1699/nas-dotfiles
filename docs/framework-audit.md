@@ -91,8 +91,9 @@ incremental ya operativo. El diseño histórico se conserva en
 | `boot-order.sh` | Arranque escalonado por capas (health gates, timeout, lock, pausas, `.no-boot`). Lo ejecuta `docker-boot-staged.service` en cada boot |
 | `stop-order.sh` | Apagado escalonado en orden INVERSO (dependientes primero, datasql al final) |
 | `start-all.sh` | Compatibilidad: delega en `boot-order.sh` |
-| `stop-all.sh` | Baja todo (stop-order) + `poweroff`, con confirmación |
-| `restart-all.sh` | Baja todo (stop-order) + `reboot`, con confirmación |
+| `stop-all.sh` | Baja todo (stop-order) + `poweroff`, con confirmación. Ejecuta el apagado DESACOPLADO de la sesión SSH (servicio systemd o `setsid`) → inmune a SIGHUP al cerrar la terminal |
+| `restart-all.sh` | Baja todo (stop-order) + `reboot`, con confirmación. Mismo desacople que `stop-all.sh` |
+| `install-shutdown-service.sh` | Genera e instala `docker-shutdown-staged.service` (gemelo de `install-boot-service.sh`) |
 | `layers.conf.example` | Plantilla de capas (se copia a `$dkco/scripts/layers.conf`) |
 | `find-no-extends.sh` | Diagnóstico: Compose que no heredan `_common.yml` |
 | `apply-restart-policy.sh` | Migra contenedores a `on-failure:5` sin arrancarlos todos |
