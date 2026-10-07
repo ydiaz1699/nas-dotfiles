@@ -1,0 +1,47 @@
+# Apagado escalonado de los Compose definidos en {{DOCKER_BASE}}/scripts/layers.conf,
+# en orden INVERSO al arranque (dependientes primero, datasql al final).
+#
+# Contraparte de docker-boot-staged.service. Su razón de ser: ejecutar el apagado
+# escalonado FUERA de la sesión SSH, bajo PID 1, para que sea INMUNE a SIGHUP.
+# Si se lanza stop-order.sh directamente desde una terminal y se cierra MobaXterm/SSH,
+# el SIGHUP mata la cadena a mitad de bajar contenedores y el `poweroff`/`reboot` final
+# nunca llega a ejecutarse (el NAS se queda encendido). Al correr como servicio systemd,
+# cerrar la terminal NO lo interrumpe.
+#
+# Este servicio SOLO baja los servicios (svc down en orden inverso). La acción final
+# (poweroff/reboot) la ejecuta quien lo invoca (stop-all.sh / restart-all.sh) con
+# `systemctl poweroff|reboot`, que es instantáneo y lo toma PID 1.
+#
+# NO editar a mano en /etc: este archivo se genera desde
+# systemd/docker-shutdown-staged.service.template con las rutas reales de la
+# instalación. Regenerar con: shell/scripts/install-shutdown-service.sh
+#
+# Placeholders sustituidos por install-shutdown-service.sh:
+#   {{NAS_DOTFILES}} -> ruta del código del framework (ej. /nas-dotfiles)
+#   {{DOCKER_BASE}}  -> ruta de datos Docker (ej. /docker)
+
+[Unit]
+Description=Apagado escalonado de contenedores Docker del NAS (orden inverso)
+Documentation=https://github.com/ydiaz1699/nas-dotfiles/blob/main/docs/docker-boot-staged-guide.md
+After=docker.service
+ConditionPathExists={{NAS_DOTFILES}}/shell/scripts/stop-order.sh
+ConditionPathExists={{DOCKER_BASE}}/scripts/layers.conf
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory={{NAS_DOTFILES}}
+Environment=NAS_DOTFILES={{NAS_DOTFILES}}
+Environment=DOCKER_BASE={{DOCKER_BASE}}
+Environment=BOOT_ORDER_CONFIG={{DOCKER_BASE}}/scripts/layers.conf
+Environment=STOP_ORDER_LOG={{DOCKER_BASE}}/scripts/stop-order.log
+# Baja todos los servicios en orden inverso (svc down). stop-order.sh ya tolera
+# errores por servicio (los registra y continúa), así que un servicio terco no
+# bloquea el apagado del resto.
+ExecStart={{NAS_DOTFILES}}/shell/scripts/stop-order.sh --down
+# El apagado escalonado puede tardar varios minutos (muchos servicios, pausas de
+# svc down). Holgura amplia para hardware modesto.
+TimeoutStartSec=1200
+
+[Install]
+WantedBy=multi-user.target
