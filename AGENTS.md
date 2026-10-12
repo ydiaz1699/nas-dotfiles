@@ -259,6 +259,7 @@ Cuando la tarea encaje con una acción de abajo, **cargar esa skill PRIMERO**
 | Tema | Archivo |
 |------|---------|
 | Guía de servicio | `docs/services/<svc>-guide.md` |
+| ESPHome — organización de la config de dispositivos (packages, IP fija, red, alta en HA) | `docs/services/esphome-device-config.md` |
 | Ficha del catálogo | `agent/catalog/services/<svc>/ficha.md` |
 | Manual del NAS (hardware, redes, puertos) | `docs/nas-manual.md` |
 | Mapa del código: qué hace cada archivo (generado, `svc code-map`) | `docs/CODE-MAP.md` |
