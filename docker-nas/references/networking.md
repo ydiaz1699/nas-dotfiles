@@ -32,6 +32,8 @@ Hostname mDNS               Nas.local (avahi-daemon)
 
 La tabla anterior usa los valores actualmente declarados para este NAS. Antes de ejecutar cualquier comando, confirmar la interfaz, prefijo, gateway e IP de AdGuard con el preflight; si alguno difiere, detenerse y adaptar las variables del procedimiento. No usar estos valores como plantilla para otro servidor.
 
+> **Importante:** esta subred `192.168.1.0/24` es una **isla detrás de un doble NAT** (router Huawei B622), no la red principal de la casa (`192.168.0.0/24`). Ver [⚠️ Topología física real: doble NAT](#️-topología-física-real-doble-nat-el-nas-vive-en-una-subred-aislada) antes de asumir que el NAS y los dispositivos de la casa están en la misma red.
+
 Para los comandos de prueba se puede definir la IP de AdGuard una sola vez:
 
 ```bash
@@ -39,6 +41,42 @@ ADGUARD_IP="${ADGUARD_IP:-192.168.1.201}"
 ```
 
 Home Assistant usa `network_mode: host`, por lo que comparte la red del host. Si se desactiva IPv6 en `eno1`, también se elimina IPv6 para Home Assistant. Matter y Thread requieren IPv6; ESPHome, MQTT y muchas integraciones HTTP pueden funcionar con IPv4.
+
+### ⚠️ Topología física real: doble NAT (el NAS vive en una subred aislada)
+
+La LAN `192.168.1.0/24` del NAS **no es la red principal de la casa**: es una subred aislada detrás de un segundo router que hace NAT. La casa real funciona en `192.168.0.0/24`. Esto es crítico porque cualquier dispositivo de la casa (celulares, placas ESP/ESPHome, etc.) vive en `192.168.0.x` y **no puede iniciar conexiones hacia el NAS** (`192.168.1.x`) sin reenvío de puertos; el NAS sí puede salir hacia `192.168.0.x` e internet.
+
+Equipos WiFi de la casa:
+
+| Equipo | Modelo | Rol | IP | Red que sirve |
+|--------|--------|-----|----|----|
+| Principal | — | Router de la casa (DHCP de `192.168.0.x`) | `192.168.0.1` | `192.168.0.0/24` (mayor cobertura) |
+| Repetidor 2 | — | AP/repetidor de la casa | `192.168.0.2` | `192.168.0.0/24` |
+| Router del NAS | Huawei **B622-535** (router 4G/LTE) | **Hace NAT**: WAN al Principal, LAN crea `192.168.1.x` | WAN `192.168.0.15` / LAN `192.168.1.1` | `192.168.1.0/24` (donde cuelga el NAS) |
+
+```text
+Internet
+   │
+Router Principal (192.168.0.1) ──── Casa 192.168.0.0/24  (celular, placas ESP: p. ej. 192.168.0.18)
+   │   └── Repetidor 2 (192.168.0.2)
+   │
+   └── WAN del Huawei B622 (192.168.0.15)
+          │ (NAT)
+          └── LAN del Huawei (192.168.1.1) ─── NAS 192.168.1.200  ← subred aislada
+```
+
+**Consecuencias prácticas (documentadas tras el intento de integrar ESPHome con Home Assistant):**
+
+- Tráfico **saliente del NAS** (`.1.x → .0.x` e internet): **funciona** (pasa el NAT). Por eso HA puede *conectarse hacia* una placa ESP en `192.168.0.x` por su IP + puerto `6053` (API nativa), siempre que se use la IP real de la placa, no la del NAS.
+- Tráfico **entrante al NAS** (`.0.x → .1.x`): **bloqueado** por el NAT del Huawei salvo reenvío de puertos. Por eso un dispositivo de la casa que deba *conectarse al NAS* (p. ej. una placa publicando por MQTT a EMQX `1883`) necesita **port forwarding** en el B622 hacia el NAS, o la Opción B de abajo.
+- **mDNS / `.local` no cruza** entre `192.168.0.x` y `192.168.1.x`: el autodescubrimiento automático de ESPHome en HA no funcionará entre redes; usar **IP fija + alta manual**.
+
+**Opciones para unificar (de preferida a menos):**
+
+- **A (recomendada) — colapsar a una sola red:** poner el Huawei B622 en modo AP/bridge (desactivar su servidor DHCP y conectarlo por un puerto **LAN**, no WAN, al Principal). Toda la casa queda en `192.168.0.0/24`; el NAS pasa a `192.168.0.x`. **Efecto:** cambia la IP del NAS → darle reserva DHCP fija (p. ej. `192.168.0.200`), actualizar `SERVER_IP` en `$dkco/.env` y `svc recreate` de los servicios con labels Homepage. Verificar si el B622 permite modo AP real (algunos routers 4G no lo tienen; alternativa: desactivar solo su DHCP).
+- **B — mantener el doble NAT:** dejar el NAS en `192.168.1.x` y resolver caso por caso: para HA→placa basta IP fija de la placa; para placa→NAS (MQTT) hacer port forwarding del puerto necesario en el B622.
+
+> Nota histórica: poner el router del NAS en `192.168.0.3` mientras seguía en **modo router** provocaba el símbolo "!" (sin internet) por conflicto de DHCP/NAT con el Principal; el síntoma era del modo, no de la IP. La solución no es cambiar la IP sino el **modo de operación** (Opción A).
 
 ### 🔒 Invariantes de `systemd-networkd` y del shim macvlan
 
