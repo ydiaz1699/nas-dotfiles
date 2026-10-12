@@ -3,10 +3,11 @@
 > **Alcance:** cómo organizar los archivos YAML de los **dispositivos** ESP32/ESP8266
 > (no el servicio Docker; eso está en [`esphome-guide.md`](esphome-guide.md)).
 > **Mecanismo:** `substitutions` + `packages` de ESPHome.
-> **Estado del patrón modular:** ⚠️ **pendiente de compilar en el dashboard** del NAS
-> antes de darlo por verificado. El YAML monolítico de ejemplo (`pueba`) ya corrió
-> en runtime (ESPHome 2026.6.3); el refactor a `packages` es equivalente según la
-> doc oficial de ESPHome pero debe validarse con **VALIDATE/INSTALL** en `:6052`.
+> **Estado del patrón modular:** ✅ **verificado en runtime** (ESPHome 2026.6.3,
+> `esphome config /config/pueba.yaml` → *"Configuration is valid!"*). El refactor
+> de `pueba` a `packages` + `common/{base,wifi,diagnostics}.yaml` fusiona correctamente
+> las listas (p. ej. ambos `binary_sensor`: Estado Online + Pulsador GPIO23 conviven)
+> y resuelve bien `substitutions` y `manual_ip` (`static_ip: 192.168.1.132`).
 
 ---
 
@@ -408,6 +409,29 @@ packages:
 
 Cambiar algo común (ej. añadir un sensor de diagnóstico a todas las placas) se hace
 **una vez** en `common/` y afecta a todas tras recompilar cada una.
+
+---
+
+## Validar el refactor antes de flashear
+
+Tras crear `common/` y el dispositivo con `packages`, validar que compila **sin
+flashear** (resuelve substitutions + packages y verifica el YAML):
+
+```bash
+# Dashboard: http://<IP_NAS>:6052 → <dispositivo> → VALIDATE  ("Configuration is valid!")
+# O por terminal:
+docker exec esphome esphome config /config/<dispositivo>.yaml
+```
+
+> Nota de parsing: `svc exec esphome esphome config ...` puede fallar con
+> `exec: "config": executable file not found` porque `svc exec` reinterpreta los
+> subcomandos. Usar `svc exec esphome sh -c 'esphome config /config/<dispositivo>.yaml'`
+> o `docker exec` directo para este diagnóstico puntual.
+
+**Verificación de la fusión de `packages`:** en la salida resuelta, confirmar que
+las listas se **fusionan** (p. ej. el `binary_sensor` de `common/diagnostics.yaml`
+y el del dispositivo aparecen **ambos**). Esto es lo que `packages` hace y un
+`!include` plano no: por eso ESPHome usa `packages` y no `!include` a secas.
 
 ---
 
