@@ -16,13 +16,14 @@
 1. [Dos formas de configurar un dispositivo](#dos-formas-de-configurar-un-dispositivo)
 2. [Forma A — Config por defecto (un solo YAML)](#forma-a--config-por-defecto-un-solo-yaml)
 3. [Forma B — Organización modular con `packages`](#forma-b--organización-modular-con-packages)
-4. [Estructura de archivos](#estructura-de-archivos)
-5. [Archivos de `common/`](#archivos-de-common)
-6. [El dispositivo (solo `substitutions` + `packages`)](#el-dispositivo-solo-substitutions--packages)
-7. [`secrets.yaml`](#secretsyaml)
-8. [Red: IP fija y en qué subred vive la placa](#red-ip-fija-y-en-qué-subred-vive-la-placa)
-9. [Alta en Home Assistant](#alta-en-home-assistant)
-10. [Escalar a varias placas](#escalar-a-varias-placas)
+4. [Cómo fusiona `packages` (`!extend` / `!remove`)](#cómo-fusiona-packages-lo-que-debes-saber-para-no-chocar)
+5. [Estructura de archivos](#estructura-de-archivos)
+6. [Archivos de `common/`](#archivos-de-common)
+7. [El dispositivo (solo `substitutions` + `packages`)](#el-dispositivo-solo-substitutions--packages)
+8. [`secrets.yaml`](#secretsyaml)
+9. [Red: IP fija y en qué subred vive la placa](#red-ip-fija-y-en-qué-subred-vive-la-placa)
+10. [Alta en Home Assistant](#alta-en-home-assistant)
+11. [Escalar a varias placas](#escalar-a-varias-placas)
 
 ---
 
@@ -68,6 +69,89 @@ con `!include`, en ESPHome se parte el YAML del dispositivo con **`packages`**.
 
 La idea: lo que es **igual en todas las placas** (WiFi, API, OTA, diagnósticos) vive
 en `common/`; cada placa solo pone sus `substitutions` y lo que le es propio.
+
+---
+
+## Cómo fusiona `packages` (lo que debes saber para no chocar)
+
+`packages` **no es un `!include` plano**: fusiona las configuraciones de cada
+package con la del dispositivo. La regla de fusión depende del **tipo** de cada
+clave de nivel superior:
+
+| Clave de nivel superior | Tipo | Al estar en varios packages |
+|---|---|---|
+| `sensor:`, `binary_sensor:`, `switch:`, `button:`, `text_sensor:`, `number:`, `light:`… | **Lista** | ✅ **Se concatenan** — todos los elementos conviven. No hay conflicto. |
+| `wifi:`, `logger:`, `api:`, `ota:`, `esp32:`, `web_server:`… | **Mapa único** | ⚠️ **Se fusionan las claves internas**; si dos packages ponen la MISMA clave interna con distinto valor → **conflicto**. |
+| `substitutions:` | **Mapa** | ✅ Se fusionan; el archivo que **incluye** gana sobre el package (permite sobreescribir por placa). |
+
+**Regla de oro para no tener conflictos** (la que ya aplica este proyecto):
+
+- Los **mapas únicos** (`wifi`, `api`, `ota`, `esp32`, `logger`, `safe_mode`,
+  `captive_portal`) van **una sola vez**, en el archivo principal del dispositivo
+  (`pueba.yaml`). No se reparten entre packages.
+- Los packages de `common/` aportan **solo listas** (`sensor`, `binary_sensor`,
+  `switch`, `button`, `text_sensor`), que se concatenan sin pisarse.
+
+Por eso tener `binary_sensor:` en `diagnostics.yaml` **y** en `boton.yaml` **no es
+un duplicado problemático**: son listas, se concatenan. Lo único que sería un error
+real es repetir el mismo `id:` o la misma entidad; eso ESPHome sí lo rechaza.
+
+### Packages con nombres (estructura anidada)
+
+Cada package se declara con un **nombre** bajo `packages:`. El nombre es solo una
+etiqueta organizativa (no cambia la fusión); sirve para identificar de dónde viene
+cada bloque y para poder sobreescribirlo:
+
+```yaml
+packages:
+  diagnostics: !include common/diagnostics.yaml
+  boton: !include common/boton.yaml
+  touch_switch: !include common/touch_switch.yaml
+```
+
+### `!extend` — modificar algo definido en otro package
+
+Para **cambiar una propiedad** de un componente que ya definió un package (sin
+reescribirlo entero), se referencia por su `id` con `!extend`:
+
+```yaml
+# El package de diagnóstico define:
+#   sensor:
+#     - platform: wifi_signal
+#       id: wifi_rssi
+#       update_interval: 60s
+#
+# En el dispositivo (o en otro package) se ajusta solo una propiedad:
+sensor:
+  - id: !extend wifi_rssi
+    update_interval: 10s        # sobreescribe solo esto; lo demás se conserva
+```
+
+Útil para tener un `common/` genérico y afinar un parámetro por placa sin duplicar
+el componente completo.
+
+### `!remove` — quitar algo que trae un package
+
+Para **eliminar** un componente o propiedad heredado de un package base:
+
+```yaml
+# Quitar por completo un componente que trae el package, por su id:
+sensor:
+  - id: !remove wifi_rssi
+
+# O quitar solo una propiedad de un componente:
+sensor:
+  - id: !extend uptime_seconds
+    icon: !remove
+```
+
+> **Cuándo usar `!extend`/`!remove`:** solo cuando tengas un `common/` compartido
+> por varias placas y una placa concreta necesite **ajustar o quitar** algo del
+> común. Para una sola placa (como `pueba`) **no hacen falta** — se edita el
+> package directamente. Son herramientas para escalar, no para el caso simple.
+
+> ⚠️ `!extend` y `!remove` requieren que el componente objetivo tenga un `id:`
+> explícito. Sin `id`, no hay forma de referenciarlo entre packages.
 
 ---
 
