@@ -269,7 +269,7 @@ Cuando la tarea encaje con una acción de abajo, **cargar esa skill PRIMERO**
 | Migración de backend o rango IP | `docker-nas/references/networking-migration.md` |
 | Recuperación de red y DNS | `docker-nas/references/networking-recovery.md` |
 | Meta-prompt de unificación | `docs/meta-prompt-unificar.md` |
-| Meta-prompt ESPHome (ESP32, niveles, packages/!extend/!remove) | `docs/meta-prompt-esphome.md` |
+| Meta-prompt ESPHome (crear/mantener proyectos, niveles, packages/!extend/!remove, fusión no-destructiva) | `docs/esphome-meta-prompt.md` |
 | Bootstrap portable para cualquier chat LLM | `docs/llm-context-bootstrap.md` |
 | **Entorno Kiro CLI + sus MCPs (rclone, nextdns, n8n, jdownloader)** — OTRO REPO | `Varios_tools/kiro-cli-nas/README.md` (mapa) + `Varios_tools/kiro-cli-nas/<mcp>.md` (guía por MCP). **Leer ANTES de montar/tocar un MCP en kiro-cli.** |
 | Skill del chat para unificar y evolucionar herramientas | `.kiro/skills/documentation-evolution/SKILL.md` |

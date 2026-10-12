@@ -523,5 +523,8 @@ y el del dispositivo aparecen **ambos**). Esto es lo que `packages` hace y un
 
 - [`esphome-guide.md`](esphome-guide.md) — instalación y operación del **servicio**
   ESPHome (contenedor, dashboard, flasheo, backups, troubleshooting).
+- [`../esphome-meta-prompt.md`](../esphome-meta-prompt.md) — meta-prompt para
+  **crear o mantener/mejorar** configuraciones ESPHome con cualquier LLM (niveles,
+  `packages`/`!extend`/`!remove`, fusión no-destructiva).
 - [`docker-nas/references/networking.md`](../../docker-nas/references/networking.md)
   — topología de red del NAS, doble NAT y subredes.
