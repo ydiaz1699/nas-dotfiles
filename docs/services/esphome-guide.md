@@ -6,6 +6,12 @@
 > **Instalado por:** DebMenux (`scripts/services/esphome.sh`)  
 > **Tipo:** Docker container (privileged)
 
+> **¿Organizar la configuración de los dispositivos?** Esta guía cubre la
+> instalación y operación del **servicio** ESPHome. Para organizar los YAML de los
+> **dispositivos** ESP32/ESP8266 de forma modular (patrón `packages`, IP fija, red,
+> alta en Home Assistant) ver [`esphome-device-config.md`](esphome-device-config.md).
+> Es opcional: puedes usar la configuración por defecto (un solo YAML por dispositivo).
+
 ---
 
 ## Índice
