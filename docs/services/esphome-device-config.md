@@ -92,9 +92,11 @@ clave de nivel superior:
 - Los packages de `common/` aportan **solo listas** (`sensor`, `binary_sensor`,
   `switch`, `button`, `text_sensor`), que se concatenan sin pisarse.
 
-Por eso tener `binary_sensor:` en `diagnostics.yaml` **y** en `boton.yaml` **no es
+Por eso tener `binary_sensor:` en `diagnostics.yaml` **y** en `entradas.yaml` **no es
 un duplicado problemático**: son listas, se concatenan. Lo único que sería un error
-real es repetir el mismo `id:` o la misma entidad; eso ESPHome sí lo rechaza.
+real es repetir el mismo `id:` o la **misma entidad** (p. ej. definir los botones
+`restart`/`safe_mode` en dos packages a la vez → aparecen duplicados en HA); eso hay
+que evitarlo poniendo cada componente en **un solo** package.
 
 ### Packages con nombres (estructura anidada)
 
@@ -104,10 +106,18 @@ cada bloque y para poder sobreescribirlo:
 
 ```yaml
 packages:
+  base: !include common/base.yaml
+  wifi: !include common/wifi.yaml
   diagnostics: !include common/diagnostics.yaml
-  boton: !include common/boton.yaml
+  entradas: !include common/entradas.yaml
   touch_switch: !include common/touch_switch.yaml
 ```
+
+> ⚠️ **No retroceder la arquitectura:** si ya existen `base.yaml`/`wifi.yaml`, los
+> mapas únicos (`esphome`, `esp32`, `api`, `ota`, `wifi`, `captive_portal`…) viven
+> en esos packages — **nunca** se devuelven al device inline. El device = solo
+> `substitutions` + `packages`. Y cada componente (p. ej. botones de mantenimiento,
+> que van en `diagnostics.yaml`) se define en **un solo** package.
 
 ### `!extend` — modificar algo definido en otro package
 

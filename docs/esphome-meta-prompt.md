@@ -34,8 +34,13 @@ limpios **sin perder nada que funcione**.
 Cuando el usuario aporte YAML/packages existentes o varios ejemplos a combinar,
 sigue este protocolo **antes** de entregar nada:
 
-1. **Inventario:** lista cada archivo/package/bloque recibido y qué hace. No empieces
-   a reescribir sin haber leído todo.
+1. **Inventario + mapa de arquitectura:** lista cada archivo/package/bloque recibido
+   y qué hace. **Si el proyecto ya está modularizado, mapea qué componente vive en
+   qué package ANTES de tocar nada** (idealmente con `ls common/` + leer cada
+   package). No asumas una estructura más antigua ni recrees archivos/componentes que
+   ya existen. No empieces a reescribir sin haber leído todo. La arquitectura
+   existente del usuario **se respeta y se evoluciona**, nunca se retrocede (ver
+   regla anti-regresión en 5.1).
 2. **Matriz de trazabilidad:** para cada componente/opción, registra de qué fuente
    viene. Marca los **equivalentes** (dos bloques que hacen lo mismo).
 3. **Comparación de equivalentes:** cuando dos versiones hagan lo mismo, compara
@@ -252,15 +257,17 @@ plataformas.
 ### 5.1 Modularización con `packages` (nombres + estructura anidada)
 
 Cuando el proyecto crezca o se prevean varias placas, **modulariza con `packages`**
-en lugar de un único archivo gigante. Patrón recomendado (verificado en este NAS):
+en lugar de un único archivo gigante. Patrón recomendado **y arquitectura madura ya
+en uso en este NAS** (verificado en runtime):
 
 ```
-<dispositivo>.yaml           ← solo substitutions + bloques de mapa único + packages + lo propio
+<dispositivo>.yaml           ← SOLO substitutions + packages (+ lo exclusivo de esa placa)
 common/
-├── base.yaml                ← esphome, esp32, logger, api, ota (si se comparte)
+├── base.yaml                ← esphome, esp32, logger, api, ota
 ├── wifi.yaml                ← wifi + manual_ip + captive_portal
-├── diagnostics.yaml         ← debug, sensores de diagnóstico, text_sensor
-└── <control>.yaml           ← pulsadores/relés/switch de plantilla, por responsabilidad
+├── diagnostics.yaml         ← debug, sensores de diagnóstico, text_sensor, botones de mantenimiento (restart/safe_mode)
+├── entradas.yaml            ← entradas físicas (pulsadores, TTP223…), por responsabilidad
+└── touch_switch.yaml        ← switch de plantilla + sincronización con HA
 secrets.yaml
 ```
 
@@ -272,8 +279,20 @@ packages:
   base: !include common/base.yaml
   wifi: !include common/wifi.yaml
   diagnostics: !include common/diagnostics.yaml
-  control: !include common/control.yaml
+  entradas: !include common/entradas.yaml
+  touch_switch: !include common/touch_switch.yaml
 ```
+
+> ⚠️ **REGLA ANTI-REGRESIÓN (crítica — error real cometido):** si el proyecto YA está
+> modularizado (ya existen `base.yaml`, `wifi.yaml`, etc.), **NUNCA** devuelvas los
+> mapas únicos (`esphome`, `esp32`, `logger`, `api`, `ota`, `safe_mode`, `wifi`,
+> `captive_portal`) al archivo del dispositivo "inline". Eso es un RETROCESO que
+> deshace la arquitectura. El device modularizado contiene **solo** `substitutions`
+> + `packages`; cada mapa único vive en su package (`base.yaml` o `wifi.yaml`), no en
+> el device. Antes de reescribir, **lista los packages existentes** (`ls common/`) y
+> **respeta dónde vive cada componente** — no asumas una estructura más antigua ni
+> recrees un archivo que ya existe en otro package (p. ej. no crees `boton.yaml` si
+> los botones de mantenimiento ya están en `diagnostics.yaml`).
 
 > **Diferencia con Home Assistant:** HA usa `!include` sobre cada clave; ESPHome usa
 > `packages:`, que fusiona configuraciones completas. Dentro de un package se sigue
@@ -290,8 +309,12 @@ La fusión depende del **tipo** de cada clave de nivel superior:
 | `substitutions` | **Mapa** | ✅ Fusiona; el archivo que **incluye** gana (permite sobreescribir por placa) |
 
 **Regla de oro:** los **mapas únicos** (`wifi`, `api`, `ota`, `esp32`, `logger`,
-`safe_mode`, `captive_portal`) van **una sola vez** en el archivo principal del
-dispositivo. Los packages de `common/` aportan **solo listas**. Así nunca hay
+`safe_mode`, `captive_portal`) van **una sola vez**. En un proyecto **modularizado**
+viven en su package dueño (`esphome`/`esp32`/`logger`/`api`/`ota`/`safe_mode` →
+`base.yaml`; `wifi`/`manual_ip`/`captive_portal` → `wifi.yaml`), **NO inline en el
+device**. Solo en un proyecto de un único archivo (Forma A, sin `common/`) van en
+ese archivo. Nunca repartas el mismo mapa único entre dos packages. Los packages de
+`common/` aportan **solo listas**. Así nunca hay
 conflicto de mapa. Tener la misma clave de **lista** (p. ej. `binary_sensor`) en dos
 packages **no es un duplicado problemático**: se concatenan. El único error real es
 repetir el mismo `id:` o la misma entidad.
@@ -474,6 +497,17 @@ información.
   entidades y automatizaciones ya creadas en Home Assistant.
 - **No inventes decisiones de diseño** (quién manda tras un reinicio, GPIO/hardware
   real, renombrados): márcalas `PENDIENTE` y pregunta.
+- **No RETROCEDAS la arquitectura modular** (error real cometido): si ya existen
+  `base.yaml`/`wifi.yaml`/etc., no devuelvas los mapas únicos (`esphome`, `esp32`,
+  `logger`, `api`, `ota`, `safe_mode`, `wifi`, `captive_portal`) al device inline.
+  El device modularizado = solo `substitutions` + `packages`.
+- **No recrees un componente que ya vive en otro package.** Antes de generar un
+  package, haz `ls common/` y comprueba dónde está cada cosa. Si los botones
+  `restart`/`safe_mode` ya están en `diagnostics.yaml`, no crees un `boton.yaml` que
+  los duplique (las listas se concatenan → entidades duplicadas en HA).
+- **No des por bueno un `Configuration is valid!` sin revisar la salida resuelta.**
+  Verifica que no haya componentes/entidades duplicados por concatenación de listas
+  entre packages (p. ej. dos pares de botones restart/safe_mode).
 - Prefiere un sistema simple y verificable a uno complejo pero frágil.
 - Si detectas una incompatibilidad, corrígela antes de entregar el resultado.
 - Si falta un dato crítico, pregunta en lugar de adivinar.
