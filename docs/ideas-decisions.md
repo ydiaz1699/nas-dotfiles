@@ -36,6 +36,7 @@
 22. [OpenWA: whatsapp-web.js rompe el media → cambiar a baileys](#22-openwa-whatsapp-webjs-rompe-el-media--cambiar-a-baileys)
 23. [.no-boot no salvaba el boot en la validación REQUIRE_ALL (kiro-cli)](#23-no-boot-no-salvaba-el-boot-en-la-validación-require_all-kiro-cli)
 24. [Verificar la fuente real antes de entregar un Dockerfile (caso kiro-cli)](#24-verificar-la-fuente-real-antes-de-entregar-un-dockerfile-caso-kiro-cli)
+30. [ESPHome pueba + Sonoff: control OK, estado inicial del indicador PENDIENTE](#30-esphome-pueba--sonoff-control-ok-estado-inicial-del-indicador-pendiente-saga)
 ---
 
 ## 1. ntfy reemplaza notify-send
@@ -1354,3 +1355,54 @@ fallido vía `systemctl start`, no lanzando el script directo (así systemd regi
 - Recurrencia del patrón de la entrada #28: ejecutar lógica de ciclo de vida FUERA de systemd
   deja estados inconsistentes. Aquí se mitiga en dos frentes: el fix (boot-status cruza señales)
   y la regla (recuperar vía systemctl).
+
+
+---
+
+## 30. ESPHome `pueba` + Sonoff: control OK, estado inicial del indicador PENDIENTE (saga)
+
+**Problema.** Montar un ESP32 (`pueba`) en ESPHome que controle un relé Sonoff
+MINIR4 (`switch.minir4_sonoff_1002a2995b_1`) y muestre su estado, integrado a Home
+Assistant. Decisión del usuario: "ESPHome inteligente" (lógica en el ESP, sin
+automatización de sincronización en HA).
+
+**Idea del usuario.** Pulsador físico GPIO23 que conmute el Sonoff; un switch en HA
+que también lo conmute; un indicador que muestre el estado del Sonoff; TTP223 en
+GPIO22 para uso futuro. Arquitectura modular con `packages`.
+
+**Proceso (y errores cazados en runtime, no de memoria).**
+1. Red: el ESP vivía en una subred aislada por doble NAT (Huawei B622). Se ancló a
+   `192.168.1.x` con IP fija (`manual_ip`). Ver entrada de networking.
+2. Modularización `packages`: device = solo substitutions + packages; mapas únicos en
+   `base.yaml`/`wifi.yaml`; listas en el resto. Verificado `Configuration is valid!`.
+3. Errores resueltos: `restore_mode: DISABLE`→`DISABLED`; botones duplicados por crear
+   `boton.yaml` (ya estaban en `diagnostics.yaml`); indicador oculto por `internal:true`;
+   **OTA rollback** que hacía correr firmware viejo (fix: flashear por USB); regresión
+   de arquitectura (devolver mapas únicos al device inline).
+4. Permiso HA: "Allow the device to perform Home Assistant actions" (sin él, pulsador
+   y switch no mueven el Sonoff).
+
+**Decisión.** Diseño final (verificado): pulsador GPIO23 + switch en HA conmutan el
+Sonoff vía `homeassistant.service`; `binary_sensor platform: homeassistant`
+("Indicador Sonoff") refleja los cambios y, vía `on_state`+`publish_state`, actualiza
+el switch sin rebote (`optimistic:false`). Fuente de verdad = Sonoff.
+
+**Problema ABIERTO (único).** El indicador NO toma el estado **inicial** al arrancar
+el ESP: `platform: homeassistant` se suscribe a cambios pero HA no reenvía el estado
+actual al conectar (bug de plataforma, issue home-assistant/core #184371). Solo
+sincroniza tras el primer cambio. Impacto bajo (el ESP no reinicia a diario; el estado
+real está en la entidad del Sonoff).
+
+**Alternativas descartadas.** `on_client_connected`+delay (el indicador no tiene
+estado aún); automatización HA con `action: switch.turn_{{states}}` (template en el
+nombre de servicio = "acción desconocida" en HA; además reaplicar el mismo estado no
+genera `state_changed`).
+
+**Aprendizaje.** (1) `platform: homeassistant` no entrega estado inicial — si se
+necesita, HA debe EMPUJAR el estado (automatización con servicios fijos / 
+`update_entity` / componente escribible en el ESP), no esperar que el ESP lo importe.
+(2) Verificar SIEMPRE en logs si el estado llega, no asumir. (3) OTA rollback puede
+ocultar que el firmware nuevo no corre → flashear por USB para romperlo. (4) El
+`action:` con template dinámico no es válido en HA. Estado completo y camino A/B para
+cerrarlo en `docs/services/esphome-pueba-handoff.md` (handoff autocontenido para chat
+nuevo). Decisión A (resolver) vs B (aceptar el límite) queda PENDIENTE del usuario.

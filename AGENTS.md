@@ -260,6 +260,7 @@ Cuando la tarea encaje con una acción de abajo, **cargar esa skill PRIMERO**
 |------|---------|
 | Guía de servicio | `docs/services/<svc>-guide.md` |
 | ESPHome — organización de la config de dispositivos (packages, IP fija, red, alta en HA) | `docs/services/esphome-device-config.md` |
+| ESPHome `pueba` + Sonoff — handoff de sesión (estado real, errores resueltos, pendiente estado inicial) | `docs/services/esphome-pueba-handoff.md` |
 | Ficha del catálogo | `agent/catalog/services/<svc>/ficha.md` |
 | Manual del NAS (hardware, redes, puertos) | `docs/nas-manual.md` |
 | Mapa del código: qué hace cada archivo (generado, `svc code-map`) | `docs/CODE-MAP.md` |
