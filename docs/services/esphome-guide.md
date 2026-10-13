@@ -11,6 +11,11 @@
 > **dispositivos** ESP32/ESP8266 de forma modular (patrón `packages`, IP fija, red,
 > alta en Home Assistant) ver [`esphome-device-config.md`](esphome-device-config.md).
 > Es opcional: puedes usar la configuración por defecto (un solo YAML por dispositivo).
+>
+> **Proyecto en curso (ESP32 `pueba` + Sonoff):** estado real, qué funciona, errores
+> ya resueltos y el pendiente del estado inicial del indicador están en
+> [`esphome-pueba-handoff.md`](esphome-pueba-handoff.md) (handoff autocontenido para
+> retomar en un chat nuevo sin contexto).
 
 ---
 
