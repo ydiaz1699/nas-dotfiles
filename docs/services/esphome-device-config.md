@@ -239,21 +239,23 @@ switch:
 ### Remote / Git packages (compartir `common/` entre repos o placas)
 
 Un package puede cargarse desde un **repositorio Git**, no solo desde un archivo
-local. Útil si en el futuro quieres un `common/` versionado y compartido entre varias
-instalaciones ESPHome:
+local. **Es lo que usa `pueba`:** sus plantillas base viven en el repo propio
+[`ydiaz1699/esphome-common`](https://github.com/ydiaz1699/esphome-common) y se cargan
+por `github://` (ver [`esphome-pueba-handoff.md`](esphome-pueba-handoff.md) §9).
 
 Funciona con **GitHub, GitLab y Codeberg**:
 
 ```yaml
 packages:
   # forma corta: github://usuario/repo/[carpeta/]archivo.yml[@rama-o-tag]
-  base_remoto: github://ydiaz1699/ESPHome_ESP-NOW/common/base.yaml@v1.0.0
+  base_remoto: github://ydiaz1699/esphome-common/common/base.yaml@v1.0.0
 
-  # forma larga con opciones
-  comun:
-    url: https://github.com/ydiaz1699/ESPHome_ESP-NOW
-    files: [common/wifi.yaml, common/diagnostics.yaml]   # opcional; sin esto, todos
-    ref: v1.0.0        # opcional (rama/tag/commit) — ver aviso abajo
+  # forma larga con opciones (la que usa pueba)
+  remoto:
+    url: https://github.com/ydiaz1699/esphome-common
+    files: [common/base.yaml, boards/esp32.yaml, common/wifi.yaml,
+            common/diagnostics.yaml, modules/entradas.yaml, modules/touch_switch.yaml]
+    ref: v1.0.0        # tag fijo, NO main — ver aviso abajo
     refresh: 1d        # opcional (cada cuánto refresca el contenido)
 ```
 
@@ -269,10 +271,14 @@ packages:
 > [secret → substitution → package](#pasar-secretos-a-los-packages-secret--substitution)).
 > Fuente: [ESPHome — Packages (Remote/Git)](https://new.esphome.io/components/packages/).
 
-> **Para este NAS hoy:** usamos packages **locales** (`!include common/*.yaml`,
-> `boards/…`, `modules/…`). Los git packages se documentan como camino de escalado si
-> algún día el `common/` se comparte entre instalaciones. El repo `ESPHome_ESP-NOW`
-> del ecosistema es justamente el pensado para alojar plantillas base reutilizables.
+> **En este NAS:** `pueba` se migró a **remote packages** desde
+> [`esphome-common`](https://github.com/ydiaz1699/esphome-common) (tag `v1.0.0`); las
+> plantillas base están parametrizadas con substitutions (sin `!secret`) y `pueba.yaml`
+> inyecta los secretos con el patrón de abajo. Las carpetas locales `common/`/`boards/`/
+> `modules/` quedan como respaldo/referencia. ⚠️ La migración está **pendiente de
+> validar en el NAS** (que ESPHome descargue el package a través del doble NAT) — ver
+> [`esphome-pueba-handoff.md`](esphome-pueba-handoff.md) §9. (Nota: `ESPHome_ESP-NOW`
+> es un repo distinto, para nodos ESP-NOW autónomos sin WiFi/HA.)
 
 ### `packages:` como lista o como mapa
 

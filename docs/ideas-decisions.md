@@ -37,6 +37,7 @@
 23. [.no-boot no salvaba el boot en la validación REQUIRE_ALL (kiro-cli)](#23-no-boot-no-salvaba-el-boot-en-la-validación-require_all-kiro-cli)
 24. [Verificar la fuente real antes de entregar un Dockerfile (caso kiro-cli)](#24-verificar-la-fuente-real-antes-de-entregar-un-dockerfile-caso-kiro-cli)
 30. [ESPHome pueba + Sonoff: control OK, estado inicial del indicador PENDIENTE](#30-esphome-pueba--sonoff-control-ok-estado-inicial-del-indicador-pendiente-saga)
+31. [ESPHome: common/ como remote packages en repo propio esphome-common](#31-esphome-common-como-remote-packages-en-repo-propio-esphome-common)
 ---
 
 ## 1. ntfy reemplaza notify-send
@@ -1416,3 +1417,51 @@ decisión válida y preferible a añadir maquinaria frágil. Estado completo en
 `docs/services/esphome-pueba-handoff.md` (handoff autocontenido para chat nuevo).
 **Decisión CERRADA: Camino B (aceptar el límite).** El proyecto `pueba` se da por
 cerrado y funcional; el estado inicial del indicador es un límite conocido asumido.
+
+---
+
+## 31. ESPHome: `common/` como remote packages en repo propio `esphome-common`
+
+**Problema.** El `common/`/`boards/`/`modules/` de `pueba` vivía como archivos
+**locales** en el NAS. El usuario quiso usar **git/remote packages** (cargar las
+plantillas base desde GitHub en el YAML) para versionarlas y reutilizarlas entre
+placas desde un solo sitio.
+
+**Idea del usuario.** "Usa GitHub en el YAML" → opción B: cambiar el `pueba.yaml` real
+para que sus packages se descarguen de un repo. Primero sugirió `ESPHome_ESP-NOW`;
+tras verificar que ese repo es de **otro propósito** (nodos ESP-NOW autónomos sin
+WiFi/HA, plantillas para pasar como contexto a un LLM), se eligió **repo nuevo
+dedicado** (B1).
+
+**Proceso.**
+1. Verificado por `gh api` que `ESPHome_ESP-NOW` NO tiene un `common/` reutilizable
+   (solo emisor/receptor ESP-NOW) → no mezclar propósitos.
+2. Creado el repo **`ydiaz1699/esphome-common`** (público) con `common/{base,wifi,
+   diagnostics}.yaml` + `boards/esp32.yaml` + `modules/{entradas,touch_switch}.yaml`
+   + README (substitutions requeridas + ejemplo) + LICENSE MIT. Tag **`v1.0.0`**.
+3. **Regla oficial aplicada:** los remote packages NO pueden usar `!secret` → las
+   plantillas usan `${substitution}` y el device inyecta los secretos con el patrón
+   **secret → substitution** (`api_encryption_key: !secret ...` en el device →
+   `key: ${api_encryption_key}` en el package). Verificado: 0 `!secret` activos en el
+   repo (solo en comentarios).
+4. `pueba.yaml` nuevo preparado (consume `github://…esphome-common@v1.0.0`) y
+   documentado en el handoff §9, con pasos SSH, reversión y qué confirmar en el NAS.
+
+**Decisión.** Repo propio `esphome-common` como fuente de las plantillas base (git
+packages con `ref` fijo a un tag, no `main`). El `pueba.yaml` migra a consumirlo; los
+secrets siguen en el `secrets.yaml` local.
+
+**Alternativas descartadas.** (a) Meter el `common/` dentro de `ESPHome_ESP-NOW`:
+mezcla dos propósitos distintos en un repo. (b) Seguir `ref: main`: un cambio remoto
+entraría sin aviso en la siguiente compilación → se fija a `v1.0.0`. (c) Repo privado:
+necesitaría token en el YAML; como no lleva secretos, público es seguro y simple.
+
+**Aprendizaje.** (1) Antes de reutilizar un repo "que suena parecido", verificar su
+contenido real por `gh api` — `ESPHome_ESP-NOW` tenía otro propósito pese al nombre.
+(2) El patrón secret→substitution es **obligatorio** para git packages (no es
+opcional): sin él, las plantillas remotas no pueden autenticarse ni cifrar. (3) Fijar
+`ref` a un tag es la diferencia entre "controlo cuándo actualizo" y "un push remoto me
+cambia el firmware sin avisar". (4) **PENDIENTE de verificar en el NAS** (no se puede
+desde Kiro Web por el doble NAT): que ESPHome descargue el package de GitHub al
+compilar y que la config resuelta sea equivalente a la local. Repo: `esphome-common`;
+pasos en `docs/services/esphome-pueba-handoff.md` §9.
