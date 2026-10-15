@@ -254,3 +254,133 @@ servicio Docker `esphome` (puerto 6052, `network_mode: host`, privileged, acceso
 - ❌ Crear `boton.yaml` — duplica los botones de `diagnostics.yaml`.
 - ❌ Flashear por OTA mientras haya rollback — usar USB.
 - ❌ Devolver mapas únicos al device inline — romper la arquitectura modular.
+
+---
+
+## 9. Migración a remote packages desde GitHub (repo `esphome-common`)
+
+> **Estado:** repo **creado y publicado** (`github.com/ydiaz1699/esphome-common`,
+> público, tag `v1.0.0`). El `pueba.yaml` nuevo está **preparado** abajo pero
+> **PENDIENTE de aplicar y validar en el NAS** (requiere SSH + compilación real; no se
+> puede verificar desde Kiro Web por el doble NAT).
+
+### Qué cambia y por qué
+
+Hasta ahora `pueba.yaml` incluía su `common/`/`boards/`/`modules/` como archivos
+**locales** (`!include common/base.yaml`). Se migra a cargarlos desde el repo
+**`esphome-common`** vía git/remote packages (`github://…`), para tener las plantillas
+base **versionadas y reutilizables** entre placas, editando en un solo sitio.
+
+**Regla crítica (oficial):** un remote package **NO puede usar `!secret`**. Por eso en
+`esphome-common` los secretos son `substitutions` (`${wifi_ssid}`,
+`${api_encryption_key}`…) y `pueba.yaml` los inyecta con el patrón
+**secret → substitution** (el `!secret` se asigna a una substitution). Ver
+[`esphome-device-config.md` §Pasar secretos a los packages](esphome-device-config.md#pasar-secretos-a-los-packages-secret--substitution).
+
+### `pueba.yaml` nuevo (reemplaza al actual en `$dkco/esphome/config/pueba.yaml`)
+
+```yaml
+# $dkco/esphome/config/pueba.yaml  — consume esphome-common por git packages
+substitutions:
+  device_name: pueba
+  friendly_name: "Prueba"
+  device_comment: "ESP32 con pulsador GPIO23 (Sonoff) + TTP223 GPIO22"
+  log_level: "INFO"
+
+  # Red (IP fija en la subred del NAS)
+  static_ip: "192.168.1.132"
+  gateway: "192.168.1.1"
+
+  # Sonoff en Home Assistant
+  sonoff_entity: "switch.minir4_sonoff_1002a2995b_1"
+
+  # Pulsador físico (controla el Sonoff)
+  boton_pin: "GPIO23"
+  boton_name: "Pulsador GPIO23"
+
+  # Sensor táctil TTP223 (uso futuro, sin acción por ahora)
+  ttp_pin: "GPIO22"
+  ttp_name: "Touch TTP223"
+
+  switch_name: "Interruptor Pulsador"
+  debounce_time: "20ms"
+
+  wifi_update_interval: 60s
+  uptime_update_interval: 300s
+  debug_update_interval: 60s
+
+  # --- Secretos: !secret -> substitution (los packages remotos NO leen !secret) ---
+  wifi_ssid: !secret wifi_ssid
+  wifi_password: !secret wifi_password
+  wifi_fallback: !secret wifi_fallback
+  api_encryption_key: !secret api_encryption_key
+  ota_password: !secret esp32_pruebas_ota_password
+
+packages:
+  remoto:
+    url: https://github.com/ydiaz1699/esphome-common
+    ref: v1.0.0          # tag fijo, NO main (controlas cuándo actualizas)
+    refresh: 1d
+    files:
+      - common/base.yaml
+      - boards/esp32.yaml
+      - common/wifi.yaml
+      - common/diagnostics.yaml
+      - modules/entradas.yaml
+      - modules/touch_switch.yaml
+```
+
+> `secrets.yaml` **no cambia** y sigue viviendo solo en el NAS (sus claves:
+> `wifi_ssid`, `wifi_password`, `wifi_fallback`, `api_encryption_key`,
+> `esp32_pruebas_ota_password`). Las carpetas locales `common/`/`boards/`/`modules/`
+> del NAS pueden **quedarse** (dejan de usarse) o moverse a un respaldo; no borrarlas
+> hasta validar que el remoto compila.
+
+### Pasos en el NAS (por SSH) — orden real
+
+```bash
+dk esphome && cd config          # (o: cd $dkco/esphome/config)
+
+# 1) Respaldo del pueba.yaml actual (y de las carpetas locales, por si acaso)
+cp pueba.yaml /root/pueba.yaml.bak
+tar czf /root/esphome-local-pre.tar.gz --exclude=.esphome common boards modules
+chmod 600 /root/esphome-local-pre.tar.gz
+
+# 2) Reemplazar pueba.yaml por la versión de arriba (editar con nano / subirlo)
+#    nano pueba.yaml   → pegar el bloque de la sección 9
+
+# 3) VALIDAR (descarga el package de GitHub; CONFIRMA que el doble NAT deja salir)
+docker exec esphome esphome config /config/pueba.yaml
+#    Debe decir "Configuration is valid!" y, en la salida resuelta, verse las
+#    entidades (Señal Wi-Fi, Pulsador, Indicador Sonoff, botones) igual que antes.
+
+# 4) Comparar que la config resuelta NO cambió respecto a la local (opcional pero
+#    recomendado): usar el método de 'Reorganizar sin romper' (diff con sort).
+
+# 5) Si valida: flashear (OTA por IP, o USB si hubo rollback) y comprobar en HA.
+```
+
+> ⚠️ **Lo que hay que confirmar en el NAS (no verificable desde aquí):**
+> 1. Que ESPHome **descarga** `esphome-common@v1.0.0` al compilar (salida a internet a
+>    través del doble NAT). Si fallara la descarga, el `esphome config` lo dirá.
+> 2. Que la configuración resuelta es **equivalente** a la local (mismas entidades,
+>    mismos `id`) → entonces **no hace falta reflashear** salvo que cambie algo.
+> 3. El Device Builder puede volver a commitear `pueba.yaml` por su cuenta; es normal.
+
+### Cómo actualizar las plantillas en el futuro
+
+Editar en el repo `esphome-common`, publicar un tag nuevo (`v1.1.0`, …) y **subir el
+`ref`** en `pueba.yaml` cuando quieras adoptarlo (si sigues en `v1.0.0`, nada cambia
+en tus placas aunque el repo evolucione). `refresh: 1d` solo controla la caché del
+mismo `ref`.
+
+### Reversión
+
+Si algo falla, restaurar el `pueba.yaml` local:
+
+```bash
+cp /root/pueba.yaml.bak $dkco/esphome/config/pueba.yaml
+docker exec esphome esphome config /config/pueba.yaml   # vuelve a usar common/ local
+# limpiar respaldos al terminar (el tar NO lleva secrets.yaml, pero por higiene):
+rm -f /root/pueba.yaml.bak /root/esphome-local-pre.tar.gz
+```
