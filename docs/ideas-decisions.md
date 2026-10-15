@@ -38,6 +38,7 @@
 24. [Verificar la fuente real antes de entregar un Dockerfile (caso kiro-cli)](#24-verificar-la-fuente-real-antes-de-entregar-un-dockerfile-caso-kiro-cli)
 30. [ESPHome pueba + Sonoff: control OK, estado inicial del indicador PENDIENTE](#30-esphome-pueba--sonoff-control-ok-estado-inicial-del-indicador-pendiente-saga)
 31. [ESPHome: common/ como remote packages en repo propio esphome-common](#31-esphome-common-como-remote-packages-en-repo-propio-esphome-common)
+32. [esphome-common v1.1.0: primera plantilla integrada por el flujo de mejora continua (buzzer C6)](#32-esphome-common-v110-primera-plantilla-integrada-por-el-flujo-de-mejora-continua-buzzer-c6)
 ---
 
 ## 1. ntfy reemplaza notify-send
@@ -1480,3 +1481,54 @@ pueba" sino una **biblioteca de plantillas** con **doble camino de consumo** y
   (`docs/esphome-meta-prompt.md` §5.8) **apunta** a él, no lo copia (enlazar-no-
   duplicar). Decisión de diseño: el catálogo vive junto a las plantillas para no
   desincronizarse, y el meta-prompt portable solo referencia la URL.
+
+---
+
+## 32. esphome-common v1.1.0: primera plantilla integrada por el flujo de mejora continua (buzzer C6)
+
+**Problema.** El usuario compartió un YAML real (buzzer en ESP32-C6 con batería:
+switch de pulso + ADC de voltaje + % de batería por lambda) para incorporarlo a la
+biblioteca `esphome-common`, estrenando el flujo de mejora continua definido en #31.
+
+**Proceso (flujo del meta-prompt §5.8 aplicado).**
+1. **Mirar antes de crear:** inventario de la biblioteca (v1.0.0) y matriz de
+   trazabilidad del YAML aportado → clasificado cada bloque (DUPLICADO base/api/ota;
+   VARIANTE de board C6; MEJORA del wifi; NUEVO buzzer; NUEVO battery_adc).
+2. **Fusión no-destructiva:** el bloque `wifi` del usuario era **más completo**
+   (`power_save_mode`/`output_power`/`fast_connect`) → se fusionó en `common/wifi.yaml`
+   (ahora exige 3 substitutions nuevas).
+3. **Parametrizar + secretos:** el YAML traía `api.key`/`ota.password` **hardcodeados**
+   (`"CHANGE"`) → parametrizados a `${api_encryption_key}`/`${ota_password}` (regla
+   remote packages, #31).
+4. **Verificar fuente real:** el YAML usaba `external_components` de un fork
+   (`lboue/esphome@adc_oneshot`). Verificado en la **doc oficial de ESPHome** (tabla
+   de pines ADC) que el componente `adc` **nativo soporta ESP32-C6** (ADC1 = GPIO0–6,
+   calibración curve-fitting automática) → se **eliminó el fork** (dependencia frágil).
+   Además se añadió `attenuation: auto`, que el YAML original NO tenía y es
+   imprescindible para medir >1.1V (sin ella, el voltaje de batería 3–4.2V se satura).
+5. **Catálogo + versionado:** añadidos `boards/esp32-c6.yaml`, `modules/buzzer.yaml`,
+   `modules/battery_adc.yaml`; actualizado el catálogo del README; tag **v1.1.0**.
+
+**Decisión.** Biblioteca `esphome-common` v1.1.0 con 2 módulos nuevos + board C6 +
+wifi mejorado. La curva de batería (lambda) se deja embebida con valores típicos de
+LiPo 1S y comentario de que es parametrizable (decisión del usuario: parametrizable
+pero con comentario, no forzar substitutions por ahora).
+
+**Alternativas descartadas.** (a) Mantener el fork `adc_oneshot`: innecesario con ADC
+nativo y añade fragilidad (una rama de fork puede desaparecer). (b) Poner el
+`esphome: on_boot` (lectura inicial de batería) dentro de `battery_adc.yaml`: chocaría
+con el `esphome:` de `base.yaml` (mapa único) → se documenta que va en el **device**.
+(c) Hacer `power_save_mode` etc. opcionales con defaults: el `!include` normal no
+soporta defaults de substitution → el device las define siempre (consistente con el
+resto del `common/`).
+
+**Aprendizaje.** (1) **Verificar soporte nativo antes de arrastrar un
+`external_components`**: muchos forks de ADC/periféricos ya están en el core; la tabla
+de pines ADC de la doc oficial de ESPHome confirma variantes soportadas (C3/C5/C6/H2/
+S3/P4 con curve-fitting). (2) Al integrar un YAML de terceros, **el ADC del ESP32 capa
+a ~1.1V por defecto** → `attenuation: auto` (o 12db) es obligatorio para batería; un
+`multiply` sin attenuation da lecturas saturadas. (3) El flujo de mejora continua
+funciona: comparar bloque a bloque convierte un YAML suelto en plantillas
+parametrizadas sin duplicar. **PENDIENTE:** validar v1.1.0 con `esphome config` en el
+NAS (no verificable desde Kiro Web) y confirmar que `esphome: on_boot` del device se
+fusiona (concatena) con el de `base.yaml`. Biblioteca: `ydiaz1699/esphome-common`.
