@@ -32,8 +32,10 @@
 12. [Escalar a varias placas](#escalar-a-varias-placas)
 13. [Validar antes de flashear](#validar-antes-de-flashear)
 14. [Buenas prácticas de fiabilidad y hardware (de la FAQ oficial)](#buenas-prácticas-de-fiabilidad-y-hardware-de-la-faq-oficial)
-15. [Reorganizar sin romper](#reorganizar-sin-romper)
-16. [Mejoras pendientes (detectadas, no aplicadas)](#mejoras-pendientes-detectadas-no-aplicadas)
+15. [Sensores: filtros, ahorro de energía y lambdas](#sensores-filtros-ahorro-de-energía-y-lambdas)
+16. [Reorganizar sin romper](#reorganizar-sin-romper)
+17. [Errores frecuentes](#errores-frecuentes)
+18. [Mejoras pendientes (detectadas, no aplicadas)](#mejoras-pendientes-detectadas-no-aplicadas)
 
 ---
 
@@ -240,24 +242,32 @@ Un package puede cargarse desde un **repositorio Git**, no solo desde un archivo
 local. Útil si en el futuro quieres un `common/` versionado y compartido entre varias
 instalaciones ESPHome:
 
+Funciona con **GitHub, GitLab y Codeberg**:
+
 ```yaml
 packages:
   # forma corta: github://usuario/repo/[carpeta/]archivo.yml[@rama-o-tag]
-  base_remoto: github://ydiaz1699/ESPHome_ESP-NOW/common/base.yaml@main
+  base_remoto: github://ydiaz1699/ESPHome_ESP-NOW/common/base.yaml@v1.0.0
 
   # forma larga con opciones
   comun:
     url: https://github.com/ydiaz1699/ESPHome_ESP-NOW
     files: [common/wifi.yaml, common/diagnostics.yaml]   # opcional; sin esto, todos
-    ref: main          # opcional (rama/tag/commit)
+    ref: v1.0.0        # opcional (rama/tag/commit) — ver aviso abajo
     refresh: 1d        # opcional (cada cuánto refresca el contenido)
 ```
+
+> ⚠️ **Fija `ref` a una versión/commit revisado, no a `main`.** Seguir `main` hace que
+> un cambio remoto entre en tu siguiente compilación **sin previo aviso**; con un tag
+> (`v1.0.0`) controlas cuándo actualizas. Y revisa siempre el código remoto antes de
+> compilarlo.
 
 > ⚠️ **Regla oficial clave:** los **remote packages NO pueden usar `!secret`**.
 > Deben exponer `substitutions` (con un `defaults:` opcional) que el YAML **local**
 > rellena con sus propios secretos. Es decir: el `common/` remoto se parametriza, y
-> cada NAS/placa inyecta sus credenciales localmente. Fuente:
-> [ESPHome — Packages (Remote/Git)](https://new.esphome.io/components/packages/).
+> cada NAS/placa inyecta sus credenciales localmente (ver el patrón
+> [secret → substitution → package](#pasar-secretos-a-los-packages-secret--substitution)).
+> Fuente: [ESPHome — Packages (Remote/Git)](https://new.esphome.io/components/packages/).
 
 > **Para este NAS hoy:** usamos packages **locales** (`!include common/*.yaml`,
 > `boards/…`, `modules/…`). Los git packages se documentan como camino de escalado si
@@ -810,6 +820,65 @@ esp32_pruebas_ota_password: "PASSWORD_OTA"   # ← CAMBIAR
 > ✔ *Verificado en este repo:* `.gitignore` ya cubre `secrets.yaml`, `.esphome/` y
 > `.device-builder*` (`git check-ignore -v`).
 
+### Pasar secretos a los packages (secret → substitution)
+
+**`!secret` vs `substitution` no son lo mismo:** una substitution evita repetir un
+valor y **puede ser público**; un `!secret` protege información sensible y vive fuera
+del YAML compartido. Pero un `!secret` **puede asignarse a una substitution** para
+pasarlo a un package. Esto es la pieza que faltaba para que `common/base.yaml` deje de
+tener el secret de OTA "cableado" (mejoras pendientes #7 y #10):
+
+```yaml
+# En el DEVICE (pueba.yaml): el secret entra como substitution
+substitutions:
+  api_encryption_key: !secret pueba_api_key          # clave ÚNICA de esta placa
+  ota_password: !secret pueba_ota_password
+
+packages:
+  base: !include common/base.yaml
+
+# En common/base.yaml: el package usa la substitution, NO !secret
+api:
+  encryption:
+    key: ${api_encryption_key}
+ota:
+  - platform: esphome
+    password: ${ota_password}
+```
+
+> **Por qué importa:** así `common/base.yaml` es **genérico y reutilizable** por
+> cualquier placa (cada una pasa su propia clave única desde su `secrets.yaml`), y
+> además es el **mismo** mecanismo que exigen los remote/git packages (que no pueden
+> leer `!secret`). Regla de seguridad: **una `api_encryption_key` y un `ota_password`
+> distintos por dispositivo** — nunca reutilices una misma clave en toda la casa.
+
+### Reutilizar el `secrets.yaml` de Home Assistant (opcional)
+
+Si prefieres mantener los secretos en un único sitio, el `secrets.yaml` de ESPHome
+puede **heredar** del de Home Assistant del directorio superior:
+
+```yaml
+# $dkco/esphome/config/secrets.yaml
+<<: !include ../secrets.yaml
+```
+
+> Solo aplica si HA y ESPHome comparten árbol de carpetas. En este NAS cada servicio
+> vive aislado (`$dkco/esphome/` ≠ `$dkco/homeassistant/`), así que hoy **no** se usa;
+> queda documentado como opción.
+
+### `min_version` — exigir una versión mínima de ESPHome
+
+Para que un YAML falle pronto y claro si se compila con una versión demasiado vieja
+(en vez de dar un error críptico de sintaxis no soportada), declara la versión mínima
+en `esphome:`:
+
+```yaml
+# common/base.yaml
+esphome:
+  name: ${device_name}
+  min_version: 2026.6.0
+```
+
 ---
 
 ## Red: IP fija y en qué subred vive la placa
@@ -1008,6 +1077,85 @@ Sonoff), así que esto no aplica hoy — queda documentado por si una placa futu
 
 ---
 
+## Sensores: filtros, ahorro de energía y lambdas
+
+Cuando una placa lleva **sensores físicos** (temperatura, humedad, voltaje…), hay
+tres herramientas que marcan la diferencia entre una config que "funciona" y una
+robusta. No aplican a `pueba` (no tiene sensores analógicos aún), pero son el patrón
+a seguir al añadir sensores a esta u otra placa.
+
+### Filtros de sensor (suavizar lecturas y optimizar tráfico a HA)
+
+Los `filters:` procesan el valor **antes** de publicarlo a HA. Los más útiles:
+
+```yaml
+sensor:
+  - platform: dht
+    pin: ${dht_pin}
+    temperature:
+      name: "Temperatura"
+      filters:
+        # 1) Suavizar oscilaciones: media móvil de las últimas N lecturas
+        - sliding_window_moving_average:
+            window_size: 5
+            send_every: 5
+        # 2) Optimizar tráfico: publicar solo si cambia >0.5 °C...
+        - delta: 0.5
+        # 3) ...o si han pasado 5 min aunque no cambie (mantiene HA "vivo")
+        - throttle: 300s
+    update_interval: 60s
+```
+
+> **Por qué:** sin filtros, un sensor "ruidoso" llena la base de datos de HA con
+> decenas de lecturas por minuto que apenas cambian. `delta` + `throttle` reducen el
+> tráfico; `sliding_window_moving_average` entrega un valor estable. Esto es lo que el
+> meta-prompt pide en el nivel Experto ("filtrado y validación de mediciones"); aquí
+> está el **cómo**.
+
+### `deep_sleep` — dispositivos a batería
+
+El WiFi consume mucho: un ESP encendido todo el rato con pila dura poco. `deep_sleep`
+apaga casi todo el chip y lo despierta solo para trabajar unos segundos:
+
+```yaml
+deep_sleep:
+  run_duration: 20s        # tiempo despierto para leer y publicar
+  sleep_duration: 30min    # tiempo dormido entre ciclos
+```
+
+> ⚠️ **Incompatible con control en tiempo real:** una placa en `deep_sleep` está
+> dormida casi siempre → no sirve para un pulsador/relé que deba responder al instante
+> (como `pueba`). Es para **sensores periódicos** a batería (buzón, humedad de
+> macetas…). Además, en HA las entidades aparecen "no disponibles" mientras duerme;
+> añadir el componente `deep_sleep` **antes** del alta en HA (o re-añadir el
+> dispositivo) para que no se marquen como no disponibles — ver
+> [FAQ de ESPHome](https://esphome.io/guides/faq/).
+
+### Lambdas — lógica C++ cuando YAML se queda corto
+
+Una `lambda:` es un bloque de C++ embebido. **Úsala solo cuando una función nativa no
+baste** (el meta-prompt y la FAQ lo recuerdan). Patrón clave: se accede al valor de
+otro componente con `id(nombre).state`.
+
+```yaml
+# Sensor virtual: calcula a partir de otros dos sensores (debe terminar en return).
+sensor:
+  - platform: template
+    name: "Sensación térmica"
+    id: sensacion_termica
+    lambda: |-
+      return id(temp_sensor).state + (id(hum_sensor).state / 10.0);
+    update_interval: 60s
+```
+
+> **Dos reglas de la lambda:** (1) en un **sensor** debe terminar con `return valor;`
+> (devuelve el dato a publicar); (2) en una **acción** (dentro de un `on_press`,
+> `on_state`…) ejecuta órdenes y **no** devuelve nada. Es justo lo que hace
+> `modules/touch_switch.yaml` de `pueba`: `id(interruptor_virtual).publish_state(x);`
+> dentro de `on_state` (acción, sin `return`).
+
+---
+
 ## Reorganizar sin romper
 
 Mover archivos entre carpetas, o separar un package en dos, **no cambia ningún `id`
@@ -1075,10 +1223,33 @@ rm -rf /root/esphome-config-pre.tar.gz /tmp/antes.txt /tmp/despues.txt
 
 ---
 
+## Errores frecuentes
+
+Mensajes habituales al validar/compilar y su causa (resumidos de la
+[guía de Tecnoyfoto](https://tecnoyfoto.com/sustituciones-esphome) y la doc oficial;
+reescritos para esta guía):
+
+| Mensaje | Causa / solución |
+|---|---|
+| `Platform not found` | El bloque de plataforma (`esp32:`/`esp8266:`) está dentro de `esphome:` en vez de ser un bloque de **nivel superior**. En este NAS vive en `boards/<placa>.yaml`. |
+| `Substitution not found` | Nombre mal escrito o mayúsculas: las substitutions **distinguen may/min** (`$device_name` ≠ `$Device_Name`). |
+| `Duplicate ID` | Dos packages definen el mismo `id`. Quita uno, o usa `!extend` si lo que quieres es modificarlo. |
+| `Could not find file` | Las rutas de `!include` son **relativas al archivo que incluye**. Revisa la ruta (`common/…`, `boards/…`, `modules/…`). |
+| Error con package remoto | Revisa `url`, ruta en `files`, `ref` y que el repo sea accesible. |
+| Clave API inválida | La `api_encryption_key` debe ser **base64 de 32 bytes** generada por ESPHome (`openssl rand -base64 32`), no una cadena cualquiera. |
+
+> Antes de instalar, **siempre** validar: `docker exec esphome esphome config /config/<dispositivo>.yaml`.
+
+---
+
 ## Mejoras pendientes (detectadas, no aplicadas)
 
 Hallazgos de la revisión de la config actual. **Ninguno está aplicado**: son
 decisiones del usuario. Marcar cada uno como aplicado/descartado cuando se resuelva.
+
+> **Nota (#7/#10):** el patrón para resolverlos ya está documentado arriba en
+> [Pasar secretos a los packages (secret → substitution)](#pasar-secretos-a-los-packages-secret--substitution).
+> Falta aplicarlo (es decisión del usuario, por eso siguen como PENDIENTE).
 
 | # | Hallazgo | Archivo | Impacto en HA | Estado |
 |---|---|---|---|---|
@@ -1120,6 +1291,14 @@ decisiones del usuario. Marcar cada uno como aplicado/descartado cuando se resue
   plantillas (`vars:`/`defaults:`), remote/git packages, `!extend`/`!remove`.
 - [FAQ](https://esphome.io/guides/faq/) — fiabilidad WiFi, brownout/`output_power`,
   naming, strapping pins, mDNS/subredes, restaurar estado/NVS.
+
+Guías prácticas (derivadas; verificar siempre contra las oficiales):
+
+- [Tecnoyfoto — Sustituciones y packages](https://tecnoyfoto.com/sustituciones-esphome)
+  — patrón secret→substitution, `min_version`, git packages con `ref` fijo, errores
+  frecuentes.
+- [Ayuda Domótica — Sensores DIY](https://ayudadomotica.com/sistemas-domoticos/esphome-guia-sensores-diy-home-assistant/)
+  — filtros de sensor, `deep_sleep`, lambdas `id().state`.
 
 > Contenido de estas fuentes reescrito y resumido para cumplir las restricciones de
 > licencia; consultar los enlaces para el detalle completo.

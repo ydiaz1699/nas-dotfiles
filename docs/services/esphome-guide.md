@@ -606,6 +606,9 @@ rm -rf $dkco/esphome/config/.esphome/build/
   [`esphome-device-config.md`](esphome-device-config.md#mejoras-pendientes-detectadas-no-aplicadas)).
 - Revisar siempre la salida resuelta:
   `docker exec esphome esphome config /config/pueba.yaml`.
+- Otros errores de validación comunes (`Platform not found`, `Substitution not found`,
+  `Duplicate ID`, `Could not find file`, clave API inválida) están tabulados en
+  [`esphome-device-config.md`](esphome-device-config.md#errores-frecuentes).
 
 ### El pulsador / switch no actúa sobre el Sonoff
 

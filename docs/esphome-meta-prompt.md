@@ -397,6 +397,27 @@ sección "substitutions — más allá de reemplazar texto".
 - **Switch template que refleja un estado externo** lleva `restore_mode: DISABLED`
   explícito (según versión, puede restaurar y lanzar su acción al arrancar).
 - Cada componente con `!extend`/`!remove`/lambda referenciado lleva `id:` explícito.
+- **Secretos a packages:** un `!secret` se pasa a un package **vía substitution**
+  (`api_encryption_key: !secret ...` en el device → `key: ${api_encryption_key}` en el
+  package). Es lo que hace reutilizable `common/base.yaml` y lo que exigen los git
+  packages. Clave API y OTA **únicas por dispositivo** (R9).
+- **`min_version:` en `esphome:`** para fallar pronto si se compila con una versión
+  demasiado antigua.
+
+### 5.7 Sensores físicos: filtros, energía y lambdas (niveles Experto/Extremo)
+
+Cuando el proyecto lleve sensores físicos (no es el caso de `pueba`), aplica (detalle
+y ejemplos en [`services/esphome-device-config.md`](services/esphome-device-config.md)):
+
+- **Filtros** antes de publicar a HA: `sliding_window_moving_average` (suaviza
+  ruido), `delta` + `throttle` (optimizan tráfico — publica solo si cambia X o pasan N
+  segundos). Es el "filtrado y validación de mediciones" del nivel Experto.
+- **`deep_sleep`** (`run_duration`/`sleep_duration`) para sensores a **batería**. ⚠️
+  Incompatible con control en tiempo real (pulsador/relé); añadirlo **antes** del alta
+  en HA o las entidades aparecen "no disponibles".
+- **Lambdas** solo cuando una función nativa no basta (R5): acceso a otro componente
+  con `id(nombre).state`; en un **sensor** termina con `return valor;`, en una
+  **acción** no devuelve nada.
 
 ---
 
@@ -679,6 +700,14 @@ svc logs esphome                                                  # logs del ser
   plantillas (`vars:`/`defaults:`), remote/git packages, `!extend`/`!remove`.
 - [FAQ](https://esphome.io/guides/faq/) — fiabilidad WiFi, brownout/`output_power`,
   naming, strapping pins, mDNS/subredes, restaurar estado/NVS.
+
+Guías prácticas (derivadas; verificar siempre contra las oficiales):
+
+- [Tecnoyfoto — Sustituciones y packages](https://tecnoyfoto.com/sustituciones-esphome)
+  — patrón secret→substitution, `min_version`, git packages con `ref` fijo, tabla de
+  errores frecuentes.
+- [Ayuda Domótica — Sensores DIY](https://ayudadomotica.com/sistemas-domoticos/esphome-guia-sensores-diy-home-assistant/)
+  — filtros de sensor (moving average/delta/throttle), `deep_sleep`, lambdas `id().state`.
 
 > Contenido de estas fuentes reescrito y resumido para cumplir las restricciones de
 > licencia; consultar los enlaces para el detalle completo.
