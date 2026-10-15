@@ -4,7 +4,9 @@
 > **Imagen:** ghcr.io/esphome/esphome:latest  
 > **Red:** network_mode: host  
 > **Instalado por:** DebMenux (`scripts/services/esphome.sh`)  
-> **Tipo:** Docker container (privileged)
+> **Tipo:** Docker container (privileged)  
+> **Dashboard:** ESPHome **Device Builder** (desde ESPHome 2026.6.0; reemplaza al
+> dashboard clásico). Ver [Dashboard web](#dashboard-web-device-builder).
 
 > **¿Organizar la configuración de los dispositivos?** Esta guía cubre la
 > instalación y operación del **servicio** ESPHome. Para organizar los YAML de los
@@ -16,6 +18,10 @@
 > ya resueltos y el pendiente del estado inicial del indicador están en
 > [`esphome-pueba-handoff.md`](esphome-pueba-handoff.md) (handoff autocontenido para
 > retomar en un chat nuevo sin contexto).
+>
+> **Pendientes detectados en revisión:** ver
+> [Mejoras pendientes](#mejoras-pendientes-detectadas-no-aplicadas) (no aplicadas, a
+> decisión del usuario).
 
 ---
 
@@ -24,7 +30,7 @@
 1. [Qué es ESPHome](#qué-es-esphome)
 2. [Instalación](#instalación)
 3. [Configuración](#configuración)
-4. [Dashboard web](#dashboard-web)
+4. [Dashboard web (Device Builder)](#dashboard-web-device-builder)
 5. [Crear un nuevo dispositivo](#crear-un-nuevo-dispositivo)
 6. [Flashear dispositivos](#flashear-dispositivos)
 7. [Integración con EMQX (MQTT)](#integración-con-emqx-mqtt)
@@ -32,6 +38,8 @@
 9. [Integración con Homepage](#integración-con-homepage)
 10. [Backup y recuperación](#backup-y-recuperación)
 11. [Troubleshooting](#troubleshooting)
+12. [Notas de operación](#notas-de-operación)
+13. [Mejoras pendientes (detectadas, no aplicadas)](#mejoras-pendientes-detectadas-no-aplicadas)
 
 ---
 
@@ -42,7 +50,7 @@ archivos de configuración YAML. Permite:
 
 - Definir sensores, actuadores, y comunicación en YAML (sin programar en C/Arduino)
 - Compilar y flashear firmware OTA (Over-The-Air) o por USB serial
-- Dashboard web para ver estado de dispositivos y re-flashear
+- Dashboard web (Device Builder) para ver estado de dispositivos y re-flashear
 - Auto-descubrimiento en Home Assistant (API nativa o MQTT)
 
 **Casos de uso en el NAS:**
@@ -82,7 +90,15 @@ dk esphome && svc up esphome
 # Dashboard accesible
 curl -s http://192.168.1.200:6052 | head -5
 # Debe devolver HTML del dashboard
+
+# Versión de ESPHome realmente en uso (anótala: es la "versión verificada")
+docker exec esphome esphome version
 ```
+
+> Con `image: …:latest`, la versión cambia en cada `svc update esphome`. Compara la
+> salida de `esphome version` con la versión con la que se verificó el patrón de
+> `packages` (2026.6.3) antes de flashear tras una actualización. Ver
+> [Notas de operación](#notas-de-operación).
 
 ---
 
@@ -94,15 +110,25 @@ curl -s http://192.168.1.200:6052 | head -5
 /docker/esphome/
 ├── compose.yml
 └── config/                     ← montado en /config del contenedor
-    ├── .esphome/               ← cache de compilación (auto-generado)
-    ├── esp32_sala.yaml         ← configuración de dispositivo
-    ├── esp32_cocina.yaml       ← otro dispositivo
-    ├── common/                 ← includes compartidos (opcional)
+    ├── .esphome/               ← cache de compilación (auto-generado; fuera de git)
+    ├── pueba.yaml              ← dispositivo real (solo substitutions + packages)
+    ├── common/                 ← packages compartidos (ver esphome-device-config.md)
+    │   ├── base.yaml
     │   ├── wifi.yaml
-    │   ├── mqtt.yaml
-    │   └── base.yaml
-    └── secrets.yaml            ← passwords WiFi, MQTT, API keys
+    │   └── diagnostics.yaml
+    ├── boards/                 ← hardware de la placa
+    │   └── esp32.yaml
+    ├── modules/                ← bloques por responsabilidad
+    │   ├── entradas.yaml
+    │   └── touch_switch.yaml
+    └── secrets.yaml            ← passwords WiFi, API, OTA (nunca a git)
 ```
+
+> Los nombres `esp32_sala` / `esp32_cocina` que aparecen más abajo son **ejemplos
+> ilustrativos** (formato clásico de un solo YAML). El dispositivo real hoy es
+> `pueba`, con `packages` repartidos en `common/`, `boards/` y `modules/` (ver
+> [`esphome-device-config.md`](esphome-device-config.md)). Si algún día se usa MQTT,
+> se puede añadir `common/mqtt.yaml` (no existe todavía).
 
 ### compose.yml explicado
 
@@ -126,35 +152,58 @@ services:
 - ESPHome necesita acceso directo a la red LAN para descubrir dispositivos via mDNS
 - Sin host mode, no puede detectar ESPs por nombre `.local`
 - El puerto 6052 se expone directamente (no configurable via variable)
+- Ojo: el mDNS **no cruza entre subredes** (ver doble NAT en
+  [`esphome-device-config.md`](esphome-device-config.md#red-ip-fija-y-en-qué-subred-vive-la-placa)).
 
 **¿Por qué `privileged: true`?**
 - Acceso a `/dev/ttyUSB0` para programación serial (primer flash)
 - Sin esto, el flash USB falla con "Permission denied"
 
+**¿Y `command: dashboard /config`?**
+- Desde ESPHome 2026.6.0 la imagen oficial incluye el Device Builder y lo arranca
+  como dashboard con ese mismo comando (es el comando por defecto de la imagen), así
+  que el compose **sigue siendo válido sin cambios**.
+
 ### secrets.yaml
 
 ```yaml
-# $dkco/esphome/config/secrets.yaml
-wifi_ssid: "MI_RED_WIFI"
+# $dkco/esphome/config/secrets.yaml   — NUNCA a git
+wifi_ssid: "MI_RED_WIFI"                    # red del NAS (Huawei B622, 192.168.1.x)
 wifi_password: "mi_password_wifi"
-mqtt_user: "esphome"
-mqtt_password: "password_mqtt_en_emqx"
-api_encryption_key: "generada_por_esphome"
-ota_password: "password_para_ota"
+wifi_fallback: "password_ap_recuperacion"   # mínimo 8 caracteres
+api_encryption_key: "generada_por_esphome"  # base64 de 32 bytes: openssl rand -base64 32
+esp32_pruebas_ota_password: "password_para_ota"
+
+# Solo si usas MQTT (ver sección EMQX):
+# mqtt_user: "esphome"
+# mqtt_password: "password_mqtt_en_emqx"
 ```
 
-> **⚠️ NUNCA commitear secrets.yaml a git.** Está en `.gitignore`.
+> **⚠️ NUNCA commitear secrets.yaml a git.** Debe estar en `.gitignore`, junto con
+> `.esphome/`. Los nombres de los secrets deben coincidir con los que usan los YAML
+> (hoy `esp32_pruebas_ota_password` en `common/base.yaml`).
 
 ---
 
-## Dashboard web
+## Dashboard web (Device Builder)
 
 ### Acceso
 
 - URL: `http://192.168.1.200:6052`
-- Sin autenticación (LAN interna)
+- Sin autenticación por defecto (LAN interna)
+
+> **Autenticación (opcional, no verificado en este NAS):** según la documentación
+> del paquete `esphome-device-builder`, el Device Builder usa variables de entorno
+> con prefijo `ESPHOME_` (`ESPHOME_USERNAME` / `ESPHOME_PASSWORD`), distintas de las
+> variables `USERNAME`/`PASSWORD` del dashboard antiguo. Si algún día se expone fuera
+> de la LAN, comprobar el nombre exacto en su documentación antes de configurarlo.
 
 ### Funcionalidades
+
+La tabla es la del dashboard clásico; el Device Builder ofrece las mismas acciones
+con otra interfaz (barra lateral de dispositivos, editor YAML con CodeMirror y
+constructor visual de componentes). **Los nombres exactos de los botones pueden
+variar** respecto a la tabla — no se han re-verificado en el Device Builder.
 
 | Acción | Descripción |
 |--------|-------------|
@@ -173,6 +222,10 @@ ota_password: "password_para_ota"
 | 🔴 Rojo | Offline o sin configurar |
 | 🟡 Amarillo | Compilando / Actualizando |
 
+> El Device Builder revalida la configuración en cada guardado. Aun así, "Valid" en
+> la interfaz **no sustituye** a revisar la salida resuelta con `esphome config`
+> cuando se tocan varios `packages` (listas concatenadas, entidades duplicadas).
+
 ---
 
 ## Crear un nuevo dispositivo
@@ -184,10 +237,10 @@ ota_password: "password_para_ota"
 3. Configurar WiFi (o apuntar a secrets.yaml)
 4. El wizard crea un YAML básico en `config/esp32_sala.yaml`
 
-### Método 2: YAML manual (recomendado)
+### Método 2: YAML manual de un solo archivo
 
 ```yaml
-# $dkco/esphome/config/esp32_sala.yaml
+# $dkco/esphome/config/esp32_sala.yaml   (ejemplo ilustrativo)
 esphome:
   name: esp32-sala
   friendly_name: "ESP32 Sala"
@@ -213,13 +266,14 @@ api:
 # OTA para actualizaciones inalámbricas
 ota:
   - platform: esphome
-    password: !secret ota_password
+    password: !secret esp32_pruebas_ota_password
 
 # Logger (ver logs via WiFi)
 logger:
   level: INFO
 
-# MQTT (alternativa a API directa)
+# MQTT (alternativa a API directa; no hace falta usar ambas — ver tabla
+# "Cuándo usar cada método")
 mqtt:
   broker: 192.168.1.200
   port: 1883
@@ -247,6 +301,17 @@ switch:
     id: luz_sala
 ```
 
+> El dispositivo real `pueba` usa `variant: esp32` + `framework: esp-idf` (sin
+> `board:`), validado en ESPHome 2026.6.3. Ajusta `board`/`variant` al hardware real.
+
+### Método 3: modular con `packages` (el que usa `pueba`)
+
+Para más de un dispositivo, o para mantener WiFi/API/OTA/diagnósticos en un solo
+sitio, el YAML del dispositivo solo declara `substitutions` + `packages`. Todo el
+detalle (estructura `common/`/`boards/`/`modules/`, regla de fusión, `!extend`/`!remove`,
+red, alta en HA) está en
+[`esphome-device-config.md`](esphome-device-config.md).
+
 ---
 
 ## Flashear dispositivos
@@ -255,7 +320,9 @@ switch:
 
 1. Conectar ESP32 al NAS via cable USB
 2. Verificar que aparece: `ls /dev/ttyUSB*`
-3. Dashboard → dispositivo → **INSTALL** → **Plug into this computer**
+3. Dashboard → dispositivo → **INSTALL** → opción de conectar el dispositivo por
+   USB/serial al equipo donde corre ESPHome (en el dashboard clásico:
+   **Plug into this computer**)
 4. Seleccionar puerto: `/dev/ttyUSB0`
 5. Esperar compilación + upload (~2 min primera vez)
 
@@ -265,21 +332,35 @@ switch:
 2. ESPHome busca el dispositivo por mDNS (`esp32-sala.local`)
 3. Sube firmware por WiFi (~30 seg)
 
+> Si el mDNS no resuelve (subredes distintas, doble NAT), el OTA por nombre falla:
+> usar la IP fija del dispositivo (`--device 192.168.1.132` en CLI).
+
 ### Flash desde CLI
 
-```bash
-# Compilar sin flashear
-docker exec esphome esphome compile /config/esp32_sala.yaml
+> `svc exec esphome esphome <subcomando> …` falla porque `svc exec` reinterpreta los
+> subcomandos (probadas y fallidas tres variantes; ver
+> [`esphome-device-config.md`](esphome-device-config.md#validar-antes-de-flashear)).
+> Usar `docker exec` directo:
 
-# Flash OTA
-docker exec esphome esphome upload /config/esp32_sala.yaml --device esp32-sala.local
+```bash
+# Validar y ver la configuración resuelta (sin compilar)
+docker exec esphome esphome config /config/pueba.yaml
+
+# Compilar sin flashear
+docker exec esphome esphome compile /config/pueba.yaml
+
+# Flash OTA (preferible por IP fija)
+docker exec esphome esphome upload /config/pueba.yaml --device 192.168.1.132
 
 # Flash serial
-docker exec esphome esphome upload /config/esp32_sala.yaml --device /dev/ttyUSB0
+docker exec esphome esphome upload /config/pueba.yaml --device /dev/ttyUSB0
 
-# Ver logs
-docker exec esphome esphome logs /config/esp32_sala.yaml
+# Ver logs del dispositivo (no confundir con "svc logs esphome", que son los del servicio)
+docker exec -it esphome esphome logs /config/pueba.yaml
 ```
+
+> Los logs en vivo con `esphome logs` necesitan terminal interactiva: usar
+> `docker exec -it`.
 
 ---
 
@@ -328,7 +409,15 @@ api:
     key: !secret api_encryption_key
 ```
 
-HA descubre el dispositivo automáticamente via mDNS y se conecta por API nativa.
+HA puede descubrir el dispositivo automáticamente via mDNS **si están en la misma
+subred**. Con el doble NAT del NAS (placa en `192.168.1.x`, red principal en
+`192.168.0.x`) el mDNS no cruza: hacer el **alta manual por IP** (host = IP de la
+placa, puerto `6053`, clave de cifrado). Pasos completos en
+[`esphome-device-config.md`](esphome-device-config.md#alta-en-home-assistant).
+
+> Si el dispositivo ejecuta acciones de HA (`homeassistant.service` /
+> `homeassistant.action`, como el pulsador de `pueba`), hay que **permitirlo** en las
+> opciones de la integración ESPHome para esa placa; si no, HA bloquea la acción.
 
 ### Método 2: MQTT (recomendado para muchos dispositivos)
 
@@ -345,6 +434,9 @@ Requiere tener la integración MQTT configurada en HA apuntando a EMQX.
 | Latencia mínima | ✅ | ⚪ |
 | Funciona si HA reinicia | ❌ (reconecta) | ✅ (EMQX retiene) |
 | Funciona sin HA | ❌ | ✅ |
+
+> Con API directa, las entradas físicas que controlan algo **a través de HA** (el
+> pulsador de `pueba` que conmuta el Sonoff) **no funcionan si HA está caído**.
 
 ---
 
@@ -375,7 +467,9 @@ El widget muestra: dispositivos online / offline / total.
 |------|-----------|:-------:|
 | `$dkco/esphome/config/*.yaml` | Configuraciones de dispositivos | ✅ |
 | `$dkco/esphome/config/secrets.yaml` | Passwords WiFi/MQTT/API | ✅ |
-| `$dkco/esphome/config/common/` | Includes compartidos | ✅ |
+| `$dkco/esphome/config/common/` | Packages compartidos | ✅ |
+| `$dkco/esphome/config/boards/` | Hardware de las placas | ✅ |
+| `$dkco/esphome/config/modules/` | Bloques por responsabilidad | ✅ |
 
 ### Qué NO respaldar
 
@@ -385,8 +479,25 @@ El widget muestra: dispositivos online / offline / total.
 
 ```bash
 svc backup esphome
-# Nota: excluir .esphome/ del backup (es cache pesado)
 ```
+
+> ⚠️ **Verificar el contenido del backup.** `svc backup` respalda **volúmenes
+> nombrados**, y `./config` es un **bind mount**: puede que el `.tar.gz` no incluya
+> los YAML ni `secrets.yaml`. Comprobarlo listando el archivo generado en
+> `$dkco/backups/` (`tar tzf <archivo> | head`). Si no están, usar el respaldo
+> manual de abajo.
+
+Respaldo manual explícito (sin la cache):
+
+```bash
+mkdir -p $dkco/backups
+tar czf $dkco/backups/esphome-config-$(date +%F).tar.gz \
+    --exclude=.esphome -C $dkco/esphome config
+tar tzf $dkco/backups/esphome-config-$(date +%F).tar.gz | head
+```
+
+> El `secrets.yaml` contiene credenciales: el `.tar.gz` debe guardarse con los mismos
+> cuidados que el propio secrets (no subirlo a git ni a sitios compartidos).
 
 ### Recuperación
 
@@ -395,7 +506,9 @@ svc backup esphome
 mkdir -p $dkco/esphome/config
 
 # 2. Restaurar YAMLs
-svc restore esphome
+svc restore esphome    # ← comando no documentado en "svc --help": verificar que existe
+# Alternativa manual (con el backup manual de arriba):
+# tar xzf $dkco/backups/esphome-config-<fecha>.tar.gz -C $dkco/esphome
 
 # 3. Levantar
 svc up esphome
@@ -411,14 +524,26 @@ svc up esphome
 
 ```bash
 # Verificar que el contenedor corre
-docker ps | grep esphome
+svc ps esphome
 
-# Ver logs
+# Ver logs del servicio
 svc logs esphome
 
 # Error común: puerto 6052 ya en uso
 ss -tlnp | grep 6052
 # Si otro proceso lo usa: matar o cambiar el comando del compose
+```
+
+### El contenedor no arranca (y no hay `/dev/ttyUSB0` conectado)
+
+El compose mapea `/dev/ttyUSB0`. Si el adaptador USB no está enchufado, Docker puede
+negarse a crear el contenedor (con `restart: on-failure:5` reintenta y se rinde).
+
+```bash
+svc logs esphome          # buscar error de dispositivo no encontrado
+ls -la /dev/ttyUSB*       # ¿existe el adaptador?
+# Opción: conectar el adaptador y svc up esphome; o quitar la línea "devices:"
+# del compose si no vas a flashear por USB.
 ```
 
 ### No detecta dispositivos (mDNS)
@@ -431,7 +556,7 @@ docker inspect esphome --format='{{.HostConfig.NetworkMode}}'
 # Ping al dispositivo
 ping esp32-sala.local
 
-# Si no resuelve mDNS, usar IP directa en el dashboard
+# Si no resuelve mDNS (subredes distintas / doble NAT), usar IP directa
 # y configurar IP estática en el ESP
 ```
 
@@ -467,13 +592,32 @@ rm -rf $dkco/esphome/config/.esphome/build/
 
 1. Verificar que el ESP está online (ping a su IP)
 2. Verificar que el password OTA coincide con `secrets.yaml`
+   (`esp32_pruebas_ota_password` en `pueba`)
 3. Verificar que el ESP y el NAS están en la misma subnet
-4. Si el ESP cambió de IP: usar IP estática (manual_ip en el YAML)
+4. Si el ESP cambió de IP: usar IP estática (manual_ip en el YAML) y flashear con
+   `--device <IP>` en lugar del nombre `.local`
+
+### "Configuration is valid!" pero algo no cuadra
+
+- Entidades duplicadas en HA: comprobar que cada componente (p. ej. botones
+  `restart`/`safe_mode`) está en **un solo** package.
+- Nombres tipo "Prueba Prueba …" en HA: el nombre de entidad repite el
+  `friendly_name` (ver Mejoras pendientes en
+  [`esphome-device-config.md`](esphome-device-config.md#mejoras-pendientes-detectadas-no-aplicadas)).
+- Revisar siempre la salida resuelta:
+  `docker exec esphome esphome config /config/pueba.yaml`.
+
+### El pulsador / switch no actúa sobre el Sonoff
+
+1. En HA, opciones de la integración ESPHome de la placa: permitir que el
+   dispositivo realice acciones de HA.
+2. Comprobar que la API está conectada (log: "Cliente conectado a la API").
+3. Comprobar que `sonoff_entity` coincide con el `entity_id` real del Sonoff en HA.
 
 ### Dispositivo se desconecta constantemente
 
 ```yaml
-# Agregar al YAML del dispositivo:
+# Agregar al YAML del dispositivo (en pueba: en common/wifi.yaml, mapa único wifi):
 wifi:
   # ...
   power_save_mode: none    # Desactivar power save (mejora estabilidad)
@@ -486,6 +630,10 @@ mqtt:
   reboot_timeout: 5min    # Reiniciar si pierde conexión >5 min
 ```
 
+> Si en los logs aparece *"Brownout detector was triggered"*, no es un problema de
+> WiFi sino de **tensión**: ver `wifi: output_power: 13dB` y demás medidas en
+> [`esphome-device-config.md`](esphome-device-config.md#buenas-prácticas-de-fiabilidad-y-hardware-de-la-faq-oficial).
+
 ---
 
 ## Notas de operación
@@ -496,7 +644,43 @@ mqtt:
   No aplicar restricciones de seguridad (cap_drop, no-new-privileges)
 - **Espacio en disco:** El cache de compilación (`.esphome/`) puede crecer a varios GB
   con muchos dispositivos. Limpiar periódicamente si el disco se llena
-- **Actualizaciones de imagen:** ESPHome se actualiza frecuentemente. Después de
-  `svc update esphome`, recompilar los dispositivos para usar las nuevas features
+- **Actualizaciones de imagen:** ESPHome se actualiza frecuentemente y el compose usa
+  `:latest`. Antes de `svc update esphome`, anota la versión actual
+  (`esphome version`); después, **valida** (`esphome config`) y recompila los
+  dispositivos antes de flashear. Si algo falla tras actualizar, fijar la imagen a la
+  última versión verificada (2026.6.3) en el compose.
+- **Cambios entre versiones:** el changelog de cada versión avisa de deprecaciones
+  (p. ej. `homeassistant.service` → `homeassistant.action`, y el dashboard clásico →
+  Device Builder en 2026.6.0). Revisarlo al actualizar.
 - **USB hotplug:** Si conectas un ESP mientras el contenedor corre, puede no detectarlo.
   Reiniciar el contenedor: `svc restart esphome`
+
+---
+
+## Mejoras pendientes (detectadas, no aplicadas)
+
+Hallazgos de la revisión. **Ninguno está aplicado en el compose ni en el sistema**:
+son decisiones del usuario. Marcar cada uno como aplicado/descartado al resolverlo.
+
+| # | Hallazgo | Dónde | Estado |
+|---|---|---|---|
+| 1 | `image: …:latest` sin versión fija; el patrón se verificó con 2026.6.3 | `compose.yml` | PENDIENTE (fijar `…:2026.6.3` u otra versión verificada tras `esphome version`) |
+| 2 | `svc backup` puede no incluir `./config` (bind mount) | procedimiento de backup | PENDIENTE (comprobar con `tar tzf`; si falta, usar el respaldo manual) |
+| 3 | `svc restore esphome` no figura en la ayuda documentada de `svc` | recuperación | PENDIENTE (verificar si existe) |
+| 4 | Tabla de acciones del dashboard es la del dashboard clásico; no re-verificada en el Device Builder | sección Dashboard | PENDIENTE |
+| 5 | Dashboard sin autenticación; el Device Builder usa variables `ESPHOME_USERNAME`/`ESPHOME_PASSWORD` según su documentación | `compose.yml` | PENDIENTE (solo si se expone fuera de la LAN) |
+| 6 | El mapeo de `/dev/ttyUSB0` puede impedir arrancar el contenedor sin adaptador conectado | `compose.yml` | PENDIENTE (verificar comportamiento real) |
+| 7 | Añadir `.esphome/` además de `secrets.yaml` a `.gitignore` | repo de `config/` | PENDIENTE |
+| 8 | `esphome logs` interactivo vía `svc exec`: sin verificar (usar `docker exec -it`) | CLI | PENDIENTE |
+
+---
+
+## Ver también
+
+- [`esphome-device-config.md`](esphome-device-config.md) — organización modular de los
+  YAML de dispositivos (`packages`, `common/`/`boards/`/`modules/`, red, alta en HA,
+  mejoras pendientes).
+- [`../esphome-meta-prompt.md`](../esphome-meta-prompt.md) — meta-prompt para
+  **crear o mantener/mejorar** configuraciones ESPHome con cualquier LLM.
+- [`esphome-pueba-handoff.md`](esphome-pueba-handoff.md) — estado real del proyecto
+  `pueba` + Sonoff.
