@@ -419,6 +419,39 @@ y ejemplos en [`services/esphome-device-config.md`](services/esphome-device-conf
   con `id(nombre).state`; en un **sensor** termina con `return valor;`, en una
   **acción** no devuelve nada.
 
+### 5.8 Biblioteca de plantillas `esphome-common` (fuente única + mejora continua)
+
+Las plantillas base de este ecosistema **no se reinventan en cada proyecto**: viven en
+el repo **[`ydiaz1699/esphome-common`](https://github.com/ydiaz1699/esphome-common)**,
+que es la **fuente de verdad**. En el NAS hay una copia local en
+`$dkco/esphome/config/` (clon del repo). Un dispositivo las consume por **dos caminos**
+equivalentes: **local** (`!include common/base.yaml`) o **GitHub** (remote packages
+`github://ydiaz1699/esphome-common/…@vX.Y.Z`).
+
+> **El catálogo de plantillas (qué existe, qué hace cada una, substitutions
+> requeridas) vive en el README de `esphome-common`** — fuente única. Este
+> meta-prompt **apunta** a él, no lo copia (regla *enlazar-no-duplicar*). Consúltalo
+> antes de crear nada: <https://github.com/ydiaz1699/esphome-common>.
+
+**Flujo OBLIGATORIO al crear/leer/mejorar una plantilla** (p. ej. el usuario comparte
+un YAML o pide "haz una plantilla de sensor DHT"):
+
+1. **Mirar antes de crear:** revisar el catálogo del README de `esphome-common`. Si ya
+   existe algo equivalente → **mejorarlo**, no duplicar (R1, R4).
+2. **Fusión no-destructiva** (R1): comparar equivalentes, quedarse con la mejor versión
+   o fusionar lo mejor de ambas; nada se borra en silencio.
+3. **Parametrizar** todo valor configurable como `substitution`; **nunca `!secret`** en
+   la biblioteca (regla de remote packages) — el device inyecta los secretos (5.6).
+4. **Clasificar:** mapa único → `common/` o `boards/`; bloque por responsabilidad →
+   `modules/`; listas con `id` únicos.
+5. **Actualizar el catálogo** (tabla del README) y **versionar** con un tag nuevo
+   (`v1.1.0`…). Las placas suben su `ref` cuando quieran adoptarlo.
+6. **Validar** con `esphome config` antes de publicar (R8).
+
+> **Dónde ejecuta cada paso:** un LLM en Kiro Web/CLI hace 1–6 y pushea a
+> `esphome-common` (es GitHub). La validación en hardware y subir el `ref` en el NAS
+> las hace el usuario por SSH (la LAN del NAS no es accesible desde fuera).
+
 ---
 
 ## 6. SEGURIDAD INFORMÁTICA

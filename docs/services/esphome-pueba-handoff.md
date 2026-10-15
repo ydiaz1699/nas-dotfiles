@@ -266,16 +266,28 @@ servicio Docker `esphome` (puerto 6052, `network_mode: host`, privileged, acceso
 
 ### Qué cambia y por qué
 
-Hasta ahora `pueba.yaml` incluía su `common/`/`boards/`/`modules/` como archivos
-**locales** (`!include common/base.yaml`). Se migra a cargarlos desde el repo
-**`esphome-common`** vía git/remote packages (`github://…`), para tener las plantillas
-base **versionadas y reutilizables** entre placas, editando en un solo sitio.
+Las plantillas base (`common/`/`boards/`/`modules/`) pasan a vivir en la **biblioteca
+[`ydiaz1699/esphome-common`](https://github.com/ydiaz1699/esphome-common)** (fuente de
+verdad), con una **copia local** en `$dkco/esphome/config/` (clon del repo). Objetivo:
+no repetir plantillas, mejorarlas en un solo sitio y reutilizarlas entre placas. El
+catálogo y el flujo de mejora continua están en el README de ese repo.
+
+`pueba` puede consumir las plantillas por **dos caminos equivalentes** (mismo
+contenido):
+
+- **Camino A — Local** (`!include common/base.yaml`): usa la copia clonada en el NAS.
+  Edición inmediata, sin red. Es como estaba antes de la migración.
+- **Camino B — GitHub** (remote packages `github://…esphome-common@v1.0.0`):
+  versionado por tag, reutilizable. **Es el camino al que se migra** aquí.
 
 **Regla crítica (oficial):** un remote package **NO puede usar `!secret`**. Por eso en
 `esphome-common` los secretos son `substitutions` (`${wifi_ssid}`,
 `${api_encryption_key}`…) y `pueba.yaml` los inyecta con el patrón
 **secret → substitution** (el `!secret` se asigna a una substitution). Ver
 [`esphome-device-config.md` §Pasar secretos a los packages](esphome-device-config.md#pasar-secretos-a-los-packages-secret--substitution).
+**Nota:** como `base.yaml`/`wifi.yaml` ahora usan `${...}` en vez de `!secret`, el
+device **debe** definir esas substitutions aunque use el Camino A local (la biblioteca
+es la misma para los dos caminos).
 
 ### `pueba.yaml` nuevo (reemplaza al actual en `$dkco/esphome/config/pueba.yaml`)
 
@@ -333,8 +345,32 @@ packages:
 > `secrets.yaml` **no cambia** y sigue viviendo solo en el NAS (sus claves:
 > `wifi_ssid`, `wifi_password`, `wifi_fallback`, `api_encryption_key`,
 > `esp32_pruebas_ota_password`). Las carpetas locales `common/`/`boards/`/`modules/`
-> del NAS pueden **quedarse** (dejan de usarse) o moverse a un respaldo; no borrarlas
-> hasta validar que el remoto compila.
+> del NAS son el **clon** de `esphome-common` (Camino A); no borrarlas.
+
+#### Alternativa — Camino A (local) con la misma biblioteca
+
+Si prefieres consumir en local (edición inmediata, sin depender de la descarga de
+GitHub), el `substitutions` es **idéntico** al de arriba (incluidas las claves
+`secret → substitution`) y solo cambia el bloque `packages`:
+
+```yaml
+packages:
+  base: !include common/base.yaml
+  placa: !include boards/esp32.yaml
+  wifi: !include common/wifi.yaml
+  diagnostics: !include common/diagnostics.yaml
+  entradas: !include modules/entradas.yaml
+  touch_switch: !include modules/touch_switch.yaml
+```
+
+> Para que el Camino A use **la misma** biblioteca, el `common/` local debe ser el
+> **clon** de `esphome-common` (`git clone`/`pull` en `$dkco/esphome/config/`). Así
+> local y GitHub no divergen: la fuente de verdad es el repo, y `git pull` trae las
+> mejoras. Mantener la copia local al día:
+>
+> ```bash
+> cd $dkco/esphome/config && git pull   # trae la última versión de las plantillas
+> ```
 
 ### Pasos en el NAS (por SSH) — orden real
 

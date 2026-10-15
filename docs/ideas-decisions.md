@@ -1465,3 +1465,18 @@ cambia el firmware sin avisar". (4) **PENDIENTE de verificar en el NAS** (no se 
 desde Kiro Web por el doble NAT): que ESPHome descargue el package de GitHub al
 compilar y que la config resuelta sea equivalente a la local. Repo: `esphome-common`;
 pasos en `docs/services/esphome-pueba-handoff.md` §9.
+
+**Ampliación (modelo final de biblioteca).** `esphome-common` no es "el common de
+pueba" sino una **biblioteca de plantillas** con **doble camino de consumo** y
+**fuente de verdad única = el repo GitHub**:
+- La copia local del NAS (`$dkco/esphome/config/`) es un **clon** del repo; se
+  sincroniza con `git pull`/`push`. Así "local" y "GitHub" nunca divergen.
+- Un device consume por **Camino A** (`!include common/base.yaml`, edición inmediata)
+  o **Camino B** (`github://…esphome-common@vX.Y.Z`, versionado). Mismo contenido.
+- **Flujo de mejora continua** (para el LLM): antes de crear una plantilla, mirar el
+  catálogo; si existe algo equivalente, mejorarlo (fusión no-destructiva), no
+  duplicar; parametrizar sin `!secret`; actualizar el catálogo; validar; **taguear**.
+- **Catálogo = README de `esphome-common`** (fuente única). El meta-prompt
+  (`docs/esphome-meta-prompt.md` §5.8) **apunta** a él, no lo copia (enlazar-no-
+  duplicar). Decisión de diseño: el catálogo vive junto a las plantillas para no
+  desincronizarse, y el meta-prompt portable solo referencia la URL.
