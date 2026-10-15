@@ -1387,11 +1387,17 @@ Sonoff vía `homeassistant.service`; `binary_sensor platform: homeassistant`
 ("Indicador Sonoff") refleja los cambios y, vía `on_state`+`publish_state`, actualiza
 el switch sin rebote (`optimistic:false`). Fuente de verdad = Sonoff.
 
-**Problema ABIERTO (único).** El indicador NO toma el estado **inicial** al arrancar
-el ESP: `platform: homeassistant` se suscribe a cambios pero HA no reenvía el estado
-actual al conectar (bug de plataforma, issue home-assistant/core #184371). Solo
-sincroniza tras el primer cambio. Impacto bajo (el ESP no reinicia a diario; el estado
-real está en la entidad del Sonoff).
+**Decisión del estado inicial — Camino B (CERRADO 2026-10-15).** El indicador NO toma
+el estado **inicial** al arrancar el ESP: `platform: homeassistant` se suscribe a
+cambios pero HA no reenvía el estado actual al conectar (bug de plataforma, issue
+home-assistant/core #184371). Solo sincroniza tras el primer cambio. **El usuario
+eligió el Camino B: aceptar el límite** — no se añade automatización en HA para
+empujar el estado inicial (coherente con "ESPHome inteligente", cero mantenimiento).
+Impacto bajo y asumido: el ESP no reinicia a diario; tras el primer cambio todo
+sincroniza; y el estado "de verdad" siempre se consulta en la entidad nativa del
+Sonoff en HA (el indicador del ESP es redundante con ella). Queda documentado como
+límite conocido, NO como pendiente. El Camino A (que HA empuje el estado inicial)
+queda archivado como opción no elegida en el handoff por si el impacto cambiara.
 
 **Alternativas descartadas.** `on_client_connected`+delay (el indicador no tiene
 estado aún); automatización HA con `action: switch.turn_{{states}}` (template en el
@@ -1403,6 +1409,10 @@ necesita, HA debe EMPUJAR el estado (automatización con servicios fijos /
 `update_entity` / componente escribible en el ESP), no esperar que el ESP lo importe.
 (2) Verificar SIEMPRE en logs si el estado llega, no asumir. (3) OTA rollback puede
 ocultar que el firmware nuevo no corre → flashear por USB para romperlo. (4) El
-`action:` con template dinámico no es válido en HA. Estado completo y camino A/B para
-cerrarlo en `docs/services/esphome-pueba-handoff.md` (handoff autocontenido para chat
-nuevo). Decisión A (resolver) vs B (aceptar el límite) queda PENDIENTE del usuario.
+`action:` con template dinámico no es válido en HA. (5) No todo límite de plataforma
+hay que combatirlo: cuando el impacto real es bajo y existe una fuente de verdad
+alternativa (la entidad nativa del Sonoff), aceptar el límite documentándolo es una
+decisión válida y preferible a añadir maquinaria frágil. Estado completo en
+`docs/services/esphome-pueba-handoff.md` (handoff autocontenido para chat nuevo).
+**Decisión CERRADA: Camino B (aceptar el límite).** El proyecto `pueba` se da por
+cerrado y funcional; el estado inicial del indicador es un límite conocido asumido.

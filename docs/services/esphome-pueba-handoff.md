@@ -2,9 +2,10 @@
 
 > **Propósito:** que un chat/LLM NUEVO sin contexto previo pueda continuar este
 > proyecto sin repetir el trabajo ni los errores. Autocontenido.
-> **Fecha:** 2026-10-13 · **Dispositivo:** ESP32 `pueba` · **ESPHome:** 2026.6.3
-> **Estado global:** FUNCIONAL con **un** límite conocido (estado inicial del
-> indicador tras reinicio — ver §6). Documentos relacionados:
+> **Fecha:** 2026-10-13 (actualizado 2026-10-15) · **Dispositivo:** ESP32 `pueba` · **ESPHome:** 2026.6.3
+> **Estado global:** ✅ **CERRADO y FUNCIONAL** con **un** límite conocido ASUMIDO
+> (estado inicial del indicador tras reinicio — ver §6; decisión final = **Camino B,
+> aceptar el límite**). Documentos relacionados:
 > [`esphome-device-config.md`](esphome-device-config.md) (patrón packages),
 > [`../esphome-meta-prompt.md`](../esphome-meta-prompt.md) (meta-prompt),
 > [`../../docker-nas/references/networking.md`](../../docker-nas/references/networking.md) (doble NAT).
@@ -160,7 +161,13 @@ En HA → Ajustes → Dispositivos y servicios → **ESPHome → "Prueba" → Co
 
 ---
 
-## 6. ⚠️ PROBLEMA ABIERTO (único pendiente) — estado inicial al arrancar
+## 6. ✅ LÍMITE CONOCIDO ASUMIDO (decisión: Camino B) — estado inicial al arrancar
+
+> **Decisión final (2026-10-15): Camino B — aceptar el límite.** Ya **no es un
+> pendiente**. El usuario decidió no añadir automatización en HA para empujar el
+> estado inicial: el impacto es bajo y la fuente de verdad siempre está en la entidad
+> nativa del Sonoff. El Camino A se conserva abajo solo como opción archivada por si
+> el impacto cambiara en el futuro.
 
 **Síntoma:** si cambias el Sonoff **mientras el ESP está apagado/reiniciando**, al
 arrancar el ESP el **indicador NO toma el estado actual** del Sonoff. Solo se
@@ -186,9 +193,12 @@ después). Documentado en el issue oficial
 todo sincroniza. El estado "de verdad" siempre está en la entidad nativa del Sonoff
 en HA (el indicador del ESP es redundante con ella).
 
-### Caminos para cerrarlo (elegir en el próximo chat)
+### Caminos considerados (decisión tomada: **B**)
 
-**Camino A — resolverlo del todo (más trabajo):**
+> ✅ **Elegido: Camino B.** Lo de abajo queda como registro de la decisión; el
+> Camino A es la alternativa archivada (no implementada).
+
+**Camino A — resolverlo del todo (más trabajo) [ARCHIVADO, no elegido]:**
 Rediseñar para que **HA empuje** el estado inicial al ESP (porque el ESP no puede
 importarlo al arrancar). Opciones a evaluar, verificando en runtime:
 1. Automatización en HA disparada al pasar `binary_sensor.<estado_online_del_ESP>`
@@ -202,11 +212,12 @@ importarlo al arrancar). Opciones a evaluar, verificando en runtime:
    (p. ej. un `template switch`/`number` que una acción de HA fije) y que la
    automatización escriba el estado inicial ahí. Más maquinaria.
 
-**Camino B — aceptar el límite (pragmático, recomendado si no molesta):**
-Dejarlo como está. Documentar que el indicador sincroniza tras el primer cambio y
-que el estado real se consulta en la entidad del Sonoff. Cero mantenimiento, sin
-automatización en HA (coherente con "ESPHome inteligente"). El usuario pidió
-"documentar todo" sin elegir A/B todavía → **queda PENDIENTE la decisión**.
+**Camino B — aceptar el límite (ELEGIDO ✅):**
+Se deja como está. El indicador sincroniza tras el primer cambio y el estado real se
+consulta en la entidad del Sonoff. Cero mantenimiento, sin automatización en HA
+(coherente con "ESPHome inteligente"). **Decisión tomada el 2026-10-15.** El proyecto
+`pueba` queda cerrado; este punto deja de ser un pendiente y pasa a ser un límite
+conocido documentado.
 
 ---
 

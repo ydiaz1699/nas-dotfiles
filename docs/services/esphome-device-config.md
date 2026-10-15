@@ -16,14 +16,16 @@
 1. [Dos formas de configurar un dispositivo](#dos-formas-de-configurar-un-dispositivo)
 2. [Forma A — Config por defecto (un solo YAML)](#forma-a--config-por-defecto-un-solo-yaml)
 3. [Forma B — Organización modular con `packages`](#forma-b--organización-modular-con-packages)
-4. [Cómo fusiona `packages` (`!extend` / `!remove`)](#cómo-fusiona-packages-lo-que-debes-saber-para-no-chocar)
+4. [Cómo fusiona `packages` (`!extend` / `!remove`, plantillas, git)](#cómo-fusiona-packages-lo-que-debes-saber-para-no-chocar)
 5. [Estructura de archivos](#estructura-de-archivos)
 6. [Archivos de `common/`](#archivos-de-common)
 7. [El dispositivo (solo `substitutions` + `packages`)](#el-dispositivo-solo-substitutions--packages)
-8. [`secrets.yaml`](#secretsyaml)
-9. [Red: IP fija y en qué subred vive la placa](#red-ip-fija-y-en-qué-subred-vive-la-placa)
-10. [Alta en Home Assistant](#alta-en-home-assistant)
-11. [Escalar a varias placas](#escalar-a-varias-placas)
+8. [`substitutions` — más allá de reemplazar texto](#substitutions--más-allá-de-reemplazar-texto)
+9. [`secrets.yaml`](#secretsyaml)
+10. [Red: IP fija y en qué subred vive la placa](#red-ip-fija-y-en-qué-subred-vive-la-placa)
+11. [Alta en Home Assistant](#alta-en-home-assistant)
+12. [Escalar a varias placas](#escalar-a-varias-placas)
+13. [Buenas prácticas de fiabilidad y hardware (de la FAQ oficial)](#buenas-prácticas-de-fiabilidad-y-hardware-de-la-faq-oficial)
 
 ---
 
@@ -98,6 +100,14 @@ real es repetir el mismo `id:` o la **misma entidad** (p. ej. definir los botone
 `restart`/`safe_mode` en dos packages a la vez → aparecen duplicados en HA); eso hay
 que evitarlo poniendo cada componente en **un solo** package.
 
+> **Matiz de la doc oficial (importante):** las listas de componentes **con `id`** no
+> se limitan a concatenarse — ESPHome las **fusiona por `id`**. Es decir, si un
+> package define un `sensor` con `id: uptime_sensor` y el device vuelve a declarar un
+> `sensor` con el **mismo** `id`, no salen dos: se fusionan en uno. Las listas **sin
+> `id`** sí se concatenan sin más. Esto es justo lo que habilita `!extend`/`!remove`
+> (abajo): referenciar por `id` un componente que vino de un package. Fuente:
+> [ESPHome — Packages](https://new.esphome.io/components/packages/) (parafraseado).
+
 ### Packages con nombres (estructura anidada)
 
 Cada package se declara con un **nombre** bajo `packages:`. El nombre es solo una
@@ -162,6 +172,85 @@ sensor:
 
 > ⚠️ `!extend` y `!remove` requieren que el componente objetivo tenga un `id:`
 > explícito. Sin `id`, no hay forma de referenciarlo entre packages.
+
+### Packages como plantillas (`vars:` + `defaults:`)
+
+Como un package se incorpora con `!include`, se le pueden pasar **variables** con
+`vars:` y reutilizar el **mismo** archivo varias veces con valores distintos. El
+package puede traer un bloque `defaults:` con valores por defecto para las variables
+que el `!include` no proporcione. Es el patrón ideal cuando una placa tiene **N cosas
+iguales** (p. ej. tres puertas de garaje, cuatro relés):
+
+```yaml
+# En el device:
+packages:
+  rele_salon: !include { file: common/rele.yaml, vars: { rele_name: "Salón", rele_pin: GPIO16 } }
+  rele_cocina: !include { file: common/rele.yaml, vars: { rele_name: "Cocina", rele_pin: GPIO17 } }
+
+# En common/rele.yaml:
+defaults:
+  rele_pin: GPIO23          # usado si el !include no pasa rele_pin
+switch:
+  - platform: gpio
+    name: "${rele_name}"
+    pin: ${rele_pin}
+```
+
+> Diferencia con los packages "normales" de `common/` (base, wifi, diagnostics): esos
+> se incluyen **una vez** y aportan lo común a toda la placa. Un package-plantilla se
+> incluye **varias veces** con `vars:` distintos para generar componentes repetidos
+> sin copiar/pegar. Fuente:
+> [ESPHome — Packages (Templates)](https://new.esphome.io/components/packages/).
+
+### Remote / Git packages (compartir `common/` entre repos o placas)
+
+Un package puede cargarse desde un **repositorio Git**, no solo desde un archivo
+local. Útil si en el futuro quieres un `common/` versionado y compartido entre varias
+instalaciones ESPHome:
+
+```yaml
+packages:
+  # forma corta: github://usuario/repo/[carpeta/]archivo.yml[@rama-o-tag]
+  base_remoto: github://ydiaz1699/ESPHome_ESP-NOW/common/base.yaml@main
+
+  # forma larga con opciones
+  comun:
+    url: https://github.com/ydiaz1699/ESPHome_ESP-NOW
+    files: [common/wifi.yaml, common/diagnostics.yaml]   # opcional; sin esto, todos
+    ref: main          # opcional (rama/tag/commit)
+    refresh: 1d        # opcional (cada cuánto refresca el contenido)
+```
+
+> ⚠️ **Regla oficial clave:** los **remote packages NO pueden usar `!secret`**.
+> Deben exponer `substitutions` (con un `defaults:` opcional) que el YAML **local**
+> rellena con sus propios secretos. Es decir: el `common/` remoto se parametriza, y
+> cada NAS/placa inyecta sus credenciales localmente. Fuente:
+> [ESPHome — Packages (Remote/Git)](https://new.esphome.io/components/packages/).
+
+> **Para este NAS hoy:** usamos packages **locales** (`!include common/*.yaml`). Los
+> git packages se documentan como camino de escalado si algún día el `common/` se
+> comparte entre instalaciones. El repo `ESPHome_ESP-NOW` del ecosistema es
+> justamente el pensado para alojar plantillas base reutilizables.
+
+### `packages:` como lista o como mapa
+
+`packages:` admite dos formas equivalentes (las claves del mapa son solo etiquetas
+organizativas, no afectan a la fusión). Un único package puede ir directo sin lista:
+
+```yaml
+# como mapa con nombres (lo que usa este NAS — recomendado por legibilidad)
+packages:
+  base: !include common/base.yaml
+  wifi: !include common/wifi.yaml
+
+# como lista (válido; sin etiquetas)
+packages:
+  - !include common/base.yaml
+  - !include common/wifi.yaml
+
+# un solo package, forma directa
+packages: !include common/base.yaml
+```
 
 ---
 
@@ -409,6 +498,120 @@ binary_sensor:
 
 ---
 
+## `substitutions` — más allá de reemplazar texto
+
+Las `substitutions` no son solo "buscar y reemplazar": ESPHome resuelve dentro de
+`${...}` **expresiones Jinja**, valores estructurados y operaciones matemáticas. Esto
+permite que un mismo `common/` sirva para placas distintas cambiando solo unas pocas
+claves. (Capacidades y sintaxis según la
+[documentación oficial de ESPHome — Substitutions](https://esphome.io/components/substitutions/);
+contenido reescrito y resumido para esta guía.)
+
+### Tipos de valor (no solo cadenas)
+
+Una substitution puede ser cualquier tipo YAML válido: cadena, número, booleano,
+lista o **diccionario anidado**. Con diccionarios se agrupan parámetros relacionados:
+
+```yaml
+substitutions:
+  color: "yellow"
+  unused_pins: [12, 23, 27]
+  sensor_pin:
+    number: 23
+    inverted: true
+```
+
+A un diccionario se accede con **notación de punto** `${sensor_pin.number}` o
+indexada `${sensor_pin["number"]}`; a una lista por índice `${unused_pins[2]}`. Un
+diccionario completo también se puede inyectar entero como valor de una clave
+(`pin: ${sensor_pin}`).
+
+### Expresiones Jinja y operaciones matemáticas
+
+Dentro de `${ ... }` caben expresiones Jinja (condicionales, filtros) y operadores
+matemáticos, además del módulo `math` de Python:
+
+```yaml
+substitutions:
+  high_dpi: true
+  native_width: 480
+  scale: 1.5
+
+display:
+  - platform: ili9xxx
+    dimensions:
+      # condicional: duplica el ancho solo si high_dpi
+      width: ${native_width * 2 if high_dpi else native_width}
+      # filtros Jinja encadenados
+      height: ${ (240 * scale) | round | int }
+```
+
+> ⚠️ **Ojo con la sintaxis:** en Jinja "normal" las expresiones van entre `{{ }}`.
+> ESPHome las configura con `${ ... }` (igual que las substitutions) para no chocar
+> con el Jinja de Home Assistant. Dentro de nuestros YAML, **siempre `${ ... }`**.
+
+Funciones integradas disponibles además de Jinja: `ord("A")` → `65`, `chr(65)` →
+`"A"`, `len("Hola")` → `4`.
+
+### `!literal` — desactivar la sustitución en un valor concreto
+
+Si un valor debe contener literalmente `${...}` (sin que ESPHome lo interprete), se
+antepone `!literal`:
+
+```yaml
+substitutions:
+  value: "prueba"
+text: !literal "Esto es un ${value}"   # queda tal cual: "Esto es un ${value}"
+```
+
+### `!include` con `vars:` — plantillas de fragmentos
+
+El `!include` de ESPHome acepta una lista de **variables** que se sustituyen dentro
+del archivo incluido; incluso el **nombre del archivo** puede llevar substitutions
+para elegir dinámicamente qué fichero cargar. Útil para repetir un bloque idéntico
+cambiando un par de valores:
+
+```yaml
+binary_sensor:
+  - platform: gpio
+    id: boton1
+    pin: GPIO23
+    on_multi_click: !include { file: on-multi-click.yaml, vars: { id: 1 } }
+  - platform: gpio
+    id: boton2
+    pin: GPIO22
+    on_multi_click: !include
+      file: on-multi-click.yaml
+      vars: { id: 2 }
+```
+
+> Esto es el mismo mecanismo `vars:` que usan los **packages como plantillas** (ver
+> la sección de packages más abajo): un package es, en el fondo, un `!include` al que
+> se le pasan variables.
+
+### Substitutions por línea de comandos (`-s`)
+
+Se puede **definir o sobreescribir** una substitution desde la CLI con `-s KEY VALUE`
+(tiene prioridad sobre la del archivo). Permite un YAML "plantilla" que varias placas
+reutilizan cambiando solo el nombre:
+
+```bash
+# dentro del contenedor esphome
+esphome -s device_name cocina config /config/plantilla.yaml
+```
+
+### `<<: !include` — operador de inserción YAML (alternativa a `packages`)
+
+ESPHome también soporta el operador de inserción YAML `<<: !include common.yaml`,
+heredando de un archivo base. **Para este NAS preferimos `packages:`** (fusión más
+clara y es el mecanismo nativo recomendado para reutilizar entre placas); `<<:`
+se documenta aquí solo para reconocerlo si aparece en ejemplos de terceros.
+
+> ⚠️ Usar substitutions en el nombre de archivo de un `<<: !include` **no está
+> soportado** (sí lo está en `!include` normal y en packages).
+
+---
+
 ## `secrets.yaml`
 
 Todas las referencias `!secret` del dispositivo y de `common/` deben existir en
@@ -526,6 +729,66 @@ docker exec esphome esphome config /config/<dispositivo>.yaml
 las listas se **fusionan** (p. ej. el `binary_sensor` de `common/diagnostics.yaml`
 y el del dispositivo aparecen **ambos**). Esto es lo que `packages` hace y un
 `!include` plano no: por eso ESPHome usa `packages` y no `!include` a secas.
+
+---
+
+## Buenas prácticas de fiabilidad y hardware (de la FAQ oficial)
+
+Opciones de la [FAQ de ESPHome](https://esphome.io/guides/faq/) que mejoran la
+robustez de los `common/` sin añadir complejidad (parafraseadas y resumidas):
+
+### Reconexiones aleatorias / WiFi inestable
+Si una placa se reconecta sola o se queda sin red:
+- **IP fija** (ya lo hacemos con `manual_ip` en `wifi.yaml`) — es la primera
+  recomendación oficial.
+- `fast_connect: true` en `wifi:` ayuda sobre todo con **redes ocultas** (y a veces
+  también con visibles).
+- `power_save_mode: light` en `wifi:` puede ayudar (pero a veces empeora; probar).
+- Para **desactivar** el reinicio automático por pérdida de WiFi/API/MQTT, poner
+  `reboot_timeout: 0s` en el componente correspondiente. En este proyecto hacemos lo
+  contrario a propósito (`reboot_timeout: 15min` en `wifi.yaml`) para que una placa
+  colgada se recupere sola; dejar `0s` solo si un reinicio es indeseable.
+- Mantener el `logger` en un nivel moderado en producción: `VERY_VERBOSE` puede
+  **provocar** desconexiones en placas de un solo núcleo.
+
+### "Brownout detector was triggered" (caídas de tensión)
+Si en los logs aparece *brownout*, el ESP32 se queda sin voltaje en los picos de
+transmisión WiFi. La medida más efectiva es **bajar la potencia de transmisión**:
+
+```yaml
+wifi:
+  output_power: 13dB        # por defecto 20dB; bajarlo reduce el pico de corriente
+```
+
+Otras: bajar `cpu_frequency: 160MHz` en `esp32:`, usar una fuente 5V/2A con cable
+corto y grueso, o añadir un condensador de 100-1000 µF entre 3V3 y GND.
+
+### No usar `_` (guion bajo) en `name:`
+El `name:` del dispositivo es el hostname en la red. Según RFC1912 el guion bajo no
+es válido en hostnames y rompe resolución DNS/mDNS en algunos routers. **Usar guion
+`-`** (p. ej. `esp32-cocina`, no `esp32_cocina`). Al renombrar una placa viva, usar
+`use_address` con el nombre antiguo hasta completar el cambio.
+
+### Pines de strapping
+Algunos GPIO son "strapping pins" (se leen al arrancar y deciden el modo de boot).
+Si un componente externo cambia su estado en el arranque, el boot puede fallar.
+Evitarlos salvo que sepas el estado esperado; si estás seguro, se puede silenciar el
+aviso con `ignore_strapping_warning: true` en ese pin.
+
+### Ocultar los archivos base del dashboard
+El dashboard de ESPHome solo lista los YAML del **directorio raíz** de `config/`. Los
+packages de `common/` ya quedan ocultos por estar en subcarpeta. Si algún archivo
+base tuviera que vivir en la raíz, se oculta anteponiendo un punto al nombre
+(`.base.yaml`). Por eso nuestro `common/` no ensucia el dashboard: solo aparecen los
+dispositivos (`pueba.yaml`, etc.).
+
+### Restaurar estado tras reinicio / NVS lleno
+Componentes como `switch`/`climate` pueden restaurar su estado tras un reinicio. Si
+no se restaura o aparece `ESP_ERR_NVS_NOT_ENOUGH_SPACE` en los logs, la partición NVS
+está llena; se puede limpiar reescribiéndola por USB (ver la FAQ para el comando
+`esptool` exacto). En `pueba` no dependemos de restore (la fuente de verdad es el
+Sonoff), así que esto no aplica hoy — queda documentado por si una placa futura usa
+`restore_mode`.
 
 ---
 
