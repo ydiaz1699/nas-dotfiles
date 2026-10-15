@@ -347,6 +347,37 @@ sensor:
 > componente objetivo tenga un `id:` explícito; sin `id` no se puede referenciar
 > entre packages.
 
+> **Matiz oficial de fusión por `id`:** las listas de componentes **con `id`** se
+> fusionan **por `id`** (no se duplican); las que no tienen `id` se concatenan. Esto
+> es lo que hace posible `!extend`/`!remove`.
+
+### 5.4 `packages` como plantillas (`vars:` + `defaults:`) y git packages
+
+Dos capacidades oficiales adicionales para escalar sin duplicar (detalle y ejemplos
+en [`services/esphome-device-config.md`](services/esphome-device-config.md)):
+
+- **Plantilla (`vars:`):** un package se puede incluir **varias veces** con `vars:`
+  distintos para generar N componentes iguales (p. ej. varios relés/puertas). El
+  package puede traer un bloque `defaults:` con valores por defecto. No confundir con
+  los packages de `common/` que se incluyen una sola vez.
+- **Remote/Git packages:** un package puede cargarse desde un repo Git
+  (`github://usuario/repo/archivo.yml@ref` o forma larga con `url`/`files`/`ref`/
+  `refresh`). ⚠️ **No pueden usar `!secret`** — deben parametrizarse con
+  `substitutions`/`defaults` que el YAML local rellena con sus secretos. Útil solo si
+  se comparte `common/` entre instalaciones; por defecto en este NAS son **locales**.
+
+### 5.5 `substitutions` avanzadas (no solo texto)
+
+`substitutions` resuelve dentro de `${...}` expresiones **Jinja** (condicionales,
+filtros `| round | int`), **operaciones matemáticas** (`+ - * /`, módulo `math`),
+valores **estructurados** (listas, diccionarios con acceso `.`/`[]`) y funciones
+`ord`/`chr`/`len`. También existen `!literal` (desactiva la sustitución en un valor),
+`!include` con `vars:` (fragmentos parametrizados y filename dinámico) y las
+substitutions por CLI (`esphome -s KEY VALUE ...`, con prioridad sobre el archivo).
+Recordar: en ESPHome las expresiones usan `${ ... }`, **no** `{{ }}` (eso es de HA).
+Detalle en [`services/esphome-device-config.md`](services/esphome-device-config.md),
+sección "substitutions — más allá de reemplazar texto".
+
 ---
 
 ## 6. SEGURIDAD INFORMÁTICA
@@ -398,6 +429,33 @@ comportamiento. Solicita los datos necesarios o deja la integración pendiente.
 > `restore_mode: ALWAYS_OFF` puede apagar una carga tras un reinicio del ESP32. Si
 > otro dispositivo (p. ej. un relé externo) debe ser la fuente de verdad, implementa
 > la sincronización al reconectar en lugar de confiar en el estado inicial.
+
+> **Límite de plataforma `platform: homeassistant` (verificado):** un
+> `binary_sensor`/`text_sensor` de plataforma `homeassistant` se suscribe a cambios
+> pero **no recibe el estado inicial** al arrancar (bug HA core #184371). Si el
+> estado inicial importa, HA debe EMPUJARLO (automatización con servicios fijos
+> `choose turn_on/turn_off` o `update_entity`, nunca `action:` con template
+> dinámico). Si el impacto es bajo y hay una fuente de verdad alternativa, aceptar el
+> límite documentándolo es una decisión válida (caso `pueba`, Camino B).
+
+### 7.1 Buenas prácticas de fiabilidad y hardware (FAQ oficial)
+
+Aplicables sobre todo en niveles Experto/Extremo (detalle en
+[`services/esphome-device-config.md`](services/esphome-device-config.md), sección
+"Buenas prácticas de fiabilidad y hardware"):
+
+- **Reconexiones WiFi:** IP fija (`manual_ip`), `fast_connect: true` (redes ocultas),
+  nivel de `logger` moderado en producción (`VERY_VERBOSE` puede provocar
+  desconexiones en placas de un núcleo). `reboot_timeout: 0s` solo si NO se quiere
+  reinicio automático por caída de WiFi/API/MQTT.
+- **Brownout** (`"Brownout detector was triggered"`): la medida más efectiva es
+  `wifi: output_power: 13dB` (bajar del 20dB por defecto); alternativas: bajar
+  `cpu_frequency`, mejor fuente/cable, condensador 100-1000 µF.
+- **Nombres:** usar guion `-` en `name:`, nunca guion bajo `_` (rompe DNS/mDNS, RFC1912).
+- **Strapping pins:** evitarlos salvo que se conozca su estado al boot;
+  `ignore_strapping_warning: true` solo si se está seguro.
+- **Dashboard limpio:** los base files en subcarpeta (`common/`) no aparecen; en la
+  raíz se ocultan con un punto delante (`.base.yaml`).
 
 ---
 
@@ -542,3 +600,15 @@ existente — no simplemente producir un YAML largo ni descartar lo que ya funci
   verificado, `!extend`/`!remove`, red/doble NAT, alta en Home Assistant).
 - [`services/esphome-guide.md`](services/esphome-guide.md) — instalación y operación
   del servicio ESPHome (contenedor, dashboard, flasheo, backups).
+
+### Fuentes oficiales (verificar contra ellas, no de memoria)
+
+- [Substitutions](https://esphome.io/components/substitutions/) — Jinja, tipos
+  estructurados, `!literal`, `!include` con `vars:`, CLI `-s`, `<<: !include`.
+- [Packages](https://new.esphome.io/components/packages/) — fusión por `id`,
+  plantillas (`vars:`/`defaults:`), remote/git packages, `!extend`/`!remove`.
+- [FAQ](https://esphome.io/guides/faq/) — fiabilidad WiFi, brownout/`output_power`,
+  naming, strapping pins, mDNS/subredes, restaurar estado/NVS.
+
+> Contenido de estas fuentes reescrito y resumido para cumplir las restricciones de
+> licencia; consultar los enlaces para el detalle completo.
