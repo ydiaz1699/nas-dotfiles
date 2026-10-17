@@ -2,18 +2,24 @@
 name: nas-runtime-secrets
 description: >
   Opera secretos locales de servicios NAS sin exponer credenciales al LLM:
-  lee valores desde .env con claves explícitas, los pasa mediante variables
-  temporales, sincroniza consumidores, verifica el resultado con evidencia
+  lee valores desde .env (KEY=valor) o desde YAML (secrets.yaml de ESPHome)
+  con claves explícitas, los pasa mediante variables temporales, los consume
+  en el destino correcto (!secret del firmware, header de un curl, cliente de
+  base de datos), sincroniza consumidores, verifica el resultado con evidencia
   segura y limpia la sesión. Activar al configurar o modificar credenciales,
-  PostgreSQL, Redis, .env, PGPASSWORD, REDISCLI_AUTH o secretos de servicios.
+  PostgreSQL, Redis, .env, secrets.yaml, PGPASSWORD, REDISCLI_AUTH, un token de
+  webhook/dispositivo (p. ej. X-Device-Token para n8n) o cualquier secreto de
+  servicio.
 license: MIT
 metadata:
   author: ydiaz1699
-  version: "1.0"
+  version: "1.1"
   scope: [data]
   auto_invoke:
     - "Leer/transportar secretos de un servicio sin exponerlos al LLM"
     - "Sincronizar una credencial .env entre servicios y verificarla"
+    - "Leer un secreto desde secrets.yaml (ESPHome) y usarlo en !secret o en un curl"
+    - "Manejar un token de dispositivo/webhook (X-Device-Token) hacia n8n sin exponerlo"
 ---
 
 # Skill `nas-runtime-secrets`
@@ -36,6 +42,21 @@ El patrón tiene dos propósitos simultáneos:
 
 La skill no inventa nombres de variables ni credenciales. Primero se consultan
 la guía del servicio, la ficha, el compose y `.env.example`.
+
+## Dónde vive cada secreto y cómo se lee (mapa rápido)
+
+Antes de nada, identificar el **formato** del archivo fuente: no todos los
+secretos están en un `.env` de shell. Leerlos mal (p. ej. `source` sobre un
+YAML) rompe el procedimiento.
+
+| Formato / fuente | Ejemplo real en el NAS | Quién lo consume | Cómo se lee sin exponerlo |
+|---|---|---|---|
+| `.env` (`KEY=valor`) | `$dkco/datasql/.env`, `$dkco/<svc>/.env`, `$dkco/.env` global | el propio compose (`${VAR}`), `svc`, clientes PG/Redis | `awk -F=` a variable temporal (ver §3). **Nunca** `source`. |
+| `secrets.yaml` (YAML) | `$dkco/esphome/config/secrets.yaml` | ESPHome al compilar vía `!secret`; y tú con un `curl` de prueba | `grep`/`sed` de **una sola clave** a variable temporal (ver sección ESPHome). **Nunca** `source` ni `cat`. |
+| `!secret <clave>` (ref. ESPHome) | en el `.yaml` del dispositivo | el firmware al compilar (resuelve contra `secrets.yaml`) | no se lee a mano: solo se **referencia** por nombre. El valor nunca aparece en el YAML del dispositivo. |
+
+Regla transversal: el **valor** real nunca entra al chat, a Git ni a un
+checkpoint; solo viajan **nombres de clave** y **evidencia segura**.
 
 ## Detección: instalación nueva o servicio existente
 
@@ -186,6 +207,115 @@ Usar antes de cualquier operación que incluya:
 14. **No afirmar conexión por pertenencia a una red:** `db_net` permite llegar al
     servidor, pero la prueba debe confirmar configuración, autenticación y
     runtime.
+
+## Secretos en YAML: `secrets.yaml` de ESPHome y consumo doble
+
+Caso de referencia: `$dkco/esphome/config/secrets.yaml`. Es **YAML**, no un
+`.env` de shell; cada entrada es `clave: "valor"`. ESPHome lo lee al compilar
+mediante la directiva `!secret <clave>`. Un mismo secreto (p. ej.
+`n8n_device_token`) puede tener **dos consumidores distintos**:
+
+1. **El firmware ESP32** (lo normal): referencia el secreto por nombre con
+   `!secret`; el valor jamás aparece en el YAML del dispositivo ni en el chat.
+2. **Una prueba manual con `curl`** desde el NAS: hay que extraer el valor del
+   YAML a una variable temporal, usarlo y hacer `unset`.
+
+Guía dueña del formato ESPHome: `docs/services/esphome-guide.md` (sección
+`secrets.yaml`) y `docs/services/esphome-device-config.md`. Esta skill solo
+define **cómo transportar** el valor con seguridad; no inventa claves.
+
+### A) Consumo por el firmware — `!secret` (preferido)
+
+El valor queda fuera del YAML del dispositivo. No hay que leerlo a mano:
+
+```yaml
+# en el .yaml del dispositivo — el valor NO aparece aquí
+http_request:
+  id: http_client
+
+# al disparar el evento:
+#   - http_request.post:
+#       url: "http://SERVER_IP:5678/webhook/esp32/event"   # ver nota de IP/ruta
+#       headers:
+#         Content-Type: application/json
+#         X-Device-Token: !secret n8n_device_token          # <-- referencia por nombre
+#       body: '{"device":"esp32-n8n","event":"motion","state":"detected"}'
+```
+
+ESPHome resuelve `!secret n8n_device_token` contra `secrets.yaml` al compilar.
+El secreto nunca se imprime ni entra al repositorio del dispositivo.
+
+### B) Consumo por una prueba manual — `curl` leyendo el YAML
+
+`secrets.yaml` es YAML, así que **no** se puede `source`. Se extrae **solo esa
+clave** a una variable temporal, sin volcar el archivo:
+
+```bash
+dk esphome
+TOKEN="$(sed -nE 's/^n8n_device_token:[[:space:]]*"?([^"]*)"?.*/\1/p' config/secrets.yaml)"
+
+if [[ -z "$TOKEN" ||
+      "$TOKEN" == "GENERAR_TOKEN_ALEATORIO" ||
+      "$TOKEN" == "CAMBIAR"* ]]; then
+  printf 'n8n_device_token falta o sigue con un placeholder.\n' >&2
+  unset TOKEN
+else
+  curl -fsS -X POST \
+    "http://SERVER_IP:5678/webhook/esp32/event" \
+    -H 'Content-Type: application/json' \
+    -H "X-Device-Token: ${TOKEN}" \
+    -d '{"device":"esp32-n8n","event":"motion","state":"detected"}'
+  unset TOKEN
+fi
+```
+
+Puntos clave de este bloque:
+
+- **Comillas dobles** en el header (`"X-Device-Token: ${TOKEN}"`) para que la
+  variable se expanda; con comillas simples no se expande.
+- **`sed` de una sola clave**, nunca `cat secrets.yaml` ni `grep` sin recortar
+  el valor; nunca `echo "$TOKEN"`.
+- `unset TOKEN` tanto en la rama correcta como si se aborta.
+- `SERVER_IP` es un marcador: sustituir por la IP/host reales del servicio que
+  recibe el webhook. **No** dejar una IP de ejemplo que parezca real.
+
+### Generar el token (cuando el placeholder sigue puesto)
+
+Si `secrets.yaml` todavía tiene `GENERAR_TOKEN_ALEATORIO` u otro placeholder,
+generar un valor aleatorio y escribirlo **en el NAS**, sin imprimirlo en el chat:
+
+```bash
+openssl rand -hex 32    # la salida se pega en secrets.yaml, no en el chat
+```
+
+Pegar la salida en `secrets.yaml` sustituyendo el placeholder y aplicar
+`chmod 600` al archivo. El valor no se comparte con el LLM.
+
+### Lado receptor (n8n) — validar el token
+
+El consumidor del webhook debe **comparar** `X-Device-Token` contra el mismo
+valor. En n8n ese valor va como **credential/variable del workflow**, nunca
+hardcodeado en un nodo visible. La URL de **producción** es `/webhook/...` con
+el workflow **activo**; `/webhook-test/...` solo responde con el editor
+escuchando. Guía: `docs/services/n8n-guide.md`.
+
+### Evidencia segura esperada (ESPHome → webhook)
+
+Reportar al LLM solo estados, nunca el token:
+
+```text
+n8n_device_token leído de secrets.yaml sin mostrar el valor.
+curl al webhook devolvió HTTP 200 (o el código observado).
+TOKEN fue eliminado con unset.
+```
+
+### Criterios de parada específicos de este caso
+
+- `n8n_device_token` no existe en `secrets.yaml` o sigue como placeholder.
+- La IP/ruta del webhook no está confirmada (host real, `webhook` vs
+  `webhook-test`, workflow activo).
+- El `curl` devuelve `401/403` (token no validado o incorrecto en el receptor)
+  o `connection refused` sin causa aislada.
 
 ## Flujo canónico
 
@@ -463,10 +593,13 @@ actualizarse.
 
 ```text
 [ ] Leí guía, ficha, compose y .env.example del servicio.
+[ ] Identifiqué el formato de la fuente (.env KEY=valor vs YAML secrets.yaml).
 [ ] Identifiqué fuente, destino, clave y prueba.
 [ ] No pedí ni mostré el secreto.
 [ ] Usé dk <servicio> antes de svc.
-[ ] Leí solo la clave necesaria sin source .env.
+[ ] Leí solo la clave necesaria sin source .env / sin source secrets.yaml.
+[ ] En YAML (secrets.yaml) extraje una sola clave con sed, no cat/grep crudo.
+[ ] En firmware usé !secret por nombre; en curl usé comillas dobles y unset.
 [ ] Rechacé vacío y placeholders.
 [ ] Verifiqué la compatibilidad de la aplicación con el valor.
 [ ] No usé -U/-d/-c directamente después de svc exec.
@@ -483,6 +616,11 @@ actualizarse.
 
 - `datasql`: decide la arquitectura, roles, bases, `db_net` y Redis compartido.
 - `nas-dotfiles`/`dotfile-skill`: impone aliases, rutas y operaciones `svc`.
+- ESPHome: la configuración de `secrets.yaml`, el patrón `!secret` y el alta de
+  dispositivos viven en `docs/services/esphome-guide.md` y
+  `docs/services/esphome-device-config.md`; esta skill solo transporta el valor.
+- n8n: la validación del token de webhook (credential/variable del workflow,
+  `webhook` vs `webhook-test`) vive en `docs/services/n8n-guide.md`.
 - `documentation-evolution`: se usa si la experiencia revela un hueco en una
   guía, skill, contrato o conexión del framework.
 
