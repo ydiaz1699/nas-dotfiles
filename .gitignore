@@ -69,3 +69,6 @@ agent/memory/sessions/*.md
 
 !.kiro/skills/dependency-cascade/
 !.kiro/skills/dependency-cascade/SKILL.md
+
+# Skill portable nas-tools-index: el .zip se regenera, no se versiona
+skill-portable/*.zip
