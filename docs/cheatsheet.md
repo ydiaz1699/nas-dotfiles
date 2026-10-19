@@ -277,7 +277,13 @@ fgrep "literal" archivo       # fgrep --color=auto
 
 ```bash
 nano archivo          # nano -i (autoindent activado)
-bat archivo           # batcat --style=header,grid --paging=never (solo ver)
+bat archivo           # batcat --style=header,grid --paging=never (solo ver, UN archivo)
+
+# Ver el contenido de TODOS los archivos de una carpeta y subcarpetas (bat recursivo)
+batr                  # todos los archivos bajo el directorio actual
+batr common           # todos los archivos bajo ./common
+batr . yaml           # solo *.yaml bajo el directorio actual
+FORCE=1 batr          # incluir secrets.yaml/.env/ocultos (por defecto se excluyen)
 ```
 
 ---

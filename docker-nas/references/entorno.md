@@ -106,7 +106,8 @@ En pipes/scripts se comportan sin confirmación (no rompen automatización).
 | `df` | -h | Formato legible |
 | `dus` | du -sh | Tamaño total del directorio (summary) |
 | `free` | -h | Formato legible |
-| `bat` | batcat --style=header,grid --paging=never | Ver archivos con colores |
+| `bat` | batcat --style=header,grid --paging=never | Ver UN archivo con colores (no recursivo) |
+| `batr [dir] [ext]` | find + batcat recursivo | Ver el contenido de TODOS los archivos de una carpeta y subcarpetas. Excluye secrets.yaml/.env/ocultos (FORCE=1 los incluye). Ej: `batr`, `batr common`, `batr . yaml` |
 | `nano` | -i | Autoindent activado |
 
 ## Alias — Grep

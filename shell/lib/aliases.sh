@@ -72,5 +72,25 @@ alias fgrep='fgrep --color=auto'
 # ── Bat (batcat con estilo bonito) ────────────────────────────────────────
 alias bat='batcat --style=header,grid --paging=never'
 
+# ── Bat recursivo: ver el contenido de TODOS los archivos de una carpeta ──
+# Uso:
+#   batr                 → todos los archivos bajo el directorio actual
+#   batr common          → todos los archivos bajo ./common
+#   batr . yaml          → solo archivos *.yaml bajo el directorio actual
+# Excluye secrets.yaml, .env y archivos ocultos para no volcar credenciales;
+# usa FORCE=1 para incluirlos (FORCE=1 batr).
+batr() {
+  local dir="${1:-.}"
+  local ext="${2:-}"
+  local -a find_args=("$dir" -type f)
+  if [ -n "$ext" ]; then
+    find_args+=(-name "*.${ext}")
+  fi
+  if [ "${FORCE:-0}" != "1" ]; then
+    find_args+=(! -name 'secrets.yaml' ! -name '.env' ! -name '.env.*' ! -path '*/.*')
+  fi
+  find "${find_args[@]}" -exec batcat --style=header,grid --paging=never {} +
+}
+
 # ── Nano con autoindent ───────────────────────────────────────────────────
 alias nano='nano -i'

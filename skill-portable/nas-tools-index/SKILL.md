@@ -54,7 +54,8 @@ Reglas de oro del framework: usar `dk`/`adm`/`nasfk` (no `cd`), `svc` (no `docke
 
 | Herramienta | Qué hace | Equivale a |
 |---|---|---|
-| `bat` | Ver archivos con syntax highlight (solo lectura). En Debian el binario es `batcat`, no `bat` | `batcat --style=header,grid --paging=never` |
+| `bat` | Ver **un** archivo con syntax highlight (solo lectura). En Debian el binario es `batcat`, no `bat`. NO es recursivo | `batcat --style=header,grid --paging=never` |
+| `batr [dir] [ext]` | Ver el contenido de **TODOS los archivos** de una carpeta y subcarpetas (bat recursivo). Excluye `secrets.yaml`/`.env`/ocultos salvo `FORCE=1`. Ej: `batr`, `batr common`, `batr . yaml` | `find <dir> -type f … -exec batcat … {} +` |
 | `nano` | Editar con autoindent | `nano -i` |
 | `rm` / `cp` / `mv` | Confirmación solo en terminal interactiva (no rompe scripts) | `… -iv` en TTY |
 | `mkdir` | Crear con padres + verbose | `mkdir -pv` |

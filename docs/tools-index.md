@@ -28,7 +28,8 @@ Variables base: `$NAS_DOTFILES` = `/nas-dotfiles` · `$dkco` = `/docker` · `$aa
 
 | Herramienta | Tipo | Qué hace | Definición / Equivale a | Fuente |
 |---|---|---|---|---|
-| `bat` | alias | Ver archivos con **syntax highlight** (solo lectura). En Debian el binario es `batcat`, no `bat` | `batcat --style=header,grid --paging=never` | `shell/lib/aliases.sh` · doc `docker-nas/references/entorno.md` |
+| `bat` | alias | Ver **un** archivo con syntax highlight (solo lectura). En Debian el binario es `batcat`, no `bat`. NO es recursivo | `batcat --style=header,grid --paging=never` | `shell/lib/aliases.sh` · doc `docker-nas/references/entorno.md` |
+| `batr [dir] [ext]` | función | Ver el contenido de **TODOS los archivos** de una carpeta y sus subcarpetas (bat recursivo). Excluye `secrets.yaml`/`.env`/ocultos salvo `FORCE=1`. Ej: `batr`, `batr common`, `batr . yaml` | `find <dir> -type f … -exec batcat … {} +` | `shell/lib/aliases.sh` |
 | `nano` | alias | Editar con autoindent | `nano -i` | `shell/lib/aliases.sh` |
 | `rm` | función | Borrar; pide confirmación **solo en terminal interactiva** (no rompe scripts/pipes) | `rm -iv` en TTY | `shell/lib/aliases.sh` |
 | `cp` | función | Copiar; confirmación solo en TTY | `cp -iv` en TTY | `shell/lib/aliases.sh` |
