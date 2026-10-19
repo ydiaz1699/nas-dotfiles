@@ -77,19 +77,33 @@ alias bat='batcat --style=header,grid --paging=never'
 #   batr                 → todos los archivos bajo el directorio actual
 #   batr common          → todos los archivos bajo ./common
 #   batr . yaml          → solo archivos *.yaml bajo el directorio actual
-# Excluye secrets.yaml, .env y archivos ocultos para no volcar credenciales;
-# usa FORCE=1 para incluirlos (FORCE=1 batr).
+# PODA (no desciende) carpetas de build/caché/VCS pesadas: .esphome, .pioenvs,
+# .piolibdeps, .git, node_modules, __pycache__, .cache, .venv — así no dispara
+# la CPU en configs con miles de archivos generados (ej. ESPHome).
+# Excluye secrets.yaml, .env y ocultos de la salida; FORCE=1 los incluye.
 batr() {
   local dir="${1:-.}"
   local ext="${2:-}"
-  local -a find_args=("$dir" -type f)
-  if [ -n "$ext" ]; then
-    find_args+=(-name "*.${ext}")
-  fi
+  # Carpetas que NO se recorren (prune): evita el recorrido costoso, no solo
+  # filtra la salida. Añade más aquí si hace falta.
+  local -a prune_names=(.esphome .pioenvs .piolibdeps .git node_modules
+                        __pycache__ .cache .venv .mypy_cache .pytest_cache)
+  local -a prune=()
+  local n
+  for n in "${prune_names[@]}"; do
+    prune+=(-name "$n" -o)
+  done
+  unset 'prune[${#prune[@]}-1]'   # quitar el -o sobrante del final
+
+  local -a match=(-type f)
+  [ -n "$ext" ] && match+=(-name "*.${ext}")
   if [ "${FORCE:-0}" != "1" ]; then
-    find_args+=(! -name 'secrets.yaml' ! -name '.env' ! -name '.env.*' ! -path '*/.*')
+    match+=(! -name 'secrets.yaml' ! -name '.env' ! -name '.env.*' ! -path '*/.*')
   fi
-  find "${find_args[@]}" -exec batcat --style=header,grid --paging=never {} +
+
+  # Estructura: \( <prune> \) -prune -o \( <match> -exec bat \) -print
+  find "$dir" \( "${prune[@]}" \) -prune -o \
+    \( "${match[@]}" -exec batcat --style=header,grid --paging=never {} + \)
 }
 
 # ── Nano con autoindent ───────────────────────────────────────────────────
