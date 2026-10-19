@@ -288,6 +288,7 @@ Cuando la tarea encaje con una acción de abajo, **cargar esa skill PRIMERO**
 | nas-mcp-gateway independiente, manifest y activación lazy | `docs/nas-mcp-gateway.md` |
 | Troubleshooting | `docs/troubleshooting.md` |
 | Skill completa (para LLMs) | `docker-nas/references/nas-context.md` |
+| Índice granular de herramientas (alias, función, `svc`, skill, tool → qué es + fuente) | `docs/tools-index.md` (portable: `skill-portable/nas-tools-index/`) |
 | Comandos shell | `docker-nas/references/entorno.md` |
 | Comandos svc | `docker-nas/references/svc.md` |
 | Seguridad | `docker-nas/references/seguridad.md` |
