@@ -43,6 +43,13 @@ pregunta "¿qué es/qué hace <herramienta> en mi framework?" sin cargar todo el
 
 ---
 
+## Gotcha de aliases (importante)
+
+Los **alias** (`bat`, `ls`, `ll`, `grep`…) solo se expanden al escribirlos
+**directamente en la terminal**. NO funcionan dentro de `find -exec`, `xargs`,
+scripts ni `sudo`. Ahí usa el binario real: `bat` → `batcat`. Para ver carpetas
+recursivo usa la función `batr` (no es alias) o `find … -exec batcat {} +`.
+
 ## Datos clave del entorno
 
 Rutas base: `$NAS_DOTFILES` = `/nas-dotfiles` · `$dkco` = `/docker` · `$aadm` = `/home/aadm`.

@@ -22,6 +22,13 @@ Variables base: `$NAS_DOTFILES` = `/nas-dotfiles` · `$dkco` = `/docker` · `$aa
 3. Responde con las columnas *Qué hace* + *Definición/Equivale a*.
 4. Si piden más detalle del que hay aquí, apunta a la columna *Fuente* en el repo.
 
+> ⚠️ **Gotcha de aliases:** los **alias** (`bat`, `ls`, `ll`, `grep`…) solo se
+> expanden cuando los escribes **directamente en la terminal interactiva**. NO
+> funcionan dentro de `find -exec`, `xargs`, scripts no interactivos ni `sudo`.
+> Ahí hay que usar el **binario real**: `bat` → `batcat`. Para "ver recursivo"
+> usa la función `batr` (no es alias, sí funciona en cualquier contexto) o
+> `find … -exec batcat {} +` (nunca `-exec bat`).
+
 ---
 
 ## 1. Aliases de archivos y visualización

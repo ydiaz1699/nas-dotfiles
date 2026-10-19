@@ -36,7 +36,7 @@ Leer antes de cambiar:
 ```bash
 bat /etc/network/interfaces 2>/dev/null || true
 find /etc/network/interfaces.d -maxdepth 2 -type f -print \
-    -exec bat {} \; 2>/dev/null || true
+    -exec batcat {} \; 2>/dev/null || true
 ```
 
 Si `networkd` es el backend elegido, una stanza `allow-hotplug`, `auto` o
@@ -87,7 +87,7 @@ pgrep -af "dhcpcd.*$IFACE|dhclient.*$IFACE" || true
 
 bat /etc/network/interfaces 2>/dev/null || true
 find /etc/network/interfaces.d -maxdepth 2 -type f -print \
-    -exec bat {} \; 2>/dev/null || true
+    -exec batcat {} \; 2>/dev/null || true
 
 journalctl -b --no-pager | grep -Ei \
     "ifup|ifdown|dhcpcd|dhclient|$IFACE" || true

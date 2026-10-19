@@ -81,7 +81,7 @@ cambio que ningún actor legacy administra `$IFACE`:
 ```bash
 bat /etc/network/interfaces 2>/dev/null || true
 find /etc/network/interfaces.d -maxdepth 2 -type f -print \
-    -exec bat {} \; 2>/dev/null || true
+    -exec batcat {} \; 2>/dev/null || true
 systemctl status "ifup@$IFACE.service" --no-pager 2>&1 || true
 systemctl show "ifup@$IFACE.service" \
     -p FragmentPath -p ExecStart -p SubState -p UnitFileState 2>&1 || true
