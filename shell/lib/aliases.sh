@@ -81,13 +81,36 @@ alias bat='batcat --style=header,grid --paging=never'
 # .piolibdeps, .git, node_modules, __pycache__, .cache, .venv — así no dispara
 # la CPU en configs con miles de archivos generados (ej. ESPHome).
 # Excluye secrets.yaml, .env y ocultos de la salida; FORCE=1 los incluye.
+#
+# Carpetas podadas configurables SIN tocar el código (export en ~/.bashrc):
+#   BATR_PRUNE_EXTRA="dist out"   → AÑADE dist y out a la lista por defecto
+#   BATR_PRUNE="target bin"       → REEMPLAZA la lista entera por esas
+# (los nombres se separan por espacios; son nombres de carpeta, no rutas)
 batr() {
   local dir="${1:-.}"
   local ext="${2:-}"
-  # Carpetas que NO se recorren (prune): evita el recorrido costoso, no solo
-  # filtra la salida. Añade más aquí si hace falta.
+  # Lista por defecto de carpetas que NO se recorren (prune): evita el recorrido
+  # costoso, no solo filtra la salida.
   local -a prune_names=(.esphome .pioenvs .piolibdeps .git node_modules
                         __pycache__ .cache .venv .mypy_cache .pytest_cache)
+  # Override total con BATR_PRUNE, o añadir con BATR_PRUNE_EXTRA (word-split a propósito).
+  if [ -n "${BATR_PRUNE:-}" ]; then
+    prune_names=(${BATR_PRUNE})
+  elif [ -n "${BATR_PRUNE_EXTRA:-}" ]; then
+    prune_names+=(${BATR_PRUNE_EXTRA})
+  fi
+  local -a match=(-type f)
+  [ -n "$ext" ] && match+=(-name "*.${ext}")
+  if [ "${FORCE:-0}" != "1" ]; then
+    match+=(! -name 'secrets.yaml' ! -name '.env' ! -name '.env.*' ! -path '*/.*')
+  fi
+
+  # Si no quedó ninguna carpeta a podar (BATR_PRUNE vacío), find sin la rama prune.
+  if [ "${#prune_names[@]}" -eq 0 ]; then
+    find "$dir" "${match[@]}" -exec batcat --style=header,grid --paging=never {} +
+    return
+  fi
+
   local -a prune=()
   local n
   for n in "${prune_names[@]}"; do
@@ -95,13 +118,7 @@ batr() {
   done
   unset 'prune[${#prune[@]}-1]'   # quitar el -o sobrante del final
 
-  local -a match=(-type f)
-  [ -n "$ext" ] && match+=(-name "*.${ext}")
-  if [ "${FORCE:-0}" != "1" ]; then
-    match+=(! -name 'secrets.yaml' ! -name '.env' ! -name '.env.*' ! -path '*/.*')
-  fi
-
-  # Estructura: \( <prune> \) -prune -o \( <match> -exec bat \) -print
+  # Estructura: \( <prune> \) -prune -o \( <match> -exec bat \)
   find "$dir" \( "${prune[@]}" \) -prune -o \
     \( "${match[@]}" -exec batcat --style=header,grid --paging=never {} + \)
 }

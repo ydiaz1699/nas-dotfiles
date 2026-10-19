@@ -291,6 +291,11 @@ batr                  # todos los archivos bajo el directorio actual (recursivo)
 batr common           # todos los archivos bajo ./common
 batr . yaml           # solo *.yaml bajo el directorio actual
 FORCE=1 batr          # incluir secrets.yaml/.env/ocultos (por defecto se excluyen)
+
+# batr poda carpetas de build/caché pesadas (.esphome, .git, node_modules…).
+# Añadir o cambiar esa lista SIN tocar el código (export en ~/.bashrc):
+BATR_PRUNE_EXTRA="dist out" batr    # AÑADE dist y out a las podadas por defecto
+BATR_PRUNE="target bin" batr        # REEMPLAZA la lista entera por esas
 ```
 
 > El alias `bat` se expande solo en la terminal interactiva; el glob (`*`, `**`)
