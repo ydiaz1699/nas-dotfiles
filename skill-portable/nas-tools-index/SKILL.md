@@ -43,6 +43,17 @@ pregunta "¿qué es/qué hace <herramienta> en mi framework?" sin cargar todo el
 
 ---
 
+## Gotcha de aliases (importante)
+
+Los **alias** (`bat`, `ls`, `ll`, `grep`…) solo se expanden al escribirlos
+**directamente en la terminal**. NO funcionan dentro de `find -exec`, `xargs`,
+scripts ni `sudo`. Ahí usa el binario real: `bat` → `batcat`. Para ver carpetas
+recursivo usa la función `batr` (no es alias) o `find … -exec batcat {} +`.
+
+Ver varios archivos de golpe (el glob `*`/`**` lo expande bash, el alias `bat`
+sí aplica porque se escribe en la terminal):
+`bat secrets.yaml common/*.yaml` · `shopt -s globstar; bat **/*.yaml` (recursivo).
+
 ## Datos clave del entorno
 
 Rutas base: `$NAS_DOTFILES` = `/nas-dotfiles` · `$dkco` = `/docker` · `$aadm` = `/home/aadm`.
@@ -54,7 +65,8 @@ Reglas de oro del framework: usar `dk`/`adm`/`nasfk` (no `cd`), `svc` (no `docke
 
 | Herramienta | Qué hace | Equivale a |
 |---|---|---|
-| `bat` | Ver archivos con syntax highlight (solo lectura). En Debian el binario es `batcat`, no `bat` | `batcat --style=header,grid --paging=never` |
+| `bat` | Ver **un** archivo con syntax highlight (solo lectura). En Debian el binario es `batcat`, no `bat`. NO es recursivo | `batcat --style=header,grid --paging=never` |
+| `batr [dir] [ext]` | Ver el contenido de **TODOS los archivos** de una carpeta y subcarpetas (bat recursivo). Excluye `secrets.yaml`/`.env`/ocultos salvo `FORCE=1`. Ej: `batr`, `batr common`, `batr . yaml` | `find <dir> -type f … -exec batcat … {} +` |
 | `nano` | Editar con autoindent | `nano -i` |
 | `rm` / `cp` / `mv` | Confirmación solo en terminal interactiva (no rompe scripts) | `… -iv` en TTY |
 | `mkdir` | Crear con padres + verbose | `mkdir -pv` |

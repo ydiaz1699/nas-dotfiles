@@ -277,8 +277,29 @@ fgrep "literal" archivo       # fgrep --color=auto
 
 ```bash
 nano archivo          # nano -i (autoindent activado)
-bat archivo           # batcat --style=header,grid --paging=never (solo ver)
+bat archivo           # batcat --style=header,grid --paging=never (solo ver, UN archivo)
+
+# RECOMENDADO: nombra las carpetas que quieres (el glob * lo expande bash)
+# Solo muestra lo que listas — nada de builds/cachés internos del servicio.
+bat boards/*.yaml common/*.yaml modules/*.yaml pueba.yaml   # ej. esphome/config
+shopt -s globstar
+bat boards/**/*.yaml common/**/*.yaml                       # ** = baja a subcarpetas
+
+# "TODO lo que cuelga de aquí" (ÚSALO CON CUIDADO): arrastra builds, cachés,
+# .esphome/, etc. Preferir nombrar las carpetas como arriba.
+batr                  # todos los archivos bajo el directorio actual (recursivo)
+batr common           # todos los archivos bajo ./common
+batr . yaml           # solo *.yaml bajo el directorio actual
+FORCE=1 batr          # incluir secrets.yaml/.env/ocultos (por defecto se excluyen)
 ```
+
+> El alias `bat` se expande solo en la terminal interactiva; el glob (`*`, `**`)
+> lo resuelve bash antes de llamar a `bat`. Por eso `bat common/*.yaml` funciona
+> pero `find ... -exec bat` NO (ahí hay que usar `batcat` o `batr`).
+>
+> Para config con carpetas generadas (ESPHome, Node-RED…), **nombra las carpetas
+> reales** (`boards/ common/ modules/`) en vez de `batr`/`find .` a secas, o verás
+> builds y cachés internos mezclados con tu configuración.
 
 ---
 

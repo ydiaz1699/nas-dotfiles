@@ -22,13 +22,21 @@ Variables base: `$NAS_DOTFILES` = `/nas-dotfiles` · `$dkco` = `/docker` · `$aa
 3. Responde con las columnas *Qué hace* + *Definición/Equivale a*.
 4. Si piden más detalle del que hay aquí, apunta a la columna *Fuente* en el repo.
 
+> ⚠️ **Gotcha de aliases:** los **alias** (`bat`, `ls`, `ll`, `grep`…) solo se
+> expanden cuando los escribes **directamente en la terminal interactiva**. NO
+> funcionan dentro de `find -exec`, `xargs`, scripts no interactivos ni `sudo`.
+> Ahí hay que usar el **binario real**: `bat` → `batcat`. Para "ver recursivo"
+> usa la función `batr` (no es alias, sí funciona en cualquier contexto) o
+> `find … -exec batcat {} +` (nunca `-exec bat`).
+
 ---
 
 ## 1. Aliases de archivos y visualización
 
 | Herramienta | Tipo | Qué hace | Definición / Equivale a | Fuente |
 |---|---|---|---|---|
-| `bat` | alias | Ver archivos con **syntax highlight** (solo lectura). En Debian el binario es `batcat`, no `bat` | `batcat --style=header,grid --paging=never` | `shell/lib/aliases.sh` · doc `docker-nas/references/entorno.md` |
+| `bat` | alias | Ver **un** archivo con syntax highlight (solo lectura). En Debian el binario es `batcat`, no `bat`. NO es recursivo | `batcat --style=header,grid --paging=never` | `shell/lib/aliases.sh` · doc `docker-nas/references/entorno.md` |
+| `batr [dir] [ext]` | función | Ver el contenido de **TODOS los archivos** de una carpeta y sus subcarpetas (bat recursivo). Excluye `secrets.yaml`/`.env`/ocultos salvo `FORCE=1`. Ej: `batr`, `batr common`, `batr . yaml` | `find <dir> -type f … -exec batcat … {} +` | `shell/lib/aliases.sh` |
 | `nano` | alias | Editar con autoindent | `nano -i` | `shell/lib/aliases.sh` |
 | `rm` | función | Borrar; pide confirmación **solo en terminal interactiva** (no rompe scripts/pipes) | `rm -iv` en TTY | `shell/lib/aliases.sh` |
 | `cp` | función | Copiar; confirmación solo en TTY | `cp -iv` en TTY | `shell/lib/aliases.sh` |
