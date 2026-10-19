@@ -1532,3 +1532,77 @@ funciona: comparar bloque a bloque convierte un YAML suelto en plantillas
 parametrizadas sin duplicar. **PENDIENTE:** validar v1.1.0 con `esphome config` en el
 NAS (no verificable desde Kiro Web) y confirmar que `esphome: on_boot` del device se
 fusiona (concatena) con el de `base.yaml`. Biblioteca: `ydiaz1699/esphome-common`.
+
+---
+
+## 33. Índice granular de herramientas + `batr` (ver contenido de carpetas recursivo)
+
+**Problema.**
+El usuario no tenía forma de consultar **UNA** herramienta de su framework (ej. el
+alias `bat`) ni de pasarle ese conocimiento a **otro LLM** (Claude, Kiro nuevo) sin
+volcar todo el repo. `framework-audit.md` mapea componentes/archivos por capa, pero no
+herramientas atómicas (alias, función, subcomando). Derivado: al querer ver el
+contenido de las subcarpetas de `$dkco/esphome/config/` (`boards/ common/ modules/`),
+`bat` no es recursivo y surgieron varios tropiezos reales.
+
+**Idea del usuario.**
+(1) Un índice consultable herramienta-por-herramienta que viva en `nas-dotfiles` y
+también exista como skill portable `.zip`. (2) Un comando para ver el contenido de
+todas las subcarpetas. (3) Que ese comando no esté atado a ESPHome y que las carpetas
+excluidas sean configurables sin tocar el código. (4) Documentar y auto-mejorar.
+
+**Proceso (y tropiezos resueltos en orden).**
+1. **Índice vivo** `docs/tools-index.md`: tabla `herramienta → tipo → qué hace →
+   definición → fuente` (aliases, listado, docker rápido, nav, sistema, instal/pipins,
+   git, `svc` global/servicio, agente, ntfy, skills, tools). Enlazar-no-duplicar.
+2. **Skill portable** `skill-portable/nas-tools-index/` (SKILL.md autocontenido +
+   `scripts/tool-lookup.sh` + README) → `.zip` para Kiro/Claude. El `.zip` en `.gitignore`.
+3. **Función `batr`** (bat recursivo) en `shell/lib/aliases.sh`, porque `bat` solo
+   muestra un archivo.
+4. **Gotcha de aliases:** di al usuario `find . -exec bat {}` → falló con "`bat` no
+   existe". Los alias NO se expanden dentro de `find -exec`/`xargs`/scripts/`sudo`; el
+   binario real es `batcat`. Corregidas además 5 recetas de red (`networking-*.md`) que
+   tenían el mismo bug heredado. El método del usuario `bat secrets.yaml common/*.yaml`
+   SÍ funciona (el glob y el alias los resuelve bash en la terminal).
+5. **`find .` a secas arrastra basura:** en ESPHome, `.esphome/` (build de ESP-IDF/
+   PlatformIO) tiene miles de archivos → salía "hasta lo de VS Code". Recomendación:
+   nombrar las carpetas reales (`boards/ common/ modules/`) o filtrar.
+6. **Pico de CPU al 100% (1ª vez):** `batr` filtraba los ocultos de la SALIDA
+   (`! -path '*/.*'`) pero `find` igual DESCENDÍA a `.esphome/`. Fix: `-prune` real para
+   NO recorrer `.esphome .pioenvs .piolibdeps .git node_modules __pycache__ .cache .venv
+   .mypy_cache .pytest_cache`. (La 2ª vez rápida era page cache del kernel, no mérito del
+   código.)
+7. **Configurable sin tocar código:** `BATR_PRUNE_EXTRA="dist out"` (añade) y
+   `BATR_PRUNE="target bin"` (reemplaza); maneja el caso vacío sin romper el `find`.
+8. **Confusión de ruta:** `dk esphome config` falló porque `dk <dir> <cmd>` ejecuta el
+   2º arg como comando, no como 2ª carpeta → usar `dk esphome` + `cd config` o ruta
+   completa. (NO era problema del alias; un consejo externo de `unalias bat`+redefinir
+   función se descartó por romper el framework.)
+
+**Decisión.**
+Tres capas sin duplicar: `docs/tools-index.md` (vivo) + `skill-portable/nas-tools-index/`
+(espejo portable `.zip`) + punteros en `AGENTS.md` y `framework-audit.md`. `batr` como
+función del framework (no alias → funciona en cualquier contexto), con poda `-prune`
+configurable por `BATR_PRUNE`/`BATR_PRUNE_EXTRA`. Todo en PR #178.
+
+**Alternativas descartadas.**
+- `unalias bat` + redefinir `bat` como función (consejo externo): rompe el alias del
+  framework y su diagnóstico era falso (el fallo real era la ruta, no el alias).
+- `find . -exec bat`: el alias no aplica ahí → `batcat` o `batr`.
+- `find .`/`batr` sin filtro en configs con build: arrastra `.esphome/` → preferir
+  nombrar carpetas o filtrar por extensión.
+- Solo filtrar la salida (sin `-prune`): no evita el recorrido → pico de CPU.
+
+**Aprendizaje.**
+1. **Alias vs binario real:** los alias de bash solo se expanden en la terminal
+   interactiva; en `find -exec`/`xargs`/scripts/`sudo` hay que usar el binario real
+   (`bat`→`batcat`) o una **función** (sí funciona en esos contextos). El glob `*`/`**`
+   lo expande bash, así que `bat carpeta/*.yaml` sí funciona escrito en la terminal.
+2. **Filtrar la salida ≠ evitar el recorrido:** para no disparar la CPU en árboles con
+   carpetas generadas, hay que PODAR con `-prune` (que `find` no entre), no solo
+   descartar al final. ESPHome genera `.esphome/` con miles de archivos de build.
+3. **`dk <dir> <cmd>`** interpreta el 2º argumento como comando a ejecutar, no como 2ª
+   carpeta — no sirve para bajar dos niveles.
+4. **Hueco de framework detectado:** faltaba una capa de índice granular de herramientas
+   (distinta de `framework-audit.md`, que es de componentes). Cubierta con `tools-index.md`
+   + skill portable. El `.zip` es espejo manual: si cambia el índice, regenerar y re-subir.
