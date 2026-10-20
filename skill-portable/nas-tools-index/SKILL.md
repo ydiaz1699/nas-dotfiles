@@ -66,7 +66,7 @@ Reglas de oro del framework: usar `dk`/`adm`/`nasfk` (no `cd`), `svc` (no `docke
 | Herramienta | Qué hace | Equivale a |
 |---|---|---|
 | `bat` | Ver **un** archivo con syntax highlight (solo lectura). En Debian el binario es `batcat`, no `bat`. NO es recursivo | `batcat --style=header,grid --paging=never` |
-| `batr [dir] [ext]` | Ver el contenido de **TODOS los archivos** de una carpeta y subcarpetas (bat recursivo). **Poda** `.esphome`/`.pioenvs`/`.git`/`node_modules`/`__pycache__`/`.cache`/`.venv`… (no las recorre → sin pico de CPU). Configurable sin tocar código: `BATR_PRUNE_EXTRA="dist out"` (añade) / `BATR_PRUNE="target bin"` (reemplaza). Excluye `secrets.yaml`/`.env`/ocultos salvo `FORCE=1`. Ej: `batr`, `batr common`, `batr . yaml` | `find <dir> \( <prune> \) -prune -o \( -type f … -exec batcat {} + \)` |
+| `batr [-e ext] [dir...]` | Ver el contenido de **TODOS los archivos** de una o **VARIAS** carpetas y subcarpetas (bat recursivo). Acepta `{a,b,c}` de bash; filtro con `-e yaml` (o legacy `batr . yaml`). **Poda** `.esphome`/`.pioenvs`/`.git`/`node_modules`/`__pycache__`/`.cache`/`.venv`… (no las recorre → sin pico de CPU). Configurable: `BATR_PRUNE_EXTRA="dist out"` (añade) / `BATR_PRUNE="target bin"` (reemplaza). Excluye `secrets.yaml`/`.env`/ocultos salvo `FORCE=1`. Ej: `batr`, `batr boards common modules`, `batr -e yaml .` | `find <dirs...> \( <prune> \) -prune -o \( -type f … -exec batcat {} + \)` |
 | `nano` | Editar con autoindent | `nano -i` |
 | `rm` / `cp` / `mv` | Confirmación solo en terminal interactiva (no rompe scripts) | `… -iv` en TTY |
 | `mkdir` | Crear con padres + verbose | `mkdir -pv` |

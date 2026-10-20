@@ -287,10 +287,13 @@ bat boards/**/*.yaml common/**/*.yaml                       # ** = baja a subcar
 
 # "TODO lo que cuelga de aquí" (ÚSALO CON CUIDADO): arrastra builds, cachés,
 # .esphome/, etc. Preferir nombrar las carpetas como arriba.
-batr                  # todos los archivos bajo el directorio actual (recursivo)
-batr common           # todos los archivos bajo ./common
-batr . yaml           # solo *.yaml bajo el directorio actual
-FORCE=1 batr          # incluir secrets.yaml/.env/ocultos (por defecto se excluyen)
+batr                        # todos los archivos bajo el directorio actual (recursivo)
+batr common                 # una carpeta
+batr boards common modules  # VARIAS carpetas a la vez (acepta {a,b,c} de bash)
+batr -e yaml .              # filtro de extensión con -e (solo *.yaml)
+batr -e yaml boards common  # -e + varias carpetas
+batr . yaml                 # atajo legacy: una carpeta + extensión
+FORCE=1 batr                # incluir secrets.yaml/.env/ocultos (por defecto se excluyen)
 
 # batr poda carpetas de build/caché pesadas (.esphome, .git, node_modules…).
 # Añadir o cambiar esa lista SIN tocar el código (export en ~/.bashrc):

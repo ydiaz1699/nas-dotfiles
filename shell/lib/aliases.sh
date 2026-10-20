@@ -72,11 +72,14 @@ alias fgrep='fgrep --color=auto'
 # ── Bat (batcat con estilo bonito) ────────────────────────────────────────
 alias bat='batcat --style=header,grid --paging=never'
 
-# ── Bat recursivo: ver el contenido de TODOS los archivos de una carpeta ──
+# ── Bat recursivo: ver el contenido de TODOS los archivos de una o varias carpetas ──
 # Uso:
-#   batr                 → todos los archivos bajo el directorio actual
-#   batr common          → todos los archivos bajo ./common
-#   batr . yaml          → solo archivos *.yaml bajo el directorio actual
+#   batr                         → todos los archivos bajo el directorio actual
+#   batr common                  → todos los archivos bajo ./common
+#   batr boards common modules   → VARIAS carpetas a la vez (acepta {a,b,c} de bash)
+#   batr -e yaml .               → solo *.yaml bajo el directorio actual
+#   batr -e yaml boards common   → solo *.yaml en varias carpetas
+#   batr . yaml                  → atajo legacy: UNA carpeta + extensión (compatibilidad)
 # PODA (no desciende) carpetas de build/caché/VCS pesadas: .esphome, .pioenvs,
 # .piolibdeps, .git, node_modules, __pycache__, .cache, .venv — así no dispara
 # la CPU en configs con miles de archivos generados (ej. ESPHome).
@@ -87,8 +90,19 @@ alias bat='batcat --style=header,grid --paging=never'
 #   BATR_PRUNE="target bin"       → REEMPLAZA la lista entera por esas
 # (los nombres se separan por espacios; son nombres de carpeta, no rutas)
 batr() {
-  local dir="${1:-.}"
-  local ext="${2:-}"
+  local ext=""
+  # Filtro de extensión con -e/--ext (no choca con las carpetas posicionales).
+  while [ "${1:-}" = "-e" ] || [ "${1:-}" = "--ext" ]; do
+    ext="$2"; shift 2
+  done
+  # Atajo legacy: exactamente 2 args, el 2º sin '/' → 'batr <dir> <ext>'.
+  if [ -z "$ext" ] && [ "$#" -eq 2 ] && [ "${2#*/}" = "$2" ] && [ ! -e "$2" ]; then
+    ext="$2"; set -- "$1"
+  fi
+  # Carpetas: lo que quede en $@ (o '.' si no hay ninguna).
+  local -a dirs=("$@")
+  [ "${#dirs[@]}" -eq 0 ] && dirs=(".")
+
   # Lista por defecto de carpetas que NO se recorren (prune): evita el recorrido
   # costoso, no solo filtra la salida.
   local -a prune_names=(.esphome .pioenvs .piolibdeps .git node_modules
@@ -107,7 +121,7 @@ batr() {
 
   # Si no quedó ninguna carpeta a podar (BATR_PRUNE vacío), find sin la rama prune.
   if [ "${#prune_names[@]}" -eq 0 ]; then
-    find "$dir" "${match[@]}" -exec batcat --style=header,grid --paging=never {} +
+    find "${dirs[@]}" "${match[@]}" -exec batcat --style=header,grid --paging=never {} +
     return
   fi
 
@@ -118,8 +132,8 @@ batr() {
   done
   unset 'prune[${#prune[@]}-1]'   # quitar el -o sobrante del final
 
-  # Estructura: \( <prune> \) -prune -o \( <match> -exec bat \)
-  find "$dir" \( "${prune[@]}" \) -prune -o \
+  # Estructura: find <dirs...> \( <prune> \) -prune -o \( <match> -exec bat \)
+  find "${dirs[@]}" \( "${prune[@]}" \) -prune -o \
     \( "${match[@]}" -exec batcat --style=header,grid --paging=never {} + \)
 }
 

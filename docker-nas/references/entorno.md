@@ -107,7 +107,7 @@ En pipes/scripts se comportan sin confirmación (no rompen automatización).
 | `dus` | du -sh | Tamaño total del directorio (summary) |
 | `free` | -h | Formato legible |
 | `bat` | batcat --style=header,grid --paging=never | Ver UN archivo con colores (no recursivo) |
-| `batr [dir] [ext]` | find + batcat recursivo | Ver el contenido de TODOS los archivos de una carpeta y subcarpetas. Excluye secrets.yaml/.env/ocultos (FORCE=1 los incluye). Ej: `batr`, `batr common`, `batr . yaml` |
+| `batr [-e ext] [dir...]` | find + batcat recursivo | Ver el contenido de TODOS los archivos de una o VARIAS carpetas y subcarpetas (acepta `{a,b,c}`). Poda .esphome/.git/node_modules/… (configurable con BATR_PRUNE/BATR_PRUNE_EXTRA). Excluye secrets.yaml/.env/ocultos (FORCE=1 los incluye). Ej: `batr boards common modules`, `batr -e yaml .`, `batr . yaml` (legacy) |
 | `nano` | -i | Autoindent activado |
 
 ## Alias — Grep
