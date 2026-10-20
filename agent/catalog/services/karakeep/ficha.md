@@ -66,6 +66,21 @@ procedimiento.
 - Sincronización con navegadores vía **floccus** (backend nativo "Karakeep").
 - Persistencia crítica en `./data` (incluye la DB SQLite y los archivos).
 
+## Interfaces de acceso (un almacén, 4 caras + Floccus)
+
+Karakeep es un **único almacén** con 4 interfaces, todas sobre la misma DB:
+
+| Interfaz | Para qué | Dónde se documenta |
+|----------|----------|--------------------|
+| **UI web + extensión** | Uso cotidiano humano | `docs/services/karakeep-guide.md` |
+| **MCP** (`@karakeep/mcp`) | El LLM opera bookmarks por lenguaje natural | `Varios_tools/kiro-cli-nas/karakeep-mcp.md` |
+| **CLI** (`@karakeep/cli`) | Automatizaciones, import/export masivo | `docs/services/karakeep-guide.md` §CLI |
+| **API REST** (Bearer) | Scripts / cron / n8n | `docs/services/karakeep-guide.md` §API REST |
+
+**Floccus** es la 5ª vía: la "cara nativa" del almacén en el navegador (backend oficial
+"Karakeep", sincronización bidireccional de marcadores nativos PC ↔ Android). Visión de
+conjunto y modelo de datos: `docs/services/karakeep-floccus-architecture.md`.
+
 ## Pendiente
 
 - Verificar en runtime: primer arranque, creación del usuario admin, tagging real
