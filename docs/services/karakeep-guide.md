@@ -7,6 +7,24 @@
 > Antes "Hoarder". Imagen `ghcr.io/karakeep-app/karakeep`. Esta guía es
 > autocontenida: lleva el conocimiento dentro para que cualquier LLM pueda
 > operar el servicio sin releer el repo entero.
+>
+> **Arquitectura y visión de conjunto** (un almacén, 4 interfaces + Floccus):
+> ver [`karakeep-floccus-architecture.md`](./karakeep-floccus-architecture.md).
+
+---
+
+## Las 4 formas de acceder a Karakeep
+
+Karakeep es un **único almacén** con cuatro interfaces de acceso. Esta guía cubre el
+servicio (UI) y las vías CLI/API/MCP. La visión de conjunto está en el documento de
+arquitectura enlazado arriba.
+
+| Interfaz | Para qué | Sección |
+|----------|----------|---------|
+| **UI web + extensión** | Uso cotidiano humano | el grueso de esta guía |
+| **MCP** | El LLM opera bookmarks por lenguaje natural | ver §MCP más abajo |
+| **CLI** | Tú + automatizaciones, import/export masivo | ver §CLI |
+| **API REST** | Scripts / cron / n8n | ver §API REST |
 
 ---
 
@@ -240,10 +258,117 @@ svc backup karakeep     # respaldar (incluye ./data con la DB SQLite)
 
 ---
 
+## MCP — que el LLM opere Karakeep por lenguaje natural
+
+Karakeep trae un **servidor MCP oficial** (`@karakeep/mcp`) que permite a un LLM
+(Kiro CLI, Claude, etc.) buscar, crear, etiquetar y organizar bookmarks hablándole en
+lenguaje natural. Se conecta a la **API REST** de Karakeep con una API key.
+
+Configuración mínima (dos variables):
+
+| Variable | Valor |
+|---|---|
+| `KARAKEEP_API_ADDR` | `http://$SERVER_IP:3400` (tu instancia) |
+| `KARAKEEP_API_KEY` | API key de Karakeep (Settings → API Keys) |
+
+Dos formas de lanzarlo:
+
+```jsonc
+// npx
+{ "mcpServers": { "karakeep": {
+    "command": "npx", "args": ["@karakeep/mcp"],
+    "env": { "KARAKEEP_API_ADDR": "http://$SERVER_IP:3400", "KARAKEEP_API_KEY": "<TOKEN>" }
+}}}
+```
+
+```jsonc
+// docker
+{ "mcpServers": { "karakeep": {
+    "command": "docker",
+    "args": ["run","-i","--rm",
+             "-e","KARAKEEP_API_ADDR=http://$SERVER_IP:3400",
+             "-e","KARAKEEP_API_KEY=<TOKEN>",
+             "ghcr.io/karakeep-app/karakeep-mcp:latest"]
+}}}
+```
+
+> **Integración en el Kiro CLI del NAS:** NO pegues el token en el JSON. Sigue el
+> patrón del entorno (`mcp_tools/karakeep.json` + `mcp-build` + secreto en
+> `$dkco/kiro-cli/karakeep.env` inyectado por el wrapper + clasificación en
+> `permissions.yaml` V3). Guía dedicada y verificada:
+> `Varios_tools/kiro-cli-nas/karakeep-mcp.md`.
+
+Las tools del MCP (extraídas del código oficial) cubren **bookmarks** (buscar, crear,
+leer, actualizar, borrar, leer contenido), **lists**, **tags**, **highlights** y
+**assets**. Lista completa en la guía del MCP enlazada arriba.
+
+---
+
+## CLI — manipulación avanzada e import/export masivo
+
+Para operaciones avanzadas o scripts puntuales, Karakeep tiene un **CLI oficial**
+(`@karakeep/cli`).
+
+```bash
+# Instalación (una de las dos)
+npm install -g @karakeep/cli
+docker run --rm ghcr.io/karakeep-app/karakeep-cli:release --help
+
+# Configuración (precedencia: flags > env vars > config file)
+export KARAKEEP_SERVER_ADDR="http://$SERVER_IP:3400"
+export KARAKEEP_API_KEY="<TOKEN>"
+# o interactivo:  karakeep auth init
+# o config file:  ~/.config/karakeep/config.json  { "serverAddr": "...", "apiKey": "..." }
+
+# Verificar conexión
+karakeep whoami
+```
+
+Comandos principales: `bookmarks` (add / get / update / list / delete), `lists`
+(list / delete / add-bookmark / remove-bookmark), `tags`, `whoami`. Usa `--json` para
+encadenar en scripts (p. ej. cron que archiva o etiqueta en masa).
+
+> **Dónde corre el CLI:** donde lo necesites (tu PC, o dentro del NAS). Si lo quieres
+> para automatizaciones en el NAS, lo natural es un pequeño contenedor efímero
+> `ghcr.io/karakeep-app/karakeep-cli:release` invocado desde cron o desde n8n. El
+> secreto va en `$dkco/karakeep/.env` o en `~/.config/karakeep/config.json` con
+> permisos 600 — nunca en el comando a la vista.
+
+---
+
+## API REST — integraciones (scripts / cron / n8n)
+
+Para integraciones deterministas, la **API REST** es la vía directa.
+
+- **Auth:** `Authorization: Bearer <API_KEY>` (genera la key en Settings → API Keys).
+- **Base:** `http://$SERVER_IP:3400/api/v1/...`
+- **Paginación:** por cursor (`cursor` + `limit`; `nextCursor=null` = fin).
+- **Tipos de bookmark:** `link`, `text`, `asset` (imagen/PDF).
+
+```bash
+# Ejemplo: crear un bookmark de tipo link desde un script
+curl -s -X POST "http://$SERVER_IP:3400/api/v1/bookmarks" \
+  -H "Authorization: Bearer $KARAKEEP_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"link","url":"https://ejemplo.com"}'
+```
+
+> **Relación con n8n:** como ya tienes n8n en el NAS, los flujos automáticos (p. ej.
+> "guarda en Karakeep los favoritos de un RSS") se montan con un nodo HTTP Request a
+> esta API, o con el CLI en un nodo Execute Command. Ver `docs/services/n8n-guide.md`.
+
+Doc completa de endpoints: <https://docs.karakeep.app/API/karakeep-api>.
+
+---
+
 ## Referencias
 
 - Imagen y repo: https://github.com/karakeep-app/karakeep (tag `v0.33.2`)
+- **Arquitectura (un almacén, 4 interfaces + Floccus):** `docs/services/karakeep-floccus-architecture.md`
+- MCP oficial: https://docs.karakeep.app/mcp · integración Kiro CLI: `Varios_tools/kiro-cli-nas/karakeep-mcp.md`
+- CLI oficial: https://docs.karakeep.app/command-line
+- API REST: https://docs.karakeep.app/API/karakeep-api
 - Proveedores de IA: https://docs.karakeep.app/guides/different-ai-providers
 - Ollama Cloud: https://docs.ollama.com/cloud
 - floccus (sincronización navegador): https://github.com/floccusaddon/floccus
-- My reglas del catálogo: `agent/catalog/_compose_base.md`, `agent/catalog/_common.yml`
+- Mis reglas del catálogo: `agent/catalog/_compose_base.md`, `agent/catalog/_common.yml`
