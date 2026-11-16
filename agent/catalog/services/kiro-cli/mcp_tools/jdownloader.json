@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "jdownloader": {
+      "command": "/opt/jdownloader-venv/bin/jdownloader-mcp",
+      "args": [],
+      "env": {
+        "JD_EMAIL": "${JD_EMAIL}",
+        "JD_PASSWORD": "${JD_PASSWORD}",
+        "JD_DEVICE_NAME": "${JD_DEVICE_NAME}",
+        "JD_LOG_LEVEL": "ERROR",
+        "NOPECHA_API_KEY": "${NOPECHA_API_KEY}"
+      },
+      "disabled": false
+    }
+  }
+}

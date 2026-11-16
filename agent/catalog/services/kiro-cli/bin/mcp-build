@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Ensamblador modular de mcp_tools/*.json -> settings/mcp.json (jq)
+set -eu
+
+DIR="/docker/kiro-cli/data/.kiro/settings"
+SRC="$DIR/mcp_tools"
+OUT="$DIR/mcp.json"
+
+shopt -s nullglob
+files=("$SRC"/*.json)
+
+if [ ${#files[@]} -eq 0 ]; then
+  echo "Error: No se encontraron archivos de configuración MCP en $SRC"
+  exit 1
+fi
+
+echo "Ensamblando ${#files[@]} archivo(s) MCP desde $SRC..."
+jq -s 'reduce .[] as $f ({}; . * $f) | {mcpServers: .mcpServers}' "${files[@]}" > "$OUT"
+chown 1000:1000 "$OUT" 2>/dev/null || true
+
+for f in "${files[@]}"; do
+  echo "  - $(basename "$f")"
+done
+
+jq -e . "$OUT" >/dev/null && echo "OK: $OUT generado y validado correctamente."

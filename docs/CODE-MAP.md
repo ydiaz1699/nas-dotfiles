@@ -2,7 +2,7 @@
 
 > **Índice generado — no editar a mano.** Qué hace cada archivo de código, sus símbolos y sus conexiones internas. Igual que n8n-mcp indexa los nodos: consulta este mapa para saber QUÉ archivo tocar sin releer todo el repo, y luego abre solo ese archivo. Complemento de `docs/dependency-map.md` (qué actualizar en cascada al tocar un archivo).
 
-> Archivos de código mapeados: **111**. Regenerar con `svc code-map` (o `python3 agent/tools/project_index.py --code-map`).
+> Archivos de código mapeados: **114**. Regenerar con `svc code-map` (o `python3 agent/tools/project_index.py --code-map`).
 
 > **Conexiones** = imports internos (Python) o `source` (Bash). **Usado por** = quién importa este archivo (grafo inverso, solo Python). Ambos son mejor-esfuerzo.
 
@@ -14,6 +14,8 @@
 | `agent/__init__.py` | nas-agent — Agente inteligente para administración de NAS/Homelab | — | — | — |
 | `agent/catalog/__init__.py` | — | — | — | — |
 | `agent/catalog/_index.py` | Generador de índice del catálogo de servicios. | _parse_frontmatter(), build_index(), write_index(), load_index(), lookup_service(), services_by_category(), services_by_network(), main() | — | `agent/plugins/backup_plugin.py`, `agent/tools/discovery_tools.py` |
+| `agent/catalog/services/kiro-cli/bin/kiro` | Wrapper para lanzar Kiro CLI en Docker inyectando credenciales desde .env | — | — | — |
+| `agent/catalog/services/kiro-cli/bin/mcp-build` | Ensamblador modular de mcp_tools/*.json -> settings/mcp.json (jq) | — | — | — |
 | `agent/catalog/services/openwa/wa-send.sh` | wa-send — enviar un mensaje de WhatsApp por la API de OpenWA desde la terminal. | die(), cleanup() | — | — |
 | `agent/config/__init__.py` | — | — | — | — |
 | `agent/core/__init__.py` | agent/core/ — Capa de lógica de negocio del agente NAS. | — | — | — |
@@ -92,7 +94,7 @@
 | Archivo | Qué hace | Símbolos | Conexiones | Usado por |
 |---|---|---|---|---|
 | `shell/init.sh` | Loader único del shell framework | path_add(), svc(), agent() | `$_NAS_USER_CONF`, `$_f`, `.env` | — |
-| `shell/lib/aliases.sh` | Navegacion | reload(), rm(), cp(), mv() | `~/.bashrc` | — |
+| `shell/lib/aliases.sh` | Navegacion | reload(), rm(), cp(), mv(), batr() | `~/.bashrc` | — |
 | `shell/lib/completions.sh` | Completions adicionales | _instal_complete(), _logs_complete() | — | — |
 | `shell/lib/docker.sh` | Autocompletado de svc | _svc_services(), _lobe_actions(), _svc_complete() | — | — |
 | `shell/lib/git.sh` | Aliases y helpers de git | git-clean-branches(), git-quick() | — | — |
@@ -102,9 +104,10 @@
 | `shell/lib/prompt.sh` | Prompt resultante (ejemplo): | _prompt_cache_docker(), _prompt_cache_disk(), _prompt_git(), _build_prompt() | — | — |
 | `shell/lib/system.sh` | nas — dashboard rapido del NAS | nas(), disk(), netinfo(), logs() | — | — |
 | `shell/scripts/apply-restart-policy.sh` | Migra contenedores existentes a on-failure:5 sin arrancar todos los servicios. | svc_cli(), compose_services() | — | — |
-| `shell/scripts/boot-order.sh` | Arranque escalonado de Compose por capas. | log(), fail(), svc_cli(), compose_file(), discovered_services(), trim(), flush_layer(), load_layers(), validate_layers(), wait_for_docker(), wait_service_ready(), svc_up_one(), … (+5) | — | — |
+| `shell/scripts/boot-order.sh` | Arranque escalonado de Compose por capas. | log(), fail(), svc_cli(), compose_file(), discovered_services(), trim(), flush_layer(), load_layers(), validate_layers(), wait_for_docker(), wait_service_ready(), svc_up_one(), … (+6) | — | — |
 | `shell/scripts/find-no-extends.sh` | Detecta Compose que no heredan los defaults de _common.yml. | — | — | — |
 | `shell/scripts/install-boot-service.sh` | Genera e instala docker-boot-staged.service con las rutas reales de esta | render() | — | — |
+| `shell/scripts/install-shutdown-service.sh` | Genera e instala docker-shutdown-staged.service con las rutas reales de esta | render() | — | — |
 | `shell/scripts/install_docker.sh` | Instalación de Docker Engine en Debian | usage(), parse_args(), echo_info(), echo_warn(), echo_error(), setup_logging(), print_command(), run_command(), run_optional_command(), apt_update_once(), detect_docker_user(), select_docker_user(), … (+13) | `$OS_RELEASE_FILE` | — |
 | `shell/scripts/restart-all.sh` | Baja TODOS los servicios en orden inverso a las capas y reinicia el NAS. | — | — | — |
 | `shell/scripts/start-all.sh` | Compatibilidad: el arranque canónico ahora vive en boot-order.sh. | — | — | — |

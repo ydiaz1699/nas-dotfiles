@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Wrapper para lanzar Kiro CLI en Docker inyectando credenciales desde .env
+set -eu
+
+RCPASS=""
+if [ -f /docker/rclone-rcd/.env ]; then
+  RCPASS="$(grep -E '^RCLONE_RC_PASS=' /docker/rclone-rcd/.env | cut -d= -f2- || true)"
+fi
+
+ENV_FLAGS=()
+[ -n "$RCPASS" ] && ENV_FLAGS+=(-e "RCLONE_RC_PASS=$RCPASS")
+[ -f /docker/kiro-cli/nextdns.env ] && ENV_FLAGS+=(--env-file /docker/kiro-cli/nextdns.env)
+[ -f /docker/kiro-cli/n8n.env ] && ENV_FLAGS+=(--env-file /docker/kiro-cli/n8n.env)
+[ -f /docker/kiro-cli/jdownloader.env ] && ENV_FLAGS+=(--env-file /docker/kiro-cli/jdownloader.env)
+[ -f /docker/kiro-cli/karakeep.env ] && ENV_FLAGS+=(--env-file /docker/kiro-cli/karakeep.env)
+
+exec docker run -it --rm --network host \
+  "${ENV_FLAGS[@]}" \
+  -v /docker/kiro-cli/data:/home/kiro \
+  kiro-cli-nas:local --v3 "$@"

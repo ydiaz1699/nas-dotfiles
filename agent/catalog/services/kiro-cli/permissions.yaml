@@ -1,0 +1,122 @@
+# Permisos V3 para Kiro CLI (orden de precedencia: deny > ask > allow)
+permissions:
+  # ── Rclone MCP ──
+  - capability: mcp
+    match:
+      - "rclone/rc_noop"
+      - "rclone/core_version"
+      - "rclone/operations_list"
+      - "rclone/operations_stat"
+      - "rclone/operations_about"
+      - "rclone/job_status"
+      - "rclone/job_list"
+      - "rclone/config_listremotes"
+      - "rclone/config_dump"
+      - "rclone/config_get"
+      - "rclone/mount_list"
+    effect: allow
+
+  - capability: mcp
+    match:
+      - "rclone/sync_*"
+      - "rclone/operations_delete*"
+      - "rclone/operations_purge*"
+      - "rclone/operations_copy*"
+      - "rclone/operations_move*"
+      - "rclone/mount_mount"
+      - "rclone/mount_unmount*"
+      - "rclone/config_create"
+      - "rclone/config_delete"
+      - "rclone/config_update"
+    effect: ask
+
+  # ── NextDNS MCP (infinix y papá) ──
+  - capability: mcp
+    match:
+      - "nextdns-infinix/get*"
+      - "nextdns-infinix/list*"
+      - "nextdns-papa/get*"
+      - "nextdns-papa/list*"
+    effect: allow
+
+  - capability: mcp
+    match:
+      - "nextdns-infinix/manage*"
+      - "nextdns-infinix/clear*"
+      - "nextdns-papa/manage*"
+      - "nextdns-papa/clear*"
+    effect: ask
+
+  # ── n8n MCP ──
+  - capability: mcp
+    match:
+      - "n8n/tools_documentation"
+      - "n8n/search_nodes"
+      - "n8n/get_node"
+      - "n8n/search_templates"
+      - "n8n/n8n_health_check"
+      - "n8n/get_workflow"
+      - "n8n/list_workflows"
+      - "n8n/validate_workflow"
+    effect: allow
+
+  - capability: mcp
+    match:
+      - "n8n/create_workflow"
+      - "n8n/update_workflow"
+      - "n8n/delete_workflow"
+      - "n8n/activate_workflow"
+      - "n8n/deactivate_workflow"
+      - "n8n/execute_workflow"
+    effect: ask
+
+  # ── JDownloader MCP (proyec_jdw2) ──
+  - capability: mcp
+    match:
+      - "jdownloader/jd_connection_status"
+      - "jdownloader/jd_list_devices"
+      - "jdownloader/jd_query_links"
+      - "jdownloader/jd_query_packages_linkgrabber"
+      - "jdownloader/jd_query_downloads"
+      - "jdownloader/jd_query_packages_downloads"
+      - "jdownloader/jd_get_download_state"
+      - "jdownloader/jd_get_speed"
+      - "jdownloader/jd_toolbar_status"
+      - "jdownloader/jd_list_accounts"
+      - "jdownloader/jd_list_premium_hosters"
+      - "jdownloader/jd_get_storage_info"
+      - "jdownloader/jd_get_config_value"
+      - "jdownloader/jd_list_config_entries"
+      - "jdownloader/jd_get_default_download_folder"
+      - "jdownloader/jd_list_extensions"
+      - "jdownloader/jd_list_dialogs"
+      - "jdownloader/jd_get_dialog"
+      - "jdownloader/jd_list_captchas"
+      - "jdownloader/jd_get_captcha"
+      - "jdownloader/jd_captcha_solvers_list"
+      - "jdownloader/jd_captcha_daemon_status"
+      - "jdownloader/jd_get_session_info"
+      - "jdownloader/jd_system_info"
+      - "jdownloader/jd_poll_events"
+    effect: allow
+
+  - capability: mcp
+    match:
+      - "jdownloader/*"
+    effect: ask
+
+  # ── Karakeep MCP ──
+  - capability: mcp
+    match:
+      - "karakeep/search*"
+      - "karakeep/get*"
+      - "karakeep/list*"
+    effect: allow
+
+  - capability: mcp
+    match:
+      - "karakeep/create*"
+      - "karakeep/update*"
+      - "karakeep/delete*"
+      - "karakeep/archive*"
+    effect: ask
