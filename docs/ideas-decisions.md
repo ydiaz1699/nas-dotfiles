@@ -39,6 +39,7 @@
 30. [ESPHome pueba + Sonoff: control OK, estado inicial del indicador PENDIENTE](#30-esphome-pueba--sonoff-control-ok-estado-inicial-del-indicador-pendiente-saga)
 31. [ESPHome: common/ como remote packages en repo propio esphome-common](#31-esphome-common-como-remote-packages-en-repo-propio-esphome-common)
 32. [esphome-common v1.1.0: primera plantilla integrada por el flujo de mejora continua (buzzer C6)](#32-esphome-common-v110-primera-plantilla-integrada-por-el-flujo-de-mejora-continua-buzzer-c6)
+33. [Patrón universal de Cache-Busting con ARG en Dockerfile para paquetes Git/Pip (evitar rebuilds de 14 min)](#33-patrón-universal-de-cache-busting-con-arg-en-dockerfile-para-paquetes-gitpip-evitar-rebuilds-de-14-min)
 ---
 
 ## 1. ntfy reemplaza notify-send
@@ -1532,3 +1533,33 @@ funciona: comparar bloque a bloque convierte un YAML suelto en plantillas
 parametrizadas sin duplicar. **PENDIENTE:** validar v1.1.0 con `esphome config` en el
 NAS (no verificable desde Kiro Web) y confirmar que `esphome: on_boot` del device se
 fusiona (concatena) con el de `base.yaml`. Biblioteca: `ydiaz1699/esphome-common`.
+
+---
+
+## 33. Patrón universal de Cache-Busting con ARG en Dockerfile para paquetes Git/Pip (evitar rebuilds de 14 min)
+
+**Problema:**
+En contenedores Docker que instalan herramientas directamente desde repositorios Git (como `jdownloader-mcp @ git+https://github.com/...@main`), Docker cachea capas comparando la cadena de texto literal de cada instrucción `RUN`. Aunque se hagan commits en la rama `main` remota, el texto de la línea no cambia y Docker reutiliza la caché local vieja sin descargar las actualizaciones. La alternativa típica (`--no-cache`) destruye toda la caché previa, forzando a reinstalar Debian, paquetes apt, Node.js y compiladores durante ~14 minutos (860s).
+
+**Solución arquitectural:**
+Separar capas estables de capas volátiles e inyectar un argumento dinámico (`ARG`) justo antes de la instalación Git:
+```dockerfile
+# Capas pesadas/estables (apt, Node.js, venvs base)
+RUN apt-get update && apt-get install -y nodejs npm git uv ...
+
+# Capa volátil con cache-bust:
+ARG JD_MCP_REF=main
+RUN UV_PYTHON_INSTALL_DIR=/opt/uv-python uv venv --python 3.14 /opt/jdownloader-venv \
+    && VIRTUAL_ENV=/opt/jdownloader-venv UV_PYTHON_INSTALL_DIR=/opt/uv-python uv pip install \
+       "jdownloader-mcp @ git+https://github.com/ydiaz1699/proyec_jdw2.git@main"
+```
+
+Al pasar en el comando de compilación `--build-arg JD_MCP_REF=$(date +%s)`:
+1. Docker invalida **únicamente** la capa a partir de ese `ARG`.
+2. Las capas anteriores (que tardaron 12 minutos) se reutilizan de la caché en 0 segundos.
+3. El build completo termina en **~2 minutos**.
+
+**Regla de ciclo de vida (cuándo recompilar y cuándo no):**
+1. **Configuraciones / JSONs / Secretos `.env`**: Nunca requieren `svc build`. Viven en el volumen `./data` y se actualizan al instante ejecutando `mcp-build`.
+2. **Actualización de paquetes Git**: Rebuild rápido con `--build-arg JD_MCP_REF=$(date +%s)`.
+3. **Cambios en paquetes Debian del sistema base**: Rebuild completo (`svc build`).

@@ -137,3 +137,48 @@ Al iniciar, puedes comprobar las herramientas MCP escribiendo:
 /mcp
 ```
 Verás listados los servidores `rclone`, `nextdns`, `n8n`, `jdownloader` y `karakeep` listos para ser utilizados por el agente.
+
+---
+
+## 5. Técnica de Optimización: Rebuilds Rápidos (Cache-Bust) y Ciclo de Cambios
+
+> Esta técnica es reutilizable para cualquier proyecto Docker que consuma paquetes desde repositorios Git o fuentes remotas.
+
+### El Problema de la Caché de Docker con Repositorios Git
+Docker decide si reutiliza una capa analizando únicamente el **texto literal** de la instrucción en el `Dockerfile`.  
+Si tienes una instrucción como:
+```dockerfile
+RUN pip install "git+https://github.com/usuario/repo.git@main"
+```
+Aunque hagas nuevos commits en la rama `main` de GitHub, el texto del `Dockerfile` sigue siendo exactamente el mismo. Docker asumirá que nada cambió y reutilizará la capa antigua de la caché, **sin descargar tus cambios**.  
+La solución habitual pero ineficiente es `docker compose build --no-cache`, pero eso destruye toda la caché previa (incluyendo `apt-get`, compiladores y dependencias base), tardando **12–15 minutos** innecesariamente.
+
+---
+
+### La Solución: El Patrón `ARG` Cache-Busting
+Colocar un `ARG` inmediatamente **antes** de la capa que instala el paquete Git o volátil:
+
+```dockerfile
+# ── Capas pesadas y estables (cacheadas por Docker: apt, Node, uv, etc.) ──
+RUN apt-get update && apt-get install -y nodejs ...
+
+# ── Capa volátil: Se declara un ARG de cache-bust justo antes del RUN ──
+ARG JD_MCP_REF=main
+RUN UV_PYTHON_INSTALL_DIR=/opt/uv-python uv venv --python 3.14 /opt/jdownloader-venv \
+    && VIRTUAL_ENV=/opt/jdownloader-venv UV_PYTHON_INSTALL_DIR=/opt/uv-python uv pip install \
+       "jdownloader-mcp @ git+https://github.com/ydiaz1699/proyec_jdw2.git@main"
+```
+
+Al pasar un valor dinámico en tiempo de compilación (`--build-arg JD_MCP_REF=$(date +%s)`), Docker detecta que el valor del argumento cambió y **solamente invalida esa capa hacia adelante**, conservando todas las capas anteriores intactas.
+
+---
+
+### Guía de Decisión: ¿Cuándo Reconstruir y Cuándo NO?
+
+| Tipo de Cambio | ¿Requiere `svc build`? | Acción Necesaria | Tiempo |
+|---|---|---|---|
+| **Configuraciones de MCPs** (`mcp_tools/*.json`) | ❌ **NO** | Ejecutar `mcp-build` (el volumen `./data` es en vivo). | **1 segundo** |
+| **Secretos o Credenciales** (`*.env`) | ❌ **NO** | Modificar el archivo `.env` (`chmod 600`). El wrapper lo inyecta en el siguiente inicio. | **Inmediato** |
+| **Actualización de código en paquete Git** (`proyec_jdw2`, etc.) | ✅ **SÍ (Rápido)** | `docker compose -f /docker/agy-cli/compose.yml build --build-arg JD_MCP_REF=$(date +%s)` | **~2 minutos** |
+| **Cambios en paquetes Debian base** (`apt-get`, Node.js, coreutils) | ✅ **SÍ (Completo)** | `svc build agy-cli` (o con `--no-cache`). | **~14 minutos** |
+

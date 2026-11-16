@@ -151,6 +151,35 @@ kiro
 
 ---
 
+## 5. Optimización de Builds: Cache-Busting con ARG y Ciclo de Cambios
+
+### El Problema de la Caché de Docker con Repositorios Git
+Docker cachea capas por texto de instrucción en el `Dockerfile`. Al instalar paquetes desde Git:
+```dockerfile
+RUN pip install "jdownloader-mcp @ git+https://github.com/ydiaz1699/proyec_jdw2.git@main"
+```
+Nuevos commits en `main` no cambian el texto de la línea, por lo que Docker usa la capa vieja. Usar `--no-cache` es destructivo e ineficiente (reconstruye Debian y paquetes apt durante ~14 minutos).
+
+### La Solución: ARG de Cache-Busting
+Colocar un `ARG` inmediatamente antes de la capa volátil:
+```dockerfile
+ARG JD_MCP_REF=main
+RUN UV_PYTHON_INSTALL_DIR=/opt/uv-python uv venv --python 3.14 /opt/jdownloader-venv \
+    && VIRTUAL_ENV=/opt/jdownloader-venv UV_PYTHON_INSTALL_DIR=/opt/uv-python uv pip install \
+       "jdownloader-mcp @ git+https://github.com/ydiaz1699/proyec_jdw2.git@main"
+```
+Para forzar a Docker a bajar la versión más reciente en solo **~2 minutos**:
+```bash
+docker compose -f /docker/kiro-cli/compose.yml build --build-arg JD_MCP_REF=$(date +%s)
+```
+
+### Reglas de Ciclo de Vida: ¿Cuándo Reconstruir?
+- **Cambios en `mcp_tools/*.json` o `.env`**: **NO reconstruir**. El volumen persistente `./data` toma los cambios en vivo ejecutando `mcp-build`.
+- **Actualización de paquete Git**: **Rebuild rápido** con `--build-arg JD_MCP_REF=$(date +%s)` (~2 min).
+- **Cambios en dependencias base apt/nodejs**: **Rebuild completo** `svc build kiro-cli` (~14 min).
+
+---
+
 ## 6. Puente de Migración a Google (Antigravity CLI `agy`)
 
 Esta misma estructura sirve como base directa para la migración a Google:

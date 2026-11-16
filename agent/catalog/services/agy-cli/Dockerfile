@@ -4,11 +4,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 RUN useradd -m -u 1000 agy
 
-# 1. Instalar Antigravity CLI (agy) en /opt/agy (fuera de /home/agy para que el volumen data/ no lo tape)
+# 1. Instalar Antigravity CLI (agy) en /opt/agy/bin (fuera de /home/agy para que el volumen data/ no lo tape)
 RUN mkdir -p /opt/agy/bin \
-    && (curl -fsSL https://antigravity.google/install.sh | HOME=/tmp/agy_inst bash 2>/dev/null \
-        && cp -a /tmp/agy_inst/.local/bin/. /opt/agy/bin/ 2>/dev/null || true) \
-    && rm -rf /tmp/agy_inst \
+    && curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir /opt/agy/bin \
+    && ln -sf /opt/agy/bin/agy /usr/local/bin/agy \
+    && chmod +x /opt/agy/bin/agy \
     && chown -R agy:agy /opt/agy
 
 ENV PATH="/opt/agy/bin:/usr/local/bin:${PATH}"
