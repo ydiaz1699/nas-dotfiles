@@ -7,8 +7,9 @@ RUN useradd -m -u 1000 agy
 # 1. Instalar Antigravity CLI (agy) en /opt/agy/bin (fuera de /home/agy para que el volumen data/ no lo tape)
 RUN mkdir -p /opt/agy/bin \
     && curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir /opt/agy/bin \
+    && (cp -a /root/.local/bin/agy /opt/agy/bin/agy 2>/dev/null || true) \
     && ln -sf /opt/agy/bin/agy /usr/local/bin/agy \
-    && chmod +x /opt/agy/bin/agy \
+    && chmod +x /opt/agy/bin/agy /usr/local/bin/agy \
     && chown -R agy:agy /opt/agy
 
 ENV PATH="/opt/agy/bin:/usr/local/bin:${PATH}"
