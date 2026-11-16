@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "nextdns-infinix": {
+      "command": "/opt/nextdns-venv/bin/python",
+      "args": ["-m", "nextdns_mcp.server"],
+      "env": {
+        "NEXTDNS_API_KEY": "${NEXTDNS_APIKEY_INFINIX}",
+        "NEXTDNS_DEFAULT_PROFILE": "${NEXTDNS_PROFILE_INFINIX}",
+        "NEXTDNS_WRITABLE_PROFILES": "${NEXTDNS_PROFILE_INFINIX}",
+        "NEXTDNS_READABLE_PROFILES": "${NEXTDNS_PROFILE_INFINIX}",
+        "FASTMCP_CHECK_FOR_UPDATES": "off"
+      },
+      "disabled": false
+    },
+    "nextdns-papa": {
+      "command": "/opt/nextdns-venv/bin/python",
+      "args": ["-m", "nextdns_mcp.server"],
+      "env": {
+        "NEXTDNS_API_KEY": "${NEXTDNS_APIKEY_PAPA}",
+        "NEXTDNS_DEFAULT_PROFILE": "${NEXTDNS_PROFILE_PAPA}",
+        "NEXTDNS_WRITABLE_PROFILES": "${NEXTDNS_PROFILE_PAPA}",
+        "NEXTDNS_READABLE_PROFILES": "${NEXTDNS_PROFILE_PAPA}",
+        "FASTMCP_CHECK_FOR_UPDATES": "off"
+      },
+      "disabled": false
+    }
+  }
+}

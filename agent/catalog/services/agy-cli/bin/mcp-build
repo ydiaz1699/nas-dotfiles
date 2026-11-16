@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Ensamblador modular de mcp_tools/*.json -> settings.json (jq) para Antigravity CLI
+set -eu
+
+DIR="/docker/agy-cli/data/.gemini/antigravity-cli"
+SRC="/docker/agy-cli/data/.gemini/antigravity-cli/mcp_tools"
+OUT="$DIR/settings.json"
+
+mkdir -p "$DIR" "$SRC"
+
+shopt -s nullglob
+files=("$SRC"/*.json)
+
+if [ ${#files[@]} -eq 0 ]; then
+  echo "Error: No se encontraron archivos de configuración MCP en $SRC"
+  exit 1
+fi
+
+echo "Ensamblando ${#files[@]} archivo(s) MCP para Antigravity CLI desde $SRC..."
+
+# Si settings.json ya existe con otras configs del CLI, combinamos mcpServers preservando el resto
+if [ -f "$OUT" ] && jq -e . "$OUT" >/dev/null 2>&1; then
+  jq -s '.[0] * {mcpServers: (reduce .[1:][] as $f ({}; . * $f.mcpServers))}' "$OUT" "${files[@]}" > "${OUT}.tmp"
+  mv "${OUT}.tmp" "$OUT"
+else
+  jq -s 'reduce .[] as $f ({}; . * $f) | {mcpServers: .mcpServers}' "${files[@]}" > "$OUT"
+fi
+
+chown -R 1000:1000 "/docker/agy-cli/data/.gemini" 2>/dev/null || true
+
+for f in "${files[@]}"; do
+  echo "  - $(basename "$f")"
+done
+
+jq -e . "$OUT" >/dev/null && echo "OK: $OUT generado y validado correctamente."

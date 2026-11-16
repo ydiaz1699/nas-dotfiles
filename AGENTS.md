@@ -272,7 +272,7 @@ Cuando la tarea encaje con una acción de abajo, **cargar esa skill PRIMERO**
 | Meta-prompt de unificación | `docs/meta-prompt-unificar.md` |
 | Meta-prompt ESPHome (crear/mantener proyectos, niveles, packages/!extend/!remove, fusión no-destructiva) | `docs/esphome-meta-prompt.md` |
 | Bootstrap portable para cualquier chat LLM | `docs/llm-context-bootstrap.md` |
-| **Kiro CLI y MCPs (rclone, nextdns, n8n, jdownloader, karakeep)** | `docs/services/kiro-cli-guide.md` (catálogo: `agent/catalog/services/kiro-cli/`) + histórico en `Varios_tools/kiro-cli-nas/` |
+| **Antigravity CLI (agy) y Kiro CLI (MCPs)** | `docs/services/agy-cli-guide.md` y `docs/services/kiro-cli-guide.md` (catálogo: `agent/catalog/services/agy-cli/`, `kiro-cli/`) |
 | Skill del chat para unificar y evolucionar herramientas | `.kiro/skills/documentation-evolution/SKILL.md` |
 | Bootstrap automático del chat | `.kiro/hooks/documentation-evolution-on-prompt.json` |
 | Consistencia arquitectónica | `docs/architecture-consistency.md` |

@@ -2,7 +2,7 @@
 
 > **Índice generado — no editar a mano.** Qué hace cada archivo de código, sus símbolos y sus conexiones internas. Igual que n8n-mcp indexa los nodos: consulta este mapa para saber QUÉ archivo tocar sin releer todo el repo, y luego abre solo ese archivo. Complemento de `docs/dependency-map.md` (qué actualizar en cascada al tocar un archivo).
 
-> Archivos de código mapeados: **114**. Regenerar con `svc code-map` (o `python3 agent/tools/project_index.py --code-map`).
+> Archivos de código mapeados: **116**. Regenerar con `svc code-map` (o `python3 agent/tools/project_index.py --code-map`).
 
 > **Conexiones** = imports internos (Python) o `source` (Bash). **Usado por** = quién importa este archivo (grafo inverso, solo Python). Ambos son mejor-esfuerzo.
 
@@ -14,6 +14,8 @@
 | `agent/__init__.py` | nas-agent — Agente inteligente para administración de NAS/Homelab | — | — | — |
 | `agent/catalog/__init__.py` | — | — | — | — |
 | `agent/catalog/_index.py` | Generador de índice del catálogo de servicios. | _parse_frontmatter(), build_index(), write_index(), load_index(), lookup_service(), services_by_category(), services_by_network(), main() | — | `agent/plugins/backup_plugin.py`, `agent/tools/discovery_tools.py` |
+| `agent/catalog/services/agy-cli/bin/agy-nas` | Wrapper para lanzar Antigravity CLI (agy) en Docker inyectando credenciales desde .env | — | — | — |
+| `agent/catalog/services/agy-cli/bin/mcp-build` | Ensamblador modular de mcp_tools/*.json -> settings.json (jq) para Antigravity CLI | — | — | — |
 | `agent/catalog/services/kiro-cli/bin/kiro` | Wrapper para lanzar Kiro CLI en Docker inyectando credenciales desde .env | — | — | — |
 | `agent/catalog/services/kiro-cli/bin/mcp-build` | Ensamblador modular de mcp_tools/*.json -> settings/mcp.json (jq) | — | — | — |
 | `agent/catalog/services/openwa/wa-send.sh` | wa-send — enviar un mensaje de WhatsApp por la API de OpenWA desde la terminal. | die(), cleanup() | — | — |

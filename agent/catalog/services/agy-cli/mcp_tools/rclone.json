@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "rclone": {
+      "command": "npx",
+      "args": ["rclone-mcp-server@1.0.3"],
+      "env": {
+        "RCLONE_RC_URL": "http://localhost:5572",
+        "RCLONE_RC_USER": "nasadmin",
+        "RCLONE_RC_PASS": "${RCLONE_RC_PASS}",
+        "RCLONE_TOOLSETS": "all"
+      },
+      "disabled": false
+    }
+  }
+}

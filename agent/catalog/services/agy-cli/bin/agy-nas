@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Wrapper para lanzar Antigravity CLI (agy) en Docker inyectando credenciales desde .env
+set -eu
+
+RCPASS=""
+if [ -f /docker/rclone-rcd/.env ]; then
+  RCPASS="$(grep -E '^RCLONE_RC_PASS=' /docker/rclone-rcd/.env | cut -d= -f2- || true)"
+fi
+
+ENV_FLAGS=()
+[ -n "$RCPASS" ] && ENV_FLAGS+=(-e "RCLONE_RC_PASS=$RCPASS")
+[ -f /docker/agy-cli/nextdns.env ] && ENV_FLAGS+=(--env-file /docker/agy-cli/nextdns.env)
+[ -f /docker/agy-cli/n8n.env ] && ENV_FLAGS+=(--env-file /docker/agy-cli/n8n.env)
+[ -f /docker/agy-cli/jdownloader.env ] && ENV_FLAGS+=(--env-file /docker/agy-cli/jdownloader.env)
+[ -f /docker/agy-cli/karakeep.env ] && ENV_FLAGS+=(--env-file /docker/agy-cli/karakeep.env)
+[ -f /docker/agy-cli/gemini.env ] && ENV_FLAGS+=(--env-file /docker/agy-cli/gemini.env)
+
+exec docker run -it --rm --network host \
+  "${ENV_FLAGS[@]}" \
+  -v /docker/agy-cli/data:/home/agy \
+  agy-cli-nas:local "$@"

@@ -1,0 +1,10 @@
+services:
+  agy-cli:
+    build: .
+    image: agy-cli-nas:local
+    container_name: agy-cli
+    network_mode: host               # ve localhost:5572 (rclone) y LAN 192.168.1.200 (n8n, karakeep)
+    stdin_open: true                 # interactivo (TUI)
+    tty: true
+    volumes:
+      - ./data:/home/agy             # persiste sesiones, credenciales, settings y mcp_config
