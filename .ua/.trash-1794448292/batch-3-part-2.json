@@ -1,0 +1,1370 @@
+{
+  "nodes": [
+    {
+      "id": "file:agent/tools/discovery_tools.py",
+      "type": "file",
+      "name": "discovery_tools.py",
+      "filePath": "agent/tools/discovery_tools.py",
+      "summary": "Herramientas de descubrimiento y catalogación que detectan servicios en /docker/, analizan sus compose y exportan fichas portables al catálogo.",
+      "tags": [
+        "herramienta-agente",
+        "descubrimiento",
+        "catalogo",
+        "docker"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Incluye sanitización de secretos en .env y adaptación de rutas relativas de extends al exportar al catálogo."
+    },
+    {
+      "id": "function:agent/tools/discovery_tools.py:_catalogize_compose_paths",
+      "type": "function",
+      "name": "_catalogize_compose_paths",
+      "filePath": "agent/tools/discovery_tools.py",
+      "lineRange": [
+        26,
+        38
+      ],
+      "summary": "Adapta la referencia relativa ../_common.yml a ../../_common.yml al copiar un compose hacia agent/catalog/services/.",
+      "tags": [
+        "catalogo",
+        "docker-compose",
+        "utilidad"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/discovery_tools.py:list_services",
+      "type": "function",
+      "name": "list_services",
+      "filePath": "agent/tools/discovery_tools.py",
+      "lineRange": [
+        43,
+        96
+      ],
+      "summary": "Lista todos los servicios Docker con archivo compose en /docker/ indicando cuáles están activos o detenidos.",
+      "tags": [
+        "herramienta-agente",
+        "descubrimiento",
+        "docker"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/discovery_tools.py:scan_compose",
+      "type": "function",
+      "name": "scan_compose",
+      "filePath": "agent/tools/discovery_tools.py",
+      "lineRange": [
+        100,
+        192
+      ],
+      "summary": "Lee e inspecciona el compose de un servicio extrayendo imagen, puertos, volúmenes, redes, healthcheck y variables redactadas.",
+      "tags": [
+        "herramienta-agente",
+        "docker-compose",
+        "inspeccion"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/discovery_tools.py:auto_catalog",
+      "type": "function",
+      "name": "auto_catalog",
+      "filePath": "agent/tools/discovery_tools.py",
+      "lineRange": [
+        196,
+        523
+      ],
+      "summary": "Analiza en profundidad un compose (incluyendo stacks multi-servicio) y genera automáticamente su ficha de catálogo en Markdown.",
+      "tags": [
+        "herramienta-agente",
+        "catalogo",
+        "generacion-docs"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:agent/tools/discovery_tools.py:bulk_discover",
+      "type": "function",
+      "name": "bulk_discover",
+      "filePath": "agent/tools/discovery_tools.py",
+      "lineRange": [
+        528,
+        618
+      ],
+      "summary": "Descubre todos los servicios en /docker/, los exporta al catálogo mediante export_service y regenera el índice catalog.json.",
+      "tags": [
+        "herramienta-agente",
+        "descubrimiento",
+        "catalogo",
+        "automatizacion"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/discovery_tools.py:export_service",
+      "type": "function",
+      "name": "export_service",
+      "filePath": "agent/tools/discovery_tools.py",
+      "lineRange": [
+        623,
+        750
+      ],
+      "summary": "Exporta compose.yml, .env.example sanitizado, README.md y ficha.md de un servicio desde /docker/ hacia agent/catalog/services/.",
+      "tags": [
+        "herramienta-agente",
+        "catalogo",
+        "sanitizacion",
+        "exportacion"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:agent/tools/search_tools.py",
+      "type": "file",
+      "name": "search_tools.py",
+      "filePath": "agent/tools/search_tools.py",
+      "summary": "Busca información de servicios Docker en el catálogo local o en la API pública de Docker Hub para asistir en la creación de nuevos servicios.",
+      "tags": [
+        "herramienta-agente",
+        "busqueda-web",
+        "docker-hub",
+        "catalogo"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/search_tools.py:search_service_info",
+      "type": "function",
+      "name": "search_service_info",
+      "filePath": "agent/tools/search_tools.py",
+      "lineRange": [
+        21,
+        74
+      ],
+      "summary": "Verifica primero si el servicio existe en el catálogo local y, en caso contrario, consulta Docker Hub y extrae metadatos del README.",
+      "tags": [
+        "herramienta-agente",
+        "busqueda-web",
+        "catalogo"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/search_tools.py:_search_dockerhub",
+      "type": "function",
+      "name": "_search_dockerhub",
+      "filePath": "agent/tools/search_tools.py",
+      "lineRange": [
+        77,
+        106
+      ],
+      "summary": "Consulta la API de búsqueda de Docker Hub mediante curl vía safe_run y formatea los repositorios principales.",
+      "tags": [
+        "docker-hub",
+        "api-externa",
+        "busqueda-web"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/search_tools.py:_search_github_compose",
+      "type": "function",
+      "name": "_search_github_compose",
+      "filePath": "agent/tools/search_tools.py",
+      "lineRange": [
+        109,
+        130
+      ],
+      "summary": "Obtiene la descripción completa de repositorios library o linuxserver en Docker Hub para extraer configuración recomendada.",
+      "tags": [
+        "docker-hub",
+        "api-externa",
+        "metadatos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/search_tools.py:_extract_info_from_readme",
+      "type": "function",
+      "name": "_extract_info_from_readme",
+      "filePath": "agent/tools/search_tools.py",
+      "lineRange": [
+        133,
+        155
+      ],
+      "summary": "Extrae mediante expresiones regulares puertos, variables de entorno y volúmenes comunes desde el texto de un README.",
+      "tags": [
+        "parsing",
+        "regex",
+        "extraccion-metadatos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_compose_generation.py",
+      "type": "file",
+      "name": "test_compose_generation.py",
+      "filePath": "tests/test_compose_generation.py",
+      "summary": "Suite de pruebas unitarias para la sanitización YAML, carga de anchors base y lectura de reglas en ComposeManager.",
+      "tags": [
+        "test",
+        "test-unitario",
+        "docker-compose",
+        "pytest"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:tests/test_compose_generation.py:TestComposeManagerSanitize",
+      "type": "class",
+      "name": "TestComposeManagerSanitize",
+      "filePath": "tests/test_compose_generation.py",
+      "lineRange": [
+        8,
+        39
+      ],
+      "summary": "Verifica que ComposeManager.sanitize_value acepte imágenes/volúmenes válidos y rechace path traversal, backticks y caracteres de control.",
+      "tags": [
+        "test",
+        "sanitizacion",
+        "seguridad"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_compose_generation.py:TestComposeManagerAnchors",
+      "type": "class",
+      "name": "TestComposeManagerAnchors",
+      "filePath": "tests/test_compose_generation.py",
+      "lineRange": [
+        42,
+        57
+      ],
+      "summary": "Comprueba que los anchors YAML de respaldo y los cargados desde _compose_base.md contengan los bloques obligatorios.",
+      "tags": [
+        "test",
+        "docker-compose",
+        "validacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_compose_generation.py:TestComposeManagerRules",
+      "type": "class",
+      "name": "TestComposeManagerRules",
+      "filePath": "tests/test_compose_generation.py",
+      "lineRange": [
+        60,
+        69
+      ],
+      "summary": "Valida que ComposeManager.load_rules devuelva un diccionario con las secciones esperadas cuando existe _rules.md.",
+      "tags": [
+        "test",
+        "configuracion",
+        "validacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_memory.py",
+      "type": "file",
+      "name": "test_memory.py",
+      "filePath": "tests/test_memory.py",
+      "summary": "Suite de pruebas unitarias para MemoryManager que cubre inicialización, registro, recall, skills, modelo de usuario, sesiones y curación.",
+      "tags": [
+        "test",
+        "test-unitario",
+        "memoria-persistente",
+        "pytest"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:tests/test_memory.py:TestEnsureInitialized",
+      "type": "class",
+      "name": "TestEnsureInitialized",
+      "filePath": "tests/test_memory.py",
+      "lineRange": [
+        12,
+        27
+      ],
+      "summary": "Verifica la creación inicial e idempotencia de MEMORY.md, USER.md, SKILLS.md y el directorio sessions/.",
+      "tags": [
+        "test",
+        "inicializacion",
+        "memoria-persistente"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_memory.py:TestAddToMemory",
+      "type": "class",
+      "name": "TestAddToMemory",
+      "filePath": "tests/test_memory.py",
+      "lineRange": [
+        30,
+        71
+      ],
+      "summary": "Prueba el agregado de hechos por categoría, validación de longitud, detección de duplicados y actualización de timestamp.",
+      "tags": [
+        "test",
+        "validacion",
+        "memoria-persistente"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_memory.py:TestRecall",
+      "type": "class",
+      "name": "TestRecall",
+      "filePath": "tests/test_memory.py",
+      "lineRange": [
+        74,
+        102
+      ],
+      "summary": "Valida la búsqueda de contexto en memoria, skills y sesiones, así como el manejo de consultas cortas o sin resultados.",
+      "tags": [
+        "test",
+        "busqueda-relevancia",
+        "memoria-persistente"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_memory.py:TestAddSkill",
+      "type": "class",
+      "name": "TestAddSkill",
+      "filePath": "tests/test_memory.py",
+      "lineRange": [
+        105,
+        128
+      ],
+      "summary": "Verifica la creación de skills en SKILLS.md, el bloqueo de duplicados y el incremento del contador total.",
+      "tags": [
+        "test",
+        "skills",
+        "memoria-persistente"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_memory.py:TestUpdateUserModel",
+      "type": "class",
+      "name": "TestUpdateUserModel",
+      "filePath": "tests/test_memory.py",
+      "lineRange": [
+        131,
+        146
+      ],
+      "summary": "Comprueba la inserción de nuevas claves y actualización de preferencias existentes en USER.md.",
+      "tags": [
+        "test",
+        "perfil-usuario",
+        "memoria-persistente"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_memory.py:TestSaveSession",
+      "type": "class",
+      "name": "TestSaveSession",
+      "filePath": "tests/test_memory.py",
+      "lineRange": [
+        149,
+        158
+      ],
+      "summary": "Verifica el guardado de resúmenes de sesión con nombre slugificado en el subdirectorio sessions/.",
+      "tags": [
+        "test",
+        "sesiones",
+        "memoria-persistente"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_memory.py:TestCuration",
+      "type": "class",
+      "name": "TestCuration",
+      "filePath": "tests/test_memory.py",
+      "lineRange": [
+        161,
+        190
+      ],
+      "summary": "Prueba la eliminación de sesiones y entradas de memoria que superan la antigüedad máxima configurada.",
+      "tags": [
+        "test",
+        "curacion",
+        "limpieza-datos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_memory.py:TestMemoryStats",
+      "type": "class",
+      "name": "TestMemoryStats",
+      "filePath": "tests/test_memory.py",
+      "lineRange": [
+        193,
+        210
+      ],
+      "summary": "Valida la estructura y los cálculos de tamaño y conteo devueltos por MemoryManager.get_memory_stats.",
+      "tags": [
+        "test",
+        "metricas",
+        "memoria-persistente"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_result.py",
+      "type": "file",
+      "name": "test_result.py",
+      "filePath": "tests/test_result.py",
+      "summary": "Pruebas unitarias para ToolResult y Timer, verificando fábricas de estado, serialización a dict, compatibilidad __str__ y medición de tiempo.",
+      "tags": [
+        "test",
+        "test-unitario",
+        "resultado-estructurado",
+        "pytest"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:tests/test_result.py:TestToolResult",
+      "type": "class",
+      "name": "TestToolResult",
+      "filePath": "tests/test_result.py",
+      "lineRange": [
+        8,
+        67
+      ],
+      "summary": "Comprueba los métodos ok, warn, error, to_dict, valores por defecto y conversión a cadena de ToolResult.",
+      "tags": [
+        "test",
+        "resultado-estructurado",
+        "serializacion"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:tests/test_result.py:TestTimer",
+      "type": "class",
+      "name": "TestTimer",
+      "filePath": "tests/test_result.py",
+      "lineRange": [
+        70,
+        83
+      ],
+      "summary": "Valida que Timer mida intervalos con time.sleep y retorne valores cercanos a cero sin esperas.",
+      "tags": [
+        "test",
+        "medicion-tiempo",
+        "context-manager"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_tool_result.py",
+      "type": "file",
+      "name": "test_tool_result.py",
+      "filePath": "tests/test_tool_result.py",
+      "summary": "Suite complementaria de pruebas unitarias para ToolResult y Timer organizada por tipo de resultado y serialización.",
+      "tags": [
+        "test",
+        "test-unitario",
+        "resultado-estructurado",
+        "pytest"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:tests/test_tool_result.py:TestToolResultOk",
+      "type": "class",
+      "name": "TestToolResultOk",
+      "filePath": "tests/test_tool_result.py",
+      "lineRange": [
+        8,
+        24
+      ],
+      "summary": "Verifica éxito, estado OK, datos, sugerencias y representación en texto de ToolResult.ok.",
+      "tags": [
+        "test",
+        "resultado-estructurado",
+        "validacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_tool_result.py:TestToolResultError",
+      "type": "class",
+      "name": "TestToolResultError",
+      "filePath": "tests/test_tool_result.py",
+      "lineRange": [
+        27,
+        35
+      ],
+      "summary": "Verifica que ToolResult.error marque success=False, estado ERROR y mensaje legible.",
+      "tags": [
+        "test",
+        "control-errores",
+        "resultado-estructurado"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_tool_result.py:TestToolResultWarn",
+      "type": "class",
+      "name": "TestToolResultWarn",
+      "filePath": "tests/test_tool_result.py",
+      "lineRange": [
+        38,
+        42
+      ],
+      "summary": "Comprueba que ToolResult.warn mantenga success=True con estado Status.WARNING.",
+      "tags": [
+        "test",
+        "advertencias",
+        "resultado-estructurado"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_tool_result.py:TestToolResultSerialization",
+      "type": "class",
+      "name": "TestToolResultSerialization",
+      "filePath": "tests/test_tool_result.py",
+      "lineRange": [
+        45,
+        58
+      ],
+      "summary": "Valida la salida de to_dict y __repr__ en instancias de ToolResult.",
+      "tags": [
+        "test",
+        "serializacion",
+        "resultado-estructurado"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_tool_result.py:TestTimer",
+      "type": "class",
+      "name": "TestTimer",
+      "filePath": "tests/test_tool_result.py",
+      "lineRange": [
+        61,
+        67
+      ],
+      "summary": "Comprueba que Timer registre correctamente el tiempo transcurrido durante una pausa de 50ms.",
+      "tags": [
+        "test",
+        "medicion-tiempo",
+        "context-manager"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_validation.py",
+      "type": "file",
+      "name": "test_validation.py",
+      "filePath": "tests/test_validation.py",
+      "summary": "Pruebas unitarias de seguridad para validate_service_name frente a nombres válidos, path traversal e inyección de comandos.",
+      "tags": [
+        "test",
+        "seguridad",
+        "validacion",
+        "pytest"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:tests/test_validation.py:TestValidateServiceName",
+      "type": "class",
+      "name": "TestValidateServiceName",
+      "filePath": "tests/test_validation.py",
+      "lineRange": [
+        16,
+        68
+      ],
+      "summary": "Verifica la aceptación de nombres permitidos y el lanzamiento de InvalidServiceName ante traversal, espacios, rutas absolutas y metacaracteres shell.",
+      "tags": [
+        "test",
+        "seguridad",
+        "anti-inyeccion"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "function:agent/tools/discovery_tools.py:_catalogize_compose_paths",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "function:agent/tools/discovery_tools.py:_catalogize_compose_paths",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "function:agent/tools/discovery_tools.py:list_services",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "function:agent/tools/discovery_tools.py:list_services",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "function:agent/tools/discovery_tools.py:scan_compose",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "function:agent/tools/discovery_tools.py:scan_compose",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "function:agent/tools/discovery_tools.py:auto_catalog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "function:agent/tools/discovery_tools.py:auto_catalog",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "function:agent/tools/discovery_tools.py:bulk_discover",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "function:agent/tools/discovery_tools.py:bulk_discover",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "function:agent/tools/discovery_tools.py:export_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "function:agent/tools/discovery_tools.py:export_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/search_tools.py",
+      "target": "function:agent/tools/search_tools.py:search_service_info",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/search_tools.py",
+      "target": "function:agent/tools/search_tools.py:search_service_info",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/search_tools.py",
+      "target": "function:agent/tools/search_tools.py:_search_dockerhub",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/search_tools.py",
+      "target": "function:agent/tools/search_tools.py:_search_dockerhub",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/search_tools.py",
+      "target": "function:agent/tools/search_tools.py:_search_github_compose",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/search_tools.py",
+      "target": "function:agent/tools/search_tools.py:_search_github_compose",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/search_tools.py",
+      "target": "function:agent/tools/search_tools.py:_extract_info_from_readme",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/search_tools.py",
+      "target": "function:agent/tools/search_tools.py:_extract_info_from_readme",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_compose_generation.py",
+      "target": "class:tests/test_compose_generation.py:TestComposeManagerSanitize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_compose_generation.py",
+      "target": "class:tests/test_compose_generation.py:TestComposeManagerSanitize",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_compose_generation.py",
+      "target": "class:tests/test_compose_generation.py:TestComposeManagerAnchors",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_compose_generation.py",
+      "target": "class:tests/test_compose_generation.py:TestComposeManagerAnchors",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_compose_generation.py",
+      "target": "class:tests/test_compose_generation.py:TestComposeManagerRules",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_compose_generation.py",
+      "target": "class:tests/test_compose_generation.py:TestComposeManagerRules",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestEnsureInitialized",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestEnsureInitialized",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestAddToMemory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestAddToMemory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestRecall",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestRecall",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestAddSkill",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestAddSkill",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestUpdateUserModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestUpdateUserModel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestSaveSession",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestSaveSession",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestCuration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestCuration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestMemoryStats",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "class:tests/test_memory.py:TestMemoryStats",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_result.py",
+      "target": "class:tests/test_result.py:TestToolResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_result.py",
+      "target": "class:tests/test_result.py:TestToolResult",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_result.py",
+      "target": "class:tests/test_result.py:TestTimer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_result.py",
+      "target": "class:tests/test_result.py:TestTimer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_tool_result.py",
+      "target": "class:tests/test_tool_result.py:TestToolResultOk",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_tool_result.py",
+      "target": "class:tests/test_tool_result.py:TestToolResultOk",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_tool_result.py",
+      "target": "class:tests/test_tool_result.py:TestToolResultError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_tool_result.py",
+      "target": "class:tests/test_tool_result.py:TestToolResultError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_tool_result.py",
+      "target": "class:tests/test_tool_result.py:TestToolResultWarn",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_tool_result.py",
+      "target": "class:tests/test_tool_result.py:TestToolResultWarn",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_tool_result.py",
+      "target": "class:tests/test_tool_result.py:TestToolResultSerialization",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_tool_result.py",
+      "target": "class:tests/test_tool_result.py:TestToolResultSerialization",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_tool_result.py",
+      "target": "class:tests/test_tool_result.py:TestTimer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_tool_result.py",
+      "target": "class:tests/test_tool_result.py:TestTimer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_validation.py",
+      "target": "class:tests/test_validation.py:TestValidateServiceName",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_validation.py",
+      "target": "class:tests/test_validation.py:TestValidateServiceName",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "file:agent/core/_result.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/tools/discovery_tools.py",
+      "target": "file:agent/tools/_shell.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/tools/search_tools.py",
+      "target": "file:agent/tools/_shell.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_compose_generation.py",
+      "target": "file:agent/core/compose_manager.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_compose_generation.py",
+      "target": "file:agent/tools/_shell.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "file:agent/core/_result.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_memory.py",
+      "target": "file:agent/core/memory.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_result.py",
+      "target": "file:agent/core/_result.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_tool_result.py",
+      "target": "file:agent/core/_result.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_validation.py",
+      "target": "file:agent/tools/_shell.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:list_services",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:list_services",
+      "target": "function:agent/tools/_shell.py:find_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:list_services",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:scan_compose",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:scan_compose",
+      "target": "function:agent/tools/_shell.py:find_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:auto_catalog",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:auto_catalog",
+      "target": "function:agent/tools/_shell.py:find_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:bulk_discover",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:bulk_discover",
+      "target": "function:agent/tools/_shell.py:find_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:bulk_discover",
+      "target": "function:agent/tools/discovery_tools.py:export_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:bulk_discover",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:bulk_discover",
+      "target": "class:agent/core/_result.py:Timer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:export_service",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:export_service",
+      "target": "function:agent/tools/_shell.py:find_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:export_service",
+      "target": "function:agent/tools/discovery_tools.py:_catalogize_compose_paths",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:export_service",
+      "target": "function:agent/tools/discovery_tools.py:auto_catalog",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/discovery_tools.py:export_service",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/search_tools.py:search_service_info",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/search_tools.py:search_service_info",
+      "target": "function:agent/tools/search_tools.py:_search_dockerhub",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/search_tools.py:search_service_info",
+      "target": "function:agent/tools/search_tools.py:_search_github_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/search_tools.py:_search_dockerhub",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/search_tools.py:_search_github_compose",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/search_tools.py:_search_github_compose",
+      "target": "function:agent/tools/search_tools.py:_extract_info_from_readme",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_compose_generation.py:TestComposeManagerSanitize",
+      "target": "class:agent/core/compose_manager.py:ComposeManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_compose_generation.py:TestComposeManagerAnchors",
+      "target": "class:agent/core/compose_manager.py:ComposeManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_compose_generation.py:TestComposeManagerRules",
+      "target": "class:agent/core/compose_manager.py:ComposeManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_memory.py:TestEnsureInitialized",
+      "target": "class:agent/core/memory.py:MemoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_memory.py:TestAddToMemory",
+      "target": "class:agent/core/memory.py:MemoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_memory.py:TestRecall",
+      "target": "class:agent/core/memory.py:MemoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_memory.py:TestAddSkill",
+      "target": "class:agent/core/memory.py:MemoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_memory.py:TestUpdateUserModel",
+      "target": "class:agent/core/memory.py:MemoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_memory.py:TestSaveSession",
+      "target": "class:agent/core/memory.py:MemoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_memory.py:TestCuration",
+      "target": "class:agent/core/memory.py:MemoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_memory.py:TestMemoryStats",
+      "target": "class:agent/core/memory.py:MemoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_result.py:TestToolResult",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_result.py:TestTimer",
+      "target": "class:agent/core/_result.py:Timer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_tool_result.py:TestToolResultOk",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_tool_result.py:TestToolResultError",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_tool_result.py:TestToolResultWarn",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_tool_result.py:TestToolResultSerialization",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_tool_result.py:TestTimer",
+      "target": "class:agent/core/_result.py:Timer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_validation.py:TestValidateServiceName",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

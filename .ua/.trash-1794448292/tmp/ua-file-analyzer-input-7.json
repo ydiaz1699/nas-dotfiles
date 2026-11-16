@@ -1,0 +1,42 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": ".kiro/hooks/catalog-sync-on-compose.json",
+      "language": "json",
+      "sizeLines": 15,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".kiro/hooks/code-map-regen-on-file-change.json",
+      "language": "json",
+      "sizeLines": 27,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".kiro/hooks/dependency-cascade-on-save.json",
+      "language": "json",
+      "sizeLines": 14,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".kiro/hooks/documentation-evolution-on-prompt.json",
+      "language": "json",
+      "sizeLines": 14,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".kiro/hooks/session-continuity.json",
+      "language": "json",
+      "sizeLines": 14,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    ".kiro/hooks/catalog-sync-on-compose.json": [],
+    ".kiro/hooks/code-map-regen-on-file-change.json": [],
+    ".kiro/hooks/dependency-cascade-on-save.json": [],
+    ".kiro/hooks/documentation-evolution-on-prompt.json": [],
+    ".kiro/hooks/session-continuity.json": []
+  }
+}

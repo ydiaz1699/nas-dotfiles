@@ -1,0 +1,295 @@
+{
+  "nodes": [
+    {
+      "id": "document:docs/session-handoff.md",
+      "type": "document",
+      "name": "docs/session-handoff.md",
+      "filePath": "docs/session-handoff.md",
+      "lineRange": [
+        1,
+        193
+      ],
+      "summary": "Plantilla y procedimiento obligatorio de cierre de sesión para generar archivos _drafts/SESSION-<fecha>-<tema>.md, preservando decisiones, errores reales, archivos modificados y pendientes accionables entre sesiones LLM.",
+      "tags": [
+        "session-handoff",
+        "continuidad-contexto",
+        "plantilla-sesion",
+        "flujo-llm"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Explica la integración con nas-context.md y el hook de Kiro session-continuity.json."
+    },
+    {
+      "id": "document:docs/tools-index.md",
+      "type": "document",
+      "name": "docs/tools-index.md",
+      "filePath": "docs/tools-index.md",
+      "lineRange": [
+        1,
+        217
+      ],
+      "summary": "Índice tabular de consulta rápida de herramientas atómicas de nas-dotfiles: aliases de shell, navegación, wrappers instal/pipins, helpers Git, subcomandos svc, comandos del agente, skills de Kiro y tools Python.",
+      "tags": [
+        "indice-herramientas",
+        "referencia-rapida",
+        "cli-svc",
+        "tools-agente"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Sigue la regla enlazar-no-duplicar y mantiene un espejo portable en skill-portable/nas-tools-index/."
+    },
+    {
+      "id": "document:docs/troubleshooting.md",
+      "type": "document",
+      "name": "docs/troubleshooting.md",
+      "filePath": "docs/troubleshooting.md",
+      "lineRange": [
+        1,
+        545
+      ],
+      "summary": "Base de conocimiento de diagnósticos reales resueltos en nas-dotfiles: conflictos de IP en DataSQL, svc snapshot en Python, límites de tasa de LLM, bugs en auto_catalog()/bulk_discover(), subshell en svc doctor, PEP 668, daemon systemd e interpolación de .env.",
+      "tags": [
+        "troubleshooting",
+        "diagnosticos-resueltos",
+        "depuracion-nas",
+        "base-conocimiento"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Cada entrada documenta síntoma exacto, causa raíz y solución verificada en el NAS."
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:docs/session-handoff.md",
+      "target": "config:.kiro/hooks/session-continuity.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el flujo automatizado por el hook de continuidad de sesión en Kiro."
+    },
+    {
+      "source": "document:docs/session-handoff.md",
+      "target": "document:docker-nas/references/nas-context.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica cómo los handoffs alimentan el contexto operativo en nas-context.md."
+    },
+    {
+      "source": "document:docs/session-handoff.md",
+      "target": "document:docs/dependency-map.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Requiere verificar las cascadas de dependency-map.md antes de cerrar sesión."
+    },
+    {
+      "source": "document:docs/session-handoff.md",
+      "target": "document:docs/docker-entorno.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Exige coherencia con las reglas del entorno Docker antes de publicar el handoff."
+    },
+    {
+      "source": "document:docs/session-handoff.md",
+      "target": "document:docs/framework-knowledge-compilation.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Implementa la continuidad entre sesiones descrita en la compilación del framework."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:shell/lib/aliases.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa los aliases de visualización, listado e info definidos en aliases.sh."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:shell/lib/nav.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa las funciones de navegación rápida (dk, adm, nasfk, up) de nav.sh."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:shell/lib/git.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa aliases y helpers de Git definidos en git.sh."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:shell/lib/instal.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa el wrapper inteligente de paquetes apt en instal.sh."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:shell/lib/pipins.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa el wrapper de paquetes Python en pipins.sh."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:shell/lib/system.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa utilidades de sistema e información definidas en system.sh."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa los subcomandos globales y por servicio del CLI svc."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:docker/cli/lib/notifications.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa las utilidades de notificación ntfy en notifications.sh."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:agent/nas_agent.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa los modos de ejecución del agente IA nas_agent.py."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:agent/tools/compose_tools.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa las tools de lectura, validación y generación Compose del agente."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:agent/tools/discovery_tools.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa las tools de descubrimiento y catalogación del agente."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:agent/tools/compare_tools.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa las tools de comparación catálogo vs NAS del agente."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "file:agent/tools/project_scanner.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa las tools de escaneo arquitectónico y consistencia."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "document:skill-portable/nas-tools-index/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Mantiene un espejo portable en skill-portable/nas-tools-index/ para LLMs externos."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "document:docs/cheatsheet.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Remite a cheatsheet.md para flujos operativos paso a paso."
+    },
+    {
+      "source": "document:docs/tools-index.md",
+      "target": "document:docs/framework-audit.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Remite a framework-audit.md para la vista de archivos y componentes por capa."
+    },
+    {
+      "source": "document:docs/troubleshooting.md",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la resolución del conflicto de ipv4_address en db_net y exposición loopback de DataSQL."
+    },
+    {
+      "source": "document:docs/troubleshooting.md",
+      "target": "document:docs/services/datasql-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la guía operativa de DataSQL con el diagnóstico de red y variables fijas/externas."
+    },
+    {
+      "source": "document:docs/troubleshooting.md",
+      "target": "file:agent/daemon.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Diagnostica fallos de arranque del daemon systemd por entorno o credenciales."
+    },
+    {
+      "source": "document:docs/troubleshooting.md",
+      "target": "file:agent/tools/discovery_tools.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Registra bugs resueltos en auto_catalog() y bulk_discover()."
+    },
+    {
+      "source": "document:docs/troubleshooting.md",
+      "target": "file:docker/cli/lib/health.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la corrección del bug de contadores en subshell dentro de svc doctor."
+    },
+    {
+      "source": "document:docs/troubleshooting.md",
+      "target": "file:shell/lib/pipins.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el manejo del error PEP 668 (externally-managed-environment) en pipins."
+    },
+    {
+      "source": "document:docs/troubleshooting.md",
+      "target": "document:.kiro/skills/nas-diagnostics/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Proporciona casos reales resueltos que complementan la skill nas-diagnostics."
+    },
+    {
+      "source": "document:docs/troubleshooting.md",
+      "target": "document:docs/session-handoff.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia el procedimiento de handoff para evitar contexto stale entre sesiones."
+    }
+  ]
+}

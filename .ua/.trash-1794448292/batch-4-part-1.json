@@ -1,0 +1,1244 @@
+{
+  "batchIndex": 4,
+  "part": 1,
+  "totalParts": 3,
+  "nodes": [
+    {
+      "id": "file:agent/nas_agent.py",
+      "type": "file",
+      "name": "nas_agent.py",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        1,
+        1399
+      ],
+      "summary": "Punto de entrada principal del agente inteligente del NAS basado en Strands Agents SDK. Gestiona configuración de entorno, sesiones persistentes, clasificación dinámica de prompts, selección de proveedor LLM y modos CLI/REPL.",
+      "tags": [
+        "agente-ia",
+        "strands-sdk",
+        "prompt-dinamico",
+        "cli-repl",
+        "gestion-sesion"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Módulo Python CLI con soporte multi-proveedor (Gemini, Bedrock, Ollama), renderizado opcional con Rich y persistencia de sesión via FileSessionManager."
+    },
+    {
+      "id": "function:agent/nas_agent.py:_load_env_agent",
+      "type": "function",
+      "name": "_load_env_agent",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        51,
+        68
+      ],
+      "summary": "Carga variables de entorno desde el archivo .env.agent sin sobrescribir las ya definidas en el entorno.",
+      "tags": [
+        "configuracion",
+        "variables-entorno",
+        "inicializacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_get_session_metadata_path",
+      "type": "function",
+      "name": "_get_session_metadata_path",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        97,
+        99
+      ],
+      "summary": "Devuelve la ruta al archivo JSON de metadatos de la sesión actual del agente.",
+      "tags": [
+        "gestion-sesion",
+        "ruta-archivo",
+        "metadatos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_read_session_metadata",
+      "type": "function",
+      "name": "_read_session_metadata",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        102,
+        110
+      ],
+      "summary": "Lee y deserializa los metadatos JSON de la sesión actual devolviendo un diccionario vacío si falla o no existe.",
+      "tags": [
+        "gestion-sesion",
+        "lectura-json",
+        "metadatos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_write_session_metadata",
+      "type": "function",
+      "name": "_write_session_metadata",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        113,
+        117
+      ],
+      "summary": "Persiste los metadatos de la sesión en disco creando el directorio padre si es necesario.",
+      "tags": [
+        "gestion-sesion",
+        "escritura-json",
+        "metadatos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_session_is_expired",
+      "type": "function",
+      "name": "_session_is_expired",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        120,
+        126
+      ],
+      "summary": "Evalúa si la sesión actual ha superado el tiempo de inactividad configurado en SESSION_TIMEOUT_MIN.",
+      "tags": [
+        "gestion-sesion",
+        "expiracion-ttl",
+        "validacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_clear_session",
+      "type": "function",
+      "name": "_clear_session",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        129,
+        133
+      ],
+      "summary": "Elimina recursivamente el directorio de sesiones y lo recrea vacío para reiniciar el contexto.",
+      "tags": [
+        "gestion-sesion",
+        "limpieza-estado",
+        "archivos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_get_session_manager",
+      "type": "function",
+      "name": "_get_session_manager",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        136,
+        161
+      ],
+      "summary": "Inicializa o reutiliza el FileSessionManager tras verificar expiración por timeout y actualizar contadores de turno.",
+      "tags": [
+        "gestion-sesion",
+        "strands-sdk",
+        "persistencia"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_load_catalog_summary",
+      "type": "function",
+      "name": "_load_catalog_summary",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        537,
+        589
+      ],
+      "summary": "Recorre las fichas del catálogo de servicios, extrae su frontmatter YAML y genera un resumen compacto para el prompt.",
+      "tags": [
+        "catalogo-servicios",
+        "parseo-yaml",
+        "resumen-prompt"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_get_catalog_block",
+      "type": "function",
+      "name": "_get_catalog_block",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        596,
+        610
+      ],
+      "summary": "Retorna el bloque de catálogo pre-cargado usando caché en memoria por invocación.",
+      "tags": [
+        "catalogo-servicios",
+        "cache-memoria",
+        "prompt-dinamico"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_classify_query",
+      "type": "function",
+      "name": "_classify_query",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        617,
+        682
+      ],
+      "summary": "Pre-clasifica la consulta del usuario por palabras clave para seleccionar qué bloques temáticos cargar en el prompt del sistema.",
+      "tags": [
+        "clasificacion-query",
+        "prompt-dinamico",
+        "enrutamiento"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_assemble_prompt",
+      "type": "function",
+      "name": "_assemble_prompt",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        685,
+        709
+      ],
+      "summary": "Ensambla el prompt final del sistema combinando el bloque de pensamiento inicial con los bloques seleccionados.",
+      "tags": [
+        "ensamblaje-prompt",
+        "prompt-dinamico",
+        "plantillas"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/nas_agent.py:get_model",
+      "type": "function",
+      "name": "get_model",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        715,
+        789
+      ],
+      "summary": "Instancia el modelo LLM correspondiente según NAS_AGENT_MODEL (Gemini, Bedrock con extended thinking u Ollama local).",
+      "tags": [
+        "proveedores-llm",
+        "gemini-bedrock-ollama",
+        "configuracion-modelo"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/nas_agent.py:create_nas_agent",
+      "type": "function",
+      "name": "create_nas_agent",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        797,
+        854
+      ],
+      "summary": "Construye la instancia de Strands Agent con el modelo elegido, ALL_TOOLS, prompt dinámico y modo dry-run opcional.",
+      "tags": [
+        "fabrica-agente",
+        "strands-sdk",
+        "dry-run"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_switch_model",
+      "type": "function",
+      "name": "_switch_model",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        873,
+        937
+      ],
+      "summary": "Permite cambiar el modelo del agente por argumento o menú interactivo y persiste la selección en .env.agent.",
+      "tags": [
+        "cambio-modelo",
+        "menu-interactivo",
+        "cli"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_persist_model",
+      "type": "function",
+      "name": "_persist_model",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        940,
+        970
+      ],
+      "summary": "Actualiza o agrega NAS_AGENT_MODEL y NAS_AGENT_MODEL_ID dentro del archivo .env.agent.",
+      "tags": [
+        "persistencia-config",
+        "variables-entorno",
+        "escritura-archivo"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/nas_agent.py:_repl_mode",
+      "type": "function",
+      "name": "_repl_mode",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        978,
+        1154
+      ],
+      "summary": "Ejecuta el bucle conversacional interactivo (REPL) manteniendo el agente en memoria y manejando comandos internos como clear, status y exit.",
+      "tags": [
+        "modo-repl",
+        "bucle-conversacional",
+        "interfaz-rich"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:agent/nas_agent.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "agent/nas_agent.py",
+      "lineRange": [
+        1162,
+        1395
+      ],
+      "summary": "Punto de entrada CLI que procesa flags (--new, --model, --clear, --status, --repl), ejecuta consultas únicas y renderiza respuestas.",
+      "tags": [
+        "punto-entrada",
+        "cli-principal",
+        "manejo-errores"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:agent/tools/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "agent/tools/__init__.py",
+      "lineRange": [
+        1,
+        110
+      ],
+      "summary": "Registro centralizado de herramientas del agente NAS que reexporta las funciones @tool en la lista ALL_TOOLS sin wrappers adicionales.",
+      "tags": [
+        "registro-tools",
+        "strands-sdk",
+        "modulo-paquete"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Reexporta 34 tools de 11 submódulos evitando decoradores envolventes porque Strands SDK exige funciones @tool puras."
+    },
+    {
+      "id": "file:agent/tools/backup_tools.py",
+      "type": "file",
+      "name": "backup_tools.py",
+      "filePath": "agent/tools/backup_tools.py",
+      "lineRange": [
+        1,
+        54
+      ],
+      "summary": "Define las herramientas @tool de respaldo y restauración de servicios Docker delegando en BackupManager.",
+      "tags": [
+        "tools-agente",
+        "backup-restore",
+        "servicios-docker"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Usa importación perezosa en _get_backup_manager para prevenir dependencias circulares y decorador @tool de Strands."
+    },
+    {
+      "id": "function:agent/tools/backup_tools.py:_get_backup_manager",
+      "type": "function",
+      "name": "_get_backup_manager",
+      "filePath": "agent/tools/backup_tools.py",
+      "lineRange": [
+        10,
+        13
+      ],
+      "summary": "Importa perezosamente y devuelve la clase BackupManager desde agent.core.backup_manager.",
+      "tags": [
+        "lazy-import",
+        "backup-manager",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/backup_tools.py:backup_service",
+      "type": "function",
+      "name": "backup_service",
+      "filePath": "agent/tools/backup_tools.py",
+      "lineRange": [
+        17,
+        27
+      ],
+      "summary": "Tool que crea un respaldo comprimido con timestamp de los volúmenes y bind mounts de un servicio.",
+      "tags": [
+        "tool-strands",
+        "backup-servicio",
+        "volumenes-docker"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/backup_tools.py:restore_service",
+      "type": "function",
+      "name": "restore_service",
+      "filePath": "agent/tools/backup_tools.py",
+      "lineRange": [
+        31,
+        42
+      ],
+      "summary": "Tool que lista backups disponibles o restaura el más reciente cuando confirm='si'.",
+      "tags": [
+        "tool-strands",
+        "restauracion",
+        "guard-confirmacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/backup_tools.py:list_backups",
+      "type": "function",
+      "name": "list_backups",
+      "filePath": "agent/tools/backup_tools.py",
+      "lineRange": [
+        46,
+        54
+      ],
+      "summary": "Tool de solo lectura que enumera todos los backups existentes agrupados por servicio.",
+      "tags": [
+        "tool-strands",
+        "listado-backups",
+        "solo-lectura"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/tools/capabilities.py",
+      "type": "file",
+      "name": "capabilities.py",
+      "filePath": "agent/tools/capabilities.py",
+      "lineRange": [
+        1,
+        124
+      ],
+      "summary": "Consulta el inventario dinámico de capacidades del NAS combinando manifests JSON versionados y el índice estructural del proyecto.",
+      "tags": [
+        "inventario-capacidades",
+        "manifests-json",
+        "solo-lectura"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Carga dinámicamente agent/tools/project_index.py via importlib con fallback fail-closed al cache project-index.json."
+    },
+    {
+      "id": "function:agent/tools/capabilities.py:_manifests",
+      "type": "function",
+      "name": "_manifests",
+      "filePath": "agent/tools/capabilities.py",
+      "lineRange": [
+        20,
+        27
+      ],
+      "summary": "Itera y parsea todos los archivos JSON en agent/capabilities/ adjuntando su ruta relativa.",
+      "tags": [
+        "lectura-manifests",
+        "json",
+        "generador"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/capabilities.py:_index",
+      "type": "function",
+      "name": "_index",
+      "filePath": "agent/tools/capabilities.py",
+      "lineRange": [
+        30,
+        48
+      ],
+      "summary": "Construye el índice estructural en vivo desde project_index.py o recurre al cache JSON si falla la importación.",
+      "tags": [
+        "indice-proyecto",
+        "carga-dinamica",
+        "fallback-cache"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/capabilities.py:_operations",
+      "type": "function",
+      "name": "_operations",
+      "filePath": "agent/tools/capabilities.py",
+      "lineRange": [
+        51,
+        81
+      ],
+      "summary": "Cruza las operaciones declaradas en manifests con el índice para reportar existencia de entrypoint, dispatch y guards.",
+      "tags": [
+        "verificacion-contratos",
+        "operaciones-cli",
+        "fail-closed"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/capabilities.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "agent/tools/capabilities.py",
+      "lineRange": [
+        84,
+        120
+      ],
+      "summary": "CLI standalone que filtra operaciones por consulta o servicio y las imprime en texto o JSON.",
+      "tags": [
+        "cli-standalone",
+        "filtrado-capacidades",
+        "salida-json"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_load_env_agent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _load_env_agent"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_load_env_agent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _load_env_agent"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_get_session_metadata_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _get_session_metadata_path"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_get_session_metadata_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _get_session_metadata_path"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_read_session_metadata",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _read_session_metadata"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_read_session_metadata",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _read_session_metadata"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_write_session_metadata",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _write_session_metadata"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_write_session_metadata",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _write_session_metadata"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_session_is_expired",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _session_is_expired"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_session_is_expired",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _session_is_expired"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_clear_session",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _clear_session"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_clear_session",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _clear_session"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_get_session_manager",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _get_session_manager"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_get_session_manager",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _get_session_manager"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_load_catalog_summary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _load_catalog_summary"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_load_catalog_summary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _load_catalog_summary"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_get_catalog_block",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _get_catalog_block"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_get_catalog_block",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _get_catalog_block"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_classify_query",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _classify_query"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_classify_query",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _classify_query"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_assemble_prompt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _assemble_prompt"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_assemble_prompt",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _assemble_prompt"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:get_model",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene get_model"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:get_model",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta get_model"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:create_nas_agent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene create_nas_agent"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:create_nas_agent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta create_nas_agent"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_switch_model",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _switch_model"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_switch_model",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _switch_model"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_persist_model",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _persist_model"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_persist_model",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _persist_model"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_repl_mode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene _repl_mode"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:_repl_mode",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta _repl_mode"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/nas_agent.py contiene main"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "function:agent/nas_agent.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/nas_agent.py exporta main"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "file:agent/tools/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/nas_agent.py importa agent/tools/__init__.py"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_read_session_metadata",
+      "target": "function:agent/nas_agent.py:_get_session_metadata_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Lee ruta de metadatos de sesión"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_write_session_metadata",
+      "target": "function:agent/nas_agent.py:_get_session_metadata_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Obtiene ruta para persistir metadatos"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_get_session_manager",
+      "target": "function:agent/nas_agent.py:_read_session_metadata",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Lee estado de sesión existente"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_get_session_manager",
+      "target": "function:agent/nas_agent.py:_session_is_expired",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Verifica expiración de la sesión"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_get_session_manager",
+      "target": "function:agent/nas_agent.py:_clear_session",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Limpia sesión expirada o forzada"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_get_session_manager",
+      "target": "function:agent/nas_agent.py:_write_session_metadata",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Actualiza metadatos de actividad"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_get_catalog_block",
+      "target": "function:agent/nas_agent.py:_load_catalog_summary",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Carga resumen de fichas al inicializar caché"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_assemble_prompt",
+      "target": "function:agent/nas_agent.py:_get_catalog_block",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Inyecta bloque de catálogo pre-cargado"
+    },
+    {
+      "source": "function:agent/nas_agent.py:create_nas_agent",
+      "target": "function:agent/nas_agent.py:get_model",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Obtiene instancia del modelo LLM configurado"
+    },
+    {
+      "source": "function:agent/nas_agent.py:create_nas_agent",
+      "target": "function:agent/nas_agent.py:_classify_query",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Clasifica la consulta para seleccionar bloques"
+    },
+    {
+      "source": "function:agent/nas_agent.py:create_nas_agent",
+      "target": "function:agent/nas_agent.py:_assemble_prompt",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ensambla el system prompt dinámico"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_switch_model",
+      "target": "function:agent/nas_agent.py:_persist_model",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Persiste el nuevo modelo en .env.agent"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_repl_mode",
+      "target": "function:agent/nas_agent.py:_get_session_manager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Obtiene gestor de sesión para el REPL"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_repl_mode",
+      "target": "function:agent/nas_agent.py:create_nas_agent",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Crea instancia del agente para conversación continua"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_repl_mode",
+      "target": "function:agent/nas_agent.py:_clear_session",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Reinicia la sesión con el comando clear"
+    },
+    {
+      "source": "function:agent/nas_agent.py:_repl_mode",
+      "target": "function:agent/nas_agent.py:_read_session_metadata",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Consulta conteo de turnos en comando status"
+    },
+    {
+      "source": "function:agent/nas_agent.py:main",
+      "target": "function:agent/nas_agent.py:_switch_model",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Cambia modelo cuando se pasa --model"
+    },
+    {
+      "source": "function:agent/nas_agent.py:main",
+      "target": "function:agent/nas_agent.py:_clear_session",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Borra sesión cuando se pasa --clear"
+    },
+    {
+      "source": "function:agent/nas_agent.py:main",
+      "target": "function:agent/nas_agent.py:_read_session_metadata",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Lee estado de sesión para --status"
+    },
+    {
+      "source": "function:agent/nas_agent.py:main",
+      "target": "function:agent/nas_agent.py:_session_is_expired",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Evalúa expiración de sesión en --status"
+    },
+    {
+      "source": "function:agent/nas_agent.py:main",
+      "target": "function:agent/nas_agent.py:_repl_mode",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Inicia bucle REPL cuando se pasa --repl o chat"
+    },
+    {
+      "source": "function:agent/nas_agent.py:main",
+      "target": "function:agent/nas_agent.py:_get_session_manager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Inicializa FileSessionManager para consulta directa"
+    },
+    {
+      "source": "function:agent/nas_agent.py:main",
+      "target": "function:agent/nas_agent.py:create_nas_agent",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Construye el agente para ejecutar la query"
+    },
+    {
+      "source": "file:agent/nas_agent.py",
+      "target": "file:tests/test_classify.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "tests/test_classify.py prueba la clasificación de consultas de agent/nas_agent.py"
+    },
+    {
+      "source": "file:agent/tools/__init__.py",
+      "target": "file:agent/tools/backup_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/__init__.py importa agent/tools/backup_tools.py"
+    },
+    {
+      "source": "file:agent/tools/__init__.py",
+      "target": "file:agent/tools/capability_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/__init__.py importa agent/tools/capability_tools.py"
+    },
+    {
+      "source": "file:agent/tools/__init__.py",
+      "target": "file:agent/tools/compare_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/__init__.py importa agent/tools/compare_tools.py"
+    },
+    {
+      "source": "file:agent/tools/__init__.py",
+      "target": "file:agent/tools/compose_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/__init__.py importa agent/tools/compose_tools.py"
+    },
+    {
+      "source": "file:agent/tools/__init__.py",
+      "target": "file:agent/tools/diagnostic_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/__init__.py importa agent/tools/diagnostic_tools.py"
+    },
+    {
+      "source": "file:agent/tools/__init__.py",
+      "target": "file:agent/tools/discovery_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/__init__.py importa agent/tools/discovery_tools.py"
+    },
+    {
+      "source": "file:agent/tools/__init__.py",
+      "target": "file:agent/tools/docker_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/__init__.py importa agent/tools/docker_tools.py"
+    },
+    {
+      "source": "file:agent/tools/__init__.py",
+      "target": "file:agent/tools/memory_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/__init__.py importa agent/tools/memory_tools.py"
+    },
+    {
+      "source": "file:agent/tools/__init__.py",
+      "target": "file:agent/tools/project_scanner.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/__init__.py importa agent/tools/project_scanner.py"
+    },
+    {
+      "source": "file:agent/tools/__init__.py",
+      "target": "file:agent/tools/search_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/__init__.py importa agent/tools/search_tools.py"
+    },
+    {
+      "source": "file:agent/tools/__init__.py",
+      "target": "file:agent/tools/system_tools.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/__init__.py importa agent/tools/system_tools.py"
+    },
+    {
+      "source": "file:agent/tools/backup_tools.py",
+      "target": "function:agent/tools/backup_tools.py:_get_backup_manager",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/backup_tools.py contiene _get_backup_manager"
+    },
+    {
+      "source": "file:agent/tools/backup_tools.py",
+      "target": "function:agent/tools/backup_tools.py:_get_backup_manager",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/backup_tools.py exporta _get_backup_manager"
+    },
+    {
+      "source": "file:agent/tools/backup_tools.py",
+      "target": "function:agent/tools/backup_tools.py:backup_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/backup_tools.py contiene backup_service"
+    },
+    {
+      "source": "file:agent/tools/backup_tools.py",
+      "target": "function:agent/tools/backup_tools.py:backup_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/backup_tools.py exporta backup_service"
+    },
+    {
+      "source": "file:agent/tools/backup_tools.py",
+      "target": "function:agent/tools/backup_tools.py:restore_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/backup_tools.py contiene restore_service"
+    },
+    {
+      "source": "file:agent/tools/backup_tools.py",
+      "target": "function:agent/tools/backup_tools.py:restore_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/backup_tools.py exporta restore_service"
+    },
+    {
+      "source": "file:agent/tools/backup_tools.py",
+      "target": "function:agent/tools/backup_tools.py:list_backups",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/backup_tools.py contiene list_backups"
+    },
+    {
+      "source": "file:agent/tools/backup_tools.py",
+      "target": "function:agent/tools/backup_tools.py:list_backups",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/backup_tools.py exporta list_backups"
+    },
+    {
+      "source": "function:agent/tools/backup_tools.py:backup_service",
+      "target": "function:agent/tools/backup_tools.py:_get_backup_manager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Resuelve BackupManager para respaldar"
+    },
+    {
+      "source": "function:agent/tools/backup_tools.py:restore_service",
+      "target": "function:agent/tools/backup_tools.py:_get_backup_manager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Resuelve BackupManager para restaurar"
+    },
+    {
+      "source": "function:agent/tools/backup_tools.py:list_backups",
+      "target": "function:agent/tools/backup_tools.py:_get_backup_manager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Resuelve BackupManager para listar backups"
+    },
+    {
+      "source": "file:agent/tools/capabilities.py",
+      "target": "function:agent/tools/capabilities.py:_manifests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/capabilities.py contiene _manifests"
+    },
+    {
+      "source": "file:agent/tools/capabilities.py",
+      "target": "function:agent/tools/capabilities.py:_manifests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/capabilities.py exporta _manifests"
+    },
+    {
+      "source": "file:agent/tools/capabilities.py",
+      "target": "function:agent/tools/capabilities.py:_index",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/capabilities.py contiene _index"
+    },
+    {
+      "source": "file:agent/tools/capabilities.py",
+      "target": "function:agent/tools/capabilities.py:_index",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/capabilities.py exporta _index"
+    },
+    {
+      "source": "file:agent/tools/capabilities.py",
+      "target": "function:agent/tools/capabilities.py:_operations",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/capabilities.py contiene _operations"
+    },
+    {
+      "source": "file:agent/tools/capabilities.py",
+      "target": "function:agent/tools/capabilities.py:_operations",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/capabilities.py exporta _operations"
+    },
+    {
+      "source": "file:agent/tools/capabilities.py",
+      "target": "function:agent/tools/capabilities.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/capabilities.py contiene main"
+    },
+    {
+      "source": "file:agent/tools/capabilities.py",
+      "target": "function:agent/tools/capabilities.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/capabilities.py exporta main"
+    },
+    {
+      "source": "function:agent/tools/capabilities.py:_operations",
+      "target": "function:agent/tools/capabilities.py:_index",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Obtiene el índice estructural actualizado"
+    },
+    {
+      "source": "function:agent/tools/capabilities.py:_operations",
+      "target": "function:agent/tools/capabilities.py:_manifests",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Lee todos los manifests de capacidades"
+    },
+    {
+      "source": "function:agent/tools/capabilities.py:main",
+      "target": "function:agent/tools/capabilities.py:_operations",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Consulta operaciones para CLI de capacidades"
+    }
+  ]
+}

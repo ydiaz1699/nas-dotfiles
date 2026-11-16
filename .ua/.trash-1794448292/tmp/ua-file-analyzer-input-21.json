@@ -1,0 +1,35 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/lobehub/.env.example",
+      "language": "config",
+      "sizeLines": 28,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/lobehub/bucket.config.json",
+      "language": "json",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/lobehub/compose.yml",
+      "language": "yaml",
+      "sizeLines": 221,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/lobehub/ficha.md",
+      "language": "markdown",
+      "sizeLines": 82,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/lobehub/.env.example": [],
+    "agent/catalog/services/lobehub/bucket.config.json": [],
+    "agent/catalog/services/lobehub/compose.yml": [],
+    "agent/catalog/services/lobehub/ficha.md": []
+  }
+}

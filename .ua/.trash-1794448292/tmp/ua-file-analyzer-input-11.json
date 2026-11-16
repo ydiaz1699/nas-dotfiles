@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/datasql/.env.example",
+      "language": "config",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/datasql/compose.yml",
+      "language": "yaml",
+      "sizeLines": 133,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/datasql/ficha.md",
+      "language": "markdown",
+      "sizeLines": 109,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/datasql/.env.example": [],
+    "agent/catalog/services/datasql/compose.yml": [],
+    "agent/catalog/services/datasql/ficha.md": []
+  }
+}

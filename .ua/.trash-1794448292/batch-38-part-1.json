@@ -1,0 +1,1294 @@
+{
+  "nodes": [
+    {
+      "id": "document:agent/catalog/services/usb-api/ficha.md",
+      "type": "document",
+      "name": "ficha.md",
+      "filePath": "agent/catalog/services/usb-api/ficha.md",
+      "summary": "Documentación de ficha del catálogo para el servicio nativo systemd usb-api, que expone una API REST en el puerto 8091 para listar y desmontar unidades USB desde el widget de Homepage.",
+      "tags": [
+        "catalogo-servicios",
+        "usb-api",
+        "systemd",
+        "api-rest",
+        "homepage"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Documento Markdown con frontmatter YAML de metadatos del servicio y ejemplos JSON de respuesta."
+    },
+    {
+      "id": "file:agent/config/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "agent/config/__init__.py",
+      "summary": "Archivo marcador que define agent/config como paquete Python para la configuración del agente NAS.",
+      "tags": [
+        "paquete-python",
+        "configuracion",
+        "agente-nas"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Módulo Python mínimo con comentario identificador de paquete."
+    },
+    {
+      "id": "config:agent/config/defaults.yml",
+      "type": "config",
+      "name": "defaults.yml",
+      "filePath": "agent/config/defaults.yml",
+      "summary": "Configuración por defecto del agente NAS en YAML, definiendo plugins habilitados, historial de eventos, parámetros MQTT, scheduler, caché, sesiones y logging.",
+      "tags": [
+        "configuracion-yaml",
+        "agente-nas",
+        "mqtt",
+        "scheduler"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Archivo YAML de valores base sobreescribibles mediante .env.agent o variables de entorno."
+    },
+    {
+      "id": "file:agent/core/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "agent/core/__init__.py",
+      "summary": "Inicializador del paquete agent.core, que documenta la capa de lógica de negocio reutilizable y desacoplada de los wrappers @tool del agente NAS.",
+      "tags": [
+        "paquete-core",
+        "logica-negocio",
+        "agente-nas"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Solo contiene el docstring arquitectónico del paquete sin importaciones ni símbolos ejecutables."
+    },
+    {
+      "id": "file:agent/daemon.py",
+      "type": "file",
+      "name": "daemon.py",
+      "filePath": "agent/daemon.py",
+      "summary": "Punto de entrada en modo daemon (systemd) del agente NAS; carga .env.agent, descubre plugins, ejecuta tareas periódicas con Scheduler y gestiona señales SIGTERM/SIGINT.",
+      "tags": [
+        "daemon",
+        "systemd",
+        "scheduler",
+        "agente-nas",
+        "senales"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Usa threading.Thread y threading.Event para programar tareas periódicas y apagar el proceso de forma controlada."
+    },
+    {
+      "id": "function:agent/daemon.py:_load_env_agent",
+      "type": "function",
+      "name": "_load_env_agent",
+      "filePath": "agent/daemon.py",
+      "lineRange": [
+        35,
+        49
+      ],
+      "summary": "Lee el archivo .env.agent en la raíz del proyecto e inyecta sus pares clave-valor en os.environ sin sobreescribir variables existentes.",
+      "tags": [
+        "variables-entorno",
+        "env-agent",
+        "inicializacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:agent/daemon.py:Scheduler",
+      "type": "class",
+      "name": "Scheduler",
+      "filePath": "agent/daemon.py",
+      "lineRange": [
+        66,
+        130
+      ],
+      "summary": "Ejecutor thread-safe de tareas periódicas en hilos daemon separados con intervalos configurables y parada controlada mediante threading.Event.",
+      "tags": [
+        "scheduler",
+        "multihilo",
+        "tareas-periodicas"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:agent/daemon.py:NASAgentDaemon",
+      "type": "class",
+      "name": "NASAgentDaemon",
+      "filePath": "agent/daemon.py",
+      "lineRange": [
+        136,
+        215
+      ],
+      "summary": "Orquestador principal del daemon del agente NAS; inicializa PluginLoader, registra schedules de plugins, ejecuta el heartbeat de memoria y espera señales de parada.",
+      "tags": [
+        "daemon",
+        "orquestador",
+        "plugins",
+        "heartbeat"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/daemon.py:_signal_handler",
+      "type": "function",
+      "name": "_signal_handler",
+      "filePath": "agent/daemon.py",
+      "lineRange": [
+        223,
+        228
+      ],
+      "summary": "Manejador de señales SIGTERM y SIGINT que registra la señal recibida y solicita la detención ordenada de la instancia activa de NASAgentDaemon.",
+      "tags": [
+        "senales-so",
+        "shutdown-graceful",
+        "daemon"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/daemon.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "agent/daemon.py",
+      "lineRange": [
+        234,
+        243
+      ],
+      "summary": "Punto de entrada CLI que registra los manejadores de señales, instancia NASAgentDaemon e inicia el bucle principal del daemon.",
+      "tags": [
+        "entrypoint",
+        "daemon",
+        "cli"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/lobehub_mcp.py",
+      "type": "file",
+      "name": "lobehub_mcp.py",
+      "filePath": "agent/lobehub_mcp.py",
+      "summary": "Gateway MCP read-only estrecho para LobeHub con soporte de transporte HTTP, stdio y helper sobre Unix socket, validación de origen/token Bearer y redacción de datos sensibles.",
+      "tags": [
+        "gateway-mcp",
+        "lobehub",
+        "solo-lectura",
+        "json-rpc",
+        "unix-socket"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Implementado únicamente con la biblioteca estándar de Python (http.server, socket, subprocess, hmac) y una allowlist estricta de operaciones."
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_json_bytes",
+      "type": "function",
+      "name": "_json_bytes",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        80,
+        81
+      ],
+      "summary": "Serializa un valor Python a bytes UTF-8 en formato JSON compacto sin espacios innecesarios.",
+      "tags": [
+        "serializacion-json",
+        "helper",
+        "mcp"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_redact_text",
+      "type": "function",
+      "name": "_redact_text",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        84,
+        89
+      ],
+      "summary": "Sanitiza cadenas reemplazando rutas internas, direcciones IP y tokens Bearer por marcadores redactados y limita la longitud a 500 caracteres.",
+      "tags": [
+        "redaccion",
+        "seguridad",
+        "sanitizacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_audit_path",
+      "type": "function",
+      "name": "_audit_path",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        92,
+        96
+      ],
+      "summary": "Determina la ruta del archivo JSONL de auditoría usando MCP_AUDIT_LOG o el valor por defecto en ~/.nas-agent.",
+      "tags": [
+        "auditoria",
+        "configuracion-ruta",
+        "mcp"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:audit",
+      "type": "function",
+      "name": "audit",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        99,
+        124
+      ],
+      "summary": "Escribe registros JSONL de auditoría con permisos restrictivos 0600 incluyendo evento, herramienta, resultado y duración sin registrar secretos ni argumentos.",
+      "tags": [
+        "auditoria",
+        "jsonl",
+        "permisos-archivo"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_error",
+      "type": "function",
+      "name": "_error",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        127,
+        128
+      ],
+      "summary": "Construye un diccionario estándar de error MCP con los campos ok, error y message.",
+      "tags": [
+        "manejo-errores",
+        "respuesta-mcp",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_check_lines",
+      "type": "function",
+      "name": "_check_lines",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        131,
+        148
+      ],
+      "summary": "Extrae y clasifica líneas de verificación (ok, warn, error) desde stdout sanitizado de comandos svc lobehub.",
+      "tags": [
+        "parsing-salida",
+        "diagnostico",
+        "redaccion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_status_services",
+      "type": "function",
+      "name": "_status_services",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        151,
+        181
+      ],
+      "summary": "Parsea la salida tabular de svc lobehub status extrayendo servicio, estado y salud de contenedores permitidos.",
+      "tags": [
+        "parsing-salida",
+        "estado-contenedores",
+        "lobehub"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_safe_capabilities",
+      "type": "function",
+      "name": "_safe_capabilities",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        184,
+        253
+      ],
+      "summary": "Lee los manifests de agent/capabilities/*.json y verifica en solo lectura que las operaciones expuestas existan, tengan guard válido y no sean mutaciones.",
+      "tags": [
+        "capacidades",
+        "manifests-json",
+        "solo-lectura"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_run_svc",
+      "type": "function",
+      "name": "_run_svc",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        256,
+        311
+      ],
+      "summary": "Ejecuta de forma controlada docker/cli/svc.sh lobehub con una acción fija y devuelve checks o estado de servicios sanitizados.",
+      "tags": [
+        "subproceso",
+        "svc-cli",
+        "solo-lectura",
+        "lobehub"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_local_operation",
+      "type": "function",
+      "name": "_local_operation",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        314,
+        320
+      ],
+      "summary": "Despacha localmente una operación de la allowlist hacia _safe_capabilities o _run_svc.",
+      "tags": [
+        "despachador",
+        "allowlist",
+        "operacion-local"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_helper_request",
+      "type": "function",
+      "name": "_helper_request",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        323,
+        348
+      ],
+      "summary": "Envía una solicitud JSON de una línea al helper host mediante Unix socket (AF_UNIX) respetando timeout y tamaño máximo.",
+      "tags": [
+        "unix-socket",
+        "cliente-ipc",
+        "timeout"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:agent/lobehub_mcp.py:Gateway",
+      "type": "class",
+      "name": "Gateway",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        351,
+        374
+      ],
+      "summary": "Fachada de ejecución MCP que valida operaciones contra TOOL_NAMES, rechaza argumentos del cliente, delega al helper socket o ejecución local y audita cada llamada.",
+      "tags": [
+        "gateway-mcp",
+        "validacion",
+        "auditoria"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_tool_schema",
+      "type": "function",
+      "name": "_tool_schema",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        377,
+        386
+      ],
+      "summary": "Genera el esquema MCP de una herramienta publicada declarando inputSchema vacío sin propiedades adicionales.",
+      "tags": [
+        "esquema-mcp",
+        "json-schema",
+        "tools"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_rpc_result",
+      "type": "function",
+      "name": "_rpc_result",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        389,
+        390
+      ],
+      "summary": "Construye una respuesta exitosa JSON-RPC 2.0.",
+      "tags": [
+        "json-rpc",
+        "respuesta",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_rpc_error",
+      "type": "function",
+      "name": "_rpc_error",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        393,
+        394
+      ],
+      "summary": "Construye un objeto de error estándar JSON-RPC 2.0 con código y mensaje.",
+      "tags": [
+        "json-rpc",
+        "error",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:handle_rpc",
+      "type": "function",
+      "name": "handle_rpc",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        397,
+        435
+      ],
+      "summary": "Procesa mensajes JSON-RPC 2.0 del protocolo MCP (initialize, notifications, ping, tools/list y tools/call) delegando las llamadas al Gateway.",
+      "tags": [
+        "json-rpc",
+        "protocolo-mcp",
+        "router"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_origin_allowed",
+      "type": "function",
+      "name": "_origin_allowed",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        438,
+        447
+      ],
+      "summary": "Valida la cabecera HTTP Origin contra la lista MCP_ALLOWED_ORIGINS permitiendo peticiones server-to-server sin Origin.",
+      "tags": [
+        "cors",
+        "seguridad-http",
+        "origin"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_authorized",
+      "type": "function",
+      "name": "_authorized",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        450,
+        455
+      ],
+      "summary": "Verifica autenticación Bearer en tiempo constante usando hmac.compare_digest frente a MCP_SERVICE_TOKEN.",
+      "tags": [
+        "autenticacion-bearer",
+        "hmac",
+        "seguridad-http"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:agent/lobehub_mcp.py:MCPHTTPHandler",
+      "type": "class",
+      "name": "MCPHTTPHandler",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        458,
+        558
+      ],
+      "summary": "Manejador HTTP para Streamable MCP con endpoints /health y /mcp, control CORS, autenticación Bearer y soporte para OPTIONS, GET y POST.",
+      "tags": [
+        "servidor-http",
+        "mcp",
+        "cors",
+        "bearer-auth"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:run_http",
+      "type": "function",
+      "name": "run_http",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        561,
+        581
+      ],
+      "summary": "Levanta ThreadingHTTPServer en host y puerto configurados tras validar la presencia obligatoria de MCP_SERVICE_TOKEN.",
+      "tags": [
+        "servidor-http",
+        "transporte-mcp",
+        "daemon"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:_helper_client",
+      "type": "function",
+      "name": "_helper_client",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        584,
+        614
+      ],
+      "summary": "Atiende una conexión entrante de Unix socket en el modo helper leyendo la operación solicitada y devolviendo la respuesta JSON.",
+      "tags": [
+        "unix-socket",
+        "helper-host",
+        "ipc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:run_helper",
+      "type": "function",
+      "name": "run_helper",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        617,
+        683
+      ],
+      "summary": "Inicia el servidor Unix socket del helper host asignando GID y permisos 0660, despachando clientes en hilos daemon y gestionando SIGTERM/SIGINT.",
+      "tags": [
+        "unix-socket",
+        "helper-host",
+        "seguridad-permisos",
+        "systemd"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:run_stdio",
+      "type": "function",
+      "name": "run_stdio",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        686,
+        701
+      ],
+      "summary": "Ejecuta el servidor MCP sobre stdin/stdout leyendo peticiones JSON-RPC delimitadas por salto de línea.",
+      "tags": [
+        "transporte-stdio",
+        "json-rpc",
+        "mcp"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/lobehub_mcp.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "agent/lobehub_mcp.py",
+      "lineRange": [
+        704,
+        714
+      ],
+      "summary": "Punto de entrada CLI que analiza --mode o MCP_MODE (http, helper, stdio) y arranca el transporte correspondiente.",
+      "tags": [
+        "entrypoint",
+        "cli",
+        "mcp"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:agent/catalog/services/usb-api/ficha.md",
+      "target": "document:docs/services/ntfy-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:agent/config/defaults.yml",
+      "target": "file:agent/daemon.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/core/__init__.py",
+      "target": "file:agent/core/service_manager.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:agent/core/__init__.py",
+      "target": "file:agent/core/compose_manager.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:agent/core/__init__.py",
+      "target": "file:agent/core/backup_manager.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "function:agent/daemon.py:_load_env_agent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "function:agent/daemon.py:_load_env_agent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "class:agent/daemon.py:Scheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "class:agent/daemon.py:Scheduler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "class:agent/daemon.py:NASAgentDaemon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "class:agent/daemon.py:NASAgentDaemon",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "function:agent/daemon.py:_signal_handler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "function:agent/daemon.py:_signal_handler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "function:agent/daemon.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "function:agent/daemon.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/daemon.py:NASAgentDaemon",
+      "target": "class:agent/daemon.py:Scheduler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/daemon.py:_signal_handler",
+      "target": "class:agent/daemon.py:NASAgentDaemon",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/daemon.py:main",
+      "target": "class:agent/daemon.py:NASAgentDaemon",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "file:agent/plugins/__init__.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "file:agent/core/memory.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "file:tests/test_daemon.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_json_bytes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_json_bytes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_redact_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_redact_text",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_audit_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_audit_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:audit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:audit",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_error",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_error",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_check_lines",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_check_lines",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_status_services",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_status_services",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_safe_capabilities",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_safe_capabilities",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_run_svc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_run_svc",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_local_operation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_local_operation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_helper_request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_helper_request",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "class:agent/lobehub_mcp.py:Gateway",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "class:agent/lobehub_mcp.py:Gateway",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_tool_schema",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_tool_schema",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_rpc_result",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_rpc_result",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_rpc_error",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_rpc_error",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:handle_rpc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:handle_rpc",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_origin_allowed",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_origin_allowed",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_authorized",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_authorized",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "class:agent/lobehub_mcp.py:MCPHTTPHandler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "class:agent/lobehub_mcp.py:MCPHTTPHandler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:run_http",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:run_http",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_helper_client",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:_helper_client",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:run_helper",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:run_helper",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:run_stdio",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:run_stdio",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "function:agent/lobehub_mcp.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:audit",
+      "target": "function:agent/lobehub_mcp.py:_audit_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:_check_lines",
+      "target": "function:agent/lobehub_mcp.py:_redact_text",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:_safe_capabilities",
+      "target": "function:agent/lobehub_mcp.py:_redact_text",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:_safe_capabilities",
+      "target": "function:agent/lobehub_mcp.py:audit",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:_run_svc",
+      "target": "function:agent/lobehub_mcp.py:_check_lines",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:_run_svc",
+      "target": "function:agent/lobehub_mcp.py:_status_services",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:_run_svc",
+      "target": "function:agent/lobehub_mcp.py:_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:_local_operation",
+      "target": "function:agent/lobehub_mcp.py:_safe_capabilities",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:_local_operation",
+      "target": "function:agent/lobehub_mcp.py:_run_svc",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:_helper_request",
+      "target": "function:agent/lobehub_mcp.py:_json_bytes",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:_helper_request",
+      "target": "function:agent/lobehub_mcp.py:_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/lobehub_mcp.py:Gateway",
+      "target": "function:agent/lobehub_mcp.py:_helper_request",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/lobehub_mcp.py:Gateway",
+      "target": "function:agent/lobehub_mcp.py:_local_operation",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/lobehub_mcp.py:Gateway",
+      "target": "function:agent/lobehub_mcp.py:audit",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:handle_rpc",
+      "target": "function:agent/lobehub_mcp.py:_tool_schema",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:handle_rpc",
+      "target": "function:agent/lobehub_mcp.py:_rpc_result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:handle_rpc",
+      "target": "function:agent/lobehub_mcp.py:_rpc_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/lobehub_mcp.py:MCPHTTPHandler",
+      "target": "function:agent/lobehub_mcp.py:_origin_allowed",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/lobehub_mcp.py:MCPHTTPHandler",
+      "target": "function:agent/lobehub_mcp.py:_authorized",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/lobehub_mcp.py:MCPHTTPHandler",
+      "target": "function:agent/lobehub_mcp.py:handle_rpc",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/lobehub_mcp.py:MCPHTTPHandler",
+      "target": "function:agent/lobehub_mcp.py:_json_bytes",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:run_http",
+      "target": "class:agent/lobehub_mcp.py:MCPHTTPHandler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:_helper_client",
+      "target": "function:agent/lobehub_mcp.py:_json_bytes",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:run_helper",
+      "target": "function:agent/lobehub_mcp.py:_helper_client",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:run_stdio",
+      "target": "function:agent/lobehub_mcp.py:handle_rpc",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:main",
+      "target": "class:agent/lobehub_mcp.py:Gateway",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:main",
+      "target": "function:agent/lobehub_mcp.py:run_http",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:main",
+      "target": "function:agent/lobehub_mcp.py:run_helper",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/lobehub_mcp.py:main",
+      "target": "function:agent/lobehub_mcp.py:run_stdio",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "file:docker/cli/svc.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/lobehub_mcp.py",
+      "target": "config:agent/capabilities/lobehub.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

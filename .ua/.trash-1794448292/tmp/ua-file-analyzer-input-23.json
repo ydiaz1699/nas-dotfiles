@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/nas-mcp-gateway/.env.example",
+      "language": "config",
+      "sizeLines": 13,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "language": "yaml",
+      "sizeLines": 72,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/nas-mcp-gateway/ficha.md",
+      "language": "markdown",
+      "sizeLines": 63,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/nas-mcp-gateway/.env.example": [],
+    "agent/catalog/services/nas-mcp-gateway/compose.yml": [],
+    "agent/catalog/services/nas-mcp-gateway/ficha.md": []
+  }
+}

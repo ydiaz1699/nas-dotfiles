@@ -1,0 +1,75 @@
+{
+  "nodes": [
+    {
+      "id": "service:agent/mcp/Dockerfile",
+      "type": "service",
+      "name": "agent/mcp/Dockerfile",
+      "filePath": "agent/mcp/Dockerfile",
+      "lineRange": [
+        1,
+        12
+      ],
+      "summary": "Define la imagen Docker minimalista en Python 3.11 para el gateway MCP HTTP histórico de LobeHub, sin Docker socket ni dependencias externas y operando sobre el socket del helper.",
+      "tags": [
+        "dockerfile",
+        "gateway-mcp",
+        "lobehub",
+        "contenedor-python"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Dockerfile basado en python:3.11-slim-bookworm con MCP_MODE=http y ENTRYPOINT apuntando a /app/lobehub_mcp.py."
+    },
+    {
+      "id": "service:agent/mcp/Dockerfile:python",
+      "type": "service",
+      "name": "python",
+      "filePath": "agent/mcp/Dockerfile",
+      "lineRange": [
+        2,
+        12
+      ],
+      "summary": "Etapa única del contenedor basada en python:3.11-slim-bookworm que copia lobehub_mcp.py en /app y lo ejecuta en modo HTTP sin privilegios adicionales.",
+      "tags": [
+        "etapa-docker",
+        "python-3-11",
+        "lobehub",
+        "http-mcp"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "service:agent/mcp/Dockerfile",
+      "target": "service:agent/mcp/Dockerfile:python",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "El Dockerfile define la etapa de servicio python basada en python:3.11-slim-bookworm."
+    },
+    {
+      "source": "service:agent/mcp/Dockerfile",
+      "target": "file:agent/lobehub_mcp.py",
+      "type": "deploys",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "Empaqueta y ejecuta agent/lobehub_mcp.py como entrypoint del contenedor HTTP MCP."
+    },
+    {
+      "source": "service:agent/mcp/Dockerfile",
+      "target": "file:systemd/lobehub-mcp-helper.service",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Requiere el socket Unix expuesto por systemd/lobehub-mcp-helper.service para consultar Docker de forma segura."
+    },
+    {
+      "source": "service:agent/mcp/Dockerfile",
+      "target": "document:docs/lobehub-mcp-gateway.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Forma parte de la arquitectura histórica del gateway MCP de LobeHub documentada en docs/lobehub-mcp-gateway.md."
+    }
+  ]
+}

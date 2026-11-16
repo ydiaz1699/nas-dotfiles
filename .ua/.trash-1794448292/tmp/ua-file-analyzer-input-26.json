@@ -1,0 +1,35 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/openwa/.env.example",
+      "language": "config",
+      "sizeLines": 20,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/openwa/compose.yml",
+      "language": "yaml",
+      "sizeLines": 114,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/openwa/ficha.md",
+      "language": "markdown",
+      "sizeLines": 87,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/openwa/wa-send.sh",
+      "language": "shell",
+      "sizeLines": 69,
+      "fileCategory": "script"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/openwa/.env.example": [],
+    "agent/catalog/services/openwa/compose.yml": [],
+    "agent/catalog/services/openwa/ficha.md": [],
+    "agent/catalog/services/openwa/wa-send.sh": []
+  }
+}

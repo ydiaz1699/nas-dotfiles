@@ -1,0 +1,157 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/cache/__init__.py",
+      "language": "python",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/cache/store.py",
+      "language": "python",
+      "sizeLines": 147,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/events/__init__.py",
+      "language": "python",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/events/bus.py",
+      "language": "python",
+      "sizeLines": 170,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/events/mqtt_listener.py",
+      "language": "python",
+      "sizeLines": 229,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/__init__.py",
+      "language": "python",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/backup_plugin.py",
+      "language": "python",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/base.py",
+      "language": "python",
+      "sizeLines": 160,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/docker_plugin.py",
+      "language": "python",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/ha_discovery_plugin.py",
+      "language": "python",
+      "sizeLines": 527,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/loader.py",
+      "language": "python",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/memory_plugin.py",
+      "language": "python",
+      "sizeLines": 153,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/network_plugin.py",
+      "language": "python",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/notification_plugin.py",
+      "language": "python",
+      "sizeLines": 277,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/scheduler/__init__.py",
+      "language": "python",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/scheduler/runner.py",
+      "language": "python",
+      "sizeLines": 210,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_phase3.py",
+      "language": "python",
+      "sizeLines": 191,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "agent/cache/__init__.py": [
+      "agent/cache/store.py"
+    ],
+    "agent/cache/store.py": [],
+    "agent/events/__init__.py": [
+      "agent/events/bus.py",
+      "agent/events/mqtt_listener.py"
+    ],
+    "agent/events/bus.py": [],
+    "agent/events/mqtt_listener.py": [],
+    "agent/plugins/__init__.py": [
+      "agent/plugins/base.py",
+      "agent/plugins/loader.py"
+    ],
+    "agent/plugins/backup_plugin.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/plugins/base.py": [],
+    "agent/plugins/docker_plugin.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/plugins/ha_discovery_plugin.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/plugins/loader.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/plugins/memory_plugin.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/plugins/network_plugin.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/plugins/notification_plugin.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/scheduler/__init__.py": [
+      "agent/scheduler/runner.py"
+    ],
+    "agent/scheduler/runner.py": [
+      "agent/plugins/base.py"
+    ],
+    "tests/test_phase3.py": [
+      "agent/cache/store.py",
+      "agent/events/bus.py",
+      "agent/plugins/base.py",
+      "agent/plugins/loader.py"
+    ]
+  }
+}

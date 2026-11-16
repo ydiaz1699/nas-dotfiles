@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/esphome/.env.example",
+      "language": "config",
+      "sizeLines": 2,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/esphome/compose.yml",
+      "language": "yaml",
+      "sizeLines": 21,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/esphome/ficha.md",
+      "language": "markdown",
+      "sizeLines": 61,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/esphome/.env.example": [],
+    "agent/catalog/services/esphome/compose.yml": [],
+    "agent/catalog/services/esphome/ficha.md": []
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/iobroker/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/iobroker/.env.example",
+      "filePath": "agent/catalog/services/iobroker/.env.example",
+      "lineRange": [
+        1,
+        3
+      ],
+      "summary": "Plantilla mínima de entorno para ioBroker que indica la ausencia de variables locales obligatorias y la herencia de SERVER_IP y TZ desde el .env global.",
+      "tags": [
+        "variables-entorno",
+        "iobroker",
+        "plantilla-env",
+        "domotica"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/iobroker/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/iobroker/compose.yml",
+      "filePath": "agent/catalog/services/iobroker/compose.yml",
+      "lineRange": [
+        1,
+        49
+      ],
+      "summary": "Definición Docker Compose de ioBroker v11.1.0 conectado a la red externa iot_net, ejecutando con UID/GID 1000, persistencia en ./data, puerto admin 8181:8081, healthcheck propio y labels de Homepage.",
+      "tags": [
+        "docker-compose",
+        "iobroker",
+        "red-iot-net",
+        "domotica-iot"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Archivo YAML de Docker Compose que extiende _defaults desde ../../_common.yml y mapea el puerto interno 8081 al puerto LAN 8181."
+    },
+    {
+      "id": "document:agent/catalog/services/iobroker/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/iobroker/ficha.md",
+      "filePath": "agent/catalog/services/iobroker/ficha.md",
+      "lineRange": [
+        1,
+        49
+      ],
+      "summary": "Ficha técnica del catálogo para ioBroker (servicio protegido y backup crítico) con frontmatter YAML de metadatos, notas de instancia stateful, conectividad con emqx:1883 en iot_net y enlace a iobroker-guide.md.",
+      "tags": [
+        "ficha-servicio",
+        "iobroker",
+        "catalogo-nas",
+        "servicio-protegido"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/iobroker/.env.example",
+      "target": "service:agent/catalog/services/iobroker/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define el archivo .env local base requerido por env_file en el compose de ioBroker."
+    },
+    {
+      "source": "service:agent/catalog/services/iobroker/compose.yml",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Extiende la plantilla _defaults desde ../../_common.yml."
+    },
+    {
+      "source": "service:agent/catalog/services/iobroker/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde ../.env mediante env_file."
+    },
+    {
+      "source": "service:agent/catalog/services/iobroker/compose.yml",
+      "target": "service:agent/catalog/services/emqx/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Comparte la red iot_net para resolver el broker MQTT emqx:1883."
+    },
+    {
+      "source": "service:agent/catalog/services/iobroker/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Expone labels homepage.* para registrar ioBroker en el grupo IoT de Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/iobroker/ficha.md",
+      "target": "service:agent/catalog/services/iobroker/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la imagen fijada, puerto 8181, persistencia JSONL en ./data y red iot_net de ioBroker."
+    },
+    {
+      "source": "document:agent/catalog/services/iobroker/ficha.md",
+      "target": "config:agent/catalog/services/iobroker/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Especifica que no requiere variables obligatorias en .env local."
+    },
+    {
+      "source": "document:agent/catalog/services/iobroker/ficha.md",
+      "target": "document:docs/services/iobroker-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza directamente a la guía operativa iobroker-guide.md."
+    }
+  ]
+}

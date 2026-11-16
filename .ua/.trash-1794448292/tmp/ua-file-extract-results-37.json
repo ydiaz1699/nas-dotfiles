@@ -1,0 +1,1695 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 22,
+  "filesSkipped": [
+    ".config/debmenux.conf.example",
+    ".config/user.conf.example",
+    "agent/.dockerignore"
+  ],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 22,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 3,
+      "failed": 0,
+      "skipped": 19
+    }
+  },
+  "results": [
+    {
+      "path": ".kiro/skills/datasql/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 106,
+      "nonEmptyLines": 91,
+      "sections": [
+        {
+          "heading": "Skill `datasql`",
+          "level": 1,
+          "line": 17
+        },
+        {
+          "heading": "Estado final obligatorio",
+          "level": 2,
+          "line": 40
+        },
+        {
+          "heading": "Reglas obligatorias",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "Contrato de configuración de una aplicación",
+          "level": 2,
+          "line": 90
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": ".kiro/skills/dependency-cascade/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 153,
+      "nonEmptyLines": 122,
+      "sections": [
+        {
+          "heading": "dependency-cascade",
+          "level": 1,
+          "line": 23
+        },
+        {
+          "heading": "Fuente dueña (no duplicar aquí)",
+          "level": 2,
+          "line": 37
+        },
+        {
+          "heading": "Protocolo obligatorio antes de entregar",
+          "level": 2,
+          "line": 56
+        },
+        {
+          "heading": "Tabla rápida — qué tipo de cambio dispara qué cascada",
+          "level": 2,
+          "line": 78
+        },
+        {
+          "heading": "Regla especial: CLI dual",
+          "level": 3,
+          "line": 95
+        },
+        {
+          "heading": "Regla especial: skill nueva → 3 anclajes o el índice se desincroniza",
+          "level": 3,
+          "line": 105
+        },
+        {
+          "heading": "Verificación",
+          "level": 2,
+          "line": 118
+        },
+        {
+          "heading": "Qué NO hace esta skill",
+          "level": 2,
+          "line": 139
+        },
+        {
+          "heading": "Cierre honesto",
+          "level": 2,
+          "line": 148
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": ".kiro/skills/docker-boot-order/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 120,
+      "nonEmptyLines": 99,
+      "sections": [
+        {
+          "heading": "Skill `docker-boot-order`",
+          "level": 1,
+          "line": 20
+        },
+        {
+          "heading": "Regla obligatoria para el LLM",
+          "level": 2,
+          "line": 30
+        },
+        {
+          "heading": "Al CREAR un servicio nuevo",
+          "level": 3,
+          "line": 36
+        },
+        {
+          "heading": "REGLA: depends_on interno = service_started (no service_healthy)",
+          "level": 3,
+          "line": 58
+        },
+        {
+          "heading": "Al ELIMINAR un servicio",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "Al DETENER un servicio a propósito",
+          "level": 3,
+          "line": 74
+        },
+        {
+          "heading": "Contexto de ejecución (IMPORTANTE)",
+          "level": 2,
+          "line": 82
+        },
+        {
+          "heading": "Comandos de referencia",
+          "level": 2,
+          "line": 98
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": ".kiro/skills/documentation-evolution/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 429,
+      "nonEmptyLines": 347,
+      "sections": [
+        {
+          "heading": "Evolución documental y de herramientas",
+          "level": 1,
+          "line": 19
+        },
+        {
+          "heading": "Activación obligatoria",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "Clasificación rápida",
+          "level": 2,
+          "line": 53
+        },
+        {
+          "heading": "Protocolo de auditoría antes de unificar",
+          "level": 2,
+          "line": 63
+        },
+        {
+          "heading": "Reglas de optimización y contexto del proyecto",
+          "level": 2,
+          "line": 121
+        },
+        {
+          "heading": "Flujo obligatorio de unificación",
+          "level": 2,
+          "line": 134
+        },
+        {
+          "heading": "Flujo obligatorio para evolucionar herramientas",
+          "level": 2,
+          "line": 151
+        },
+        {
+          "heading": "Validación local del repositorio",
+          "level": 2,
+          "line": 179
+        },
+        {
+          "heading": "Registro de mejoras",
+          "level": 2,
+          "line": 201
+        },
+        {
+          "heading": "Autoalimentación desde evidencia runtime",
+          "level": 2,
+          "line": 216
+        },
+        {
+          "heading": "Registro mínimo sin secretos",
+          "level": 3,
+          "line": 234
+        },
+        {
+          "heading": "Fuente de secretos: consumir, no mostrar",
+          "level": 3,
+          "line": 267
+        },
+        {
+          "heading": "Qué actualizar y en qué orden",
+          "level": 3,
+          "line": 298
+        },
+        {
+          "heading": "Correcciones de comandos durante una guía",
+          "level": 3,
+          "line": 331
+        },
+        {
+          "heading": "Handoff entre servicios",
+          "level": 3,
+          "line": 346
+        },
+        {
+          "heading": "Detección",
+          "level": 3,
+          "line": 377
+        },
+        {
+          "heading": "Reglas de avance",
+          "level": 3,
+          "line": 397
+        },
+        {
+          "heading": "Checkpoint",
+          "level": 3,
+          "line": 415
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 308,
+      "nonEmptyLines": 237,
+      "sections": [
+        {
+          "heading": "dotfile-skill",
+          "level": 1,
+          "line": 21
+        },
+        {
+          "heading": "Router de skills — cargar la específica SEGÚN la tarea",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "Carga CONDICIONAL, no por categoría (evita gastar tokens)",
+          "level": 3,
+          "line": 42
+        },
+        {
+          "heading": "Servidor",
+          "level": 2,
+          "line": 67
+        },
+        {
+          "heading": "Reglas estrictas",
+          "level": 2,
+          "line": 82
+        },
+        {
+          "heading": "Nuevo servicio Docker",
+          "level": 2,
+          "line": 108
+        },
+        {
+          "heading": "Arranque escalonado (boot-order.sh)",
+          "level": 3,
+          "line": 127
+        },
+        {
+          "heading": "Servicio que usa DataSQL",
+          "level": 3,
+          "line": 149
+        },
+        {
+          "heading": "Comandos esenciales",
+          "level": 2,
+          "line": 169
+        },
+        {
+          "heading": "Cuándo usar svc vs agent",
+          "level": 2,
+          "line": 202
+        },
+        {
+          "heading": "Diagnóstico",
+          "level": 2,
+          "line": 218
+        },
+        {
+          "heading": "Agente IA",
+          "level": 2,
+          "line": 232
+        },
+        {
+          "heading": "Seguridad",
+          "level": 2,
+          "line": 242
+        },
+        {
+          "heading": "Extender",
+          "level": 2,
+          "line": 251
+        },
+        {
+          "heading": "Evolución documental desde el chat",
+          "level": 2,
+          "line": 258
+        },
+        {
+          "heading": "_drafts_ — bandeja de entrada",
+          "level": 2,
+          "line": 273
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": ".kiro/skills/nas-diagnostics/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 121,
+      "nonEmptyLines": 100,
+      "sections": [
+        {
+          "heading": "Skill `nas-diagnostics`",
+          "level": 1,
+          "line": 25
+        },
+        {
+          "heading": "Regla de arranque: primero decidir contexto",
+          "level": 2,
+          "line": 41
+        },
+        {
+          "heading": "Flujo de decisión",
+          "level": 2,
+          "line": 60
+        },
+        {
+          "heading": "svc vs agent para diagnosticar",
+          "level": 2,
+          "line": 90
+        },
+        {
+          "heading": "Reglas seguras al operar (no romper el arranque)",
+          "level": 2,
+          "line": 98
+        },
+        {
+          "heading": "Casos abiertos en el NAS (referencia)",
+          "level": 2,
+          "line": 115
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": ".kiro/skills/nas-dotfiles.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 42,
+      "nonEmptyLines": 33,
+      "sections": [
+        {
+          "heading": "nas-dotfiles — índice de entrada (puntero)",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "A dónde ir según lo que necesites",
+          "level": 2,
+          "line": 14
+        },
+        {
+          "heading": "Skills disponibles",
+          "level": 2,
+          "line": 26
+        },
+        {
+          "heading": "Regla del framework",
+          "level": 2,
+          "line": 38
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": ".kiro/skills/nas-mcp-gateway/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 80,
+      "nonEmptyLines": 60,
+      "sections": [
+        {
+          "heading": "Skill nas-mcp-gateway",
+          "level": 1,
+          "line": 16
+        },
+        {
+          "heading": "Fuente canónica",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "[[file:agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json]]",
+          "level": 1,
+          "line": 29
+        },
+        {
+          "heading": "Cuándo solicitar nas-mcp-gateway",
+          "level": 2,
+          "line": 34
+        },
+        {
+          "heading": "Reglas de seguridad",
+          "level": 2,
+          "line": 47
+        },
+        {
+          "heading": "Activación lazy",
+          "level": 2,
+          "line": 58
+        },
+        {
+          "heading": "Diagnóstico de disponibilidad",
+          "level": 2,
+          "line": 69
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": ".kiro/skills/nas-runtime-secrets/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 661,
+      "nonEmptyLines": 523,
+      "sections": [
+        {
+          "heading": "Skill `nas-runtime-secrets`",
+          "level": 1,
+          "line": 25
+        },
+        {
+          "heading": "Propósito",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "Dónde vive cada secreto y cómo se lee (mapa rápido)",
+          "level": 2,
+          "line": 46
+        },
+        {
+          "heading": "Detección: instalación nueva o servicio existente",
+          "level": 2,
+          "line": 61
+        },
+        {
+          "heading": "Instalación nueva",
+          "level": 3,
+          "line": 74
+        },
+        {
+          "heading": "Decisiones de fusión",
+          "level": 3,
+          "line": 109
+        },
+        {
+          "heading": "Servicio existente",
+          "level": 3,
+          "line": 139
+        },
+        {
+          "heading": "Activación",
+          "level": 2,
+          "line": 152
+        },
+        {
+          "heading": "Reglas no negociables",
+          "level": 2,
+          "line": 164
+        },
+        {
+          "heading": "Secretos en YAML: `secrets.yaml` de ESPHome y consumo doble",
+          "level": 2,
+          "line": 211
+        },
+        {
+          "heading": "A) Consumo por el firmware — `!secret` (preferido)",
+          "level": 3,
+          "line": 227
+        },
+        {
+          "heading": "B) Consumo por una prueba manual — `curl` leyendo el YAML",
+          "level": 3,
+          "line": 248
+        },
+        {
+          "heading": "Generar el token (cuando el placeholder sigue puesto)",
+          "level": 3,
+          "line": 282
+        },
+        {
+          "heading": "Lado receptor (n8n) — validar el token",
+          "level": 3,
+          "line": 294
+        },
+        {
+          "heading": "Evidencia segura esperada (ESPHome → webhook)",
+          "level": 3,
+          "line": 302
+        },
+        {
+          "heading": "Criterios de parada específicos de este caso",
+          "level": 3,
+          "line": 312
+        },
+        {
+          "heading": "Flujo canónico",
+          "level": 2,
+          "line": 320
+        },
+        {
+          "heading": "1. Resolver la fuente y el destino",
+          "level": 3,
+          "line": 322
+        },
+        {
+          "heading": "2. Entrar al contexto correcto",
+          "level": 3,
+          "line": 349
+        },
+        {
+          "heading": "3. Leer una clave local sin mostrarla",
+          "level": 3,
+          "line": 363
+        },
+        {
+          "heading": "4. Crear o completar el `.env` sin sobrescribir secretos",
+          "level": 3,
+          "line": 396
+        },
+        {
+          "heading": "Criterios de parada",
+          "level": 2,
+          "line": 574
+        },
+        {
+          "heading": "Checklist reutilizable",
+          "level": 2,
+          "line": 592
+        },
+        {
+          "heading": "Relación con otras skills",
+          "level": 2,
+          "line": 615
+        },
+        {
+          "heading": "Caso MCP read-only de LobeHub",
+          "level": 2,
+          "line": 631
+        },
+        {
+          "heading": "Contexto de ejecución del MCP",
+          "level": 2,
+          "line": 641
+        },
+        {
+          "heading": "Handoff MCP: identidad efectiva y socket recreado",
+          "level": 2,
+          "line": 647
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 27
+      }
+    },
+    {
+      "path": ".kiro/skills/skill-creator/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 157,
+      "nonEmptyLines": 126,
+      "sections": [
+        {
+          "heading": "Skill `skill-creator`",
+          "level": 1,
+          "line": 20
+        },
+        {
+          "heading": "Cuándo crear una skill (y cuándo NO)",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "Regla de oro del framework: enlazar, no duplicar",
+          "level": 2,
+          "line": 40
+        },
+        {
+          "heading": "Estructura de una skill",
+          "level": 2,
+          "line": 53
+        },
+        {
+          "heading": "Frontmatter obligatorio",
+          "level": 2,
+          "line": 66
+        },
+        {
+          "heading": "Scopes del framework",
+          "level": 3,
+          "line": 88
+        },
+        {
+          "heading": "Procedimiento para crear una skill",
+          "level": 2,
+          "line": 102
+        },
+        {
+          "heading": "Versionado en .gitignore",
+          "level": 3,
+          "line": 120
+        },
+        {
+          "heading": "Auto-invoke MANUAL (sin sync.sh)",
+          "level": 2,
+          "line": 134
+        },
+        {
+          "heading": "Guías de contenido",
+          "level": 2,
+          "line": 151
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": ".kiro/skills/skill-creator/assets/SKILL-TEMPLATE.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 59,
+      "nonEmptyLines": 46,
+      "sections": [
+        {
+          "heading": "Skill `NOMBRE`",
+          "level": 1,
+          "line": 18
+        },
+        {
+          "heading": "Cuándo usar",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "Frontera (qué NO cubre)",
+          "level": 2,
+          "line": 32
+        },
+        {
+          "heading": "Reglas / flujo (lo único propio de la skill)",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "Casos abiertos / notas (opcional)",
+          "level": 2,
+          "line": 45
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": ".kiro/steering/svc-cli-runtime.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 73,
+      "nonEmptyLines": 48,
+      "sections": [
+        {
+          "heading": "Compatibilidad del CLI `svc` en el NAS",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Dos implementaciones",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "`svc exec`",
+          "level": 2,
+          "line": 14
+        },
+        {
+          "heading": "Contexto y secretos",
+          "level": 2,
+          "line": 32
+        },
+        {
+          "heading": "Diagnóstico MCP",
+          "level": 2,
+          "line": 40
+        },
+        {
+          "heading": "Integración MCP de LobeHub",
+          "level": 2,
+          "line": 48
+        },
+        {
+          "heading": "Verificación de contexto del helper",
+          "level": 2,
+          "line": 57
+        },
+        {
+          "heading": "Cierre de sesión MCP LobeHub: permisos, socket y proveedores",
+          "level": 2,
+          "line": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": ".kiro/steering/verificar-antes-de-entregar.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 71,
+      "nonEmptyLines": 58,
+      "sections": [
+        {
+          "heading": "Verificar contra la fuente real ANTES de entregar código/comandos",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Paso 0 (PRIMERO DE TODO): consultar la doc INTERNA que YA existe",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "No trabajar de memoria ni por suposición",
+          "level": 2,
+          "line": 33
+        },
+        {
+          "heading": "Checklist previo a entregar un Dockerfile / instalación de un paquete externo",
+          "level": 2,
+          "line": 38
+        },
+        {
+          "heading": "Origen de esta regla",
+          "level": 2,
+          "line": 59
+        },
+        {
+          "heading": "Regla complementaria (ya existente)",
+          "level": 2,
+          "line": 67
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "agent/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 475,
+      "nonEmptyLines": 384,
+      "sections": [
+        {
+          "heading": "nas-agent — Administrador inteligente de NAS",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Requisitos",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Proveedor de modelo",
+          "level": 3,
+          "line": 12
+        },
+        {
+          "heading": "Uso",
+          "level": 2,
+          "line": 37
+        },
+        {
+          "heading": "Alias (desde terminal):",
+          "level": 3,
+          "line": 58
+        },
+        {
+          "heading": "Importar en tu código:",
+          "level": 3,
+          "line": 68
+        },
+        {
+          "heading": "Arquitectura",
+          "level": 2,
+          "line": 77
+        },
+        {
+          "heading": "Herramientas",
+          "level": 2,
+          "line": 148
+        },
+        {
+          "heading": "Gateways MCP",
+          "level": 2,
+          "line": 189
+        },
+        {
+          "heading": "Índice y scanner del proyecto",
+          "level": 2,
+          "line": 211
+        },
+        {
+          "heading": "Sesión persistente",
+          "level": 2,
+          "line": 219
+        },
+        {
+          "heading": "Interfaz Rich",
+          "level": 2,
+          "line": 236
+        },
+        {
+          "heading": "Arquitectura del Prompt: Thinking + Bloques Dinámicos",
+          "level": 2,
+          "line": 249
+        },
+        {
+          "heading": "Bloques disponibles (10):",
+          "level": 3,
+          "line": 274
+        },
+        {
+          "heading": "Qué recibe cada tipo de query:",
+          "level": 3,
+          "line": 289
+        },
+        {
+          "heading": "Cambio de modelo",
+          "level": 2,
+          "line": 301
+        },
+        {
+          "heading": "Sistema de Plugins",
+          "level": 2,
+          "line": 323
+        },
+        {
+          "heading": "Event Bus + MQTT",
+          "level": 2,
+          "line": 354
+        },
+        {
+          "heading": "MQTT → Agente",
+          "level": 3,
+          "line": 366
+        },
+        {
+          "heading": "Scheduler",
+          "level": 2,
+          "line": 389
+        },
+        {
+          "heading": "Cache",
+          "level": 2,
+          "line": 407
+        },
+        {
+          "heading": "Catálogo: local + web search",
+          "level": 2,
+          "line": 420
+        },
+        {
+          "heading": "Flujo al crear un servicio:",
+          "level": 3,
+          "line": 422
+        },
+        {
+          "heading": "Agregar fichas manualmente:",
+          "level": 3,
+          "line": 440
+        },
+        {
+          "heading": "Variables de entorno",
+          "level": 2,
+          "line": 448
+        },
+        {
+          "heading": "Seguridad",
+          "level": 2,
+          "line": 467
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 26
+      }
+    },
+    {
+      "path": "agent/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 13,
+      "nonEmptyLines": 10,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/architecture/contracts.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 269,
+      "nonEmptyLines": 269,
+      "sections": [
+        {
+          "heading": "schema_version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "description",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "repositories",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "dependency_levels",
+          "level": 1,
+          "line": 9
+        },
+        {
+          "heading": "entities",
+          "level": 1,
+          "line": 31
+        },
+        {
+          "heading": "cli_contract",
+          "level": 1,
+          "line": 100
+        },
+        {
+          "heading": "connection_contracts",
+          "level": 1,
+          "line": 165
+        },
+        {
+          "heading": "generated_artifacts",
+          "level": 1,
+          "line": 265
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "agent/capabilities/lobehub.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 63,
+      "nonEmptyLines": 63,
+      "sections": [
+        {
+          "heading": "service",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "source",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "description",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "operations",
+          "level": 1,
+          "line": 5
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": "agent/catalog/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/catalog/_index.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 253,
+      "nonEmptyLines": 195,
+      "functions": [
+        {
+          "name": "_parse_frontmatter",
+          "startLine": 38,
+          "endLine": 65,
+          "params": [
+            "filepath"
+          ]
+        },
+        {
+          "name": "build_index",
+          "startLine": 68,
+          "endLine": 137,
+          "params": []
+        },
+        {
+          "name": "write_index",
+          "startLine": 140,
+          "endLine": 156,
+          "params": [
+            "index"
+          ]
+        },
+        {
+          "name": "load_index",
+          "startLine": 159,
+          "endLine": 176,
+          "params": []
+        },
+        {
+          "name": "lookup_service",
+          "startLine": 179,
+          "endLine": 189,
+          "params": [
+            "service_id"
+          ]
+        },
+        {
+          "name": "services_by_category",
+          "startLine": 192,
+          "endLine": 202,
+          "params": [
+            "category"
+          ]
+        },
+        {
+          "name": "services_by_network",
+          "startLine": 205,
+          "endLine": 215,
+          "params": [
+            "network"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 222,
+          "endLine": 249,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_parse_frontmatter",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "build_index",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "write_index",
+          "line": 140,
+          "isDefault": false
+        },
+        {
+          "name": "load_index",
+          "line": 159,
+          "isDefault": false
+        },
+        {
+          "name": "lookup_service",
+          "line": 179,
+          "isDefault": false
+        },
+        {
+          "name": "services_by_category",
+          "line": 192,
+          "isDefault": false
+        },
+        {
+          "name": "services_by_network",
+          "line": 205,
+          "isDefault": false
+        },
+        {
+          "name": "main",
+          "line": 222,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_parse_frontmatter",
+          "callee": "filepath.read_text",
+          "lineNumber": 44
+        },
+        {
+          "caller": "_parse_frontmatter",
+          "callee": "frontmatter.loads",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_parse_frontmatter",
+          "callee": "dict",
+          "lineNumber": 48
+        },
+        {
+          "caller": "_parse_frontmatter",
+          "callee": "content.startswith",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_parse_frontmatter",
+          "callee": "content.split",
+          "lineNumber": 54
+        },
+        {
+          "caller": "_parse_frontmatter",
+          "callee": "len",
+          "lineNumber": 55
+        },
+        {
+          "caller": "_parse_frontmatter",
+          "callee": "yaml.safe_load",
+          "lineNumber": 60
+        },
+        {
+          "caller": "build_index",
+          "callee": "SERVICES_DIR.exists",
+          "lineNumber": 94
+        },
+        {
+          "caller": "build_index",
+          "callee": "sorted",
+          "lineNumber": 107
+        },
+        {
+          "caller": "build_index",
+          "callee": "SERVICES_DIR.glob",
+          "lineNumber": 107
+        },
+        {
+          "caller": "build_index",
+          "callee": "md_file.name.startswith",
+          "lineNumber": 108
+        },
+        {
+          "caller": "build_index",
+          "callee": "md_file.name.startswith",
+          "lineNumber": 108
+        },
+        {
+          "caller": "build_index",
+          "callee": "ficha_files.append",
+          "lineNumber": 109
+        },
+        {
+          "caller": "build_index",
+          "callee": "sorted",
+          "lineNumber": 110
+        },
+        {
+          "caller": "build_index",
+          "callee": "SERVICES_DIR.glob",
+          "lineNumber": 110
+        },
+        {
+          "caller": "build_index",
+          "callee": "ficha_files.append",
+          "lineNumber": 111
+        },
+        {
+          "caller": "build_index",
+          "callee": "_parse_frontmatter",
+          "lineNumber": 114
+        },
+        {
+          "caller": "build_index",
+          "callee": "meta.get",
+          "lineNumber": 122
+        },
+        {
+          "caller": "build_index",
+          "callee": "by_category.setdefault(cat, []).append",
+          "lineNumber": 123
+        },
+        {
+          "caller": "build_index",
+          "callee": "by_category.setdefault",
+          "lineNumber": 123
+        },
+        {
+          "caller": "build_index",
+          "callee": "meta.get",
+          "lineNumber": 126
+        },
+        {
+          "caller": "build_index",
+          "callee": "isinstance",
+          "lineNumber": 127
+        },
+        {
+          "caller": "build_index",
+          "callee": "by_network.setdefault(net, []).append",
+          "lineNumber": 129
+        },
+        {
+          "caller": "build_index",
+          "callee": "by_network.setdefault",
+          "lineNumber": 129
+        },
+        {
+          "caller": "build_index",
+          "callee": "len",
+          "lineNumber": 133
+        },
+        {
+          "caller": "write_index",
+          "callee": "build_index",
+          "lineNumber": 150
+        },
+        {
+          "caller": "write_index",
+          "callee": "INDEX_FILE.write_text",
+          "lineNumber": 152
+        },
+        {
+          "caller": "write_index",
+          "callee": "json.dumps",
+          "lineNumber": 153
+        },
+        {
+          "caller": "load_index",
+          "callee": "INDEX_FILE.exists",
+          "lineNumber": 167
+        },
+        {
+          "caller": "load_index",
+          "callee": "write_index",
+          "lineNumber": 168
+        },
+        {
+          "caller": "load_index",
+          "callee": "json.loads",
+          "lineNumber": 171
+        },
+        {
+          "caller": "load_index",
+          "callee": "INDEX_FILE.read_text",
+          "lineNumber": 171
+        },
+        {
+          "caller": "load_index",
+          "callee": "build_index",
+          "lineNumber": 174
+        },
+        {
+          "caller": "load_index",
+          "callee": "write_index",
+          "lineNumber": 175
+        },
+        {
+          "caller": "lookup_service",
+          "callee": "load_index",
+          "lineNumber": 188
+        },
+        {
+          "caller": "lookup_service",
+          "callee": "index.get(\"services\", {}).get",
+          "lineNumber": 189
+        },
+        {
+          "caller": "lookup_service",
+          "callee": "index.get",
+          "lineNumber": 189
+        },
+        {
+          "caller": "services_by_category",
+          "callee": "load_index",
+          "lineNumber": 201
+        },
+        {
+          "caller": "services_by_category",
+          "callee": "index.get(\"by_category\", {}).get",
+          "lineNumber": 202
+        },
+        {
+          "caller": "services_by_category",
+          "callee": "index.get",
+          "lineNumber": 202
+        },
+        {
+          "caller": "services_by_network",
+          "callee": "load_index",
+          "lineNumber": 214
+        },
+        {
+          "caller": "services_by_network",
+          "callee": "index.get(\"by_network\", {}).get",
+          "lineNumber": 215
+        },
+        {
+          "caller": "services_by_network",
+          "callee": "index.get",
+          "lineNumber": 215
+        },
+        {
+          "caller": "main",
+          "callee": "build_index",
+          "lineNumber": 226
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 230
+        },
+        {
+          "caller": "main",
+          "callee": "index[\"services\"].items",
+          "lineNumber": 231
+        },
+        {
+          "caller": "main",
+          "callee": "meta.get",
+          "lineNumber": 232
+        },
+        {
+          "caller": "main",
+          "callee": "meta.get",
+          "lineNumber": 233
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 234
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 236
+        },
+        {
+          "caller": "main",
+          "callee": "write_index",
+          "lineNumber": 239
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 240
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 241
+        },
+        {
+          "caller": "main",
+          "callee": "index.get",
+          "lineNumber": 243
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 245
+        },
+        {
+          "caller": "main",
+          "callee": "', '.join",
+          "lineNumber": 245
+        },
+        {
+          "caller": "main",
+          "callee": "sorted",
+          "lineNumber": 245
+        },
+        {
+          "caller": "main",
+          "callee": "categories.keys",
+          "lineNumber": 245
+        },
+        {
+          "caller": "main",
+          "callee": "index.get",
+          "lineNumber": 247
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 249
+        },
+        {
+          "caller": "main",
+          "callee": "', '.join",
+          "lineNumber": 249
+        },
+        {
+          "caller": "main",
+          "callee": "sorted",
+          "lineNumber": 249
+        },
+        {
+          "caller": "main",
+          "callee": "networks.keys",
+          "lineNumber": 249
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 8,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/catalog/services/homepage/compose.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 35,
+      "nonEmptyLines": 34,
+      "sections": [
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "networks",
+          "level": 1,
+          "line": 33
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "agent/catalog/services/homepage/ficha.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 72,
+      "nonEmptyLines": 61,
+      "sections": [
+        {
+          "heading": "Homepage",
+          "level": 1,
+          "line": 39
+        },
+        {
+          "heading": "Qué es",
+          "level": 2,
+          "line": 41
+        },
+        {
+          "heading": "Estructura",
+          "level": 2,
+          "line": 47
+        },
+        {
+          "heading": "Redes",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "Acceso",
+          "level": 2,
+          "line": 66
+        },
+        {
+          "heading": "docs_url",
+          "level": 2,
+          "line": 70
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "agent/catalog/services/kiro-cli/ficha.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 102,
+      "nonEmptyLines": 89,
+      "sections": [
+        {
+          "heading": "Kiro CLI (contenedor bajo demanda)",
+          "level": 1,
+          "line": 46
+        },
+        {
+          "heading": "Qué es",
+          "level": 2,
+          "line": 48
+        },
+        {
+          "heading": "Estructura",
+          "level": 2,
+          "line": 56
+        },
+        {
+          "heading": "Configuración importante",
+          "level": 2,
+          "line": 68
+        },
+        {
+          "heading": "Redes",
+          "level": 2,
+          "line": 76
+        },
+        {
+          "heading": "Volúmenes y datos",
+          "level": 2,
+          "line": 80
+        },
+        {
+          "heading": "Notas",
+          "level": 2,
+          "line": 85
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    }
+  ]
+}

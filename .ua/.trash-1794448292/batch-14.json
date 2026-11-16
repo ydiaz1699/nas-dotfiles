@@ -1,0 +1,109 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/filebrowser/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/filebrowser/.env.example",
+      "filePath": "agent/catalog/services/filebrowser/.env.example",
+      "lineRange": [
+        1,
+        2
+      ],
+      "summary": "Plantilla de credenciales locales para File Browser (FILEBROWSER_USER y FILEBROWSER_PASSWORD) empleadas por el widget de Homepage.",
+      "tags": [
+        "variables-entorno",
+        "filebrowser",
+        "credenciales",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/filebrowser/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/filebrowser/compose.yml",
+      "filePath": "agent/catalog/services/filebrowser/compose.yml",
+      "lineRange": [
+        1,
+        38
+      ],
+      "summary": "Definición Docker Compose de File Browser ejecutándose como root (0:0) en el puerto 8085:80, con base de datos SQLite en ./config, montaje /NAS:/srv con propagación rshared para USB automount y widget de Homepage.",
+      "tags": [
+        "docker-compose",
+        "filebrowser",
+        "gestion-archivos",
+        "bind-rshared"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Archivo YAML de Docker Compose que utiliza env_file global/local y montaje bind con propagation: rshared."
+    },
+    {
+      "id": "document:agent/catalog/services/filebrowser/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/filebrowser/ficha.md",
+      "filePath": "agent/catalog/services/filebrowser/ficha.md",
+      "lineRange": [
+        1,
+        60
+      ],
+      "summary": "Ficha técnica de File Browser con metadatos del servicio, tabla de volúmenes, requisito obligatorio de propagación rshared para detectar USBs dinámicos, variables de entorno y enlace a filebrowser-guide.md.",
+      "tags": [
+        "ficha-servicio",
+        "filebrowser",
+        "catalogo-nas",
+        "almacenamiento-usb"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/filebrowser/.env.example",
+      "target": "service:agent/catalog/services/filebrowser/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Provee FILEBROWSER_USER y FILEBROWSER_PASSWORD para las labels del widget de Homepage en compose.yml."
+    },
+    {
+      "source": "service:agent/catalog/services/filebrowser/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde ../.env mediante env_file."
+    },
+    {
+      "source": "service:agent/catalog/services/filebrowser/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Configura labels homepage.* y widget de File Browser para integración automática en Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/filebrowser/ficha.md",
+      "target": "service:agent/catalog/services/filebrowser/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la exposición en :8085, el uso de SQLite en /config y la propagación rshared sobre /NAS."
+    },
+    {
+      "source": "document:agent/catalog/services/filebrowser/ficha.md",
+      "target": "config:agent/catalog/services/filebrowser/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe las variables locales requeridas para el widget de Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/filebrowser/ficha.md",
+      "target": "document:docs/services/filebrowser-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Apunta a la guía operativa filebrowser-guide.md."
+    }
+  ]
+}

@@ -1,0 +1,3534 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 20,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 20,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 20
+    }
+  },
+  "results": [
+    {
+      "path": "docs/services/datasql-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 1140,
+      "nonEmptyLines": 873,
+      "sections": [
+        {
+          "heading": "DataSQL — guía única operativa de ParadeDB PostgreSQL",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Resumen del resultado final",
+          "level": 2,
+          "line": 14
+        },
+        {
+          "heading": "Exposición y redes",
+          "level": 3,
+          "line": 32
+        },
+        {
+          "heading": "Extensiones",
+          "level": 3,
+          "line": 44
+        },
+        {
+          "heading": "Auditoría de fuentes y variantes",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "Hechos confirmados por las fuentes",
+          "level": 2,
+          "line": 76
+        },
+        {
+          "heading": "Decisiones derivadas durante la unificación",
+          "level": 2,
+          "line": 96
+        },
+        {
+          "heading": "Artefactos identificados",
+          "level": 2,
+          "line": 111
+        },
+        {
+          "heading": "1. Preflight común",
+          "level": 2,
+          "line": 127
+        },
+        {
+          "heading": "2. Primera instalación: elige un solo escenario",
+          "level": 2,
+          "line": 155
+        },
+        {
+          "heading": "Escenario A — NAS nuevo sin datos que conservar",
+          "level": 3,
+          "line": 157
+        },
+        {
+          "heading": "Escenario B — Migración histórica desde `$dkco/aipostgres`",
+          "level": 3,
+          "line": 162
+        },
+        {
+          "heading": "2.1 Validar la fuente antes de detenerla",
+          "level": 4,
+          "line": 175
+        },
+        {
+          "heading": "2.2 Confirmar la eliminación del destino",
+          "level": 4,
+          "line": 223
+        },
+        {
+          "heading": "2.3 Detener consumidores y eliminar la instalación histórica",
+          "level": 4,
+          "line": 235
+        },
+        {
+          "heading": "2.4 Renombrar contenedores y puertos finales",
+          "level": 4,
+          "line": 252
+        },
+        {
+          "heading": "2.5 Verificar antes de recrear",
+          "level": 4,
+          "line": 274
+        },
+        {
+          "heading": "2.6 Recrear el único stack final",
+          "level": 4,
+          "line": 286
+        },
+        {
+          "heading": "3. Instalación limpia desde cero",
+          "level": 2,
+          "line": 309
+        },
+        {
+          "heading": "3.1 Crear directorios",
+          "level": 3,
+          "line": 315
+        },
+        {
+          "heading": "3.2 Copiar compose y crear el `.env`",
+          "level": 3,
+          "line": 353
+        },
+        {
+          "heading": "3.3 Aplicar permisos",
+          "level": 3,
+          "line": 405
+        },
+        {
+          "heading": "3.4 Validar antes de levantar",
+          "level": 3,
+          "line": 423
+        },
+        {
+          "heading": "3.5 Levantar y verificar el stack",
+          "level": 3,
+          "line": 444
+        },
+        {
+          "heading": "4. Verificación inicial de PostgreSQL, extensiones, Redis y pgAdmin",
+          "level": 2,
+          "line": 487
+        },
+        {
+          "heading": "4.1 PostgreSQL y extensiones",
+          "level": 3,
+          "line": 489
+        },
+        {
+          "heading": "4.2 Redis",
+          "level": 3,
+          "line": 539
+        },
+        {
+          "heading": "4.3 pgAdmin",
+          "level": 3,
+          "line": 551
+        },
+        {
+          "heading": "5. Crear una base y un rol para un servicio nuevo",
+          "level": 2,
+          "line": 576
+        },
+        {
+          "heading": "5.1 Preflight administrativo",
+          "level": 3,
+          "line": 582
+        },
+        {
+          "heading": "5.1.1 Ruta rápida por terminal — Home Assistant",
+          "level": 3,
+          "line": 609
+        },
+        {
+          "heading": "5.2 Definir nombres y leer la contraseña del consumidor",
+          "level": 3,
+          "line": 705
+        },
+        {
+          "heading": "5.3 Crear primero el rol",
+          "level": 3,
+          "line": 737
+        },
+        {
+          "heading": "5.4 Crear la base en una llamada separada",
+          "level": 3,
+          "line": 768
+        },
+        {
+          "heading": "5.5 Verificar la conexión con el usuario dedicado",
+          "level": 3,
+          "line": 802
+        },
+        {
+          "heading": "5.6 Habilitar extensiones en una base de aplicación",
+          "level": 3,
+          "line": 822
+        },
+        {
+          "heading": "6. Configurar y verificar un consumidor",
+          "level": 2,
+          "line": 838
+        },
+        {
+          "heading": "Redis compartido",
+          "level": 3,
+          "line": 882
+        },
+        {
+          "heading": "Consumidores conocidos",
+          "level": 3,
+          "line": 897
+        },
+        {
+          "heading": "7. Operación, backup y mantenimiento",
+          "level": 2,
+          "line": 910
+        },
+        {
+          "heading": "Estado y diagnóstico",
+          "level": 3,
+          "line": 912
+        },
+        {
+          "heading": "Operaciones normales",
+          "level": 3,
+          "line": 928
+        },
+        {
+          "heading": "Backup antes de cambios",
+          "level": 3,
+          "line": 941
+        },
+        {
+          "heading": "8. Problemas conocidos y recuperación",
+          "level": 2,
+          "line": 991
+        },
+        {
+          "heading": "ParadeDB informa que `pg_cron` no está precargado",
+          "level": 3,
+          "line": 993
+        },
+        {
+          "heading": "pgAdmin muestra `Permission denied`",
+          "level": 3,
+          "line": 1015
+        },
+        {
+          "heading": "pgAdmin termina con `EOFError` durante la migración inicial",
+          "level": 3,
+          "line": 1028
+        },
+        {
+          "heading": "Redis muestra `vm.overcommit_memory`",
+          "level": 3,
+          "line": 1050
+        },
+        {
+          "heading": "PostgreSQL no está saludable",
+          "level": 3,
+          "line": 1056
+        },
+        {
+          "heading": "Un consumidor no conecta a PostgreSQL",
+          "level": 3,
+          "line": 1072
+        },
+        {
+          "heading": "Un consumidor intenta arrancar antes que DataSQL",
+          "level": 3,
+          "line": 1084
+        },
+        {
+          "heading": "9. Límites y decisiones pendientes",
+          "level": 2,
+          "line": 1092
+        },
+        {
+          "heading": "10. Checklist final",
+          "level": 2,
+          "line": 1105
+        },
+        {
+          "heading": "Clasificación de contenido no duplicado",
+          "level": 2,
+          "line": 1124
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 54
+      }
+    },
+    {
+      "path": "docs/services/emqx-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 525,
+      "nonEmptyLines": 381,
+      "sections": [
+        {
+          "heading": "EMQX — Guía Operativa Completa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Índice",
+          "level": 2,
+          "line": 12
+        },
+        {
+          "heading": "Qué es EMQX",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "Instalación",
+          "level": 2,
+          "line": 51
+        },
+        {
+          "heading": "Prerrequisitos",
+          "level": 3,
+          "line": 53
+        },
+        {
+          "heading": "Generar secretos",
+          "level": 3,
+          "line": 64
+        },
+        {
+          "heading": "Levantar servicio",
+          "level": 3,
+          "line": 90
+        },
+        {
+          "heading": "Verificar",
+          "level": 3,
+          "line": 97
+        },
+        {
+          "heading": "Configuración",
+          "level": 2,
+          "line": 110
+        },
+        {
+          "heading": "Estructura de archivos",
+          "level": 3,
+          "line": 112
+        },
+        {
+          "heading": "Variables de entorno",
+          "level": 3,
+          "line": 123
+        },
+        {
+          "heading": "Requeridas (.env local)",
+          "level": 4,
+          "line": 125
+        },
+        {
+          "heading": "Heredadas del global (../.env)",
+          "level": 4,
+          "line": 139
+        },
+        {
+          "heading": "Configuración en el compose (no requieren .env)",
+          "level": 4,
+          "line": 144
+        },
+        {
+          "heading": "Anchors del compose",
+          "level": 3,
+          "line": 155
+        },
+        {
+          "heading": "Puertos y protocolos",
+          "level": 2,
+          "line": 168
+        },
+        {
+          "heading": "Dashboard web",
+          "level": 2,
+          "line": 184
+        },
+        {
+          "heading": "Acceso",
+          "level": 3,
+          "line": 186
+        },
+        {
+          "heading": "Funcionalidades principales",
+          "level": 3,
+          "line": 192
+        },
+        {
+          "heading": "Cambiar password del dashboard",
+          "level": 3,
+          "line": 205
+        },
+        {
+          "heading": "Temas MQTT y estructura",
+          "level": 2,
+          "line": 213
+        },
+        {
+          "heading": "Convención de topics para el NAS",
+          "level": 3,
+          "line": 215
+        },
+        {
+          "heading": "Topics del sistema",
+          "level": 3,
+          "line": 228
+        },
+        {
+          "heading": "Wildcard MQTT",
+          "level": 3,
+          "line": 237
+        },
+        {
+          "heading": "Clientes MQTT",
+          "level": 2,
+          "line": 244
+        },
+        {
+          "heading": "Probar desde CLI (mosquitto_pub/sub)",
+          "level": 3,
+          "line": 246
+        },
+        {
+          "heading": "Probar desde el dashboard",
+          "level": 3,
+          "line": 260
+        },
+        {
+          "heading": "MQTT Explorer (GUI)",
+          "level": 3,
+          "line": 264
+        },
+        {
+          "heading": "Autenticación y ACLs",
+          "level": 2,
+          "line": 273
+        },
+        {
+          "heading": "Estado actual: anonymous = false",
+          "level": 3,
+          "line": 275
+        },
+        {
+          "heading": "Crear usuarios MQTT (via dashboard)",
+          "level": 3,
+          "line": 279
+        },
+        {
+          "heading": "Crear usuarios via CLI",
+          "level": 3,
+          "line": 291
+        },
+        {
+          "heading": "ACLs (Authorization)",
+          "level": 3,
+          "line": 298
+        },
+        {
+          "heading": "Integración con ESPHome",
+          "level": 2,
+          "line": 313
+        },
+        {
+          "heading": "En la configuración del dispositivo ESP (esphome YAML)",
+          "level": 3,
+          "line": 315
+        },
+        {
+          "heading": "Cómo funciona el discovery",
+          "level": 3,
+          "line": 329
+        },
+        {
+          "heading": "Integración con Home Assistant",
+          "level": 2,
+          "line": 337
+        },
+        {
+          "heading": "Configurar integración MQTT en HA",
+          "level": 3,
+          "line": 339
+        },
+        {
+          "heading": "Verificar conexión",
+          "level": 3,
+          "line": 348
+        },
+        {
+          "heading": "Publicar desde HA (automatización)",
+          "level": 3,
+          "line": 352
+        },
+        {
+          "heading": "Integración con Node-RED",
+          "level": 2,
+          "line": 364
+        },
+        {
+          "heading": "Nodo MQTT en Node-RED",
+          "level": 3,
+          "line": 366
+        },
+        {
+          "heading": "Ejemplo de flujo",
+          "level": 3,
+          "line": 377
+        },
+        {
+          "heading": "Integración con Homepage",
+          "level": 2,
+          "line": 385
+        },
+        {
+          "heading": "Backup y recuperación",
+          "level": 2,
+          "line": 400
+        },
+        {
+          "heading": "Qué respaldar",
+          "level": 3,
+          "line": 402
+        },
+        {
+          "heading": "Qué NO respaldar",
+          "level": 3,
+          "line": 410
+        },
+        {
+          "heading": "Backup",
+          "level": 3,
+          "line": 414
+        },
+        {
+          "heading": "Recuperación",
+          "level": 3,
+          "line": 420
+        },
+        {
+          "heading": "Exportar configuración (portable)",
+          "level": 3,
+          "line": 439
+        },
+        {
+          "heading": "Troubleshooting",
+          "level": 2,
+          "line": 449
+        },
+        {
+          "heading": "EMQX no arranca",
+          "level": 3,
+          "line": 451
+        },
+        {
+          "heading": "Dashboard no carga (18083)",
+          "level": 3,
+          "line": 464
+        },
+        {
+          "heading": "Dispositivo ESP no conecta",
+          "level": 3,
+          "line": 477
+        },
+        {
+          "heading": "Mensajes no llegan a HA",
+          "level": 3,
+          "line": 484
+        },
+        {
+          "heading": "Alta memoria / muchas conexiones",
+          "level": 3,
+          "line": 490
+        },
+        {
+          "heading": "Error \"mnesia: already running\"",
+          "level": 3,
+          "line": 503
+        },
+        {
+          "heading": "Notas de operación",
+          "level": 2,
+          "line": 515
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 58
+      }
+    },
+    {
+      "path": "docs/services/esphome-device-config.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 1310,
+      "nonEmptyLines": 1052,
+      "sections": [
+        {
+          "heading": "ESPHome — Organización de la configuración de dispositivos",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Índice",
+          "level": 2,
+          "line": 19
+        },
+        {
+          "heading": "Dos formas de configurar un dispositivo",
+          "level": 2,
+          "line": 42
+        },
+        {
+          "heading": "Forma A — Config por defecto (un solo YAML)",
+          "level": 2,
+          "line": 59
+        },
+        {
+          "heading": "Forma B — Organización modular con `packages`",
+          "level": 2,
+          "line": 72
+        },
+        {
+          "heading": "Cómo fusiona `packages` (lo que debes saber para no chocar)",
+          "level": 2,
+          "line": 91
+        },
+        {
+          "heading": "Packages con nombres (estructura anidada)",
+          "level": 3,
+          "line": 136
+        },
+        {
+          "heading": "`!extend` — modificar algo definido en otro package",
+          "level": 3,
+          "line": 160
+        },
+        {
+          "heading": "`!remove` — quitar algo que trae un package",
+          "level": 3,
+          "line": 182
+        },
+        {
+          "heading": "Packages como plantillas (`vars:` + `defaults:`)",
+          "level": 3,
+          "line": 205
+        },
+        {
+          "heading": "Remote / Git packages (compartir `common/` entre repos o placas)",
+          "level": 3,
+          "line": 239
+        },
+        {
+          "heading": "`packages:` como lista o como mapa",
+          "level": 3,
+          "line": 283
+        },
+        {
+          "heading": "Estructura de archivos",
+          "level": 2,
+          "line": 305
+        },
+        {
+          "heading": "Archivos de `common/`, `boards/` y `modules/`",
+          "level": 2,
+          "line": 364
+        },
+        {
+          "heading": "`common/base.yaml`",
+          "level": 3,
+          "line": 371
+        },
+        {
+          "heading": "`common/wifi.yaml`",
+          "level": 3,
+          "line": 409
+        },
+        {
+          "heading": "`common/diagnostics.yaml`",
+          "level": 3,
+          "line": 435
+        },
+        {
+          "heading": "`boards/esp32.yaml`",
+          "level": 3,
+          "line": 520
+        },
+        {
+          "heading": "`modules/entradas.yaml`",
+          "level": 3,
+          "line": 534
+        },
+        {
+          "heading": "`modules/touch_switch.yaml`",
+          "level": 3,
+          "line": 585
+        },
+        {
+          "heading": "El dispositivo (solo `substitutions` + `packages`)",
+          "level": 2,
+          "line": 630
+        },
+        {
+          "heading": "`substitutions` — más allá de reemplazar texto",
+          "level": 2,
+          "line": 694
+        },
+        {
+          "heading": "Tipos de valor (no solo cadenas)",
+          "level": 3,
+          "line": 703
+        },
+        {
+          "heading": "Expresiones Jinja y operaciones matemáticas",
+          "level": 3,
+          "line": 722
+        },
+        {
+          "heading": "`!literal` — desactivar la sustitución en un valor concreto",
+          "level": 3,
+          "line": 749
+        },
+        {
+          "heading": "`!include` con `vars:` — plantillas de fragmentos",
+          "level": 3,
+          "line": 760
+        },
+        {
+          "heading": "Substitutions por línea de comandos (`-s`)",
+          "level": 3,
+          "line": 785
+        },
+        {
+          "heading": "`<<: !include` — operador de inserción YAML (alternativa a `packages`)",
+          "level": 3,
+          "line": 796
+        },
+        {
+          "heading": "`secrets.yaml`",
+          "level": 2,
+          "line": 808
+        },
+        {
+          "heading": "Pasar secretos a los packages (secret → substitution)",
+          "level": 3,
+          "line": 829
+        },
+        {
+          "heading": "Reutilizar el `secrets.yaml` de Home Assistant (opcional)",
+          "level": 3,
+          "line": 861
+        },
+        {
+          "heading": "`min_version` — exigir una versión mínima de ESPHome",
+          "level": 3,
+          "line": 875
+        },
+        {
+          "heading": "Red: IP fija y en qué subred vive la placa",
+          "level": 2,
+          "line": 890
+        },
+        {
+          "heading": "Alta en Home Assistant",
+          "level": 2,
+          "line": 919
+        },
+        {
+          "heading": "Escalar a varias placas",
+          "level": 2,
+          "line": 946
+        },
+        {
+          "heading": "Validar antes de flashear",
+          "level": 2,
+          "line": 988
+        },
+        {
+          "heading": "Buenas prácticas de fiabilidad y hardware (de la FAQ oficial)",
+          "level": 2,
+          "line": 1025
+        },
+        {
+          "heading": "Reconexiones aleatorias / WiFi inestable",
+          "level": 3,
+          "line": 1030
+        },
+        {
+          "heading": "\"Brownout detector was triggered\" (caídas de tensión)",
+          "level": 3,
+          "line": 1044
+        },
+        {
+          "heading": "No usar `_` (guion bajo) en `name:`",
+          "level": 3,
+          "line": 1057
+        },
+        {
+          "heading": "Pines de strapping",
+          "level": 3,
+          "line": 1063
+        },
+        {
+          "heading": "Ocultar los archivos base del dashboard",
+          "level": 3,
+          "line": 1069
+        },
+        {
+          "heading": "Restaurar estado tras reinicio / NVS lleno",
+          "level": 3,
+          "line": 1076
+        },
+        {
+          "heading": "Sensores: filtros, ahorro de energía y lambdas",
+          "level": 2,
+          "line": 1086
+        },
+        {
+          "heading": "Filtros de sensor (suavizar lecturas y optimizar tráfico a HA)",
+          "level": 3,
+          "line": 1093
+        },
+        {
+          "heading": "`deep_sleep` — dispositivos a batería",
+          "level": 3,
+          "line": 1121
+        },
+        {
+          "heading": "Lambdas — lógica C++ cuando YAML se queda corto",
+          "level": 3,
+          "line": 1140
+        },
+        {
+          "heading": "Reorganizar sin romper",
+          "level": 2,
+          "line": 1165
+        },
+        {
+          "heading": "Errores frecuentes",
+          "level": 2,
+          "line": 1232
+        },
+        {
+          "heading": "Mejoras pendientes (detectadas, no aplicadas)",
+          "level": 2,
+          "line": 1251
+        },
+        {
+          "heading": "Ver también",
+          "level": 2,
+          "line": 1280
+        },
+        {
+          "heading": "Fuentes oficiales (verificar contra ellas, no de memoria)",
+          "level": 3,
+          "line": 1292
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 52
+      }
+    },
+    {
+      "path": "docs/services/esphome-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 689,
+      "nonEmptyLines": 528,
+      "sections": [
+        {
+          "heading": "ESPHome — Guía Operativa Completa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Índice",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "Qué es ESPHome",
+          "level": 2,
+          "line": 46
+        },
+        {
+          "heading": "Instalación",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "Prerrequisitos",
+          "level": 3,
+          "line": 66
+        },
+        {
+          "heading": "Levantar servicio",
+          "level": 3,
+          "line": 77
+        },
+        {
+          "heading": "Verificar",
+          "level": 3,
+          "line": 87
+        },
+        {
+          "heading": "Configuración",
+          "level": 2,
+          "line": 105
+        },
+        {
+          "heading": "Estructura de archivos",
+          "level": 3,
+          "line": 107
+        },
+        {
+          "heading": "compose.yml explicado",
+          "level": 3,
+          "line": 133
+        },
+        {
+          "heading": "secrets.yaml",
+          "level": 3,
+          "line": 167
+        },
+        {
+          "heading": "Dashboard web (Device Builder)",
+          "level": 2,
+          "line": 188
+        },
+        {
+          "heading": "Acceso",
+          "level": 3,
+          "line": 190
+        },
+        {
+          "heading": "Funcionalidades",
+          "level": 3,
+          "line": 201
+        },
+        {
+          "heading": "Indicadores de estado",
+          "level": 3,
+          "line": 217
+        },
+        {
+          "heading": "Crear un nuevo dispositivo",
+          "level": 2,
+          "line": 231
+        },
+        {
+          "heading": "Método 1: Wizard del dashboard",
+          "level": 3,
+          "line": 233
+        },
+        {
+          "heading": "Método 2: YAML manual de un solo archivo",
+          "level": 3,
+          "line": 240
+        },
+        {
+          "heading": "Método 3: modular con `packages` (el que usa `pueba`)",
+          "level": 3,
+          "line": 307
+        },
+        {
+          "heading": "Flashear dispositivos",
+          "level": 2,
+          "line": 317
+        },
+        {
+          "heading": "Primer flash (USB serial — obligatorio)",
+          "level": 3,
+          "line": 319
+        },
+        {
+          "heading": "Flash OTA (inalámbrico — después del primer flash)",
+          "level": 3,
+          "line": 329
+        },
+        {
+          "heading": "Flash desde CLI",
+          "level": 3,
+          "line": 338
+        },
+        {
+          "heading": "Integración con EMQX (MQTT)",
+          "level": 2,
+          "line": 367
+        },
+        {
+          "heading": "Configuración en el dispositivo",
+          "level": 3,
+          "line": 369
+        },
+        {
+          "heading": "Temas publicados automáticamente",
+          "level": 3,
+          "line": 383
+        },
+        {
+          "heading": "Verificar en EMQX dashboard",
+          "level": 3,
+          "line": 393
+        },
+        {
+          "heading": "Integración con Home Assistant",
+          "level": 2,
+          "line": 401
+        },
+        {
+          "heading": "Método 1: API directa (recomendado para pocos dispositivos)",
+          "level": 3,
+          "line": 403
+        },
+        {
+          "heading": "Método 2: MQTT (recomendado para muchos dispositivos)",
+          "level": 3,
+          "line": 422
+        },
+        {
+          "heading": "Cuándo usar cada método",
+          "level": 3,
+          "line": 427
+        },
+        {
+          "heading": "Integración con Homepage",
+          "level": 2,
+          "line": 443
+        },
+        {
+          "heading": "Backup y recuperación",
+          "level": 2,
+          "line": 462
+        },
+        {
+          "heading": "Qué respaldar",
+          "level": 3,
+          "line": 464
+        },
+        {
+          "heading": "Qué NO respaldar",
+          "level": 3,
+          "line": 474
+        },
+        {
+          "heading": "Backup",
+          "level": 3,
+          "line": 478
+        },
+        {
+          "heading": "Recuperación",
+          "level": 3,
+          "line": 502
+        },
+        {
+          "heading": "Troubleshooting",
+          "level": 2,
+          "line": 521
+        },
+        {
+          "heading": "ESPHome dashboard no carga (6052)",
+          "level": 3,
+          "line": 523
+        },
+        {
+          "heading": "El contenedor no arranca (y no hay `/dev/ttyUSB0` conectado)",
+          "level": 3,
+          "line": 537
+        },
+        {
+          "heading": "No detecta dispositivos (mDNS)",
+          "level": 3,
+          "line": 549
+        },
+        {
+          "heading": "Flash USB falla (\"Permission denied\" o \"No serial port found\")",
+          "level": 3,
+          "line": 563
+        },
+        {
+          "heading": "Compilación falla (out of memory)",
+          "level": 3,
+          "line": 577
+        },
+        {
+          "heading": "OTA falla (\"Unable to connect\")",
+          "level": 3,
+          "line": 591
+        },
+        {
+          "heading": "\"Configuration is valid!\" pero algo no cuadra",
+          "level": 3,
+          "line": 600
+        },
+        {
+          "heading": "El pulsador / switch no actúa sobre el Sonoff",
+          "level": 3,
+          "line": 613
+        },
+        {
+          "heading": "Dispositivo se desconecta constantemente",
+          "level": 3,
+          "line": 620
+        },
+        {
+          "heading": "Notas de operación",
+          "level": 2,
+          "line": 642
+        },
+        {
+          "heading": "Mejoras pendientes (detectadas, no aplicadas)",
+          "level": 2,
+          "line": 663
+        },
+        {
+          "heading": "Ver también",
+          "level": 2,
+          "line": 681
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 50
+      }
+    },
+    {
+      "path": "docs/services/esphome-pueba-handoff.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 422,
+      "nonEmptyLines": 340,
+      "sections": [
+        {
+          "heading": "ESPHome `pueba` — Handoff de sesión (estado real, para retomar en frío)",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. Qué es este proyecto",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "2. Arquitectura de archivos (en `$dkco/esphome/config/` del NAS)",
+          "level": 2,
+          "line": 33
+        },
+        {
+          "heading": "Datos de red (ver doble NAT en networking.md)",
+          "level": 3,
+          "line": 52
+        },
+        {
+          "heading": "3. Contenido verificado de los packages",
+          "level": 2,
+          "line": 59
+        },
+        {
+          "heading": "`common/entradas.yaml`",
+          "level": 3,
+          "line": 61
+        },
+        {
+          "heading": "`common/touch_switch.yaml`",
+          "level": 3,
+          "line": 97
+        },
+        {
+          "heading": "4. Qué FUNCIONA (verificado en runtime)",
+          "level": 2,
+          "line": 134
+        },
+        {
+          "heading": "Requisito en HA (imprescindible)",
+          "level": 3,
+          "line": 142
+        },
+        {
+          "heading": "5. Errores ya resueltos (no repetirlos)",
+          "level": 2,
+          "line": 151
+        },
+        {
+          "heading": "6. ✅ LÍMITE CONOCIDO ASUMIDO (decisión: Camino B) — estado inicial al arrancar",
+          "level": 2,
+          "line": 164
+        },
+        {
+          "heading": "Caminos considerados (decisión tomada: **B**)",
+          "level": 3,
+          "line": 196
+        },
+        {
+          "heading": "7. Comandos útiles (en `$dkco/esphome/config` del NAS, por SSH)",
+          "level": 2,
+          "line": 224
+        },
+        {
+          "heading": "8. Qué NO volver a intentar (callejones sin salida verificados)",
+          "level": 2,
+          "line": 247
+        },
+        {
+          "heading": "9. Migración a remote packages desde GitHub (repo `esphome-common`)",
+          "level": 2,
+          "line": 260
+        },
+        {
+          "heading": "Qué cambia y por qué",
+          "level": 3,
+          "line": 267
+        },
+        {
+          "heading": "`pueba.yaml` nuevo (reemplaza al actual en `$dkco/esphome/config/pueba.yaml`)",
+          "level": 3,
+          "line": 292
+        },
+        {
+          "heading": "Alternativa — Camino A (local) con la misma biblioteca",
+          "level": 4,
+          "line": 350
+        },
+        {
+          "heading": "Pasos en el NAS (por SSH) — orden real",
+          "level": 3,
+          "line": 375
+        },
+        {
+          "heading": "Cómo actualizar las plantillas en el futuro",
+          "level": 3,
+          "line": 406
+        },
+        {
+          "heading": "Reversión",
+          "level": 3,
+          "line": 413
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 21
+      }
+    },
+    {
+      "path": "docs/services/filebrowser-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 347,
+      "nonEmptyLines": 258,
+      "sections": [
+        {
+          "heading": "File Browser — Guía de instalación y operación",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Arquitectura de montaje",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Estructura de directorios",
+          "level": 2,
+          "line": 30
+        },
+        {
+          "heading": "Conceptos previos",
+          "level": 2,
+          "line": 48
+        },
+        {
+          "heading": "Bind mount vs symlink",
+          "level": 3,
+          "line": 50
+        },
+        {
+          "heading": "Docker y mounts",
+          "level": 3,
+          "line": 58
+        },
+        {
+          "heading": "Instalación desde cero",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "Paso 1 — Crear estructura de carpetas",
+          "level": 3,
+          "line": 66
+        },
+        {
+          "heading": "Paso 2 — Crear base de datos (evita errores de permisos)",
+          "level": 3,
+          "line": 73
+        },
+        {
+          "heading": "Paso 3 — Permisos de /config",
+          "level": 3,
+          "line": 80
+        },
+        {
+          "heading": "Paso 4 — Crear compose.yml",
+          "level": 3,
+          "line": 92
+        },
+        {
+          "heading": "Paso 5 — Crear .env (secretos locales)",
+          "level": 3,
+          "line": 140
+        },
+        {
+          "heading": "Paso 6 — Activar bind mounts",
+          "level": 3,
+          "line": 150
+        },
+        {
+          "heading": "Paso 7 — Persistir en fstab",
+          "level": 3,
+          "line": 164
+        },
+        {
+          "heading": "Paso 8 — Verificar y recargar",
+          "level": 3,
+          "line": 177
+        },
+        {
+          "heading": "Paso 9 — Levantar servicio",
+          "level": 3,
+          "line": 184
+        },
+        {
+          "heading": "Paso 10 — Obtener contraseña inicial",
+          "level": 3,
+          "line": 191
+        },
+        {
+          "heading": "Gestión de bind mounts",
+          "level": 2,
+          "line": 207
+        },
+        {
+          "heading": "Integración con USB Automount (DebMenux)",
+          "level": 3,
+          "line": 209
+        },
+        {
+          "heading": "Agregar un bind mount",
+          "level": 3,
+          "line": 234
+        },
+        {
+          "heading": "Eliminar un bind mount",
+          "level": 3,
+          "line": 247
+        },
+        {
+          "heading": "Mantenimiento",
+          "level": 2,
+          "line": 259
+        },
+        {
+          "heading": "Backup",
+          "level": 3,
+          "line": 270
+        },
+        {
+          "heading": "Restaurar",
+          "level": 3,
+          "line": 282
+        },
+        {
+          "heading": "Verificación y diagnóstico",
+          "level": 2,
+          "line": 293
+        },
+        {
+          "heading": "Salida esperada de `mount | grep NAS`",
+          "level": 3,
+          "line": 302
+        },
+        {
+          "heading": "Problemas comunes",
+          "level": 2,
+          "line": 313
+        },
+        {
+          "heading": "Fix rápido para permisos",
+          "level": 3,
+          "line": 327
+        },
+        {
+          "heading": "Notas técnicas",
+          "level": 2,
+          "line": 340
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 29
+      }
+    },
+    {
+      "path": "docs/services/flowise-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 973,
+      "nonEmptyLines": 776,
+      "sections": [
+        {
+          "heading": "Guía: Flowise con PostgreSQL, Redis y workers en modo queue",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Estado: válida para el NAS — una instancia main y un worker",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Fecha: 2026-08-21",
+          "level": 2,
+          "line": 4
+        },
+        {
+          "heading": "Resumen",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "1. Arquitectura final",
+          "level": 2,
+          "line": 22
+        },
+        {
+          "heading": "Decisiones finales",
+          "level": 3,
+          "line": 43
+        },
+        {
+          "heading": "2. Requisitos y comprobaciones previas",
+          "level": 2,
+          "line": 69
+        },
+        {
+          "heading": "3. Paso 1 — Crear directorios",
+          "level": 2,
+          "line": 96
+        },
+        {
+          "heading": "Artefactos",
+          "level": 3,
+          "line": 98
+        },
+        {
+          "heading": "4. Paso 2 — Preparar la integración con DataSQL",
+          "level": 2,
+          "line": 116
+        },
+        {
+          "heading": "5. Paso 3 — Crear el `.env` local",
+          "level": 2,
+          "line": 130
+        },
+        {
+          "heading": "Artefactos",
+          "level": 3,
+          "line": 132
+        },
+        {
+          "heading": "6. Paso 4 — Crear el rol y la base dedicados",
+          "level": 2,
+          "line": 191
+        },
+        {
+          "heading": "7. Paso 5 — Crear el compose final",
+          "level": 2,
+          "line": 208
+        },
+        {
+          "heading": "Artefactos",
+          "level": 3,
+          "line": 210
+        },
+        {
+          "heading": "Motivos de las decisiones del compose",
+          "level": 3,
+          "line": 373
+        },
+        {
+          "heading": "7. Paso 5 — Validar y levantar",
+          "level": 2,
+          "line": 401
+        },
+        {
+          "heading": "Verificación de sintaxis y configuración",
+          "level": 3,
+          "line": 403
+        },
+        {
+          "heading": "Levantar",
+          "level": 3,
+          "line": 416
+        },
+        {
+          "heading": "Verificar en orden",
+          "level": 3,
+          "line": 422
+        },
+        {
+          "heading": "8. Persistencia, permisos y recuperación",
+          "level": 2,
+          "line": 446
+        },
+        {
+          "heading": "Backup",
+          "level": 3,
+          "line": 473
+        },
+        {
+          "heading": "Recuperación",
+          "level": 3,
+          "line": 489
+        },
+        {
+          "heading": "9. Operación habitual",
+          "level": 2,
+          "line": 520
+        },
+        {
+          "heading": "Escalado futuro",
+          "level": 3,
+          "line": 541
+        },
+        {
+          "heading": "Incidencias resueltas y comandos reproducibles",
+          "level": 2,
+          "line": 556
+        },
+        {
+          "heading": "A. Preparación inicial y comprobación de placeholders",
+          "level": 3,
+          "line": 563
+        },
+        {
+          "heading": "B. Confirmar las dependencias antes de levantar",
+          "level": 3,
+          "line": 584
+        },
+        {
+          "heading": "C. Sintaxis correcta de `svc exec`",
+          "level": 3,
+          "line": 597
+        },
+        {
+          "heading": "D. Sincronizar el secreto de Redis sin exponerlo",
+          "level": 3,
+          "line": 616
+        },
+        {
+          "heading": "E. PostgreSQL: rol primero, base después, conexión dedicada",
+          "level": 3,
+          "line": 658
+        },
+        {
+          "heading": "F. Snapshot antes de cambiar el worker",
+          "level": 3,
+          "line": 703
+        },
+        {
+          "heading": "G. Problema del worker `unhealthy`",
+          "level": 3,
+          "line": 720
+        },
+        {
+          "heading": "H. Validar y recrear después de la corrección",
+          "level": 3,
+          "line": 771
+        },
+        {
+          "heading": "I. Incidencia de dependencias y versión de imagen",
+          "level": 3,
+          "line": 798
+        },
+        {
+          "heading": "J. Tabla de decisiones de esta incidencia",
+          "level": 3,
+          "line": 817
+        },
+        {
+          "heading": "10. Diagnóstico",
+          "level": 2,
+          "line": 831
+        },
+        {
+          "heading": "11. Hechos, inferencias y decisiones",
+          "level": 2,
+          "line": 849
+        },
+        {
+          "heading": "Hechos confirmados",
+          "level": 3,
+          "line": 851
+        },
+        {
+          "heading": "Inferencias seguras",
+          "level": 3,
+          "line": 868
+        },
+        {
+          "heading": "Inferencias no confirmadas",
+          "level": 3,
+          "line": 877
+        },
+        {
+          "heading": "12. Auditoría de fuentes y variantes",
+          "level": 2,
+          "line": 891
+        },
+        {
+          "heading": "Contenido descartado explícitamente",
+          "level": 3,
+          "line": 935
+        },
+        {
+          "heading": "13. Checklist final",
+          "level": 2,
+          "line": 949
+        },
+        {
+          "heading": "Referencias del proyecto",
+          "level": 2,
+          "line": 968
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 45
+      }
+    },
+    {
+      "path": "docs/services/homeassistant-datasql-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 755,
+      "nonEmptyLines": 524,
+      "sections": [
+        {
+          "heading": "Guía: conectar Home Assistant a PostgreSQL",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Estado: borrador operativo",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Fecha: 2026-08-25",
+          "level": 2,
+          "line": 4
+        },
+        {
+          "heading": "Resumen",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "1. Antes de empezar: elegir el backend",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Camino A — PostgreSQL/DataSQL ya existe",
+          "level": 3,
+          "line": 17
+        },
+        {
+          "heading": "Camino B — PostgreSQL/DataSQL no existe",
+          "level": 3,
+          "line": 31
+        },
+        {
+          "heading": "2. Decidir los valores del backend",
+          "level": 2,
+          "line": 43
+        },
+        {
+          "heading": "Regla de red del caso NAS/DataSQL",
+          "level": 3,
+          "line": 55
+        },
+        {
+          "heading": "3. Camino NAS/DataSQL: comprobar el endpoint y el stack",
+          "level": 2,
+          "line": 67
+        },
+        {
+          "heading": "3.1 Comprobar el puerto real publicado",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "3.2 Comprobar salud, contenedores y red",
+          "level": 3,
+          "line": 96
+        },
+        {
+          "heading": "3.3 Cargar credenciales administrativas de DataSQL",
+          "level": 3,
+          "line": 117
+        },
+        {
+          "heading": "4. Camino PostgreSQL existente que no es DataSQL",
+          "level": 2,
+          "line": 139
+        },
+        {
+          "heading": "5. Crear o verificar el rol dedicado",
+          "level": 2,
+          "line": 171
+        },
+        {
+          "heading": "5.1 Generar la contraseña dedicada",
+          "level": 3,
+          "line": 175
+        },
+        {
+          "heading": "5.2 Abrir la sesión administrativa",
+          "level": 3,
+          "line": 185
+        },
+        {
+          "heading": "Si usas NAS/DataSQL",
+          "level": 4,
+          "line": 187
+        },
+        {
+          "heading": "Si usas otro PostgreSQL",
+          "level": 4,
+          "line": 197
+        },
+        {
+          "heading": "5.3 Consultar el rol antes de mutarlo",
+          "level": 3,
+          "line": 208
+        },
+        {
+          "heading": "6. Crear o verificar la base dedicada",
+          "level": 2,
+          "line": 263
+        },
+        {
+          "heading": "6.1 Comprobar la base",
+          "level": 3,
+          "line": 265
+        },
+        {
+          "heading": "6.2 Crear la base cuando no existe",
+          "level": 3,
+          "line": 284
+        },
+        {
+          "heading": "7. Verificar el login dedicado",
+          "level": 2,
+          "line": 325
+        },
+        {
+          "heading": "Si usas NAS/DataSQL",
+          "level": 3,
+          "line": 336
+        },
+        {
+          "heading": "Si usas otro PostgreSQL",
+          "level": 3,
+          "line": 346
+        },
+        {
+          "heading": "8. Levantar Home Assistant sin cambiar el backend por defecto",
+          "level": 2,
+          "line": 375
+        },
+        {
+          "heading": "9. Determinar qué backend usa actualmente HA, sin modificarlo",
+          "level": 2,
+          "line": 395
+        },
+        {
+          "heading": "9.1 Revisar la configuración persistente sin mostrar secretos",
+          "level": 3,
+          "line": 405
+        },
+        {
+          "heading": "9.2 Comprobar el archivo SQLite por defecto",
+          "level": 3,
+          "line": 445
+        },
+        {
+          "heading": "9.3 Confirmar conexión real desde PostgreSQL",
+          "level": 3,
+          "line": 457
+        },
+        {
+          "heading": "10. Conectar explícitamente Home Assistant a PostgreSQL",
+          "level": 2,
+          "line": 551
+        },
+        {
+          "heading": "10.1 Comprobar el driver en la imagen actual",
+          "level": 3,
+          "line": 555
+        },
+        {
+          "heading": "10.2 Crear/proteger el secreto local de HA",
+          "level": 3,
+          "line": 565
+        },
+        {
+          "heading": "10.3 Agregar una sola sección `recorder:`",
+          "level": 3,
+          "line": 590
+        },
+        {
+          "heading": "10.4 Reiniciar HA y comprobar logs",
+          "level": 3,
+          "line": 619
+        },
+        {
+          "heading": "11. Verificación funcional después de conectar",
+          "level": 2,
+          "line": 633
+        },
+        {
+          "heading": "12. Continuidad y recuperación del flujo",
+          "level": 2,
+          "line": 684
+        },
+        {
+          "heading": "Auditoría de fuentes y variantes",
+          "level": 2,
+          "line": 707
+        },
+        {
+          "heading": "Hechos confirmados por las fuentes",
+          "level": 2,
+          "line": 721
+        },
+        {
+          "heading": "Decisiones derivadas durante la separación",
+          "level": 2,
+          "line": 730
+        },
+        {
+          "heading": "Artefactos principales",
+          "level": 2,
+          "line": 738
+        },
+        {
+          "heading": "Decisiones pendientes y bloqueados",
+          "level": 2,
+          "line": 750
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 43
+      }
+    },
+    {
+      "path": "docs/services/homeassistant-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 825,
+      "nonEmptyLines": 653,
+      "sections": [
+        {
+          "heading": "Home Assistant — Guía Operativa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Índice",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Estructura de archivos",
+          "level": 2,
+          "line": 29
+        },
+        {
+          "heading": "Compose",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "Primer inicio y onboarding",
+          "level": 2,
+          "line": 122
+        },
+        {
+          "heading": "Integración opcional con PostgreSQL/DataSQL",
+          "level": 2,
+          "line": 149
+        },
+        {
+          "heading": "Continuidad entre chats",
+          "level": 2,
+          "line": 164
+        },
+        {
+          "heading": "Verificación y operación diaria",
+          "level": 2,
+          "line": 181
+        },
+        {
+          "heading": "Organización con includes",
+          "level": 2,
+          "line": 213
+        },
+        {
+          "heading": "configuration.yaml (raíz, solo includes)",
+          "level": 3,
+          "line": 222
+        },
+        {
+          "heading": "Archivos de `core/`",
+          "level": 3,
+          "line": 244
+        },
+        {
+          "heading": "`core/homeassistant.yaml`",
+          "level": 4,
+          "line": 248
+        },
+        {
+          "heading": "`core/recorder.yaml`",
+          "level": 4,
+          "line": 258
+        },
+        {
+          "heading": "`core/http.yaml`",
+          "level": 4,
+          "line": 269
+        },
+        {
+          "heading": "`core/zeroconf.yaml`",
+          "level": 4,
+          "line": 278
+        },
+        {
+          "heading": "`core/panel_custom.yaml`",
+          "level": 4,
+          "line": 285
+        },
+        {
+          "heading": "Crear archivos de integración en `includes/`",
+          "level": 3,
+          "line": 299
+        },
+        {
+          "heading": "Configurar `configuration.yaml`",
+          "level": 3,
+          "line": 449
+        },
+        {
+          "heading": "Aplicar cambios",
+          "level": 3,
+          "line": 475
+        },
+        {
+          "heading": "secrets.yaml",
+          "level": 2,
+          "line": 486
+        },
+        {
+          "heading": "Integración con ntfy",
+          "level": 2,
+          "line": 519
+        },
+        {
+          "heading": "Paso 1: Instalar integración oficial ntfy en HA",
+          "level": 3,
+          "line": 521
+        },
+        {
+          "heading": "Paso 2: Notificaciones con imagen (shell_command)",
+          "level": 3,
+          "line": 531
+        },
+        {
+          "heading": "Probar desde terminal del NAS",
+          "level": 3,
+          "line": 538
+        },
+        {
+          "heading": "Probar desde HA (Herramientas para desarrolladores → Acciones)",
+          "level": 3,
+          "line": 558
+        },
+        {
+          "heading": "Automatización: Cámara → snapshot → ntfy",
+          "level": 2,
+          "line": 576
+        },
+        {
+          "heading": "Automatización completa (crear en Settings → Automations)",
+          "level": 3,
+          "line": 578
+        },
+        {
+          "heading": "Cómo funciona",
+          "level": 3,
+          "line": 601
+        },
+        {
+          "heading": "Notificación sin imagen (solo texto, más simple)",
+          "level": 3,
+          "line": 613
+        },
+        {
+          "heading": "TvOverlay",
+          "level": 2,
+          "line": 639
+        },
+        {
+          "heading": "Entidades disponibles",
+          "level": 3,
+          "line": 643
+        },
+        {
+          "heading": "Ejemplo: enviar a TV cuando la cámara detecta",
+          "level": 3,
+          "line": 655
+        },
+        {
+          "heading": "IPs de dispositivos TvOverlay",
+          "level": 3,
+          "line": 668
+        },
+        {
+          "heading": "Troubleshooting",
+          "level": 2,
+          "line": 677
+        },
+        {
+          "heading": "DataSQL no arranca con `Address already in use`",
+          "level": 3,
+          "line": 679
+        },
+        {
+          "heading": "`svc snapshot` no existe en el CLI Python",
+          "level": 3,
+          "line": 707
+        },
+        {
+          "heading": "`connection refused` del Recorder con `localhost`",
+          "level": 3,
+          "line": 723
+        },
+        {
+          "heading": "`psql` pide contraseña o `source .env` rompe la shell",
+          "level": 3,
+          "line": 730
+        },
+        {
+          "heading": "Aviso de reverse proxy",
+          "level": 3,
+          "line": 737
+        },
+        {
+          "heading": "Home Assistant reinicia en bucle y no aparecen logs nuevos",
+          "level": 3,
+          "line": 744
+        },
+        {
+          "heading": "`Cannot write /config/www/snapshots/alarma.jpg` o `allowlist_external_dirs`",
+          "level": 3,
+          "line": 756
+        },
+        {
+          "heading": "`extra keys not allowed @ data['image']` en ntfy.publish",
+          "level": 3,
+          "line": 769
+        },
+        {
+          "heading": "`extra keys not allowed @ data['priority']` / `expected int`",
+          "level": 3,
+          "line": 774
+        },
+        {
+          "heading": "Shell commands no aparecen después de crear el archivo",
+          "level": 3,
+          "line": 779
+        },
+        {
+          "heading": "`!include` da error de duplicado",
+          "level": 3,
+          "line": 784
+        },
+        {
+          "heading": "`!include`, `!secret` o `!include_dir_merge_named` aparecen como `unknown tag`",
+          "level": 3,
+          "line": 789
+        },
+        {
+          "heading": "Error de ruta relativa al crear archivos con `cat`",
+          "level": 3,
+          "line": 797
+        },
+        {
+          "heading": "Snapshot se ejecuta pero shell_command falla",
+          "level": 3,
+          "line": 810
+        },
+        {
+          "heading": "Entidades clave de este setup",
+          "level": 2,
+          "line": 816
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 49
+      }
+    },
+    {
+      "path": "docs/services/homepage-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 272,
+      "nonEmptyLines": 206,
+      "sections": [
+        {
+          "heading": "Homepage — Guía Operativa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Qué es",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Filosofía de configuración",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Prioridad 1: Docker labels (auto-descubrimiento)",
+          "level": 3,
+          "line": 26
+        },
+        {
+          "heading": "Prioridad 2: services.yaml (fallback)",
+          "level": 3,
+          "line": 54
+        },
+        {
+          "heading": "Labels disponibles",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "Grupos configurados",
+          "level": 3,
+          "line": 78
+        },
+        {
+          "heading": "Servicios con labels (ya configurados)",
+          "level": 2,
+          "line": 90
+        },
+        {
+          "heading": "Servicios en services.yaml (sin compose)",
+          "level": 2,
+          "line": 100
+        },
+        {
+          "heading": "Agregar un nuevo servicio al dashboard",
+          "level": 2,
+          "line": 109
+        },
+        {
+          "heading": "Si es Docker (tiene compose.yml):",
+          "level": 3,
+          "line": 111
+        },
+        {
+          "heading": "Si es servicio nativo (systemd):",
+          "level": 3,
+          "line": 135
+        },
+        {
+          "heading": "Estructura de archivos",
+          "level": 2,
+          "line": 158
+        },
+        {
+          "heading": "Widgets globales (barra superior)",
+          "level": 2,
+          "line": 175
+        },
+        {
+          "heading": "Docker socket",
+          "level": 2,
+          "line": 200
+        },
+        {
+          "heading": "Red homepage_net",
+          "level": 2,
+          "line": 217
+        },
+        {
+          "heading": "Troubleshooting",
+          "level": 2,
+          "line": 239
+        },
+        {
+          "heading": "Servicio no aparece en el dashboard",
+          "level": 3,
+          "line": 241
+        },
+        {
+          "heading": "Widget muestra error / no carga datos",
+          "level": 3,
+          "line": 247
+        },
+        {
+          "heading": "Cambios en services.yaml no se ven",
+          "level": 3,
+          "line": 253
+        },
+        {
+          "heading": "Layout/grupos desordenados",
+          "level": 3,
+          "line": 259
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 21
+      }
+    },
+    {
+      "path": "docs/services/iobroker-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 288,
+      "nonEmptyLines": 215,
+      "sections": [
+        {
+          "heading": "ioBroker — Guía Operativa de Producción",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. Arquitectura y alcance",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "1.1 Auditoría de propuestas externas",
+          "level": 3,
+          "line": 34
+        },
+        {
+          "heading": "2. Prerrequisitos en el NAS",
+          "level": 2,
+          "line": 61
+        },
+        {
+          "heading": "2.1 Crear la carpeta de datos",
+          "level": 3,
+          "line": 69
+        },
+        {
+          "heading": "2.2 Crear el `.env` local y copiar el compose",
+          "level": 3,
+          "line": 75
+        },
+        {
+          "heading": "2.3 Aplicar permisos después de crear los archivos",
+          "level": 3,
+          "line": 93
+        },
+        {
+          "heading": "2.4 Verificar o crear `iot_net`",
+          "level": 3,
+          "line": 104
+        },
+        {
+          "heading": "3. Validar y levantar",
+          "level": 2,
+          "line": 116
+        },
+        {
+          "heading": "4. Configurar MQTT con EMQX",
+          "level": 2,
+          "line": 144
+        },
+        {
+          "heading": "5. Backups y recuperación",
+          "level": 2,
+          "line": 165
+        },
+        {
+          "heading": "Recuperación",
+          "level": 3,
+          "line": 184
+        },
+        {
+          "heading": "6. Actualizaciones",
+          "level": 2,
+          "line": 199
+        },
+        {
+          "heading": "7. Escalabilidad y límites conocidos",
+          "level": 2,
+          "line": 220
+        },
+        {
+          "heading": "8. Troubleshooting",
+          "level": 2,
+          "line": 248
+        },
+        {
+          "heading": "`extends` no se encuentra",
+          "level": 3,
+          "line": 250
+        },
+        {
+          "heading": "Healthcheck falla durante el primer arranque",
+          "level": 3,
+          "line": 256
+        },
+        {
+          "heading": "No conecta al broker MQTT",
+          "level": 3,
+          "line": 269
+        },
+        {
+          "heading": "El adapter necesita USB o multicast",
+          "level": 3,
+          "line": 275
+        },
+        {
+          "heading": "Fuentes externas",
+          "level": 2,
+          "line": 282
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 20
+      }
+    },
+    {
+      "path": "docs/services/jdownloader-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 198,
+      "nonEmptyLines": 152,
+      "sections": [
+        {
+          "heading": "JDownloader 2 — Guía de instalación y operación",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Arquitectura de control",
+          "level": 2,
+          "line": 16
+        },
+        {
+          "heading": "Modos de conexión de My.JDownloader",
+          "level": 3,
+          "line": 29
+        },
+        {
+          "heading": "Dos destinos de descarga",
+          "level": 2,
+          "line": 40
+        },
+        {
+          "heading": "Estructura de directorios",
+          "level": 2,
+          "line": 66
+        },
+        {
+          "heading": "Instalación (orden de ejecución real)",
+          "level": 2,
+          "line": 82
+        },
+        {
+          "heading": "Vincular My.JDownloader (manual, una sola vez)",
+          "level": 2,
+          "line": 120
+        },
+        {
+          "heading": "Arranque escalonado (layers.conf)",
+          "level": 2,
+          "line": 135
+        },
+        {
+          "heading": "Operación",
+          "level": 2,
+          "line": 153
+        },
+        {
+          "heading": "Notas y gotchas",
+          "level": 2,
+          "line": 165
+        },
+        {
+          "heading": "Referencias",
+          "level": 2,
+          "line": 194
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": "docs/services/karakeep-floccus-architecture.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 181,
+      "nonEmptyLines": 145,
+      "sections": [
+        {
+          "heading": "Arquitectura Karakeep + Floccus — documento maestro",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. El modelo mental correcto (una base, varias caras)",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "2. Las 4 interfaces (+ Floccus) — cuándo usar cada una",
+          "level": 2,
+          "line": 51
+        },
+        {
+          "heading": "3. Floccus vs Karakeep — dos modelos de datos distintos",
+          "level": 2,
+          "line": 71
+        },
+        {
+          "heading": "Validación contra la documentación oficial",
+          "level": 3,
+          "line": 87
+        },
+        {
+          "heading": "4. Los 3 roles (arquitectura de uso)",
+          "level": 2,
+          "line": 106
+        },
+        {
+          "heading": "5. El primer sync de Floccus — cómo encenderlo sin romper nada",
+          "level": 2,
+          "line": 121
+        },
+        {
+          "heading": "6. Dónde vive cada pieza (y dónde no)",
+          "level": 2,
+          "line": 154
+        },
+        {
+          "heading": "7. Referencias",
+          "level": 2,
+          "line": 170
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "docs/services/karakeep-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 374,
+      "nonEmptyLines": 287,
+      "sections": [
+        {
+          "heading": "Karakeep — Guía de instalación y operación",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Las 4 formas de acceder a Karakeep",
+          "level": 2,
+          "line": 16
+        },
+        {
+          "heading": "Arquitectura del stack (3 contenedores)",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "Por qué el puerto 3400 y no 3000",
+          "level": 3,
+          "line": 44
+        },
+        {
+          "heading": "La IA: Ollama Cloud (tagging y resumen)",
+          "level": 2,
+          "line": 52
+        },
+        {
+          "heading": "Búsqueda semántica (embeddings) — desactivada por defecto",
+          "level": 3,
+          "line": 80
+        },
+        {
+          "heading": "Estructura de directorios",
+          "level": 2,
+          "line": 95
+        },
+        {
+          "heading": "Instalación (orden de ejecución real)",
+          "level": 2,
+          "line": 107
+        },
+        {
+          "heading": "Primer uso (manual, una vez)",
+          "level": 2,
+          "line": 156
+        },
+        {
+          "heading": "Carga inicial de tus bookmarks",
+          "level": 2,
+          "line": 169
+        },
+        {
+          "heading": "Sincronizar con el navegador vía floccus",
+          "level": 2,
+          "line": 180
+        },
+        {
+          "heading": "Arranque escalonado (layers.conf)",
+          "level": 2,
+          "line": 198
+        },
+        {
+          "heading": "Operación",
+          "level": 2,
+          "line": 216
+        },
+        {
+          "heading": "Backup y recuperación",
+          "level": 2,
+          "line": 229
+        },
+        {
+          "heading": "Notas y gotchas",
+          "level": 2,
+          "line": 241
+        },
+        {
+          "heading": "MCP — que el LLM opere Karakeep por lenguaje natural",
+          "level": 2,
+          "line": 261
+        },
+        {
+          "heading": "CLI — manipulación avanzada e import/export masivo",
+          "level": 2,
+          "line": 307
+        },
+        {
+          "heading": "API REST — integraciones (scripts / cron / n8n)",
+          "level": 2,
+          "line": 339
+        },
+        {
+          "heading": "Referencias",
+          "level": 2,
+          "line": 364
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 19
+      }
+    },
+    {
+      "path": "docs/services/lobehub-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 1436,
+      "nonEmptyLines": 1185,
+      "sections": [
+        {
+          "heading": "Guía: LobeHub server/database en el NAS",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Estado runtime confirmado",
+          "level": 2,
+          "line": 14
+        },
+        {
+          "heading": "1. Decisión auditada y fuentes oficiales",
+          "level": 2,
+          "line": 40
+        },
+        {
+          "heading": "2. Arquitectura final",
+          "level": 2,
+          "line": 71
+        },
+        {
+          "heading": "3. Requisitos y preflight",
+          "level": 2,
+          "line": 105
+        },
+        {
+          "heading": "4. Preparar el runtime y continuar desde aquí",
+          "level": 2,
+          "line": 131
+        },
+        {
+          "heading": "Permisos del bind mount de RustFS",
+          "level": 3,
+          "line": 205
+        },
+        {
+          "heading": "No exponer `RUSTFS_SECRET_KEY` en la línea de comandos",
+          "level": 3,
+          "line": 236
+        },
+        {
+          "heading": "5. Completar el `.env` con configuración interactiva y protegerlo",
+          "level": 2,
+          "line": 333
+        },
+        {
+          "heading": "Generar los secretos locales sin imprimirlos",
+          "level": 3,
+          "line": 364
+        },
+        {
+          "heading": "Reparar el `KEY_VAULTS_SECRET` inválido del primer intento",
+          "level": 3,
+          "line": 582
+        },
+        {
+          "heading": "Fuentes de verdad y sincronización obligatoria",
+          "level": 3,
+          "line": 662
+        },
+        {
+          "heading": "6. Aprovisionar PostgreSQL sin repetir n8n",
+          "level": 2,
+          "line": 847
+        },
+        {
+          "heading": "Reconciliar automáticamente el rol y su contraseña",
+          "level": 3,
+          "line": 904
+        },
+        {
+          "heading": "Precrear `vector` y `pg_search` en la base de LobeHub",
+          "level": 3,
+          "line": 998
+        },
+        {
+          "heading": "7. Compose final",
+          "level": 2,
+          "line": 1124
+        },
+        {
+          "heading": "8. Validar configuración y dependencias antes de levantar",
+          "level": 2,
+          "line": 1151
+        },
+        {
+          "heading": "Comandos operativos y autoconocimiento",
+          "level": 3,
+          "line": 1238
+        },
+        {
+          "heading": "9. Levantar en el orden real",
+          "level": 2,
+          "line": 1292
+        },
+        {
+          "heading": "10. Verificación posterior y criterios de aceptación",
+          "level": 2,
+          "line": 1325
+        },
+        {
+          "heading": "11. Backup, actualización y recuperación",
+          "level": 2,
+          "line": 1365
+        },
+        {
+          "heading": "12. Fuera de alcance y pendientes",
+          "level": 2,
+          "line": 1405
+        },
+        {
+          "heading": "13. Integración MCP read-only con LobeHub",
+          "level": 2,
+          "line": 1424
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 23
+      }
+    },
+    {
+      "path": "docs/services/n8n-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 538,
+      "nonEmptyLines": 443,
+      "sections": [
+        {
+          "heading": "Guía: n8n con PostgreSQL dedicado en DataSQL",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Estado",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Auditoría de fuentes y variantes",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "Hechos confirmados",
+          "level": 2,
+          "line": 51
+        },
+        {
+          "heading": "Decisiones derivadas",
+          "level": 2,
+          "line": 73
+        },
+        {
+          "heading": "Artefactos y estados",
+          "level": 2,
+          "line": 94
+        },
+        {
+          "heading": "Secuencia ejecutada",
+          "level": 2,
+          "line": 111
+        },
+        {
+          "heading": "Paso 1 — Detener n8n antes de tocar PostgreSQL",
+          "level": 3,
+          "line": 113
+        },
+        {
+          "heading": "Paso 2 — Crear el rol dedicado",
+          "level": 3,
+          "line": 124
+        },
+        {
+          "heading": "Paso 3 — Verificar el secreto sin imprimirlo",
+          "level": 3,
+          "line": 148
+        },
+        {
+          "heading": "Paso 4 — Crear la base en una sesión separada",
+          "level": 3,
+          "line": 180
+        },
+        {
+          "heading": "Paso 5 — Probar el login contra la base dedicada",
+          "level": 3,
+          "line": 200
+        },
+        {
+          "heading": "Paso 6 — Levantar y observar migraciones",
+          "level": 3,
+          "line": 228
+        },
+        {
+          "heading": "Paso 7 — Verificar estabilidad y acceso",
+          "level": 3,
+          "line": 243
+        },
+        {
+          "heading": "Paso 8 — Crear snapshot antes del hardening",
+          "level": 3,
+          "line": 262
+        },
+        {
+          "heading": "Hardening pendiente: compose objetivo",
+          "level": 2,
+          "line": 275
+        },
+        {
+          "heading": "Orden para aplicar el hardening",
+          "level": 3,
+          "line": 343
+        },
+        {
+          "heading": "Advertencia del task runner",
+          "level": 3,
+          "line": 360
+        },
+        {
+          "heading": "Backup y recuperación",
+          "level": 2,
+          "line": 371
+        },
+        {
+          "heading": "Continuidad hacia LobeHub",
+          "level": 2,
+          "line": 392
+        },
+        {
+          "heading": "Decisiones pendientes para LobeHub",
+          "level": 3,
+          "line": 431
+        },
+        {
+          "heading": "Bloqueados",
+          "level": 3,
+          "line": 441
+        },
+        {
+          "heading": "Incidencias registradas",
+          "level": 2,
+          "line": 449
+        },
+        {
+          "heading": "No repetir",
+          "level": 2,
+          "line": 526
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 24
+      }
+    },
+    {
+      "path": "docs/services/nas-mcp-gateway-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 18,
+      "nonEmptyLines": 13,
+      "sections": [
+        {
+          "heading": "Guía del servicio nas-mcp-gateway",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Estado",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Fuente operativa",
+          "level": 2,
+          "line": 13
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "docs/services/node-red-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 71,
+      "nonEmptyLines": 45,
+      "sections": [
+        {
+          "heading": "Node-RED — Guía Operativa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Qué es",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Instalación",
+          "level": 2,
+          "line": 18
+        },
+        {
+          "heading": "Configuración",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "Conexión con EMQX (MQTT)",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "Backup y recuperación",
+          "level": 2,
+          "line": 45
+        },
+        {
+          "heading": "Troubleshooting",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "No puede instalar paquetes npm",
+          "level": 3,
+          "line": 57
+        },
+        {
+          "heading": "No conecta a EMQX",
+          "level": 3,
+          "line": 61
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "docs/services/ntfy-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 863,
+      "nonEmptyLines": 645,
+      "sections": [
+        {
+          "heading": "ntfy — Guía Operativa Completa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Índice",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Qué es ntfy",
+          "level": 2,
+          "line": 30
+        },
+        {
+          "heading": "Instalación",
+          "level": 2,
+          "line": 49
+        },
+        {
+          "heading": "Primer uso (configuración inicial)",
+          "level": 2,
+          "line": 77
+        },
+        {
+          "heading": "Suscribirse a topics en la Web UI",
+          "level": 3,
+          "line": 91
+        },
+        {
+          "heading": "Aviso \"Notificaciones no soportadas\" en la Web UI",
+          "level": 3,
+          "line": 109
+        },
+        {
+          "heading": "Configurar NTFY_URL global en el sistema",
+          "level": 3,
+          "line": 118
+        },
+        {
+          "heading": "Configuración del servidor",
+          "level": 2,
+          "line": 132
+        },
+        {
+          "heading": "Parámetros importantes",
+          "level": 3,
+          "line": 169
+        },
+        {
+          "heading": "Topics",
+          "level": 2,
+          "line": 181
+        },
+        {
+          "heading": "Suscribirse a un topic",
+          "level": 3,
+          "line": 195
+        },
+        {
+          "heading": "Clientes",
+          "level": 2,
+          "line": 208
+        },
+        {
+          "heading": "Android (recomendado)",
+          "level": 3,
+          "line": 210
+        },
+        {
+          "heading": "Windows / Linux (notificaciones push en PC)",
+          "level": 3,
+          "line": 220
+        },
+        {
+          "heading": "Método 1: Chrome/Edge con flag de seguridad (rápido, recomendado)",
+          "level": 4,
+          "line": 226
+        },
+        {
+          "heading": "Método 2: ntfy CLI en background (Linux)",
+          "level": 4,
+          "line": 261
+        },
+        {
+          "heading": "Método 3: HTTPS con reverse proxy (solución definitiva)",
+          "level": 4,
+          "line": 283
+        },
+        {
+          "heading": "Resumen de métodos para PC",
+          "level": 4,
+          "line": 295
+        },
+        {
+          "heading": "CLI (scripting)",
+          "level": 3,
+          "line": 307
+        },
+        {
+          "heading": "Enviar notificaciones",
+          "level": 2,
+          "line": 318
+        },
+        {
+          "heading": "Básica (curl)",
+          "level": 3,
+          "line": 320
+        },
+        {
+          "heading": "Con título, prioridad y tags",
+          "level": 3,
+          "line": 326
+        },
+        {
+          "heading": "Con imagen adjunta (alarma)",
+          "level": 3,
+          "line": 336
+        },
+        {
+          "heading": "Con botón de acción",
+          "level": 3,
+          "line": 347
+        },
+        {
+          "heading": "Desde scripts bash (función ntfy_send)",
+          "level": 3,
+          "line": 357
+        },
+        {
+          "heading": "Prioridades disponibles",
+          "level": 3,
+          "line": 364
+        },
+        {
+          "heading": "Integración con usb-automount",
+          "level": 2,
+          "line": 376
+        },
+        {
+          "heading": "Integración con svc",
+          "level": 2,
+          "line": 388
+        },
+        {
+          "heading": "Integración con Home Assistant",
+          "level": 2,
+          "line": 405
+        },
+        {
+          "heading": "Método recomendado: Integración oficial nativa",
+          "level": 3,
+          "line": 407
+        },
+        {
+          "heading": "Caso real: Cámara detecta movimiento → snapshot → push al celular",
+          "level": 3,
+          "line": 421
+        },
+        {
+          "heading": "Alternativa: shell_command (sin integración oficial)",
+          "level": 3,
+          "line": 464
+        },
+        {
+          "heading": "Prueba rápida desde terminal (sin HA)",
+          "level": 3,
+          "line": 503
+        },
+        {
+          "heading": "Automatización en HA (sin terminal, 100% dentro de Home Assistant)",
+          "level": 3,
+          "line": 531
+        },
+        {
+          "heading": "Paso 1: Instalar integración ntfy en HA",
+          "level": 4,
+          "line": 536
+        },
+        {
+          "heading": "Paso 2: Crear la automatización",
+          "level": 4,
+          "line": 546
+        },
+        {
+          "heading": "Paso 3: Verificar que funciona",
+          "level": 4,
+          "line": 584
+        },
+        {
+          "heading": "Paso 4 (opcional): Más automatizaciones útiles",
+          "level": 4,
+          "line": 590
+        },
+        {
+          "heading": "Integración con Homepage",
+          "level": 2,
+          "line": 631
+        },
+        {
+          "heading": "Autenticación",
+          "level": 2,
+          "line": 664
+        },
+        {
+          "heading": "Backup y recuperación",
+          "level": 2,
+          "line": 685
+        },
+        {
+          "heading": "Qué respaldar",
+          "level": 3,
+          "line": 687
+        },
+        {
+          "heading": "Qué NO respaldar",
+          "level": 3,
+          "line": 692
+        },
+        {
+          "heading": "Recuperación",
+          "level": 3,
+          "line": 697
+        },
+        {
+          "heading": "Troubleshooting",
+          "level": 2,
+          "line": 715
+        },
+        {
+          "heading": "ntfy no arranca",
+          "level": 3,
+          "line": 717
+        },
+        {
+          "heading": "No recibo notificaciones en Android",
+          "level": 3,
+          "line": 727
+        },
+        {
+          "heading": "No recibo notificaciones en Windows",
+          "level": 3,
+          "line": 735
+        },
+        {
+          "heading": "curl funciona pero la app no recibe",
+          "level": 3,
+          "line": 741
+        },
+        {
+          "heading": "Homepage widget no muestra datos",
+          "level": 3,
+          "line": 747
+        },
+        {
+          "heading": "USB no notifica al montar/desmontar",
+          "level": 3,
+          "line": 752
+        },
+        {
+          "heading": "Mountpoint huérfano (carpeta usb-* que no se borra)",
+          "level": 3,
+          "line": 778
+        },
+        {
+          "heading": "USB API",
+          "level": 2,
+          "line": 823
+        },
+        {
+          "heading": "Qué es",
+          "level": 3,
+          "line": 825
+        },
+        {
+          "heading": "Puerto y endpoints",
+          "level": 3,
+          "line": 830
+        },
+        {
+          "heading": "Gestión",
+          "level": 3,
+          "line": 837
+        },
+        {
+          "heading": "Por qué no es Docker",
+          "level": 3,
+          "line": 845
+        },
+        {
+          "heading": "Archivos",
+          "level": 3,
+          "line": 851
+        },
+        {
+          "heading": "Seguridad",
+          "level": 3,
+          "line": 858
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 60
+      }
+    },
+    {
+      "path": "docs/services/openwa-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 676,
+      "nonEmptyLines": 503,
+      "sections": [
+        {
+          "heading": "OpenWA — guía operativa del gateway de WhatsApp",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Aviso importante antes de empezar",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Resumen del resultado final",
+          "level": 2,
+          "line": 23
+        },
+        {
+          "heading": "Fuentes verificadas",
+          "level": 3,
+          "line": 37
+        },
+        {
+          "heading": "Redes y exposición",
+          "level": 2,
+          "line": 52
+        },
+        {
+          "heading": "Excepción de seguridad (Chromium)",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "1. Preflight",
+          "level": 2,
+          "line": 78
+        },
+        {
+          "heading": "2. Crear directorios",
+          "level": 2,
+          "line": 97
+        },
+        {
+          "heading": "3. Copiar compose y crear el `.env`",
+          "level": 2,
+          "line": 116
+        },
+        {
+          "heading": "Elegir el motor",
+          "level": 3,
+          "line": 146
+        },
+        {
+          "heading": "4. Aplicar permisos",
+          "level": 2,
+          "line": 162
+        },
+        {
+          "heading": "5. Validar antes de levantar",
+          "level": 2,
+          "line": 176
+        },
+        {
+          "heading": "6. Levantar y verificar",
+          "level": 2,
+          "line": 198
+        },
+        {
+          "heading": "7. API keys — cómo funcionan (LEER antes de conectar)",
+          "level": 2,
+          "line": 233
+        },
+        {
+          "heading": "7.1 Si aparece \"Invalid API key\" tras activar `API_KEY_PEPPER`",
+          "level": 3,
+          "line": 255
+        },
+        {
+          "heading": "8. Conectar un número de WhatsApp",
+          "level": 2,
+          "line": 294
+        },
+        {
+          "heading": "8.1 Por el dashboard (recomendado)",
+          "level": 3,
+          "line": 314
+        },
+        {
+          "heading": "8.2 Por API — flujo oficial con estado `qr_ready`",
+          "level": 3,
+          "line": 320
+        },
+        {
+          "heading": "8.3 Alternativa: pairing-code (vincular por número, sin QR)",
+          "level": 3,
+          "line": 350
+        },
+        {
+          "heading": "8.4 Enviar un mensaje (por API)",
+          "level": 3,
+          "line": 372
+        },
+        {
+          "heading": "8.5 Envío rápido con `wa-send.sh`",
+          "level": 3,
+          "line": 395
+        },
+        {
+          "heading": "9. Integración con n8n (nodo oficial)",
+          "level": 2,
+          "line": 422
+        },
+        {
+          "heading": "9.1 Instalar el nodo en n8n",
+          "level": 3,
+          "line": 427
+        },
+        {
+          "heading": "9.2 Credenciales del nodo",
+          "level": 3,
+          "line": 433
+        },
+        {
+          "heading": "9.2.1 ⚠️ REQUISITO: permitir el host de n8n en el guard anti-SSRF",
+          "level": 3,
+          "line": 443
+        },
+        {
+          "heading": "9.3 Nodos disponibles",
+          "level": 3,
+          "line": 471
+        },
+        {
+          "heading": "9.4 Nota sobre el Trigger",
+          "level": 3,
+          "line": 479
+        },
+        {
+          "heading": "9.5 ⚠️ Gotcha del scope del paquete (importante)",
+          "level": 3,
+          "line": 492
+        },
+        {
+          "heading": "9.6 Workflows de ejemplo (JSON para importar)",
+          "level": 3,
+          "line": 505
+        },
+        {
+          "heading": "10. Registrar en el arranque escalonado",
+          "level": 2,
+          "line": 523
+        },
+        {
+          "heading": "11. Generar documentación en cascada",
+          "level": 2,
+          "line": 547
+        },
+        {
+          "heading": "12. Operación y mantenimiento",
+          "level": 2,
+          "line": 555
+        },
+        {
+          "heading": "Estado y diagnóstico",
+          "level": 3,
+          "line": 557
+        },
+        {
+          "heading": "Operaciones normales",
+          "level": 3,
+          "line": 567
+        },
+        {
+          "heading": "Backup",
+          "level": 3,
+          "line": 579
+        },
+        {
+          "heading": "13. Errores comunes",
+          "level": 2,
+          "line": 594
+        },
+        {
+          "heading": "14. Envío de imágenes / cámaras de Home Assistant",
+          "level": 2,
+          "line": 623
+        },
+        {
+          "heading": "Flujo n8n \"pide cámara\" (WhatsApp → foto de HA)",
+          "level": 3,
+          "line": 653
+        },
+        {
+          "heading": "docs_url",
+          "level": 2,
+          "line": 674
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 39
+      }
+    }
+  ]
+}

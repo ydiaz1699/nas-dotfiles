@@ -1,0 +1,553 @@
+{
+  "nodes": [
+    {
+      "id": "document:docker-nas/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": "docker-nas/SKILL.md",
+      "summary": "Definición principal de la skill docker-nas, que establece reglas estrictas del entorno NAS, el protocolo para instalar servicios Docker, comandos esenciales y el índice de guías y referencias.",
+      "tags": [
+        "skill-ia",
+        "docker-nas",
+        "protocolo-servicios",
+        "reglas-entorno"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Markdown con frontmatter YAML de activación para agentes IA y tablas de referencia cruzada hacia guías de servicios."
+    },
+    {
+      "id": "file:docker/cli/svc.sh",
+      "type": "file",
+      "name": "svc.sh",
+      "filePath": "docker/cli/svc.sh",
+      "summary": "Entrypoint principal del CLI Bash svc para administrar servicios Docker del NAS; carga las librerías de docker/cli/lib/, despacha subcomandos globales y por servicio, y aplica --env-file global y local.",
+      "tags": [
+        "cli-bash",
+        "svc",
+        "docker-compose",
+        "despachador"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Script Bash con set -e que delega comandos avanzados (diff, capabilities, scan, code-map) a scripts Python en agent/tools/."
+    },
+    {
+      "id": "document:docs/services/vscode-guide.md",
+      "type": "document",
+      "name": "vscode-guide.md",
+      "filePath": "docs/services/vscode-guide.md",
+      "summary": "Guía operativa completa para desplegar y mantener VS Code Server (code-server) en Docker sin privilegios de root, cubriendo permisos ACL sobre Home Assistant, verificación, backup y troubleshooting.",
+      "tags": [
+        "guia-servicio",
+        "vscode",
+        "code-server",
+        "docker",
+        "seguridad-acl"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documentación operativa en Markdown con comandos verificables para NAS Debian y referencias a docker-entorno y homeassistant-guide."
+    },
+    {
+      "id": "file:setup",
+      "type": "file",
+      "name": "setup",
+      "filePath": "setup",
+      "summary": "Script ejecutable Bash que actúa como punto de entrada universal de instalación de nas-dotfiles; detecta Python y las librerías Rich/InquirerPy para lanzar ui/setup.py o recurrir a install.sh.",
+      "tags": [
+        "instalador",
+        "entrypoint",
+        "tui-python",
+        "fallback-bash"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Script Bash sin extensión que intenta instalar dependencias vía pip o venv temporal antes de delegar en install.sh."
+    },
+    {
+      "id": "file:shell/init.sh",
+      "type": "file",
+      "name": "init.sh",
+      "filePath": "shell/init.sh",
+      "summary": "Cargador único del framework de shell para nas-dotfiles; valida NAS_DOTFILES, carga user.conf y $DOCKER_BASE/.env, define path_add, svc y agent, e importa los módulos de shell/lib/.",
+      "tags": [
+        "shell-framework",
+        "inicializacion",
+        "bash",
+        "cli-dual"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Script Bash pensado para ser incluido con source desde ~/.bashrc con guardia contra recarga múltiple."
+    },
+    {
+      "id": "function:shell/init.sh:path_add",
+      "type": "function",
+      "name": "path_add",
+      "filePath": "shell/init.sh",
+      "lineRange": [
+        39,
+        44
+      ],
+      "summary": "Antepone un directorio a la variable PATH únicamente si no se encuentra ya presente y se exporta con export -f.",
+      "tags": [
+        "path",
+        "funcion-shell",
+        "bash"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:shell/scripts/layers.conf.example",
+      "type": "file",
+      "name": "layers.conf.example",
+      "filePath": "shell/scripts/layers.conf.example",
+      "summary": "Plantilla de ejemplo para configurar el arranque escalonado por capas de servicios Docker mediante boot-order.sh, ordenando DataSQL, consumidores, IoT, archivos y dashboard.",
+      "tags": [
+        "plantilla-config",
+        "arranque-escalonado",
+        "capas-servicios",
+        "boot-order"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Archivo de texto plano con comentarios explicativos e identificadores de proyecto por capa separados por líneas en blanco."
+    },
+    {
+      "id": "document:skill-portable/nas-tools-index/README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "skill-portable/nas-tools-index/README.md",
+      "summary": "Instrucciones de empaquetado, carga y mantenimiento del espejo portable de la skill nas-tools-index sincronizada manualmente desde docs/tools-index.md.",
+      "tags": [
+        "skill-portable",
+        "documentacion",
+        "empaquetado-zip",
+        "espejo"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Guía breve en Markdown con comandos zip y Python shutil para distribuir la skill a otros clientes LLM."
+    },
+    {
+      "id": "file:skill-portable/nas-tools-index/scripts/tool-lookup.sh",
+      "type": "file",
+      "name": "tool-lookup.sh",
+      "filePath": "skill-portable/nas-tools-index/scripts/tool-lookup.sh",
+      "summary": "Script auxiliar Bash que consulta las tablas de skill-portable/nas-tools-index/SKILL.md mediante grep para localizar una herramienta por nombre o listar todas las documentadas.",
+      "tags": [
+        "script-auxiliar",
+        "busqueda-grep",
+        "skill-portable",
+        "bash"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Script Bash con set -euo pipefail que resuelve la ruta relativa de SKILL.md respecto a BASH_SOURCE."
+    },
+    {
+      "id": "document:skill-portable/nas-tools-index/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": "skill-portable/nas-tools-index/SKILL.md",
+      "summary": "Copia portable y autocontenida del índice de herramientas de nas-dotfiles (aliases, funciones de navegación, comandos svc, skills y tools del agente) para uso de LLMs sin acceso al repositorio.",
+      "tags": [
+        "skill-portable",
+        "indice-herramientas",
+        "aliases-shell",
+        "svc"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Markdown con frontmatter YAML y tablas estructuradas consultables directamente o mediante tool-lookup.sh."
+    },
+    {
+      "id": "file:svc_py/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "svc_py/__init__.py",
+      "summary": "Archivo de inicialización del paquete svc_py, que documenta el propósito y uso básico de la interfaz Python alternativa a svc.sh para gestionar servicios Docker del NAS.",
+      "tags": [
+        "paquete-python",
+        "svc-py",
+        "cli-docker"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Contiene únicamente el docstring introductorio del paquete."
+    },
+    {
+      "id": "file:svc_py/core/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "svc_py/core/__init__.py",
+      "summary": "Archivo marcador del subpaquete svc_py.core, que agrupa los módulos de descubrimiento de servicios e interacción con Docker.",
+      "tags": [
+        "paquete-python",
+        "svc-py",
+        "core-docker"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Contiene un docstring de una sola línea sin símbolos definidos."
+    },
+    {
+      "id": "document:svc_py/README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "svc_py/README.md",
+      "summary": "Documentación del CLI Python svc_py como alternativa con UI enriquecida (Rich e InquirerPy) al CLI Bash svc.sh, detallando instalación, activación con NAS_CLI=python y tabla comparativa.",
+      "tags": [
+        "documentacion",
+        "svc-py",
+        "cli-python",
+        "rich",
+        "inquirerpy"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Documento Markdown descriptivo para usuarios y desarrolladores del CLI dual."
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:docker-nas/SKILL.md",
+      "target": "document:docker-nas/references/nas-context.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/SKILL.md",
+      "target": "document:docker-nas/references/entorno.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/SKILL.md",
+      "target": "document:docker-nas/references/svc.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/SKILL.md",
+      "target": "document:docker-nas/references/agent.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/SKILL.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/SKILL.md",
+      "target": "file:docker/cli/lib/notifications.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/SKILL.md",
+      "target": "file:agent/plugins/notification_plugin.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:docker/cli/lib/discovery.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:docker/cli/lib/docker.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:docker/cli/lib/health.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:docker/cli/lib/backup.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:docker/cli/lib/extras.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:docker/cli/lib/menu.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:docker/cli/lib/lobehub.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:docker/cli/lib/help.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:docker/cli/lib/catalog-sync.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:agent/tools/compare_tools.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:agent/tools/capabilities.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:agent/tools/project_scanner.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/svc.sh",
+      "target": "file:agent/tools/project_index.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:docs/services/vscode-guide.md",
+      "target": "service:agent/catalog/services/vscode/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/services/vscode-guide.md",
+      "target": "document:agent/catalog/services/vscode/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/services/vscode-guide.md",
+      "target": "document:docs/docker-entorno.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/services/vscode-guide.md",
+      "target": "document:docs/services/homeassistant-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:setup",
+      "target": "file:ui/setup.py",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:setup",
+      "target": "file:install.sh",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "function:shell/init.sh:path_add",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "function:shell/init.sh:path_add",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "file:docker/cli/svc.sh",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "file:svc_py/__main__.py",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "file:agent/nas_agent.py",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "file:shell/lib/aliases.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "file:shell/lib/nav.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "file:shell/lib/docker.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "file:shell/lib/system.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "file:shell/lib/instal.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "file:shell/lib/pipins.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "file:shell/lib/git.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "file:shell/lib/completions.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:shell/init.sh",
+      "target": "file:shell/lib/prompt.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:skill-portable/nas-tools-index/README.md",
+      "target": "document:skill-portable/nas-tools-index/SKILL.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:skill-portable/nas-tools-index/README.md",
+      "target": "file:skill-portable/nas-tools-index/scripts/tool-lookup.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:skill-portable/nas-tools-index/README.md",
+      "target": "document:docs/tools-index.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:skill-portable/nas-tools-index/scripts/tool-lookup.sh",
+      "target": "document:skill-portable/nas-tools-index/SKILL.md",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:skill-portable/nas-tools-index/SKILL.md",
+      "target": "document:docs/tools-index.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:skill-portable/nas-tools-index/SKILL.md",
+      "target": "document:docker-nas/references/entorno.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:skill-portable/nas-tools-index/SKILL.md",
+      "target": "file:skill-portable/nas-tools-index/scripts/tool-lookup.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:svc_py/__init__.py",
+      "target": "file:svc_py/app.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:svc_py/README.md",
+      "target": "file:svc_py/__init__.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:svc_py/README.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

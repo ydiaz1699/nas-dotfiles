@@ -1,0 +1,942 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 9,
+  "filesSkipped": [
+    "requirements.txt"
+  ],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 9,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 9
+    }
+  },
+  "results": [
+    {
+      "path": "AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 310,
+      "nonEmptyLines": 266,
+      "sections": [
+        {
+          "heading": "AGENTS.md — nas-dotfiles",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Entorno",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Rutas obligatorias (NUNCA hardcodear)",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Comandos — SIEMPRE usar aliases",
+          "level": 2,
+          "line": 23
+        },
+        {
+          "heading": "Shell aliases",
+          "level": 3,
+          "line": 25
+        },
+        {
+          "heading": "`svc` — Comandos globales (sin servicio)",
+          "level": 3,
+          "line": 43
+        },
+        {
+          "heading": "`svc` — Comandos con servicio",
+          "level": 3,
+          "line": 82
+        },
+        {
+          "heading": "Servicios Docker activos o preparados",
+          "level": 2,
+          "line": 109
+        },
+        {
+          "heading": "Redes Docker",
+          "level": 2,
+          "line": 142
+        },
+        {
+          "heading": "Notificaciones",
+          "level": 2,
+          "line": 153
+        },
+        {
+          "heading": "Nuevo servicio (orden obligatorio)",
+          "level": 2,
+          "line": 162
+        },
+        {
+          "heading": "Homepage",
+          "level": 2,
+          "line": 192
+        },
+        {
+          "heading": "USB Automount",
+          "level": 2,
+          "line": 198
+        },
+        {
+          "heading": "Testing / Verificación",
+          "level": 2,
+          "line": 206
+        },
+        {
+          "heading": "Reglas estrictas",
+          "level": 2,
+          "line": 221
+        },
+        {
+          "heading": "Auto-invoke Skills",
+          "level": 2,
+          "line": 234
+        },
+        {
+          "heading": "Documentación adicional",
+          "level": 2,
+          "line": 257
+        },
+        {
+          "heading": "Pipeline auto-documentación",
+          "level": 2,
+          "line": 297
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 478,
+      "nonEmptyLines": 377,
+      "sections": [
+        {
+          "heading": "Guía de desarrollo — nas-dotfiles",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. Nuevo comando `svc` (bash)",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Paso 1 — Escribir la función",
+          "level": 3,
+          "line": 9
+        },
+        {
+          "heading": "Paso 2 — Source (si es archivo nuevo)",
+          "level": 3,
+          "line": 21
+        },
+        {
+          "heading": "Paso 3 — Registrar en `svc.sh`",
+          "level": 3,
+          "line": 29
+        },
+        {
+          "heading": "Paso 4 — Autocompletado",
+          "level": 3,
+          "line": 44
+        },
+        {
+          "heading": "Paso 5 — Documentar",
+          "level": 3,
+          "line": 50
+        },
+        {
+          "heading": "Cuidados",
+          "level": 3,
+          "line": 54
+        },
+        {
+          "heading": "2. Nueva tool para el agente Python",
+          "level": 2,
+          "line": 63
+        },
+        {
+          "heading": "Paso 1 — Escribir la función",
+          "level": 3,
+          "line": 65
+        },
+        {
+          "heading": "Paso 2 — Exportar en `__init__.py`",
+          "level": 3,
+          "line": 96
+        },
+        {
+          "heading": "Paso 3 — Si es destructiva",
+          "level": 3,
+          "line": 114
+        },
+        {
+          "heading": "Paso 4 — Documentar en system prompt",
+          "level": 3,
+          "line": 127
+        },
+        {
+          "heading": "Reglas para @tool",
+          "level": 3,
+          "line": 131
+        },
+        {
+          "heading": "3. Nuevo plugin",
+          "level": 2,
+          "line": 142
+        },
+        {
+          "heading": "Paso 1 — Crear el archivo",
+          "level": 3,
+          "line": 146
+        },
+        {
+          "heading": "Paso 2 — Registrar en config",
+          "level": 3,
+          "line": 193
+        },
+        {
+          "heading": "Paso 3 — Documentar",
+          "level": 3,
+          "line": 206
+        },
+        {
+          "heading": "Anatomía de un plugin",
+          "level": 3,
+          "line": 210
+        },
+        {
+          "heading": "4. Nuevo evento en el bus",
+          "level": 2,
+          "line": 221
+        },
+        {
+          "heading": "Emitir un evento",
+          "level": 3,
+          "line": 223
+        },
+        {
+          "heading": "Suscribirse a eventos",
+          "level": 3,
+          "line": 236
+        },
+        {
+          "heading": "Convenciones de nombres de eventos",
+          "level": 3,
+          "line": 249
+        },
+        {
+          "heading": "5. MQTT → Agente (eventos externos)",
+          "level": 2,
+          "line": 262
+        },
+        {
+          "heading": "Agregar un nuevo topic MQTT",
+          "level": 3,
+          "line": 264
+        },
+        {
+          "heading": "Mapper por defecto",
+          "level": 3,
+          "line": 285
+        },
+        {
+          "heading": "6. Módulos de seguridad (`agent/tools/_shell.py`)",
+          "level": 2,
+          "line": 296
+        },
+        {
+          "heading": "safe_run()",
+          "level": 3,
+          "line": 298
+        },
+        {
+          "heading": "validate_service_name()",
+          "level": 3,
+          "line": 303
+        },
+        {
+          "heading": "validated_service_path()",
+          "level": 3,
+          "line": 308
+        },
+        {
+          "heading": "readonly_guard()",
+          "level": 3,
+          "line": 312
+        },
+        {
+          "heading": "is_dryrun() / is_readonly()",
+          "level": 3,
+          "line": 316
+        },
+        {
+          "heading": "7. Auditoría (`agent/tools/_audit.py`)",
+          "level": 2,
+          "line": 321
+        },
+        {
+          "heading": "Configuración",
+          "level": 3,
+          "line": 327
+        },
+        {
+          "heading": "8. Variables de entorno del agente",
+          "level": 2,
+          "line": 336
+        },
+        {
+          "heading": "9. Estructura del proyecto",
+          "level": 2,
+          "line": 362
+        },
+        {
+          "heading": "10. Convenciones",
+          "level": 2,
+          "line": 467
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 37
+      }
+    },
+    {
+      "path": "GUIDE.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 874,
+      "nonEmptyLines": 630,
+      "sections": [
+        {
+          "heading": "Guia completa — nas-dotfiles",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Filosofia",
+          "level": 1,
+          "line": 15
+        },
+        {
+          "heading": "Arquitectura",
+          "level": 1,
+          "line": 27
+        },
+        {
+          "heading": "Estructura de archivos",
+          "level": 1,
+          "line": 46
+        },
+        {
+          "heading": "1. Shell Framework",
+          "level": 1,
+          "line": 114
+        },
+        {
+          "heading": "2. Aliases",
+          "level": 1,
+          "line": 140
+        },
+        {
+          "heading": "3. Navegacion inteligente",
+          "level": 1,
+          "line": 194
+        },
+        {
+          "heading": "4. Prompt dinamico",
+          "level": 1,
+          "line": 256
+        },
+        {
+          "heading": "5. Funcion instal()",
+          "level": 1,
+          "line": 287
+        },
+        {
+          "heading": "5b. Funcion pipins()",
+          "level": 1,
+          "line": 319
+        },
+        {
+          "heading": "6. Dashboard del servidor",
+          "level": 1,
+          "line": 348
+        },
+        {
+          "heading": "7. Administracion de Docker (svc)",
+          "level": 1,
+          "line": 390
+        },
+        {
+          "heading": "7b. Variables globales (.env)",
+          "level": 1,
+          "line": 412
+        },
+        {
+          "heading": "8. Descubrimiento automatico",
+          "level": 1,
+          "line": 444
+        },
+        {
+          "heading": "9. Comandos de svc",
+          "level": 1,
+          "line": 473
+        },
+        {
+          "heading": "Comandos globales (sin servicio)",
+          "level": 2,
+          "line": 475
+        },
+        {
+          "heading": "Comandos con servicio",
+          "level": 2,
+          "line": 493
+        },
+        {
+          "heading": "10. Actualizacion",
+          "level": 1,
+          "line": 517
+        },
+        {
+          "heading": "11. Backup",
+          "level": 1,
+          "line": 538
+        },
+        {
+          "heading": "12. Health",
+          "level": 1,
+          "line": 559
+        },
+        {
+          "heading": "13. Doctor",
+          "level": 1,
+          "line": 578
+        },
+        {
+          "heading": "14. Menu interactivo (fzf)",
+          "level": 1,
+          "line": 594
+        },
+        {
+          "heading": "15. Apertura automatica",
+          "level": 1,
+          "line": 609
+        },
+        {
+          "heading": "16. Autocompletado",
+          "level": 1,
+          "line": 623
+        },
+        {
+          "heading": "17. Agente IA",
+          "level": 1,
+          "line": 634
+        },
+        {
+          "heading": "Proveedores de IA",
+          "level": 2,
+          "line": 648
+        },
+        {
+          "heading": "Herramientas",
+          "level": 2,
+          "line": 656
+        },
+        {
+          "heading": "Sesion persistente",
+          "level": 2,
+          "line": 678
+        },
+        {
+          "heading": "Arquitectura del prompt",
+          "level": 2,
+          "line": 694
+        },
+        {
+          "heading": "Interfaz Rich",
+          "level": 2,
+          "line": 716
+        },
+        {
+          "heading": "Sistema de plugins",
+          "level": 2,
+          "line": 720
+        },
+        {
+          "heading": "Event Bus + MQTT",
+          "level": 2,
+          "line": 730
+        },
+        {
+          "heading": "Scheduler",
+          "level": 2,
+          "line": 740
+        },
+        {
+          "heading": "Cache",
+          "level": 2,
+          "line": 744
+        },
+        {
+          "heading": "Catalogo de servicios",
+          "level": 2,
+          "line": 748
+        },
+        {
+          "heading": "18. Seguridad",
+          "level": 1,
+          "line": 771
+        },
+        {
+          "heading": "19. Variables de entorno",
+          "level": 1,
+          "line": 791
+        },
+        {
+          "heading": "20. Instalacion",
+          "level": 1,
+          "line": 810
+        },
+        {
+          "heading": "21. Requisitos",
+          "level": 1,
+          "line": 822
+        },
+        {
+          "heading": "22. Uso resumido",
+          "level": 1,
+          "line": 837
+        },
+        {
+          "heading": "Licencia",
+          "level": 1,
+          "line": 872
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 41
+      }
+    },
+    {
+      "path": "INSTALL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 408,
+      "nonEmptyLines": 280,
+      "sections": [
+        {
+          "heading": "Guia de Instalacion — nas-dotfiles",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Requisitos previos",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Opcionales (recomendados)",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Instalacion rapida (3 comandos)",
+          "level": 2,
+          "line": 33
+        },
+        {
+          "heading": "Que pregunta el instalador",
+          "level": 2,
+          "line": 49
+        },
+        {
+          "heading": "Valores por defecto inteligentes",
+          "level": 3,
+          "line": 65
+        },
+        {
+          "heading": "Que hace el instalador",
+          "level": 2,
+          "line": 79
+        },
+        {
+          "heading": "1. Detecta el sistema",
+          "level": 3,
+          "line": 83
+        },
+        {
+          "heading": "2. Pregunta configuracion",
+          "level": 3,
+          "line": 87
+        },
+        {
+          "heading": "3. Copia a /nas-dotfiles",
+          "level": 3,
+          "line": 91
+        },
+        {
+          "heading": "4. Genera .config/user.conf",
+          "level": 3,
+          "line": 95
+        },
+        {
+          "heading": "5. Configura ~/.bashrc",
+          "level": 3,
+          "line": 105
+        },
+        {
+          "heading": "6. Genera .env.agent",
+          "level": 3,
+          "line": 117
+        },
+        {
+          "heading": "7. Instala dependencias Python",
+          "level": 3,
+          "line": 128
+        },
+        {
+          "heading": "Instalacion sin TUI (bash puro)",
+          "level": 2,
+          "line": 138
+        },
+        {
+          "heading": "Simular el instalador de Docker sin modificar el sistema",
+          "level": 2,
+          "line": 151
+        },
+        {
+          "heading": "Instalacion manual (sin wizard)",
+          "level": 2,
+          "line": 178
+        },
+        {
+          "heading": "Instalacion de Docker (si no esta instalado)",
+          "level": 2,
+          "line": 219
+        },
+        {
+          "heading": "Verificar la instalacion",
+          "level": 2,
+          "line": 237
+        },
+        {
+          "heading": "Configurar para root",
+          "level": 2,
+          "line": 260
+        },
+        {
+          "heading": "Configurar el agente IA despues",
+          "level": 2,
+          "line": 271
+        },
+        {
+          "heading": "Actualizar",
+          "level": 2,
+          "line": 298
+        },
+        {
+          "heading": "Desinstalar",
+          "level": 2,
+          "line": 314
+        },
+        {
+          "heading": "Troubleshooting",
+          "level": 2,
+          "line": 338
+        },
+        {
+          "heading": "\"NAS_DOTFILES no definida\"",
+          "level": 3,
+          "line": 340
+        },
+        {
+          "heading": "\"svc: command not found\"",
+          "level": 3,
+          "line": 350
+        },
+        {
+          "heading": "\"agent: command not found\"",
+          "level": 3,
+          "line": 360
+        },
+        {
+          "heading": "\"Error al inicializar\" (en el agente)",
+          "level": 3,
+          "line": 370
+        },
+        {
+          "heading": "Docker no funciona",
+          "level": 3,
+          "line": 378
+        },
+        {
+          "heading": "Prompt no muestra contenedores",
+          "level": 3,
+          "line": 386
+        },
+        {
+          "heading": "Estructura post-instalacion",
+          "level": 2,
+          "line": 392
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 31
+      }
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 210,
+      "nonEmptyLines": 177,
+      "sections": [
+        {
+          "heading": "nas-dotfiles",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Componentes",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Instalacion",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "Uso rapido",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "Estructura",
+          "level": 2,
+          "line": 72
+        },
+        {
+          "heading": "Proveedores de IA",
+          "level": 2,
+          "line": 113
+        },
+        {
+          "heading": "Requisitos",
+          "level": 2,
+          "line": 121
+        },
+        {
+          "heading": "Variables globales",
+          "level": 2,
+          "line": 127
+        },
+        {
+          "heading": "Documentacion",
+          "level": 2,
+          "line": 140
+        },
+        {
+          "heading": "Licencia",
+          "level": 2,
+          "line": 170
+        },
+        {
+          "heading": "🔗 Proyectos Relacionados",
+          "level": 2,
+          "line": 176
+        },
+        {
+          "heading": "¿Cómo se relacionan?",
+          "level": 3,
+          "line": 182
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "TODO.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 172,
+      "nonEmptyLines": 149,
+      "sections": [
+        {
+          "heading": "TODO — nas-dotfiles",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "CLI (`svc`) — Próximos",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "Agente Python — Próximos",
+          "level": 2,
+          "line": 24
+        },
+        {
+          "heading": "Seguridad — Backlog",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "Observabilidad — Backlog",
+          "level": 2,
+          "line": 46
+        },
+        {
+          "heading": "Backups — Backlog",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "Descartadas / Postergadas",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "Completadas ✅",
+          "level": 2,
+          "line": 76
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "install.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 418,
+      "nonEmptyLines": 366,
+      "functions": [
+        {
+          "name": "_check_install_pkg",
+          "startLine": 33,
+          "endLine": 45,
+          "params": []
+        },
+        {
+          "name": "_detect",
+          "startLine": 63,
+          "endLine": 69,
+          "params": []
+        },
+        {
+          "name": "_configure_bashrc",
+          "startLine": 247,
+          "endLine": 287,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "pyproject.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 19,
+      "nonEmptyLines": 16,
+      "sections": [
+        {
+          "heading": "project",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "tool.pytest.ini_options",
+          "level": 3,
+          "line": 7
+        },
+        {
+          "heading": "tool.coverage.run",
+          "level": 3,
+          "line": 13
+        },
+        {
+          "heading": "tool.coverage.report",
+          "level": 3,
+          "line": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": "uninstall.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 96,
+      "nonEmptyLines": 84,
+      "functions": [
+        {
+          "name": "_remove_if_symlink",
+          "startLine": 43,
+          "endLine": 49,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

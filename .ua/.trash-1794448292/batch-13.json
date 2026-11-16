@@ -1,0 +1,109 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/esphome/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/esphome/.env.example",
+      "filePath": "agent/catalog/services/esphome/.env.example",
+      "lineRange": [
+        1,
+        2
+      ],
+      "summary": "Plantilla mínima de entorno para ESPHome que indica la ausencia de secretos locales y la dependencia exclusiva de variables globales del NAS.",
+      "tags": [
+        "variables-entorno",
+        "esphome",
+        "plantilla-env",
+        "iot"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/esphome/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/esphome/compose.yml",
+      "filePath": "agent/catalog/services/esphome/compose.yml",
+      "lineRange": [
+        1,
+        21
+      ],
+      "summary": "Definición Docker Compose de ESPHome en modo privileged y network_mode: host para descubrimiento mDNS y programación serial (/dev/ttyUSB0), exponiendo el dashboard en :6052 con labels y widget de Homepage.",
+      "tags": [
+        "docker-compose",
+        "esphome",
+        "network-host",
+        "domotica-iot"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Archivo YAML de Docker Compose sin herencia de _common.yml por requerir privileged y network_mode: host."
+    },
+    {
+      "id": "document:agent/catalog/services/esphome/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/esphome/ficha.md",
+      "filePath": "agent/catalog/services/esphome/ficha.md",
+      "lineRange": [
+        1,
+        61
+      ],
+      "summary": "Ficha técnica en Markdown para ESPHome que documenta metadatos, volúmenes, acceso serial USB-UART, uso de network_mode: host para mDNS y referencia a esphome-guide.md.",
+      "tags": [
+        "ficha-servicio",
+        "esphome",
+        "catalogo-nas",
+        "dispositivos-esp"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/esphome/.env.example",
+      "target": "service:agent/catalog/services/esphome/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Establece la convención de configuración sin secretos locales para el servicio ESPHome."
+    },
+    {
+      "source": "service:agent/catalog/services/esphome/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Utiliza la variable global SERVER_IP en las etiquetas y URL de widget de Homepage."
+    },
+    {
+      "source": "service:agent/catalog/services/esphome/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Declara labels homepage.* y widget nativo de tipo esphome para el dashboard Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/esphome/ficha.md",
+      "target": "service:agent/catalog/services/esphome/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la imagen, puerto 6052, bind mounts, dispositivo /dev/ttyUSB0 y modo host de ESPHome."
+    },
+    {
+      "source": "document:agent/catalog/services/esphome/ficha.md",
+      "target": "config:agent/catalog/services/esphome/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Aclara que no requiere variables locales en .env y usa SERVER_IP y TZ globales."
+    },
+    {
+      "source": "document:agent/catalog/services/esphome/ficha.md",
+      "target": "document:docs/services/esphome-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia en docs_url la guía completa del servicio ESPHome."
+    }
+  ]
+}

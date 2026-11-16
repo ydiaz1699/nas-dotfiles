@@ -1,0 +1,125 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/flowise/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/flowise/.env.example",
+      "filePath": "agent/catalog/services/flowise/.env.example",
+      "lineRange": [
+        1,
+        28
+      ],
+      "summary": "Plantilla de variables locales para Flowise en modo queue: credenciales de PostgreSQL (flowise_db) y Redis en DataSQL, acceso inicial, clave de cifrado FLOWISE_SECRETKEY_OVERWRITE, secretos JWT/sesión y ajustes de proxy HTTP en LAN.",
+      "tags": [
+        "variables-entorno",
+        "flowise",
+        "secretos-jwt",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/flowise/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/flowise/compose.yml",
+      "filePath": "agent/catalog/services/flowise/compose.yml",
+      "lineRange": [
+        1,
+        158
+      ],
+      "summary": "Definición Docker Compose de Flowise en arquitectura main + worker (MODE=queue) conectados a datapostgres y dataredis mediante la red externa db_net, con bind compartido ./data, healthchecks en :3000 y :5566, límites de memoria y labels de Homepage.",
+      "tags": [
+        "docker-compose",
+        "flowise-queue",
+        "agentes-llm",
+        "red-db-net"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo YAML de Docker Compose con dos servicios (flowise y flowise-worker) que extienden ../../_common.yml y ajustan NODE_OPTIONS para evitar OOM en el worker."
+    },
+    {
+      "id": "document:agent/catalog/services/flowise/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/flowise/ficha.md",
+      "filePath": "agent/catalog/services/flowise/ficha.md",
+      "lineRange": [
+        1,
+        84
+      ],
+      "summary": "Ficha técnica del catálogo para Flowise (marcado como servicio protegido y backup crítico) con metadatos YAML, resumen de arquitectura queue con DataSQL y referencia a flowise-guide.md.",
+      "tags": [
+        "ficha-servicio",
+        "flowise",
+        "catalogo-nas",
+        "servicio-protegido"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/flowise/.env.example",
+      "target": "service:agent/catalog/services/flowise/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Provee las credenciales de PostgreSQL/Redis, secretos JWT, clave de cifrado y parámetros de sesión a flowise y flowise-worker."
+    },
+    {
+      "source": "service:agent/catalog/services/flowise/compose.yml",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Ambos contenedores (flowise y flowise-worker) heredan la base _defaults de ../../_common.yml."
+    },
+    {
+      "source": "service:agent/catalog/services/flowise/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde ../.env para configurar APP_URL y labels de Homepage."
+    },
+    {
+      "source": "service:agent/catalog/services/flowise/compose.yml",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Utiliza datapostgres como base de datos y dataredis como cola de jobs a través de la red externa db_net."
+    },
+    {
+      "source": "service:agent/catalog/services/flowise/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Declara labels homepage.* para mostrar Flowise en el grupo IA y Automatización."
+    },
+    {
+      "source": "document:agent/catalog/services/flowise/ficha.md",
+      "target": "service:agent/catalog/services/flowise/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Resume la arquitectura main + worker en modo queue, puertos internos/externos y restricciones operativas."
+    },
+    {
+      "source": "document:agent/catalog/services/flowise/ficha.md",
+      "target": "config:agent/catalog/services/flowise/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enumera las variables requeridas y opcionales del entorno de Flowise."
+    },
+    {
+      "source": "document:agent/catalog/services/flowise/ficha.md",
+      "target": "document:docs/services/flowise-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Remite a flowise-guide.md como única guía operativa del servicio."
+    }
+  ]
+}

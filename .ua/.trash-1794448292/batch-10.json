@@ -1,0 +1,267 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/.env.global.example",
+      "type": "config",
+      "name": "agent/catalog/.env.global.example",
+      "filePath": "agent/catalog/.env.global.example",
+      "lineRange": [
+        1,
+        18
+      ],
+      "summary": "Plantilla de variables de entorno globales (/docker/.env) compartidas por todos los servicios del NAS mediante env_file, definiendo SERVER_IP y TZ por defecto.",
+      "tags": [
+        "variables-globales",
+        "plantilla-env",
+        "catalogo-servicios",
+        "configuracion-nas"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:agent/catalog/_common.yml",
+      "type": "config",
+      "name": "agent/catalog/_common.yml",
+      "filePath": "agent/catalog/_common.yml",
+      "lineRange": [
+        1,
+        51
+      ],
+      "summary": "Archivo base de Docker Compose que define el servicio plantilla _defaults heredado vía extends por los servicios del catálogo y del NAS (restart, no-new-privileges, logging json-file y límites de memoria).",
+      "tags": [
+        "compose-base",
+        "defaults-docker",
+        "herencia-extends",
+        "seguridad-contenedores"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:agent/catalog/_compose_base.md",
+      "type": "document",
+      "name": "agent/catalog/_compose_base.md",
+      "filePath": "agent/catalog/_compose_base.md",
+      "lineRange": [
+        1,
+        256
+      ],
+      "summary": "Especificación de estructura estándar de compose.yml para el NAS: documenta la herencia actual mediante extends desde _common.yml, las variaciones por carga de servicio, el uso de .env global/local y los anchors YAML legacy.",
+      "tags": [
+        "especificacion-compose",
+        "extends-common",
+        "redes-docker",
+        "catalogo-servicios"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:agent/catalog/_rules.md",
+      "type": "document",
+      "name": "agent/catalog/_rules.md",
+      "filePath": "agent/catalog/_rules.md",
+      "lineRange": [
+        1,
+        167
+      ],
+      "summary": "Reglas obligatorias del catálogo para generación y modificación de servicios por el agente: rutas del NAS, puertos reservados/libres, exposición de dashboards, seguridad de credenciales, healthchecks, backups y servicios protegidos.",
+      "tags": [
+        "reglas-catalogo",
+        "generacion-servicios",
+        "seguridad-puertos",
+        "politicas-agente"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:agent/catalog/_template.md",
+      "type": "document",
+      "name": "agent/catalog/_template.md",
+      "filePath": "agent/catalog/_template.md",
+      "lineRange": [
+        1,
+        78
+      ],
+      "summary": "Plantilla canónica con frontmatter YAML y secciones Markdown para redactar fichas técnicas (ficha.md) de servicios en agent/catalog/services/.",
+      "tags": [
+        "plantilla-ficha",
+        "frontmatter-yaml",
+        "catalogo-servicios",
+        "documentacion-servicio"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:agent/catalog/catalog.json",
+      "type": "config",
+      "name": "agent/catalog/catalog.json",
+      "filePath": "agent/catalog/catalog.json",
+      "lineRange": [
+        1,
+        1007
+      ],
+      "summary": "Índice JSON consolidado del catálogo de servicios (16 servicios indexados con metadatos, puertos, imágenes, variables requeridas, agrupaciones por categoría y mapas por red Docker).",
+      "tags": [
+        "indice-catalogo",
+        "metadatos-servicios",
+        "redes-docker",
+        "registro-json"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo JSON autogenerado a partir de las fichas YAML del catálogo por agent/catalog/_index.py."
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/.env.global.example",
+      "target": "document:agent/catalog/_compose_base.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Aporta las variables globales SERVER_IP y TZ documentadas en _compose_base.md."
+    },
+    {
+      "source": "config:agent/catalog/.env.global.example",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa a _common.yml como configuración compartida por todos los compose del NAS."
+    },
+    {
+      "source": "config:agent/catalog/_common.yml",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Provee los defaults compartidos (_defaults) heredados por el stack datasql mediante extends."
+    },
+    {
+      "source": "config:agent/catalog/_common.yml",
+      "target": "service:agent/catalog/services/emqx/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Provee los defaults compartidos (_defaults) heredados por el servicio emqx mediante extends."
+    },
+    {
+      "source": "document:agent/catalog/_compose_base.md",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la estructura y herencia mediante extends de _common.yml."
+    },
+    {
+      "source": "document:agent/catalog/_compose_base.md",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el uso de ../.env global junto con el .env local de cada servicio."
+    },
+    {
+      "source": "document:agent/catalog/_compose_base.md",
+      "target": "file:agent/core/compose_manager.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Define las convenciones base que respeta ComposeManager al generar archivos compose.yml."
+    },
+    {
+      "source": "document:agent/catalog/_rules.md",
+      "target": "file:agent/core/compose_manager.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Establece las reglas obligatorias de generación de servicios aplicadas por ComposeManager."
+    },
+    {
+      "source": "document:agent/catalog/_rules.md",
+      "target": "file:agent/tools/compose_tools.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Guía las validaciones y creación de servicios en compose_tools.py."
+    },
+    {
+      "source": "document:agent/catalog/_rules.md",
+      "target": "document:agent/catalog/_compose_base.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Remite a _compose_base.md para el detalle técnico de estructura y dashboards."
+    },
+    {
+      "source": "document:agent/catalog/_rules.md",
+      "target": "document:agent/catalog/_template.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia _template.md como formato estándar para las fichas de servicio."
+    },
+    {
+      "source": "document:agent/catalog/_template.md",
+      "target": "document:agent/catalog/services/datasql/ficha.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Sirve como plantilla estructural para las fichas del catálogo como datasql/ficha.md."
+    },
+    {
+      "source": "document:agent/catalog/_template.md",
+      "target": "document:agent/catalog/services/emqx/ficha.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Sirve como plantilla estructural para las fichas del catálogo como emqx/ficha.md."
+    },
+    {
+      "source": "document:agent/catalog/_template.md",
+      "target": "file:docker/cli/lib/catalog-sync.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Es utilizada como referencia de formato al generar fichas desde catalog-sync."
+    },
+    {
+      "source": "config:agent/catalog/catalog.json",
+      "target": "file:agent/catalog/_index.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Es generado y leído por agent/catalog/_index.py para indexar el catálogo por categoría y red."
+    },
+    {
+      "source": "config:agent/catalog/catalog.json",
+      "target": "file:agent/tools/compare_tools.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Sirve de referencia estructurada para comparar configuraciones reales frente al catálogo."
+    },
+    {
+      "source": "config:agent/catalog/catalog.json",
+      "target": "file:agent/tools/discovery_tools.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Es consultado durante el autodescubrimiento y catalogación de servicios."
+    },
+    {
+      "source": "config:agent/catalog/catalog.json",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa la definición y metadatos del servicio datasql."
+    },
+    {
+      "source": "config:agent/catalog/catalog.json",
+      "target": "service:agent/catalog/services/emqx/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa la definición y metadatos del servicio emqx."
+    }
+  ]
+}

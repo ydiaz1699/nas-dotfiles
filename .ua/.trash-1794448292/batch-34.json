@@ -1,0 +1,1174 @@
+{
+  "nodes": [
+    {
+      "id": "document:docs/services/datasql-guide.md",
+      "type": "document",
+      "name": "docs/services/datasql-guide.md",
+      "filePath": "docs/services/datasql-guide.md",
+      "lineRange": [1, 1140],
+      "summary": "Guía operativa única del stack DataSQL (ParadeDB PostgreSQL 17 con pgvector, pg_search y pg_cron, pgAdmin y Redis 7) en el NAS. Cubre instalación limpia, migración histórica desde aipostgres, gestión de roles/bases para consumidores, backups y resolución de incidencias.",
+      "tags": [
+        "guia-servicio",
+        "postgresql-datasql",
+        "redis-pgadmin",
+        "operacion-nas"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Documento Markdown extenso de 54 secciones con procedimientos paso a paso, comandos seguros sin exponer secretos y matriz de auditoría."
+    },
+    {
+      "id": "document:docs/services/emqx-guide.md",
+      "type": "document",
+      "name": "docs/services/emqx-guide.md",
+      "filePath": "docs/services/emqx-guide.md",
+      "lineRange": [1, 525],
+      "summary": "Guía operativa completa del broker MQTT EMQX 5.8.3 usado como hub central de mensajería IoT en el NAS. Detalla instalación, variables de entorno, dashboard, convención de topics, autenticación/ACLs e integración con ESPHome, Home Assistant, Node-RED y Homepage.",
+      "tags": [
+        "guia-servicio",
+        "broker-mqtt",
+        "emqx-iot",
+        "integraciones"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documento Markdown de 58 secciones organizado por instalación, seguridad MQTT, integraciones IoT, respaldo y troubleshooting."
+    },
+    {
+      "id": "document:docs/services/esphome-device-config.md",
+      "type": "document",
+      "name": "docs/services/esphome-device-config.md",
+      "filePath": "docs/services/esphome-device-config.md",
+      "lineRange": [1, 1310],
+      "summary": "Guía de arquitectura modular para configurar dispositivos ESP32/ESP8266 en ESPHome mediante substitutions y packages (common/, boards/ y modules/). Explica herencia YAML con !extend/!remove, plantillas con vars, manejo de secretos, red fija, filtros de sensores y buenas prácticas de hardware.",
+      "tags": [
+        "esphome-yaml",
+        "packages-modulares",
+        "dispositivos-esp32",
+        "configuracion-iot"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Documento Markdown de 52 secciones con ejemplos YAML completos validados en ESPHome 2026.6.3."
+    },
+    {
+      "id": "document:docs/services/esphome-guide.md",
+      "type": "document",
+      "name": "docs/services/esphome-guide.md",
+      "filePath": "docs/services/esphome-guide.md",
+      "lineRange": [1, 689],
+      "summary": "Guía operativa del servicio Docker ESPHome (Device Builder) en modo host para compilar y gestionar firmware de placas ESP32/ESP8266. Cubre despliegue, flasheo USB y OTA, integración con EMQX y Home Assistant, backups y diagnóstico.",
+      "tags": [
+        "guia-servicio",
+        "esphome-docker",
+        "flasheo-ota",
+        "domotica-iot"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documento Markdown de 50 secciones enfocado en la operación del contenedor y flujos de flasheo."
+    },
+    {
+      "id": "document:docs/services/esphome-pueba-handoff.md",
+      "type": "document",
+      "name": "docs/services/esphome-pueba-handoff.md",
+      "filePath": "docs/services/esphome-pueba-handoff.md",
+      "lineRange": [1, 422],
+      "summary": "Documento de traspaso técnico (handoff) del dispositivo ESP32 'pueba' en ESPHome 2026.6.3 para retomar el proyecto sin contexto previo. Registra la arquitectura de packages verificada, decisiones asumidas en runtime, errores resueltos y plan de migración a remote packages.",
+      "tags": [
+        "handoff-sesion",
+        "esphome-esp32",
+        "estado-runtime",
+        "migracion-packages"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documento Markdown de 21 secciones orientado a continuidad operativa y registro de decisiones técnicas."
+    },
+    {
+      "id": "document:docs/services/filebrowser-guide.md",
+      "type": "document",
+      "name": "docs/services/filebrowser-guide.md",
+      "filePath": "docs/services/filebrowser-guide.md",
+      "lineRange": [1, 347],
+      "summary": "Guía de instalación y operación de File Browser para explorar y administrar /NAS desde la web en el puerto 8085. Explica la arquitectura de bind mounts en fstab, integración con USB automount (DebMenux), permisos de base de datos, backups y solución de problemas.",
+      "tags": [
+        "guia-servicio",
+        "filebrowser-web",
+        "bind-mounts",
+        "gestion-archivos"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documento Markdown de 29 secciones con pasos secuenciales de montaje, permisos y fstab."
+    },
+    {
+      "id": "document:docs/services/flowise-guide.md",
+      "type": "document",
+      "name": "docs/services/flowise-guide.md",
+      "filePath": "docs/services/flowise-guide.md",
+      "lineRange": [1, 973],
+      "summary": "Guía operativa de Flowise en modo queue con instancia main y worker dedicados conectados a PostgreSQL y Redis de DataSQL sobre db_net. Incluye creación de rol/base, configuración segura de .env, compose final, snapshots, escalado e incidencias resueltas.",
+      "tags": [
+        "guia-servicio",
+        "flowise-queue",
+        "postgresql-redis",
+        "orquestacion-ia"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Documento Markdown de 45 secciones con trazabilidad de incidencias, comandos reproducibles y auditoría de fuentes."
+    },
+    {
+      "id": "document:docs/services/homeassistant-datasql-guide.md",
+      "type": "document",
+      "name": "docs/services/homeassistant-datasql-guide.md",
+      "filePath": "docs/services/homeassistant-datasql-guide.md",
+      "lineRange": [1, 755],
+      "summary": "Guía específica para conectar el componente Recorder de Home Assistant a PostgreSQL (DataSQL en 127.0.0.1:5432 o un PostgreSQL externo) sin alterar SQLite por defecto hasta verificar el backend. Cubre creación de rol/base dedicados, secretos locales y validación de conexión.",
+      "tags": [
+        "guia-integracion",
+        "home-assistant",
+        "postgresql-recorder",
+        "datasql-nas"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Documento Markdown de 43 secciones con bifurcación de caminos (DataSQL vs PostgreSQL externo) y checklist de verificación."
+    },
+    {
+      "id": "document:docs/services/homeassistant-guide.md",
+      "type": "document",
+      "name": "docs/services/homeassistant-guide.md",
+      "filePath": "docs/services/homeassistant-guide.md",
+      "lineRange": [1, 825],
+      "summary": "Guía operativa principal de Home Assistant en Docker (network_mode: host, puerto 8123) adaptada a las convenciones de nas-dotfiles. Detalla estructura modular con includes/, gestión de secrets.yaml, notificaciones con ntfy y TvOverlay, automatizaciones de cámara y troubleshooting.",
+      "tags": [
+        "guia-servicio",
+        "home-assistant",
+        "domotica-nas",
+        "automatizaciones-ntfy"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Documento Markdown de 49 secciones con configuración real en YAML, shell_commands y resolución de errores."
+    },
+    {
+      "id": "document:docs/services/homepage-guide.md",
+      "type": "document",
+      "name": "docs/services/homepage-guide.md",
+      "filePath": "docs/services/homepage-guide.md",
+      "lineRange": [1, 272],
+      "summary": "Guía operativa del dashboard web Homepage (puerto 3000) para centralizar todos los servicios del NAS. Explica el descubrimiento automático por labels de Docker, la configuración manual en services.yaml/widgets.yaml, la red homepage_net y el acceso al socket Docker.",
+      "tags": [
+        "guia-servicio",
+        "homepage-dashboard",
+        "docker-labels",
+        "monitoreo-nas"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documento Markdown de 21 secciones enfocado en configuración declarativa mediante labels y archivos YAML."
+    },
+    {
+      "id": "document:docs/services/iobroker-guide.md",
+      "type": "document",
+      "name": "docs/services/iobroker-guide.md",
+      "filePath": "docs/services/iobroker-guide.md",
+      "lineRange": [1, 288],
+      "summary": "Guía operativa de producción para ioBroker en Docker (puerto 8181, red iot_net) como plataforma de automatización IoT. Cubre prerrequisitos, permisos, integración MQTT con EMQX, estrategia de backups, actualizaciones, límites de escalabilidad y troubleshooting.",
+      "tags": [
+        "guia-servicio",
+        "iobroker-iot",
+        "mqtt-emqx",
+        "operacion-produccion"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documento Markdown de 20 secciones con auditoría de decisiones de despliegue y operación."
+    },
+    {
+      "id": "document:docs/services/jdownloader-guide.md",
+      "type": "document",
+      "name": "docs/services/jdownloader-guide.md",
+      "filePath": "docs/services/jdownloader-guide.md",
+      "lineRange": [1, 198],
+      "summary": "Guía de instalación y operación de JDownloader 2 headless con interfaz web noVNC (puerto 5800) y control remoto vía My.JDownloader y el servidor MCP proyec_jdw2. Describe destinos de descarga en SSD/USB, orden de ejecución, arranque escalonado en layers.conf y gotchas.",
+      "tags": [
+        "guia-servicio",
+        "jdownloader-2",
+        "descargas-nas",
+        "integracion-mcp"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Documento Markdown conciso de 11 secciones con énfasis en rutas de descarga y vinculación externa."
+    },
+    {
+      "id": "document:docs/services/karakeep-floccus-architecture.md",
+      "type": "document",
+      "name": "docs/services/karakeep-floccus-architecture.md",
+      "filePath": "docs/services/karakeep-floccus-architecture.md",
+      "lineRange": [1, 181],
+      "summary": "Documento maestro conceptual que define la arquitectura conjunta de Karakeep y Floccus para gestionar marcadores desde UI, MCP, CLI, API REST y navegador. Clarifica las diferencias de modelo de datos, roles de uso y procedimiento seguro para el primer sync de Floccus.",
+      "tags": [
+        "arquitectura-conceptual",
+        "karakeep-floccus",
+        "gestion-bookmarks",
+        "sincronizacion"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Documento Markdown de 9 secciones que separa modelo conceptual de la guía operativa."
+    },
+    {
+      "id": "document:docs/services/karakeep-guide.md",
+      "type": "document",
+      "name": "docs/services/karakeep-guide.md",
+      "filePath": "docs/services/karakeep-guide.md",
+      "lineRange": [1, 374],
+      "summary": "Guía operativa de Karakeep (stack de 3 contenedores con Meilisearch y headless Chrome en el puerto 3400) para guardar y etiquetar marcadores con IA vía Ollama Cloud. Detalla instalación, sincronización con Floccus, arranque escalonado, backup y uso por MCP, CLI y API REST.",
+      "tags": [
+        "guia-servicio",
+        "karakeep-bookmarks",
+        "ollama-tagging",
+        "mcp-cli-api"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documento Markdown de 19 secciones autocontenido para despliegue y operación multi-interfaz."
+    },
+    {
+      "id": "document:docs/services/lobehub-guide.md",
+      "type": "document",
+      "name": "docs/services/lobehub-guide.md",
+      "filePath": "docs/services/lobehub-guide.md",
+      "lineRange": [1, 1436],
+      "summary": "Guía operativa de LobeHub server/database en el NAS respaldado por DataSQL (PostgreSQL con pgvector/pg_search y Redis) y almacenamiento de objetos RustFS. Documenta preparación de bind mounts, generación segura de secretos, aprovisionamiento SQL, validación, backups e integración MCP.",
+      "tags": [
+        "guia-servicio",
+        "lobehub-database",
+        "rustfs-datasql",
+        "despliegue-nas"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Documento Markdown de 23 secciones muy detallado con verificación en runtime y criterios de aceptación."
+    },
+    {
+      "id": "document:docs/services/n8n-guide.md",
+      "type": "document",
+      "name": "docs/services/n8n-guide.md",
+      "filePath": "docs/services/n8n-guide.md",
+      "lineRange": [1, 538],
+      "summary": "Guía de continuidad y operación de n8n conectado a una base dedicada en PostgreSQL DataSQL (n8n_db). Registra la secuencia verificada de aprovisionamiento de rol/base, migraciones, snapshot, hardening pendiente del compose, backup e incidencias históricas.",
+      "tags": [
+        "guia-servicio",
+        "n8n-automatizacion",
+        "postgresql-datasql",
+        "hardening-nas"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documento Markdown de 24 secciones que distingue estado confirmado en runtime de cambios de hardening propuestos."
+    },
+    {
+      "id": "document:docs/services/nas-mcp-gateway-guide.md",
+      "type": "document",
+      "name": "docs/services/nas-mcp-gateway-guide.md",
+      "filePath": "docs/services/nas-mcp-gateway-guide.md",
+      "lineRange": [1, 18],
+      "summary": "Ficha puente del servicio nas-mcp-gateway que registra su estado actual de preparación en el repositorio (sin despliegue runtime validado aún) y remite a la especificación arquitectónica principal para evitar duplicidad.",
+      "tags": [
+        "ficha-servicio",
+        "nas-mcp-gateway",
+        "estado-pendiente",
+        "referencia-arquitectura"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Documento Markdown breve de 3 secciones que actúa como índice hacia docs/nas-mcp-gateway.md."
+    },
+    {
+      "id": "document:docs/services/node-red-guide.md",
+      "type": "document",
+      "name": "docs/services/node-red-guide.md",
+      "filePath": "docs/services/node-red-guide.md",
+      "lineRange": [1, 71],
+      "summary": "Guía operativa básica de Node-RED en Docker (puerto 1880, red iot_net) para automatización visual basada en flujos. Resume instalación con svc, configuración inicial, conexión MQTT con EMQX, backups y solución de fallos comunes.",
+      "tags": [
+        "guia-servicio",
+        "node-red",
+        "automatizacion-flujos",
+        "iot-mqtt"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Documento Markdown corto de 9 secciones con instrucciones esenciales de operación."
+    },
+    {
+      "id": "document:docs/services/ntfy-guide.md",
+      "type": "document",
+      "name": "docs/services/ntfy-guide.md",
+      "filePath": "docs/services/ntfy-guide.md",
+      "lineRange": [1, 863],
+      "summary": "Guía operativa completa del servidor de notificaciones push ntfy (puerto 8090, red homepage_net) y del servicio complementario systemd usb-api. Cubre configuración de topics, clientes PWA/Android/CLI, integración con usb-automount, svc, Home Assistant y Homepage.",
+      "tags": [
+        "guia-servicio",
+        "ntfy-notificaciones",
+        "usb-api-systemd",
+        "alertas-nas"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Documento Markdown de 60 secciones que abarca notificaciones push en LAN, automatizaciones y el companion usb-api."
+    },
+    {
+      "id": "document:docs/services/openwa-guide.md",
+      "type": "document",
+      "name": "docs/services/openwa-guide.md",
+      "filePath": "docs/services/openwa-guide.md",
+      "lineRange": [1, 676],
+      "summary": "Guía operativa del gateway no oficial de WhatsApp OpenWA (puerto 2785, red db_net, motor Baileys por defecto). Detalla instalación, gestión de API keys con pepper, vinculación por QR o pairing-code, script wa-send.sh, integración con n8n y envío de snapshots de Home Assistant.",
+      "tags": [
+        "guia-servicio",
+        "openwa-whatsapp",
+        "integracion-n8n",
+        "mensajeria-nas"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Documento Markdown de 39 secciones con advertencias anti-ban, flujo anti-SSRF en n8n y referencia a workflows JSON."
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:docs/services/datasql-guide.md",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la arquitectura, puertos, redes y despliegue del compose de DataSQL."
+    },
+    {
+      "source": "document:docs/services/datasql-guide.md",
+      "target": "config:agent/catalog/services/datasql/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta las variables de entorno requeridas para PostgreSQL, pgAdmin y Redis."
+    },
+    {
+      "source": "document:docs/services/datasql-guide.md",
+      "target": "document:agent/catalog/services/datasql/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa con guía operativa extendida la ficha del catálogo de DataSQL."
+    },
+    {
+      "source": "document:docs/services/datasql-guide.md",
+      "target": "document:docs/docker-entorno.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia las convenciones de entorno Docker, redes y rutas del NAS."
+    },
+    {
+      "source": "document:docs/services/emqx-guide.md",
+      "target": "service:agent/catalog/services/emqx/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el servicio Docker EMQX, sus puertos 1883/18083 y redes iot_net/db_net."
+    },
+    {
+      "source": "document:docs/services/emqx-guide.md",
+      "target": "config:agent/catalog/services/emqx/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe las variables y secretos del entorno local de EMQX."
+    },
+    {
+      "source": "document:docs/services/emqx-guide.md",
+      "target": "document:agent/catalog/services/emqx/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Amplía la ficha resumida del servicio EMQX en el catálogo."
+    },
+    {
+      "source": "document:docs/services/emqx-guide.md",
+      "target": "document:docs/services/esphome-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el envío de telemetría y discovery MQTT desde dispositivos ESPHome hacia EMQX."
+    },
+    {
+      "source": "document:docs/services/emqx-guide.md",
+      "target": "document:docs/services/homeassistant-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica cómo conectar Home Assistant al broker MQTT EMQX."
+    },
+    {
+      "source": "document:docs/services/emqx-guide.md",
+      "target": "document:docs/services/node-red-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe la suscripción y publicación de nodos MQTT desde Node-RED."
+    },
+    {
+      "source": "document:docs/services/esphome-device-config.md",
+      "target": "document:docs/services/esphome-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Separa la organización YAML de dispositivos de la guía del contenedor ESPHome."
+    },
+    {
+      "source": "document:docs/services/esphome-device-config.md",
+      "target": "document:docs/services/esphome-pueba-handoff.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia el dispositivo pueba como caso práctico verificado del patrón packages."
+    },
+    {
+      "source": "document:docs/services/esphome-device-config.md",
+      "target": "document:docs/esphome-meta-prompt.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza con el meta-prompt de ESPHome del repositorio."
+    },
+    {
+      "source": "document:docs/services/esphome-device-config.md",
+      "target": "document:docker-nas/references/networking.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Consulta la topología de subredes e IPs fijas del NAS para placas ESP."
+    },
+    {
+      "source": "document:docs/services/esphome-guide.md",
+      "target": "service:agent/catalog/services/esphome/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la configuración y operación del contenedor ESPHome."
+    },
+    {
+      "source": "document:docs/services/esphome-guide.md",
+      "target": "config:agent/catalog/services/esphome/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia las variables de entorno de ESPHome."
+    },
+    {
+      "source": "document:docs/services/esphome-guide.md",
+      "target": "document:agent/catalog/services/esphome/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Amplía con guía operativa la ficha del catálogo de ESPHome."
+    },
+    {
+      "source": "document:docs/services/esphome-guide.md",
+      "target": "document:docs/services/esphome-device-config.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Remite al patrón modular con packages para configurar dispositivos."
+    },
+    {
+      "source": "document:docs/services/esphome-guide.md",
+      "target": "document:docs/services/esphome-pueba-handoff.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza al handoff de runtime del dispositivo pueba."
+    },
+    {
+      "source": "document:docs/services/esphome-guide.md",
+      "target": "document:docs/services/homeassistant-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica la integración de ESPHome con Home Assistant mediante API nativa o MQTT."
+    },
+    {
+      "source": "document:docs/services/esphome-pueba-handoff.md",
+      "target": "document:docs/services/esphome-device-config.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Aplica en el dispositivo pueba la arquitectura modular de packages."
+    },
+    {
+      "source": "document:docs/services/esphome-pueba-handoff.md",
+      "target": "document:docs/services/esphome-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Se apoya en la guía operativa de ESPHome para compilación y flasheo."
+    },
+    {
+      "source": "document:docs/services/esphome-pueba-handoff.md",
+      "target": "document:docker-nas/references/networking.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia el escenario de doble NAT y direccionamiento del NAS."
+    },
+    {
+      "source": "document:docs/services/filebrowser-guide.md",
+      "target": "service:agent/catalog/services/filebrowser/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el despliegue Docker y volúmenes de File Browser."
+    },
+    {
+      "source": "document:docs/services/filebrowser-guide.md",
+      "target": "config:agent/catalog/services/filebrowser/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta los secretos y variables de entorno locales de File Browser."
+    },
+    {
+      "source": "document:docs/services/filebrowser-guide.md",
+      "target": "document:agent/catalog/services/filebrowser/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la ficha de File Browser del catálogo."
+    },
+    {
+      "source": "document:docs/services/flowise-guide.md",
+      "target": "service:agent/catalog/services/flowise/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la arquitectura main + worker del compose de Flowise."
+    },
+    {
+      "source": "document:docs/services/flowise-guide.md",
+      "target": "config:agent/catalog/services/flowise/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Especifica las variables de entorno, PostgreSQL y Redis de Flowise."
+    },
+    {
+      "source": "document:docs/services/flowise-guide.md",
+      "target": "document:agent/catalog/services/flowise/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la ficha del catálogo de Flowise."
+    },
+    {
+      "source": "document:docs/services/flowise-guide.md",
+      "target": "document:docs/services/datasql-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Depende de DataSQL (datapostgres y dataredis) para persistencia y colas."
+    },
+    {
+      "source": "document:docs/services/flowise-guide.md",
+      "target": "document:docs/docker-entorno.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Sigue las convenciones de rutas y entorno Docker del NAS."
+    },
+    {
+      "source": "document:docs/services/homeassistant-datasql-guide.md",
+      "target": "service:agent/catalog/services/homeassistant/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la conexión de Home Assistant hacia PostgreSQL desde su compose en modo host."
+    },
+    {
+      "source": "document:docs/services/homeassistant-datasql-guide.md",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el acceso por loopback 127.0.0.1:5432 y el aprovisionamiento en DataSQL."
+    },
+    {
+      "source": "document:docs/services/homeassistant-datasql-guide.md",
+      "target": "document:docs/services/datasql-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Remite a la guía principal de DataSQL para instalación y recuperación del motor."
+    },
+    {
+      "source": "document:docs/services/homeassistant-datasql-guide.md",
+      "target": "document:docs/services/homeassistant-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Detalla la integración opcional de Recorder referenciada en la guía de Home Assistant."
+    },
+    {
+      "source": "document:docs/services/homeassistant-guide.md",
+      "target": "service:agent/catalog/services/homeassistant/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el despliegue de Home Assistant en Docker con red host."
+    },
+    {
+      "source": "document:docs/services/homeassistant-guide.md",
+      "target": "config:agent/catalog/services/homeassistant/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia las variables de entorno del servicio Home Assistant."
+    },
+    {
+      "source": "document:docs/services/homeassistant-guide.md",
+      "target": "document:agent/catalog/services/homeassistant/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Amplía la ficha de Home Assistant del catálogo."
+    },
+    {
+      "source": "document:docs/services/homeassistant-guide.md",
+      "target": "file:setup",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia el instalador principal setup del proyecto nas-dotfiles."
+    },
+    {
+      "source": "document:docs/services/homeassistant-guide.md",
+      "target": "document:docs/services/homeassistant-datasql-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza con la guía dedicada para migrar Recorder a PostgreSQL/DataSQL."
+    },
+    {
+      "source": "document:docs/services/homeassistant-guide.md",
+      "target": "document:docs/services/ntfy-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta automatizaciones de cámara y envío de alertas mediante ntfy."
+    },
+    {
+      "source": "document:docs/services/homeassistant-guide.md",
+      "target": "document:docker-nas/references/networking.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia las reglas de red e IP del servidor en el NAS."
+    },
+    {
+      "source": "document:docs/services/homeassistant-guide.md",
+      "target": "document:docs/troubleshooting.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa el diagnóstico general de problemas en servicios del NAS."
+    },
+    {
+      "source": "document:docs/services/homepage-guide.md",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el compose de Homepage, su socket Docker y la red homepage_net."
+    },
+    {
+      "source": "document:docs/services/homepage-guide.md",
+      "target": "config:agent/catalog/services/homepage/config/services.yaml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica la declaración manual de servicios y grupos en services.yaml."
+    },
+    {
+      "source": "document:docs/services/homepage-guide.md",
+      "target": "config:agent/catalog/services/homepage/config/docker.yaml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica la integración de descubrimiento automático mediante docker.yaml."
+    },
+    {
+      "source": "document:docs/services/homepage-guide.md",
+      "target": "config:agent/catalog/services/homepage/config/settings.yaml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la configuración de layout y grupos en settings.yaml."
+    },
+    {
+      "source": "document:docs/services/homepage-guide.md",
+      "target": "config:agent/catalog/services/homepage/config/widgets.yaml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta los widgets globales de la barra superior en widgets.yaml."
+    },
+    {
+      "source": "document:docs/services/homepage-guide.md",
+      "target": "document:agent/catalog/services/homepage/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Amplía con operativa diaria la ficha del servicio Homepage."
+    },
+    {
+      "source": "document:docs/services/iobroker-guide.md",
+      "target": "service:agent/catalog/services/iobroker/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el compose de producción de ioBroker v11.1.0 en iot_net."
+    },
+    {
+      "source": "document:docs/services/iobroker-guide.md",
+      "target": "config:agent/catalog/services/iobroker/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe la configuración de entorno local de ioBroker."
+    },
+    {
+      "source": "document:docs/services/iobroker-guide.md",
+      "target": "document:agent/catalog/services/iobroker/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la ficha del catálogo de ioBroker."
+    },
+    {
+      "source": "document:docs/services/iobroker-guide.md",
+      "target": "document:docs/services/emqx-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe la configuración del cliente MQTT de ioBroker contra EMQX."
+    },
+    {
+      "source": "document:docs/services/jdownloader-guide.md",
+      "target": "service:agent/catalog/services/jdownloader/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el contenedor JDownloader 2, sus volúmenes de descarga y puerto noVNC 5800."
+    },
+    {
+      "source": "document:docs/services/jdownloader-guide.md",
+      "target": "config:agent/catalog/services/jdownloader/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe las variables de entorno de JDownloader 2."
+    },
+    {
+      "source": "document:docs/services/jdownloader-guide.md",
+      "target": "document:agent/catalog/services/jdownloader/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Amplía la ficha de JDownloader 2 en el catálogo."
+    },
+    {
+      "source": "document:docs/services/jdownloader-guide.md",
+      "target": "file:shell/scripts/layers.conf.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el registro de jdownloader en el arranque escalonado por capas."
+    },
+    {
+      "source": "document:docs/services/jdownloader-guide.md",
+      "target": "document:docs/ideas-decisions.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia decisiones de diseño asociadas al servicio y su MCP externo."
+    },
+    {
+      "source": "document:docs/services/karakeep-floccus-architecture.md",
+      "target": "service:agent/catalog/services/karakeep/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica el modelo conceptual del servicio Karakeep y su integración con Floccus."
+    },
+    {
+      "source": "document:docs/services/karakeep-floccus-architecture.md",
+      "target": "document:docs/services/karakeep-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Deriva la operación práctica del servicio hacia la guía operativa karakeep-guide.md."
+    },
+    {
+      "source": "document:docs/services/karakeep-guide.md",
+      "target": "service:agent/catalog/services/karakeep/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el stack de 3 contenedores de Karakeep (web, Meilisearch y Chrome)."
+    },
+    {
+      "source": "document:docs/services/karakeep-guide.md",
+      "target": "config:agent/catalog/services/karakeep/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta las variables de entorno, puerto 3400 y configuración Ollama Cloud."
+    },
+    {
+      "source": "document:docs/services/karakeep-guide.md",
+      "target": "document:agent/catalog/services/karakeep/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la ficha del catálogo de Karakeep."
+    },
+    {
+      "source": "document:docs/services/karakeep-guide.md",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia la base común _common.yml heredada mediante extends."
+    },
+    {
+      "source": "document:docs/services/karakeep-guide.md",
+      "target": "document:docs/services/karakeep-floccus-architecture.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza al documento maestro de arquitectura Karakeep + Floccus."
+    },
+    {
+      "source": "document:docs/services/karakeep-guide.md",
+      "target": "document:agent/catalog/_compose_base.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Sigue la convención de estructura compose del catálogo."
+    },
+    {
+      "source": "document:docs/services/karakeep-guide.md",
+      "target": "document:docs/services/n8n-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Menciona automatizaciones vía API REST desde n8n."
+    },
+    {
+      "source": "document:docs/services/lobehub-guide.md",
+      "target": "service:agent/catalog/services/lobehub/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el compose de LobeHub server/database junto con RustFS."
+    },
+    {
+      "source": "document:docs/services/lobehub-guide.md",
+      "target": "config:agent/catalog/services/lobehub/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Detalla los secretos, KEY_VAULTS_SECRET, Redis y credenciales PostgreSQL de LobeHub."
+    },
+    {
+      "source": "document:docs/services/lobehub-guide.md",
+      "target": "config:agent/catalog/services/lobehub/bucket.config.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la configuración de buckets S3 en RustFS para LobeHub."
+    },
+    {
+      "source": "document:docs/services/lobehub-guide.md",
+      "target": "document:agent/catalog/services/lobehub/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Amplía la ficha del catálogo de LobeHub."
+    },
+    {
+      "source": "document:docs/services/lobehub-guide.md",
+      "target": "document:docs/lobehub-mcp-gateway.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia la integración MCP read-only dedicada para LobeHub."
+    },
+    {
+      "source": "document:docs/services/lobehub-guide.md",
+      "target": "document:docs/services/datasql-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Utiliza DataSQL como backend PostgreSQL (con vector/pg_search) y Redis."
+    },
+    {
+      "source": "document:docs/services/lobehub-guide.md",
+      "target": "file:agent/lobehub_mcp.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Se conecta con el helper MCP de LobeHub implementado en el agente."
+    },
+    {
+      "source": "document:docs/services/n8n-guide.md",
+      "target": "service:agent/catalog/services/n8n/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el compose de n8n y su propuesta de hardening."
+    },
+    {
+      "source": "document:docs/services/n8n-guide.md",
+      "target": "config:agent/catalog/services/n8n/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta las variables de entorno y credenciales de base de datos de n8n."
+    },
+    {
+      "source": "document:docs/services/n8n-guide.md",
+      "target": "document:agent/catalog/services/n8n/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la ficha del catálogo de n8n."
+    },
+    {
+      "source": "document:docs/services/n8n-guide.md",
+      "target": "document:docs/services/datasql-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Usa DataSQL para alojar el rol n8n_user y la base dedicada n8n_db."
+    },
+    {
+      "source": "document:docs/services/n8n-guide.md",
+      "target": "document:docs/services/lobehub-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Registra lecciones compartidas de aprovisionamiento PostgreSQL aplicadas en LobeHub."
+    },
+    {
+      "source": "document:docs/services/n8n-guide.md",
+      "target": "document:.kiro/skills/datasql/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia la skill operativa de DataSQL para operaciones SQL seguras."
+    },
+    {
+      "source": "document:docs/services/n8n-guide.md",
+      "target": "document:.kiro/skills/nas-runtime-secrets/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Aplica las reglas de manejo seguro de secretos en runtime."
+    },
+    {
+      "source": "document:docs/services/nas-mcp-gateway-guide.md",
+      "target": "service:agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Registra el estado de preparación del servicio nas-mcp-gateway en el catálogo."
+    },
+    {
+      "source": "document:docs/services/nas-mcp-gateway-guide.md",
+      "target": "config:agent/catalog/services/nas-mcp-gateway/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia la plantilla de entorno de nas-mcp-gateway."
+    },
+    {
+      "source": "document:docs/services/nas-mcp-gateway-guide.md",
+      "target": "document:agent/catalog/services/nas-mcp-gateway/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la ficha del servicio nas-mcp-gateway."
+    },
+    {
+      "source": "document:docs/services/nas-mcp-gateway-guide.md",
+      "target": "document:docs/nas-mcp-gateway.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Delega toda la arquitectura, manifest y allowlist a docs/nas-mcp-gateway.md."
+    },
+    {
+      "source": "document:docs/services/nas-mcp-gateway-guide.md",
+      "target": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Corresponde al gateway MCP implementado en Python."
+    },
+    {
+      "source": "document:docs/services/node-red-guide.md",
+      "target": "service:agent/catalog/services/node-red/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la instalación y configuración del contenedor Node-RED."
+    },
+    {
+      "source": "document:docs/services/node-red-guide.md",
+      "target": "config:agent/catalog/services/node-red/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia el entorno de configuración local de Node-RED."
+    },
+    {
+      "source": "document:docs/services/node-red-guide.md",
+      "target": "document:agent/catalog/services/node-red/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Amplía la ficha de Node-RED en el catálogo."
+    },
+    {
+      "source": "document:docs/services/node-red-guide.md",
+      "target": "document:docs/services/emqx-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica la conexión del nodo mqtt-broker de Node-RED hacia EMQX en iot_net."
+    },
+    {
+      "source": "document:docs/services/ntfy-guide.md",
+      "target": "service:agent/catalog/services/ntfy/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el despliegue Docker del servidor de notificaciones ntfy."
+    },
+    {
+      "source": "document:docs/services/ntfy-guide.md",
+      "target": "config:agent/catalog/services/ntfy/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia las variables de entorno del servidor ntfy."
+    },
+    {
+      "source": "document:docs/services/ntfy-guide.md",
+      "target": "document:agent/catalog/services/ntfy/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Amplía la ficha de catálogo de ntfy."
+    },
+    {
+      "source": "document:docs/services/ntfy-guide.md",
+      "target": "file:docker/cli/lib/notifications.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la integración de notificaciones push con la librería CLI de svc."
+    },
+    {
+      "source": "document:docs/services/ntfy-guide.md",
+      "target": "file:setup",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Menciona el punto de entrada de instalación del sistema que configura NTFY_URL."
+    },
+    {
+      "source": "document:docs/services/ntfy-guide.md",
+      "target": "document:agent/catalog/services/usb-api/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el servicio acompañante systemd usb-api integrado con notificaciones ntfy."
+    },
+    {
+      "source": "document:docs/services/ntfy-guide.md",
+      "target": "document:docs/services/homeassistant-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe la integración oficial y por shell_command de ntfy en Home Assistant."
+    },
+    {
+      "source": "document:docs/services/ntfy-guide.md",
+      "target": "document:docs/services/homepage-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Muestra la configuración del widget de ntfy en Homepage."
+    },
+    {
+      "source": "document:docs/services/openwa-guide.md",
+      "target": "service:agent/catalog/services/openwa/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el compose de OpenWA, su puerto 2785, motor Baileys y red db_net."
+    },
+    {
+      "source": "document:docs/services/openwa-guide.md",
+      "target": "config:agent/catalog/services/openwa/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta API_MASTER_KEY, API_KEY_PEPPER y parámetros del motor en .env."
+    },
+    {
+      "source": "document:docs/services/openwa-guide.md",
+      "target": "document:agent/catalog/services/openwa/ficha.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Amplía con operativa detallada la ficha del catálogo de OpenWA."
+    },
+    {
+      "source": "document:docs/services/openwa-guide.md",
+      "target": "file:agent/catalog/services/openwa/wa-send.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el uso del helper CLI wa-send.sh para envío rápido de mensajes."
+    },
+    {
+      "source": "document:docs/services/openwa-guide.md",
+      "target": "config:agent/catalog/services/openwa/n8n-flows/pide-camara.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el workflow de ejemplo que conecta WhatsApp, Home Assistant y OpenWA."
+    },
+    {
+      "source": "document:docs/services/openwa-guide.md",
+      "target": "document:agent/catalog/services/openwa/n8n-flows/README.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia la documentación de los flujos JSON de ejemplo para n8n."
+    },
+    {
+      "source": "document:docs/services/openwa-guide.md",
+      "target": "document:docs/services/n8n-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Detalla la integración del nodo oficial de OpenWA dentro de n8n."
+    },
+    {
+      "source": "document:docs/services/openwa-guide.md",
+      "target": "document:docs/services/homeassistant-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica cómo obtener snapshots de cámaras de Home Assistant y enviarlos por WhatsApp."
+    }
+  ]
+}

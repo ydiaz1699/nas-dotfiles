@@ -1,0 +1,171 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/lobehub/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/lobehub/.env.example",
+      "filePath": "agent/catalog/services/lobehub/.env.example",
+      "lineRange": [1, 28],
+      "summary": "Plantilla de variables de entorno locales para LobeHub 2.2.14: credenciales de PostgreSQL (LOBE_DB_PASSWORD), Redis compartido, secretos criptográficos (KEY_VAULTS_SECRET, AUTH_SECRET, JWKS_KEY), lista blanca AUTH_ALLOWED_EMAILS, RustFS S3 y parámetros del sidecar lobehub-mcp.",
+      "tags": [
+        "variables-entorno",
+        "lobehub",
+        "secretos-locales",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:agent/catalog/services/lobehub/bucket.config.json",
+      "type": "config",
+      "name": "agent/catalog/services/lobehub/bucket.config.json",
+      "filePath": "agent/catalog/services/lobehub/bucket.config.json",
+      "lineRange": [1, 18],
+      "summary": "Política de bucket S3 en formato IAM (versión 2012-10-17) aplicada por rustfs-init sobre el bucket lobe para permitir lectura pública s3:GetObject de objetos almacenados.",
+      "tags": [
+        "politica-s3",
+        "rustfs",
+        "lobehub",
+        "almacenamiento-objetos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/lobehub/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/lobehub/compose.yml",
+      "filePath": "agent/catalog/services/lobehub/compose.yml",
+      "lineRange": [1, 221],
+      "summary": "Definición Docker Compose del stack LobeHub 2.2.14 con cuatro servicios (lobehub en :3210, sidecar read-only lobehub-mcp en :8790, rustfs S3 en :9000/:9001 y rustfs-init) conectados a db_net externa (DataSQL PostgreSQL/Redis) y a la red interna lobe_storage.",
+      "tags": [
+        "docker-compose",
+        "lobehub",
+        "rustfs-s3",
+        "gateway-mcp"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Archivo YAML de Docker Compose donde los cuatro servicios heredan _defaults desde ../../_common.yml mediante extends y el sidecar lobehub-mcp se construye desde agent/mcp/Dockerfile con root FS de solo lectura y Unix socket."
+    },
+    {
+      "id": "document:agent/catalog/services/lobehub/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/lobehub/ficha.md",
+      "filePath": "agent/catalog/services/lobehub/ficha.md",
+      "lineRange": [1, 82],
+      "summary": "Ficha técnica del catálogo para LobeHub con frontmatter YAML de metadatos (imagen con digest, puertos 3210/9000/9001, dependencias de PostgreSQL/Redis/RustFS, rutas de backup críticas, estado runtime-verified y herramientas read-only del endpoint lobehub-mcp).",
+      "tags": [
+        "ficha-servicio",
+        "catalogo-nas",
+        "lobehub",
+        "metadatos-yaml"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/lobehub/.env.example",
+      "target": "service:agent/catalog/services/lobehub/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define las credenciales de base de datos, Redis, S3, autenticación y socket MCP consumidas por el compose de LobeHub."
+    },
+    {
+      "source": "config:agent/catalog/services/lobehub/bucket.config.json",
+      "target": "service:agent/catalog/services/lobehub/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Es montada en modo solo lectura por rustfs-init para configurar la política de acceso del bucket lobe en RustFS."
+    },
+    {
+      "source": "service:agent/catalog/services/lobehub/compose.yml",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Los servicios lobehub, lobehub-mcp, rustfs y rustfs-init extienden _defaults desde ../../_common.yml."
+    },
+    {
+      "source": "service:agent/catalog/services/lobehub/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde ../.env mediante env_file para URLs de aplicación, S3 y labels de Homepage."
+    },
+    {
+      "source": "service:agent/catalog/services/lobehub/compose.yml",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Conecta a datapostgres:5432 (lobehub_db) y dataredis:6379 de DataSQL a través de la red externa db_net."
+    },
+    {
+      "source": "service:agent/catalog/services/lobehub/compose.yml",
+      "target": "service:agent/mcp/Dockerfile",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Construye el sidecar lobehub-mcp usando el contexto ${NAS_DOTFILES}/agent y mcp/Dockerfile."
+    },
+    {
+      "source": "service:agent/catalog/services/lobehub/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Expone labels homepage.* en el servicio lobehub para su integración en el grupo IA y Automatización de Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/lobehub/ficha.md",
+      "target": "service:agent/catalog/services/lobehub/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la arquitectura, puertos, redes, recursos y estado de verificación en runtime del stack LobeHub."
+    },
+    {
+      "source": "document:agent/catalog/services/lobehub/ficha.md",
+      "target": "config:agent/catalog/services/lobehub/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Lista las variables requeridas y opcionales necesarias para desplegar LobeHub y su sidecar MCP."
+    },
+    {
+      "source": "document:agent/catalog/services/lobehub/ficha.md",
+      "target": "config:agent/catalog/services/lobehub/bucket.config.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Registra ./bucket.config.json en backup_paths y advierte sobre la exposición LAN de su política GET pública."
+    },
+    {
+      "source": "document:agent/catalog/services/lobehub/ficha.md",
+      "target": "document:docs/services/lobehub-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia mediante docs_url la guía operativa única de LobeHub."
+    },
+    {
+      "source": "document:agent/catalog/services/lobehub/ficha.md",
+      "target": "document:docs/lobehub-mcp-gateway.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la arquitectura y herramientas del sidecar lobehub-mcp descritas en la sección mcp de la ficha."
+    },
+    {
+      "source": "document:agent/catalog/services/lobehub/ficha.md",
+      "target": "config:agent/catalog/catalog.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Provee los metadatos YAML del servicio LobeHub indexados por el catálogo."
+    }
+  ]
+}

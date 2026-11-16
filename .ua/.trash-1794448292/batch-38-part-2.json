@@ -1,0 +1,1463 @@
+{
+  "nodes": [
+    {
+      "id": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "type": "file",
+      "name": "nas_mcp_gateway.py",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "summary": "Front-door MCP read-only con activación lazy de worker para nas-dotfiles; publica herramientas del manifest en modo stdio o HTTP y apaga el worker tras inactividad.",
+      "tags": [
+        "gateway-mcp",
+        "lazy-worker",
+        "json-rpc",
+        "solo-lectura"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Usa selectors, subprocess.Popen, threading y ThreadingHTTPServer de la biblioteca estándar para supervisar el ciclo de vida del worker."
+    },
+    {
+      "id": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:ManifestError",
+      "type": "class",
+      "name": "ManifestError",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        32,
+        33
+      ],
+      "summary": "Excepción lanzada cuando el manifest JSON de nas-mcp-gateway es inválido o no coincide con la allowlist del worker.",
+      "tags": [
+        "excepcion",
+        "validacion-manifest",
+        "mcp"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_manifest_path",
+      "type": "function",
+      "name": "_manifest_path",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        36,
+        38
+      ],
+      "summary": "Obtiene la ruta al manifest JSON desde NAS_MCP_MANIFEST o usa nas_mcp_manifest.json junto al módulo.",
+      "tags": [
+        "configuracion-ruta",
+        "manifest",
+        "mcp"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:load_manifest",
+      "type": "function",
+      "name": "load_manifest",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        41,
+        70
+      ],
+      "summary": "Carga y valida el manifest canónico de herramientas comprobando metadatos del servidor, duplicados y concordancia exacta con OPERATIONS del worker.",
+      "tags": [
+        "validacion-manifest",
+        "allowlist",
+        "mcp"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_error",
+      "type": "function",
+      "name": "_error",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        73,
+        74
+      ],
+      "summary": "Genera una estructura estándar de error del gateway con ok=False, código y mensaje.",
+      "tags": [
+        "manejo-errores",
+        "respuesta-mcp",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_json_bytes",
+      "type": "function",
+      "name": "_json_bytes",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        77,
+        78
+      ],
+      "summary": "Serializa un objeto Python a bytes UTF-8 en JSON compacto.",
+      "tags": [
+        "serializacion-json",
+        "helper",
+        "mcp"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_tool_schema",
+      "type": "function",
+      "name": "_tool_schema",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        81,
+        89
+      ],
+      "summary": "Convierte una entrada de herramienta del manifest al formato tools/list del protocolo MCP.",
+      "tags": [
+        "esquema-mcp",
+        "tools",
+        "manifest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:WorkerSupervisor",
+      "type": "class",
+      "name": "WorkerSupervisor",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        92,
+        207
+      ],
+      "summary": "Supervisa el subproceso nas_mcp_worker.py bajo demanda; lo arranca en el primer request, lee respuestas con timeout vía selectors y lo termina tras inactividad.",
+      "tags": [
+        "supervisor-procesos",
+        "lazy-worker",
+        "timeout",
+        "multihilo"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:Gateway",
+      "type": "class",
+      "name": "Gateway",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        210,
+        226
+      ],
+      "summary": "Coordina el catálogo del manifest con WorkerSupervisor validando que las llamadas no reciban argumentos y aplicando el timeout configurado.",
+      "tags": [
+        "gateway-mcp",
+        "validacion",
+        "orquestacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_rpc_result",
+      "type": "function",
+      "name": "_rpc_result",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        229,
+        230
+      ],
+      "summary": "Empaqueta un resultado JSON-RPC 2.0 válido.",
+      "tags": [
+        "json-rpc",
+        "respuesta",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_rpc_error",
+      "type": "function",
+      "name": "_rpc_error",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        233,
+        234
+      ],
+      "summary": "Empaqueta un error JSON-RPC 2.0 con código y descripción.",
+      "tags": [
+        "json-rpc",
+        "error",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:handle_rpc",
+      "type": "function",
+      "name": "handle_rpc",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        237,
+        275
+      ],
+      "summary": "Despacha métodos JSON-RPC 2.0 del estándar MCP (initialize, ping, notifications, tools/list y tools/call) contra el Gateway.",
+      "tags": [
+        "json-rpc",
+        "protocolo-mcp",
+        "router"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:StdioServer",
+      "type": "class",
+      "name": "StdioServer",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        278,
+        301
+      ],
+      "summary": "Servidor MCP sobre entrada y salida estándar que valida límites de tamaño de petición/respuesta y cierra el Gateway al finalizar.",
+      "tags": [
+        "transporte-stdio",
+        "json-rpc",
+        "mcp"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:HTTPHandler",
+      "type": "class",
+      "name": "HTTPHandler",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        304,
+        374
+      ],
+      "summary": "Manejador HTTP para nas-mcp-gateway con /health, verificación de Origin, autenticación Bearer en tiempo constante y endpoint POST JSON-RPC.",
+      "tags": [
+        "servidor-http",
+        "bearer-auth",
+        "cors",
+        "mcp"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:run_http",
+      "type": "function",
+      "name": "run_http",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        377,
+        397
+      ],
+      "summary": "Arranca ThreadingHTTPServer para nas-mcp-gateway verificando MCP_SERVICE_TOKEN y cerrando el Gateway al detenerse.",
+      "tags": [
+        "servidor-http",
+        "transporte-mcp",
+        "daemon"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "lineRange": [
+        400,
+        413
+      ],
+      "summary": "Entrypoint CLI que carga el manifest, construye el Gateway e inicia el modo stdio o http según argumentos o NAS_MCP_MODE.",
+      "tags": [
+        "entrypoint",
+        "cli",
+        "mcp"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json",
+      "type": "config",
+      "name": "nas_mcp_manifest.json",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json",
+      "summary": "Manifest canónico JSON de nas-mcp-gateway que declara el modo de activación lazy-worker, el tiempo de inactividad, la ruta del Unix socket y las cuatro herramientas read-only expuestas.",
+      "tags": [
+        "manifest-json",
+        "mcp-gateway",
+        "lazy-worker",
+        "solo-lectura"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Define esquemas JSON Schema sin propiedades adicionales para nas_services, nas_health, nas_capabilities y nas_diagnostics."
+    },
+    {
+      "id": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "type": "file",
+      "name": "nas_mcp_worker.py",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "summary": "Worker y helper host read-only de nas-mcp-gateway; en modo client reenvía operaciones permitidas por Unix socket y en modo helper ejecuta comandos fijos de svc.sh con salida redactada y auditoría.",
+      "tags": [
+        "worker-mcp",
+        "unix-socket",
+        "solo-lectura",
+        "auditoria",
+        "redaccion"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Aplica expresiones regulares para redactar rutas, IPs y credenciales antes de devolver la salida de svc.sh."
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_error",
+      "type": "function",
+      "name": "_error",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "lineRange": [
+        39,
+        40
+      ],
+      "summary": "Devuelve un diccionario estándar de error para respuestas del worker o helper.",
+      "tags": [
+        "manejo-errores",
+        "worker-mcp",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_redact",
+      "type": "function",
+      "name": "_redact",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "lineRange": [
+        43,
+        48
+      ],
+      "summary": "Enmascara rutas del sistema, direcciones IP, tokens Bearer y pares clave=valor sensibles truncando la línea a MAX_OUTPUT_LINE_BYTES.",
+      "tags": [
+        "redaccion",
+        "seguridad",
+        "sanitizacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_safe_output",
+      "type": "function",
+      "name": "_safe_output",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "lineRange": [
+        51,
+        55
+      ],
+      "summary": "Aplica _redact a las primeras MAX_OUTPUT_LINES líneas de stdout y añade marcador si la salida fue truncada.",
+      "tags": [
+        "sanitizacion",
+        "truncado-salida",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_audit",
+      "type": "function",
+      "name": "_audit",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "lineRange": [
+        58,
+        79
+      ],
+      "summary": "Registra en MCP_AUDIT_LOG eventos JSONL con timestamp UTC, operación, resultado y duración protegiendo el archivo con permisos 0600.",
+      "tags": [
+        "auditoria",
+        "jsonl",
+        "permisos-archivo"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_run_fixed_svc",
+      "type": "function",
+      "name": "_run_fixed_svc",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "lineRange": [
+        82,
+        136
+      ],
+      "summary": "Ejecuta únicamente operaciones de la allowlist OPERATIONS invocando docker/cli/svc.sh con argumentos fijos, timeout y SVC_DOCTOR_NO_HISTORY=1 en diagnósticos.",
+      "tags": [
+        "svc-cli",
+        "subproceso",
+        "solo-lectura",
+        "allowlist"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_socket_path",
+      "type": "function",
+      "name": "_socket_path",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "lineRange": [
+        139,
+        140
+      ],
+      "summary": "Resuelve la ruta del Unix socket desde MCP_HELPER_SOCKET o usa DEFAULT_SOCKET.",
+      "tags": [
+        "unix-socket",
+        "configuracion-ruta",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_helper_request",
+      "type": "function",
+      "name": "_helper_request",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "lineRange": [
+        143,
+        168
+      ],
+      "summary": "Conecta por Unix socket AF_UNIX al helper host enviando una operación permitida y decodificando la respuesta JSON de una línea.",
+      "tags": [
+        "unix-socket",
+        "cliente-ipc",
+        "timeout"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_client_loop",
+      "type": "function",
+      "name": "_client_loop",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "lineRange": [
+        171,
+        190
+      ],
+      "summary": "Lee peticiones JSON línea a línea desde stdin, valida que contengan únicamente la clave operation y las reenvía a _helper_request.",
+      "tags": [
+        "ipc-stdio",
+        "worker-client",
+        "validacion"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_serve_helper",
+      "type": "function",
+      "name": "_serve_helper",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "lineRange": [
+        193,
+        271
+      ],
+      "summary": "Escucha en el Unix socket con grupo MCP_SOCKET_GID y permisos 0660, atendiendo peticiones válidas mediante _run_fixed_svc hasta recibir SIGTERM/SIGINT.",
+      "tags": [
+        "unix-socket",
+        "helper-host",
+        "systemd",
+        "seguridad-permisos"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "lineRange": [
+        274,
+        280
+      ],
+      "summary": "Punto de entrada CLI que selecciona entre el modo client y el modo helper mediante el argumento --mode.",
+      "tags": [
+        "entrypoint",
+        "cli",
+        "worker-mcp"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/memory/sessions/.gitkeep",
+      "type": "file",
+      "name": ".gitkeep",
+      "filePath": "agent/memory/sessions/.gitkeep",
+      "summary": "Archivo marcador vacío para preservar el directorio de almacenamiento de sesiones de memoria del agente en Git.",
+      "tags": [
+        "gitkeep",
+        "memoria-sesiones",
+        "marcador-directorio"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Archivo vacío sin contenido ejecutable."
+    },
+    {
+      "id": "file:agent/tools/_audit.py",
+      "type": "file",
+      "name": "_audit.py",
+      "filePath": "agent/tools/_audit.py",
+      "summary": "Sistema de auditoría en formato JSON Lines para herramientas del agente NAS; registra marca temporal, argumentos sanitizados, vista previa del resultado y duración, incluyendo el decorador @audited.",
+      "tags": [
+        "auditoria",
+        "decorador",
+        "jsonl",
+        "sanitizacion",
+        "tools-agente"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Usa functools.wraps, inspect.signature y time.perf_counter para envolver funciones @tool sin interrumpir la ejecución ante errores de E/S."
+    },
+    {
+      "id": "function:agent/tools/_audit.py:_get_log_path",
+      "type": "function",
+      "name": "_get_log_path",
+      "filePath": "agent/tools/_audit.py",
+      "lineRange": [
+        36,
+        38
+      ],
+      "summary": "Obtiene la ruta del archivo de auditoría desde NAS_AGENT_AUDIT_LOG o usa /docker/backups/agent_audit.log por defecto.",
+      "tags": [
+        "auditoria",
+        "configuracion-ruta",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/_audit.py:_is_audit_enabled",
+      "type": "function",
+      "name": "_is_audit_enabled",
+      "filePath": "agent/tools/_audit.py",
+      "lineRange": [
+        41,
+        43
+      ],
+      "summary": "Comprueba la variable NAS_AGENT_AUDIT para determinar si el registro de auditoría está activo.",
+      "tags": [
+        "auditoria",
+        "feature-flag",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/_audit.py:log_tool_call",
+      "type": "function",
+      "name": "log_tool_call",
+      "filePath": "agent/tools/_audit.py",
+      "lineRange": [
+        51,
+        106
+      ],
+      "summary": "Añade una entrada JSON Line al archivo de auditoría con timestamp UTC, argumentos sanitizados, resultado truncado, duración y posible error, usando fallback en HOME si falta permiso.",
+      "tags": [
+        "auditoria",
+        "jsonl",
+        "logging"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/_audit.py:_sanitize_args",
+      "type": "function",
+      "name": "_sanitize_args",
+      "filePath": "agent/tools/_audit.py",
+      "lineRange": [
+        109,
+        118
+      ],
+      "summary": "Enmascara claves sensibles como password, token, secret o api_key y recorta cadenas largas en los argumentos registrados.",
+      "tags": [
+        "sanitizacion",
+        "seguridad",
+        "auditoria"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/_audit.py:audited",
+      "type": "function",
+      "name": "audited",
+      "filePath": "agent/tools/_audit.py",
+      "lineRange": [
+        126,
+        172
+      ],
+      "summary": "Decorador que mide el tiempo de ejecución de una herramienta @tool, captura excepciones y registra la llamada mediante log_tool_call.",
+      "tags": [
+        "decorador",
+        "auditoria",
+        "telemetria"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/_audit.py:get_session_summary",
+      "type": "function",
+      "name": "get_session_summary",
+      "filePath": "agent/tools/_audit.py",
+      "lineRange": [
+        180,
+        223
+      ],
+      "summary": "Lee las últimas N entradas válidas del audit log y construye un resumen legible con fecha, estado, herramienta y duración.",
+      "tags": [
+        "auditoria",
+        "resumen-sesion",
+        "jsonl"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/tools/_result.py",
+      "type": "file",
+      "name": "_result.py",
+      "filePath": "agent/tools/_result.py",
+      "summary": "Define el tipo de retorno estructurado ToolResult, la enumeración Status y el context manager Timer para estandarizar las respuestas de todas las herramientas del agente.",
+      "tags": [
+        "resultado-estructurado",
+        "dataclass",
+        "timer",
+        "tools-agente"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Implementa compatibilidad hacia atrás con Strands SDK mediante __str__ y constructores de clase ok, warn y error."
+    },
+    {
+      "id": "class:agent/tools/_result.py:Status",
+      "type": "class",
+      "name": "Status",
+      "filePath": "agent/tools/_result.py",
+      "lineRange": [
+        19,
+        23
+      ],
+      "summary": "Enumeración de estado semántico para resultados de herramientas (ok, warning y error).",
+      "tags": [
+        "enum",
+        "estado",
+        "tools-agente"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:agent/tools/_result.py:ToolResult",
+      "type": "class",
+      "name": "ToolResult",
+      "filePath": "agent/tools/_result.py",
+      "lineRange": [
+        27,
+        124
+      ],
+      "summary": "Dataclass que encapsula éxito, mensaje formateado, estado, datos estructurados, sugerencias y duración de ejecución con atajos ok, warn, error y serialización to_dict.",
+      "tags": [
+        "dataclass",
+        "resultado-estructurado",
+        "serializacion"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:agent/tools/_result.py:Timer",
+      "type": "class",
+      "name": "Timer",
+      "filePath": "agent/tools/_result.py",
+      "lineRange": [
+        127,
+        149
+      ],
+      "summary": "Context manager basado en time.perf_counter para medir la duración en milisegundos de operaciones de herramientas.",
+      "tags": [
+        "context-manager",
+        "cronometro",
+        "telemetria"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:ManifestError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:ManifestError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_manifest_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_manifest_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:load_manifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:load_manifest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_error",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_error",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_json_bytes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_json_bytes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_tool_schema",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_tool_schema",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:WorkerSupervisor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:WorkerSupervisor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:Gateway",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:Gateway",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_rpc_result",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_rpc_result",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_rpc_error",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_rpc_error",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:handle_rpc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:handle_rpc",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:StdioServer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:StdioServer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:HTTPHandler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:HTTPHandler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:run_http",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:run_http",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:load_manifest",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_manifest_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:load_manifest",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:ManifestError",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:WorkerSupervisor",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:Gateway",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:WorkerSupervisor",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:Gateway",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:handle_rpc",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_tool_schema",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:handle_rpc",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_rpc_result",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:handle_rpc",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_rpc_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:StdioServer",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:handle_rpc",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:StdioServer",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_json_bytes",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:StdioServer",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_rpc_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:HTTPHandler",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:handle_rpc",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:HTTPHandler",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_json_bytes",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:HTTPHandler",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:HTTPHandler",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:_rpc_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:run_http",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:HTTPHandler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:main",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:load_manifest",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:main",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:Gateway",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:main",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:run_http",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:main",
+      "target": "class:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py:StdioServer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "target": "config:agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json",
+      "target": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json",
+      "target": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_error",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_error",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_redact",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_redact",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_safe_output",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_safe_output",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_audit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_audit",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_run_fixed_svc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_run_fixed_svc",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_socket_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_socket_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_helper_request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_helper_request",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_client_loop",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_client_loop",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_serve_helper",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_serve_helper",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_safe_output",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_redact",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_run_fixed_svc",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_run_fixed_svc",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_audit",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_run_fixed_svc",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_safe_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_helper_request",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_helper_request",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_socket_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_client_loop",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_client_loop",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_helper_request",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_serve_helper",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_socket_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_serve_helper",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_serve_helper",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_run_fixed_svc",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:main",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_serve_helper",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:main",
+      "target": "function:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py:_client_loop",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "target": "file:docker/cli/svc.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/tools/_audit.py",
+      "target": "function:agent/tools/_audit.py:_get_log_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_audit.py",
+      "target": "function:agent/tools/_audit.py:_get_log_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_audit.py",
+      "target": "function:agent/tools/_audit.py:_is_audit_enabled",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_audit.py",
+      "target": "function:agent/tools/_audit.py:_is_audit_enabled",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_audit.py",
+      "target": "function:agent/tools/_audit.py:log_tool_call",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_audit.py",
+      "target": "function:agent/tools/_audit.py:log_tool_call",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_audit.py",
+      "target": "function:agent/tools/_audit.py:_sanitize_args",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_audit.py",
+      "target": "function:agent/tools/_audit.py:_sanitize_args",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_audit.py",
+      "target": "function:agent/tools/_audit.py:audited",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_audit.py",
+      "target": "function:agent/tools/_audit.py:audited",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_audit.py",
+      "target": "function:agent/tools/_audit.py:get_session_summary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_audit.py",
+      "target": "function:agent/tools/_audit.py:get_session_summary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/_audit.py:log_tool_call",
+      "target": "function:agent/tools/_audit.py:_is_audit_enabled",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/_audit.py:log_tool_call",
+      "target": "function:agent/tools/_audit.py:_get_log_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/_audit.py:log_tool_call",
+      "target": "function:agent/tools/_audit.py:_sanitize_args",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/_audit.py:audited",
+      "target": "function:agent/tools/_audit.py:log_tool_call",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/_audit.py:get_session_summary",
+      "target": "function:agent/tools/_audit.py:_get_log_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_result.py",
+      "target": "class:agent/tools/_result.py:Status",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_result.py",
+      "target": "class:agent/tools/_result.py:Status",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_result.py",
+      "target": "class:agent/tools/_result.py:ToolResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_result.py",
+      "target": "class:agent/tools/_result.py:ToolResult",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_result.py",
+      "target": "class:agent/tools/_result.py:Timer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_result.py",
+      "target": "class:agent/tools/_result.py:Timer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/tools/_result.py:ToolResult",
+      "target": "class:agent/tools/_result.py:Status",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

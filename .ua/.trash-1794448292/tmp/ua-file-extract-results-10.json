@@ -1,0 +1,331 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [
+    "agent/catalog/.env.global.example"
+  ],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 5,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 5
+    }
+  },
+  "results": [
+    {
+      "path": "agent/catalog/_common.yml",
+      "language": "yaml",
+      "fileCategory": "config",
+      "totalLines": 51,
+      "nonEmptyLines": 50,
+      "sections": [
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 36
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "agent/catalog/_compose_base.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 256,
+      "nonEmptyLines": 208,
+      "sections": [
+        {
+          "heading": "Compose Base — Defaults reutilizables",
+          "level": 1,
+          "line": 8
+        },
+        {
+          "heading": "Estructura de directorio",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Formato legacy (anchors YAML)",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "Herencia actual con `extends`",
+          "level": 2,
+          "line": 65
+        },
+        {
+          "heading": "Uso legacy en el servicio",
+          "level": 2,
+          "line": 89
+        },
+        {
+          "heading": "Variaciones por servicio",
+          "level": 2,
+          "line": 118
+        },
+        {
+          "heading": "Servicios con alta concurrencia (brokers, proxies)",
+          "level": 3,
+          "line": 120
+        },
+        {
+          "heading": "Servicios con múltiples puertos",
+          "level": 3,
+          "line": 134
+        },
+        {
+          "heading": "Servicios pesados (bases de datos, media)",
+          "level": 3,
+          "line": 149
+        },
+        {
+          "heading": "Servicios con dashboard admin",
+          "level": 3,
+          "line": 163
+        },
+        {
+          "heading": ".env base",
+          "level": 2,
+          "line": 196
+        },
+        {
+          "heading": "Generación de secretos",
+          "level": 3,
+          "line": 214
+        },
+        {
+          "heading": "Redes",
+          "level": 2,
+          "line": 224
+        },
+        {
+          "heading": "Reglas del agente",
+          "level": 2,
+          "line": 242
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "path": "agent/catalog/_rules.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 167,
+      "nonEmptyLines": 132,
+      "sections": [
+        {
+          "heading": "── Archivos del catálogo ──────────────────────────────────────────────────",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "── Configuración del NAS ──────────────────────────────────────────────────",
+          "level": 1,
+          "line": 10
+        },
+        {
+          "heading": "── Reverse Proxy ──────────────────────────────────────────────────────────",
+          "level": 1,
+          "line": 16
+        },
+        {
+          "heading": "── Puertos ────────────────────────────────────────────────────────────────",
+          "level": 1,
+          "line": 23
+        },
+        {
+          "heading": "Reglas de Generación de Servicios",
+          "level": 1,
+          "line": 31
+        },
+        {
+          "heading": "Estructura obligatoria de cada servicio",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "Formato del compose",
+          "level": 2,
+          "line": 47
+        },
+        {
+          "heading": "Red y Proxy",
+          "level": 2,
+          "line": 61
+        },
+        {
+          "heading": "Dashboards y paneles admin",
+          "level": 2,
+          "line": 67
+        },
+        {
+          "heading": "Seguridad",
+          "level": 2,
+          "line": 77
+        },
+        {
+          "heading": "Naming",
+          "level": 2,
+          "line": 89
+        },
+        {
+          "heading": "Backup",
+          "level": 2,
+          "line": 97
+        },
+        {
+          "heading": "README.md del servicio",
+          "level": 2,
+          "line": 103
+        },
+        {
+          "heading": "Healthcheck",
+          "level": 2,
+          "line": 125
+        },
+        {
+          "heading": "Acciones destructivas — Confirmación obligatoria",
+          "level": 2,
+          "line": 146
+        },
+        {
+          "heading": "Servicios protegidos",
+          "level": 2,
+          "line": 162
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": "agent/catalog/_template.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 78,
+      "nonEmptyLines": 63,
+      "sections": [
+        {
+          "heading": "Categorías: media | seguridad | productividad | monitoreo | red |",
+          "level": 1,
+          "line": 7
+        },
+        {
+          "heading": "almacenamiento | desarrollo | base-datos | domótica | otro",
+          "level": 1,
+          "line": 8
+        },
+        {
+          "heading": "Nombre del Servicio",
+          "level": 1,
+          "line": 39
+        },
+        {
+          "heading": "Qué es",
+          "level": 2,
+          "line": 41
+        },
+        {
+          "heading": "Estructura",
+          "level": 2,
+          "line": 45
+        },
+        {
+          "heading": "Configuración importante",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "Puertos",
+          "level": 2,
+          "line": 59
+        },
+        {
+          "heading": "Redes",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "Volúmenes y datos",
+          "level": 2,
+          "line": 68
+        },
+        {
+          "heading": "Notas",
+          "level": 2,
+          "line": 72
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": "agent/catalog/catalog.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 1007,
+      "nonEmptyLines": 1007,
+      "sections": [
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "services_count",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "by_category",
+          "level": 1,
+          "line": 953
+        },
+        {
+          "heading": "by_network",
+          "level": 1,
+          "line": 985
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    }
+  ]
+}

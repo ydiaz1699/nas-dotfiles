@@ -1,0 +1,147 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "docs/services/datasql-guide.md",
+      "language": "markdown",
+      "sizeLines": 1140,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/emqx-guide.md",
+      "language": "markdown",
+      "sizeLines": 525,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/esphome-device-config.md",
+      "language": "markdown",
+      "sizeLines": 1310,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/esphome-guide.md",
+      "language": "markdown",
+      "sizeLines": 689,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/esphome-pueba-handoff.md",
+      "language": "markdown",
+      "sizeLines": 422,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/filebrowser-guide.md",
+      "language": "markdown",
+      "sizeLines": 347,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/flowise-guide.md",
+      "language": "markdown",
+      "sizeLines": 973,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/homeassistant-datasql-guide.md",
+      "language": "markdown",
+      "sizeLines": 755,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/homeassistant-guide.md",
+      "language": "markdown",
+      "sizeLines": 825,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/homepage-guide.md",
+      "language": "markdown",
+      "sizeLines": 272,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/iobroker-guide.md",
+      "language": "markdown",
+      "sizeLines": 288,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/jdownloader-guide.md",
+      "language": "markdown",
+      "sizeLines": 198,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/karakeep-floccus-architecture.md",
+      "language": "markdown",
+      "sizeLines": 181,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/karakeep-guide.md",
+      "language": "markdown",
+      "sizeLines": 374,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/lobehub-guide.md",
+      "language": "markdown",
+      "sizeLines": 1436,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/n8n-guide.md",
+      "language": "markdown",
+      "sizeLines": 538,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/nas-mcp-gateway-guide.md",
+      "language": "markdown",
+      "sizeLines": 18,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/node-red-guide.md",
+      "language": "markdown",
+      "sizeLines": 71,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/ntfy-guide.md",
+      "language": "markdown",
+      "sizeLines": 863,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/openwa-guide.md",
+      "language": "markdown",
+      "sizeLines": 676,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "docs/services/datasql-guide.md": [],
+    "docs/services/emqx-guide.md": [],
+    "docs/services/esphome-device-config.md": [],
+    "docs/services/esphome-guide.md": [],
+    "docs/services/esphome-pueba-handoff.md": [],
+    "docs/services/filebrowser-guide.md": [],
+    "docs/services/flowise-guide.md": [],
+    "docs/services/homeassistant-datasql-guide.md": [],
+    "docs/services/homeassistant-guide.md": [],
+    "docs/services/homepage-guide.md": [],
+    "docs/services/iobroker-guide.md": [],
+    "docs/services/jdownloader-guide.md": [],
+    "docs/services/karakeep-floccus-architecture.md": [],
+    "docs/services/karakeep-guide.md": [],
+    "docs/services/lobehub-guide.md": [],
+    "docs/services/n8n-guide.md": [],
+    "docs/services/nas-mcp-gateway-guide.md": [],
+    "docs/services/node-red-guide.md": [],
+    "docs/services/ntfy-guide.md": [],
+    "docs/services/openwa-guide.md": []
+  }
+}

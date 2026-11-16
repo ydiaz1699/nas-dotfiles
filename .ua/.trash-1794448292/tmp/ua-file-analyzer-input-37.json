@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": ".config/debmenux.conf.example",
+      "language": "example",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".config/user.conf.example",
+      "language": "example",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".kiro/skills/datasql/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 106,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dependency-cascade/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 153,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/docker-boot-order/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 120,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/documentation-evolution/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 429,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 308,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/nas-diagnostics/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 121,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/nas-dotfiles.md",
+      "language": "markdown",
+      "sizeLines": 42,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/nas-mcp-gateway/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 80,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/nas-runtime-secrets/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 661,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/skill-creator/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 157,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/skill-creator/assets/SKILL-TEMPLATE.md",
+      "language": "markdown",
+      "sizeLines": 59,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/steering/svc-cli-runtime.md",
+      "language": "markdown",
+      "sizeLines": 73,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/steering/verificar-antes-de-entregar.md",
+      "language": "markdown",
+      "sizeLines": 71,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/.dockerignore",
+      "language": "unknown",
+      "sizeLines": 7,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/README.md",
+      "language": "markdown",
+      "sizeLines": 475,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/__init__.py",
+      "language": "python",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/architecture/contracts.json",
+      "language": "json",
+      "sizeLines": 269,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/capabilities/lobehub.json",
+      "language": "json",
+      "sizeLines": 63,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/catalog/_index.py",
+      "language": "python",
+      "sizeLines": 253,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/catalog/services/homepage/compose.yml",
+      "language": "yaml",
+      "sizeLines": 35,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/homepage/ficha.md",
+      "language": "markdown",
+      "sizeLines": 72,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/kiro-cli/ficha.md",
+      "language": "markdown",
+      "sizeLines": 102,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    ".config/debmenux.conf.example": [],
+    ".config/user.conf.example": [],
+    ".kiro/skills/datasql/SKILL.md": [],
+    ".kiro/skills/dependency-cascade/SKILL.md": [],
+    ".kiro/skills/docker-boot-order/SKILL.md": [],
+    ".kiro/skills/documentation-evolution/SKILL.md": [],
+    ".kiro/skills/dotfile-skill/SKILL.md": [],
+    ".kiro/skills/nas-diagnostics/SKILL.md": [],
+    ".kiro/skills/nas-dotfiles.md": [],
+    ".kiro/skills/nas-mcp-gateway/SKILL.md": [],
+    ".kiro/skills/nas-runtime-secrets/SKILL.md": [],
+    ".kiro/skills/skill-creator/SKILL.md": [],
+    ".kiro/skills/skill-creator/assets/SKILL-TEMPLATE.md": [],
+    ".kiro/steering/svc-cli-runtime.md": [],
+    ".kiro/steering/verificar-antes-de-entregar.md": [],
+    "agent/.dockerignore": [],
+    "agent/README.md": [],
+    "agent/__init__.py": [],
+    "agent/architecture/contracts.json": [],
+    "agent/capabilities/lobehub.json": [],
+    "agent/catalog/__init__.py": [],
+    "agent/catalog/_index.py": [],
+    "agent/catalog/services/homepage/compose.yml": [],
+    "agent/catalog/services/homepage/ficha.md": [],
+    "agent/catalog/services/kiro-cli/ficha.md": []
+  }
+}

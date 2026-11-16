@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/karakeep/.env.example",
+      "language": "config",
+      "sizeLines": 35,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/karakeep/compose.yml",
+      "language": "yaml",
+      "sizeLines": 106,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/karakeep/ficha.md",
+      "language": "markdown",
+      "sizeLines": 88,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/karakeep/.env.example": [],
+    "agent/catalog/services/karakeep/compose.yml": [],
+    "agent/catalog/services/karakeep/ficha.md": []
+  }
+}

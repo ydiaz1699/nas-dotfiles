@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/flowise/.env.example",
+      "language": "config",
+      "sizeLines": 28,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/flowise/compose.yml",
+      "language": "yaml",
+      "sizeLines": 158,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/flowise/ficha.md",
+      "language": "markdown",
+      "sizeLines": 84,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/flowise/.env.example": [],
+    "agent/catalog/services/flowise/compose.yml": [],
+    "agent/catalog/services/flowise/ficha.md": []
+  }
+}

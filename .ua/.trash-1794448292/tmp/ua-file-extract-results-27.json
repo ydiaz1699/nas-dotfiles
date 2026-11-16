@@ -1,0 +1,213 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 4,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 4,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 4
+    }
+  },
+  "results": [
+    {
+      "path": "agent/catalog/services/openwa/n8n-flows/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 74,
+      "nonEmptyLines": 55,
+      "sections": [
+        {
+          "heading": "Workflows n8n para OpenWA",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Requisito previo",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Flujos incluidos",
+          "level": 2,
+          "line": 19
+        },
+        {
+          "heading": "Cómo importar",
+          "level": 2,
+          "line": 33
+        },
+        {
+          "heading": "Ajustes obligatorios tras importar",
+          "level": 2,
+          "line": 38
+        },
+        {
+          "heading": "Probar",
+          "level": 2,
+          "line": 50
+        },
+        {
+          "heading": "Estructura del evento (para expresiones)",
+          "level": 2,
+          "line": 57
+        },
+        {
+          "heading": "Recursos y operaciones del nodo OpenWA (acción)",
+          "level": 2,
+          "line": 69
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "agent/catalog/services/openwa/n8n-flows/auto-reply.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 100,
+      "nonEmptyLines": 100,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "nodes",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "connections",
+          "level": 1,
+          "line": 71
+        },
+        {
+          "heading": "settings",
+          "level": 1,
+          "line": 95
+        },
+        {
+          "heading": "active",
+          "level": 1,
+          "line": 98
+        },
+        {
+          "heading": "pinData",
+          "level": 1,
+          "line": 99
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "agent/catalog/services/openwa/n8n-flows/echo-simple.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 60,
+      "nonEmptyLines": 60,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "nodes",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "connections",
+          "level": 1,
+          "line": 42
+        },
+        {
+          "heading": "settings",
+          "level": 1,
+          "line": 55
+        },
+        {
+          "heading": "active",
+          "level": 1,
+          "line": 58
+        },
+        {
+          "heading": "pinData",
+          "level": 1,
+          "line": 59
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "agent/catalog/services/openwa/n8n-flows/pide-camara.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 131,
+      "nonEmptyLines": 131,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "nodes",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "connections",
+          "level": 1,
+          "line": 91
+        },
+        {
+          "heading": "settings",
+          "level": 1,
+          "line": 126
+        },
+        {
+          "heading": "active",
+          "level": 1,
+          "line": 129
+        },
+        {
+          "heading": "pinData",
+          "level": 1,
+          "line": 130
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    }
+  ]
+}

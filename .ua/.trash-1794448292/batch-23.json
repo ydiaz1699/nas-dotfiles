@@ -1,0 +1,132 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/nas-mcp-gateway/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/nas-mcp-gateway/.env.example",
+      "filePath": "agent/catalog/services/nas-mcp-gateway/.env.example",
+      "lineRange": [1, 13],
+      "summary": "Plantilla de variables de entorno para nas-mcp-gateway: rutas NAS_DOTFILES y DOCKER_BASE, token independiente NAS_MCP_SERVICE_TOKEN, socket Unix de systemd (MCP_HELPER_SOCKET, MCP_SOCKET_GID), orígenes permitidos y tiempo de inactividad NAS_MCP_IDLE_SECONDS.",
+      "tags": [
+        "variables-entorno",
+        "nas-mcp-gateway",
+        "unix-socket",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "filePath": "agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "lineRange": [1, 72],
+      "summary": "Definición Docker Compose de nas-mcp-gateway (nas-dotfiles/nas-mcp-gateway:0.1.0), gateway MCP read-only con front-door HTTP interno en :8791/mcp sobre nas_mcp_net sin puertos públicos, root FS de solo lectura, cap_drop ALL y montaje read-only de /run/nas/nas-mcp-gateway.sock.",
+      "tags": [
+        "docker-compose",
+        "nas-mcp-gateway",
+        "servidor-mcp",
+        "seguridad-read-only"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo YAML de Docker Compose que extiende ../../_common.yml y construye la imagen desde agent/mcp/nas_mcp_gateway/Dockerfile con worker lazy configurable."
+    },
+    {
+      "id": "document:agent/catalog/services/nas-mcp-gateway/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/nas-mcp-gateway/ficha.md",
+      "filePath": "agent/catalog/services/nas-mcp-gateway/ficha.md",
+      "lineRange": [1, 63],
+      "summary": "Ficha técnica del catálogo para nas-mcp-gateway con metadatos de transporte dual (stdio y streamable-http), herramientas read-only expuestas (nas_services, nas_health, nas_capabilities, nas_diagnostics), política de worker lazy y referencias a sus guías.",
+      "tags": [
+        "ficha-servicio",
+        "nas-mcp-gateway",
+        "catalogo-nas",
+        "metadatos-yaml"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/nas-mcp-gateway/.env.example",
+      "target": "service:agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Suministra rutas del framework, token Bearer, socket Unix, GID y timeout del worker lazy al compose de nas-mcp-gateway."
+    },
+    {
+      "source": "service:agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Extiende _defaults desde ../../_common.yml para heredar políticas base de seguridad y reinicio."
+    },
+    {
+      "source": "service:agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Declara ../.env en env_file para heredar variables globales del despliegue."
+    },
+    {
+      "source": "service:agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "target": "service:agent/mcp/nas_mcp_gateway/Dockerfile",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Construye la imagen nas-dotfiles/nas-mcp-gateway usando el contexto ${NAS_DOTFILES}/agent y mcp/nas_mcp_gateway/Dockerfile."
+    },
+    {
+      "source": "service:agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Incluye labels homepage.* para mostrar el servicio en la categoría Infraestructura de Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/nas-mcp-gateway/ficha.md",
+      "target": "service:agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el puerto interno 8791, el socket read-only, límites de memoria y la arquitectura independiente de LobeHub."
+    },
+    {
+      "source": "document:agent/catalog/services/nas-mcp-gateway/ficha.md",
+      "target": "config:agent/catalog/services/nas-mcp-gateway/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Lista las variables env_required y env_optional para ejecutar el gateway MCP."
+    },
+    {
+      "source": "document:agent/catalog/services/nas-mcp-gateway/ficha.md",
+      "target": "document:docs/services/nas-mcp-gateway-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Apunta mediante docs_url a la guía de servicio de nas-mcp-gateway."
+    },
+    {
+      "source": "document:agent/catalog/services/nas-mcp-gateway/ficha.md",
+      "target": "document:docs/nas-mcp-gateway.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia en el cuerpo de la ficha a docs/nas-mcp-gateway.md como guía operativa del gateway."
+    },
+    {
+      "source": "document:agent/catalog/services/nas-mcp-gateway/ficha.md",
+      "target": "config:agent/catalog/catalog.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Provee los metadatos del servicio indexados en el catálogo."
+    }
+  ]
+}

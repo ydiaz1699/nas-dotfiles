@@ -1,0 +1,1438 @@
+{
+  "nodes": [
+    {
+      "id": "file:agent/cache/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "agent/cache/__init__.py",
+      "summary": "Inicializador del paquete de caché en memoria del agente que reexporta la clase Cache.",
+      "tags": [
+        "paquete-cache",
+        "reexportacion",
+        "agente-nas"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Define __all__ para exponer Cache desde agent.cache.store."
+    },
+    {
+      "id": "file:agent/cache/store.py",
+      "type": "file",
+      "name": "store.py",
+      "filePath": "agent/cache/store.py",
+      "summary": "Implementa un almacén clave-valor en memoria thread-safe con expiración por TTL y persistencia opcional en JSON.",
+      "tags": [
+        "cache-memoria",
+        "ttl",
+        "thread-safe",
+        "persistencia-json"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Usa threading.Lock para sincronización y pathlib.Path para lectura y escritura en disco."
+    },
+    {
+      "id": "class:agent/cache/store.py:Cache",
+      "type": "class",
+      "name": "Cache",
+      "filePath": "agent/cache/store.py",
+      "lineRange": [
+        16,
+        147
+      ],
+      "summary": "Caché clave-valor con soporte de TTL por entrada, invalidación por prefijo, métricas de aciertos/fallos y persistencia JSON.",
+      "tags": [
+        "cache-memoria",
+        "ttl",
+        "invalidacion-prefijo",
+        "metricas"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/events/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "agent/events/__init__.py",
+      "summary": "Inicializador del paquete de eventos asíncronos que expone EventBus, Event y MQTTListener.",
+      "tags": [
+        "paquete-eventos",
+        "pub-sub",
+        "reexportacion"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Define __all__ para unificar las importaciones del bus de eventos y el listener MQTT."
+    },
+    {
+      "id": "file:agent/events/bus.py",
+      "type": "file",
+      "name": "bus.py",
+      "filePath": "agent/events/bus.py",
+      "summary": "Implementa el bus de eventos pub/sub en memoria del agente con soporte para suscripciones exactas, wildcard y globales.",
+      "tags": [
+        "event-bus",
+        "pub-sub",
+        "thread-safe",
+        "wildcard"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Define el dataclass Event, el alias EventCallback y la clase EventBus con historial acotado."
+    },
+    {
+      "id": "class:agent/events/bus.py:Event",
+      "type": "class",
+      "name": "Event",
+      "filePath": "agent/events/bus.py",
+      "lineRange": [
+        22,
+        38
+      ],
+      "summary": "Dataclass que encapsula un evento emitido en el bus con tipo, payload en diccionario, origen y marca temporal.",
+      "tags": [
+        "dataclass",
+        "modelo-evento",
+        "event-bus"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:agent/events/bus.py:EventBus",
+      "type": "class",
+      "name": "EventBus",
+      "filePath": "agent/events/bus.py",
+      "lineRange": [
+        45,
+        170
+      ],
+      "summary": "Bus de eventos thread-safe que registra handlers por tipo, prefijo wildcard o global, mantiene historial y ejecuta callbacks de forma síncrona.",
+      "tags": [
+        "event-bus",
+        "pub-sub",
+        "despacho-eventos",
+        "historial"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/events/mqtt_listener.py",
+      "type": "file",
+      "name": "mqtt_listener.py",
+      "filePath": "agent/events/mqtt_listener.py",
+      "summary": "Conecta un broker MQTT (EMQX por defecto) al bus interno traduciendo mensajes de topics en eventos tipados.",
+      "tags": [
+        "mqtt",
+        "listener-background",
+        "event-bus",
+        "paho-mqtt"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Importa paho.mqtt.client de forma perezosa en start() y corre su bucle de red en un hilo daemon."
+    },
+    {
+      "id": "class:agent/events/mqtt_listener.py:MQTTListener",
+      "type": "class",
+      "name": "MQTTListener",
+      "filePath": "agent/events/mqtt_listener.py",
+      "lineRange": [
+        32,
+        229
+      ],
+      "summary": "Cliente MQTT en segundo plano que se suscribe a topics configurados, aplica mappers priorizados y emite eventos en EventBus.",
+      "tags": [
+        "mqtt",
+        "mapeo-topics",
+        "hilo-daemon",
+        "event-bus"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/plugins/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "agent/plugins/__init__.py",
+      "summary": "Inicializador del sistema de plugins dinámicos que exporta BasePlugin, PluginMeta y PluginLoader.",
+      "tags": [
+        "sistema-plugins",
+        "reexportacion",
+        "arquitectura-modular"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Expone las clases base y el cargador mediante __all__."
+    },
+    {
+      "id": "file:agent/plugins/backup_plugin.py",
+      "type": "file",
+      "name": "backup_plugin.py",
+      "filePath": "agent/plugins/backup_plugin.py",
+      "summary": "Define el plugin de copias de seguridad automáticas para servicios Docker marcados como críticos en el catálogo.",
+      "tags": [
+        "plugin-backup",
+        "docker",
+        "tarea-programada",
+        "mqtt"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Realiza imports perezosos dentro de setup() y los handlers para evitar dependencias circulares."
+    },
+    {
+      "id": "class:agent/plugins/backup_plugin.py:BackupPlugin",
+      "type": "class",
+      "name": "BackupPlugin",
+      "filePath": "agent/plugins/backup_plugin.py",
+      "lineRange": [
+        11,
+        66
+      ],
+      "summary": "Subclase de BasePlugin que registra herramientas de backup/restore, programa respaldos diarios y atiende comandos MQTT.",
+      "tags": [
+        "plugin-backup",
+        "respaldo-diario",
+        "comandos-mqtt"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/plugins/base.py",
+      "type": "file",
+      "name": "base.py",
+      "filePath": "agent/plugins/base.py",
+      "summary": "Define las abstracciones centrales del sistema de plugins: configuración de schedules, handlers de eventos, metadatos y clase base.",
+      "tags": [
+        "sistema-plugins",
+        "contrato-base",
+        "dataclasses"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Combina dataclasses tipados con BasePlugin como clase extensible mediante setup() y teardown()."
+    },
+    {
+      "id": "class:agent/plugins/base.py:ScheduleConfig",
+      "type": "class",
+      "name": "ScheduleConfig",
+      "filePath": "agent/plugins/base.py",
+      "lineRange": [
+        18,
+        32
+      ],
+      "summary": "Dataclass que describe una tarea periódica de un plugin con su handler, intervalo en minutos y banderas de ejecución.",
+      "tags": [
+        "dataclass",
+        "configuracion-schedule",
+        "sistema-plugins"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:agent/plugins/base.py:EventHandler",
+      "type": "class",
+      "name": "EventHandler",
+      "filePath": "agent/plugins/base.py",
+      "lineRange": [
+        36,
+        48
+      ],
+      "summary": "Dataclass que asocia un tipo de evento del bus y un filtro opcional de topic MQTT con una función callback.",
+      "tags": [
+        "dataclass",
+        "event-handler",
+        "sistema-plugins"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:agent/plugins/base.py:PluginMeta",
+      "type": "class",
+      "name": "PluginMeta",
+      "filePath": "agent/plugins/base.py",
+      "lineRange": [
+        52,
+        66
+      ],
+      "summary": "Dataclass que almacena los metadatos de identificación, versión, autor y dependencias de un plugin.",
+      "tags": [
+        "dataclass",
+        "metadatos-plugin",
+        "dependencias"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:agent/plugins/base.py:BasePlugin",
+      "type": "class",
+      "name": "BasePlugin",
+      "filePath": "agent/plugins/base.py",
+      "lineRange": [
+        69,
+        160
+      ],
+      "summary": "Clase base para todos los plugins del agente; gestiona el registro de tools, handlers de eventos, schedules y ciclo de vida.",
+      "tags": [
+        "clase-base",
+        "sistema-plugins",
+        "ciclo-vida"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/plugins/docker_plugin.py",
+      "type": "file",
+      "name": "docker_plugin.py",
+      "filePath": "agent/plugins/docker_plugin.py",
+      "summary": "Plugin principal de ciclo de vida Docker que expone herramientas de control, health checks periódicos y manejo de contenedores unhealthy.",
+      "tags": [
+        "plugin-docker",
+        "health-check",
+        "ciclo-vida"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Usa imports perezosos de docker_tools, discovery_tools y safe_run."
+    },
+    {
+      "id": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "type": "class",
+      "name": "DockerPlugin",
+      "filePath": "agent/plugins/docker_plugin.py",
+      "lineRange": [
+        11,
+        79
+      ],
+      "summary": "Subclase de BasePlugin que registra siete herramientas Docker, programa chequeos cada 5 minutos y escucha eventos docker.unhealthy.",
+      "tags": [
+        "plugin-docker",
+        "health-check",
+        "gestion-contenedores"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/plugins/ha_discovery_plugin.py",
+      "type": "file",
+      "name": "ha_discovery_plugin.py",
+      "filePath": "agent/plugins/ha_discovery_plugin.py",
+      "summary": "Implementa el auto-descubrimiento MQTT para Home Assistant publicando entidades de servicios Docker, métricas del sistema y botones de control.",
+      "tags": [
+        "home-assistant",
+        "mqtt-discovery",
+        "monitoreo-nas",
+        "docker-compose"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Ejecuta subprocesos docker/df/free, lee /proc/loadavg y gestiona un cliente paho-mqtt dedicado con Last Will."
+    },
+    {
+      "id": "class:agent/plugins/ha_discovery_plugin.py:HADiscoveryPlugin",
+      "type": "class",
+      "name": "HADiscoveryPlugin",
+      "filePath": "agent/plugins/ha_discovery_plugin.py",
+      "lineRange": [
+        72,
+        527
+      ],
+      "summary": "Plugin que publica configuraciones y estados periódicos en Home Assistant vía MQTT y ejecuta reinicios o actualizaciones masivas por comando.",
+      "tags": [
+        "home-assistant",
+        "mqtt-discovery",
+        "telemetria-sistema",
+        "control-remoto"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:agent/plugins/loader.py",
+      "type": "file",
+      "name": "loader.py",
+      "filePath": "agent/plugins/loader.py",
+      "summary": "Implementa el descubrimiento dinámico, carga con validación de dependencias y descarga ordenada de plugins del agente.",
+      "tags": [
+        "plugin-loader",
+        "carga-dinamica",
+        "introspeccion"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Usa importlib e inspect para localizar subclases de BasePlugin en agent/plugins/."
+    },
+    {
+      "id": "class:agent/plugins/loader.py:PluginLoader",
+      "type": "class",
+      "name": "PluginLoader",
+      "filePath": "agent/plugins/loader.py",
+      "lineRange": [
+        24,
+        205
+      ],
+      "summary": "Gestor que descubre e instancia plugins, verifica dependencias, agrega tools/events/schedules activos y genera resúmenes de estado.",
+      "tags": [
+        "plugin-loader",
+        "gestion-dependencias",
+        "registro-global"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/plugins/memory_plugin.py",
+      "type": "file",
+      "name": "memory_plugin.py",
+      "filePath": "agent/plugins/memory_plugin.py",
+      "summary": "Plugin del Learning Loop que integra herramientas de memoria persistente, persistencia automática por eventos y curación diaria.",
+      "tags": [
+        "plugin-memoria",
+        "learning-loop",
+        "curacion-automatica"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Delega la persistencia en MemoryManager mediante imports perezosos dentro de los handlers."
+    },
+    {
+      "id": "class:agent/plugins/memory_plugin.py:MemoryPlugin",
+      "type": "class",
+      "name": "MemoryPlugin",
+      "filePath": "agent/plugins/memory_plugin.py",
+      "lineRange": [
+        18,
+        153
+      ],
+      "summary": "Subclase de BasePlugin que registra herramientas de memoria, evalúa tareas completadas/correcciones del usuario y poda sesiones antiguas.",
+      "tags": [
+        "plugin-memoria",
+        "learning-loop",
+        "eventos-usuario"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/plugins/network_plugin.py",
+      "type": "file",
+      "name": "network_plugin.py",
+      "filePath": "agent/plugins/network_plugin.py",
+      "summary": "Plugin de monitoreo de red que registra herramientas de puertos/conectividad y programa escaneos periódicos con ss.",
+      "tags": [
+        "plugin-red",
+        "escaneo-puertos",
+        "diagnostico-red"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Importa herramientas de system_tools, diagnostic_tools y safe_run de forma perezosa."
+    },
+    {
+      "id": "class:agent/plugins/network_plugin.py:NetworkPlugin",
+      "type": "class",
+      "name": "NetworkPlugin",
+      "filePath": "agent/plugins/network_plugin.py",
+      "lineRange": [
+        10,
+        40
+      ],
+      "summary": "Subclase de BasePlugin que expone scan_ports, network_info y port_conflicts junto con una tarea programada cada 15 minutos.",
+      "tags": [
+        "plugin-red",
+        "puertos-tcp",
+        "tarea-programada"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/plugins/notification_plugin.py",
+      "type": "file",
+      "name": "notification_plugin.py",
+      "filePath": "agent/plugins/notification_plugin.py",
+      "summary": "Plugin de notificaciones push vía ntfy que reacciona a eventos Docker, backups y alertas del sistema además de exponer tools de envío.",
+      "tags": [
+        "notificaciones-push",
+        "ntfy",
+        "alertas-sistema",
+        "plugin"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Envía peticiones HTTP ejecutando curl mediante subprocess.run con timeout configurable."
+    },
+    {
+      "id": "class:agent/plugins/notification_plugin.py:NotificationPlugin",
+      "type": "class",
+      "name": "NotificationPlugin",
+      "filePath": "agent/plugins/notification_plugin.py",
+      "lineRange": [
+        29,
+        277
+      ],
+      "summary": "Subclase de BasePlugin que formatea y envía alertas a topics ntfy ante fallos de contenedores, backups o eventos del sistema.",
+      "tags": [
+        "notificaciones-push",
+        "ntfy",
+        "event-handlers"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/scheduler/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "agent/scheduler/__init__.py",
+      "summary": "Inicializador del paquete de planificación periódica que reexporta la clase Scheduler.",
+      "tags": [
+        "paquete-scheduler",
+        "tareas-periodicas",
+        "reexportacion"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Define __all__ exponiendo Scheduler desde agent.scheduler.runner."
+    },
+    {
+      "id": "file:agent/scheduler/runner.py",
+      "type": "file",
+      "name": "runner.py",
+      "filePath": "agent/scheduler/runner.py",
+      "summary": "Implementa el planificador en segundo plano que ejecuta tareas periódicas de plugins en hilos independientes y emite eventos de ciclo de vida.",
+      "tags": [
+        "scheduler",
+        "hilos-daemon",
+        "thread-safe",
+        "event-bus"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Usa dataclasses y threading.Thread para aislar cada ejecución y reportar estado."
+    },
+    {
+      "id": "class:agent/scheduler/runner.py:TaskState",
+      "type": "class",
+      "name": "TaskState",
+      "filePath": "agent/scheduler/runner.py",
+      "lineRange": [
+        23,
+        30
+      ],
+      "summary": "Dataclass que rastrea el estado de ejecución, contadores de corridas/errores y última falla de una tarea programada.",
+      "tags": [
+        "dataclass",
+        "estado-tarea",
+        "scheduler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:agent/scheduler/runner.py:Scheduler",
+      "type": "class",
+      "name": "Scheduler",
+      "filePath": "agent/scheduler/runner.py",
+      "lineRange": [
+        33,
+        210
+      ],
+      "summary": "Planificador thread-safe que registra ScheduleConfig, evalúa intervalos en un bucle daemon, lanza cada tarea en su propio hilo y emite eventos al bus.",
+      "tags": [
+        "scheduler",
+        "ejecucion-concurrente",
+        "monitoreo-tareas"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_phase3.py",
+      "type": "file",
+      "name": "test_phase3.py",
+      "filePath": "tests/test_phase3.py",
+      "summary": "Suite de pruebas unitarias para la Fase 3 que valida EventBus, Cache, BasePlugin y PluginLoader.",
+      "tags": [
+        "tests-unitarios",
+        "pytest",
+        "fase-3"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Agrupa casos de prueba en clases compatibles con pytest sin fixtures externos."
+    },
+    {
+      "id": "class:tests/test_phase3.py:TestEventBus",
+      "type": "class",
+      "name": "TestEventBus",
+      "filePath": "tests/test_phase3.py",
+      "lineRange": [
+        11,
+        64
+      ],
+      "summary": "Conjunto de pruebas que verifican emisión, wildcards, handler global, desregistro, historial y filtrado de EventBus.",
+      "tags": [
+        "tests-unitarios",
+        "event-bus",
+        "pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_phase3.py:TestCache",
+      "type": "class",
+      "name": "TestCache",
+      "filePath": "tests/test_phase3.py",
+      "lineRange": [
+        67,
+        112
+      ],
+      "summary": "Conjunto de pruebas que validan almacenamiento, expiración por TTL, invalidación por clave/prefijo, estadísticas y limpieza en Cache.",
+      "tags": [
+        "tests-unitarios",
+        "cache-memoria",
+        "pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_phase3.py:TestBasePlugin",
+      "type": "class",
+      "name": "TestBasePlugin",
+      "filePath": "tests/test_phase3.py",
+      "lineRange": [
+        115,
+        155
+      ],
+      "summary": "Pruebas que comprueban el registro de tools, schedules y event handlers al extender BasePlugin.",
+      "tags": [
+        "tests-unitarios",
+        "base-plugin",
+        "pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_phase3.py:TestPluginLoader",
+      "type": "class",
+      "name": "TestPluginLoader",
+      "filePath": "tests/test_phase3.py",
+      "lineRange": [
+        158,
+        191
+      ],
+      "summary": "Pruebas unitarias para la carga manual, descarga con teardown y generación de resumen en PluginLoader.",
+      "tags": [
+        "tests-unitarios",
+        "plugin-loader",
+        "pytest"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:agent/cache/__init__.py",
+      "target": "file:agent/cache/store.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/cache/store.py",
+      "target": "class:agent/cache/store.py:Cache",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/cache/store.py",
+      "target": "class:agent/cache/store.py:Cache",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/cache/store.py",
+      "target": "file:tests/test_phase3.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:agent/events/__init__.py",
+      "target": "file:agent/events/bus.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/events/__init__.py",
+      "target": "file:agent/events/mqtt_listener.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/events/bus.py",
+      "target": "class:agent/events/bus.py:Event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/events/bus.py",
+      "target": "class:agent/events/bus.py:Event",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/events/bus.py",
+      "target": "class:agent/events/bus.py:EventBus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/events/bus.py",
+      "target": "class:agent/events/bus.py:EventBus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/events/bus.py",
+      "target": "file:tests/test_phase3.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "class:agent/events/bus.py:EventBus",
+      "target": "class:agent/events/bus.py:Event",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/events/mqtt_listener.py",
+      "target": "class:agent/events/mqtt_listener.py:MQTTListener",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/events/mqtt_listener.py",
+      "target": "class:agent/events/mqtt_listener.py:MQTTListener",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/events/mqtt_listener.py:MQTTListener",
+      "target": "class:agent/events/bus.py:EventBus",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/plugins/__init__.py",
+      "target": "file:agent/plugins/base.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/plugins/__init__.py",
+      "target": "file:agent/plugins/loader.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/plugins/backup_plugin.py",
+      "target": "file:agent/plugins/base.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/plugins/backup_plugin.py",
+      "target": "class:agent/plugins/backup_plugin.py:BackupPlugin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/plugins/backup_plugin.py",
+      "target": "class:agent/plugins/backup_plugin.py:BackupPlugin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/backup_plugin.py:BackupPlugin",
+      "target": "class:agent/plugins/base.py:BasePlugin",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:agent/plugins/backup_plugin.py:BackupPlugin",
+      "target": "class:agent/plugins/base.py:ScheduleConfig",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/backup_plugin.py:BackupPlugin",
+      "target": "class:agent/plugins/base.py:EventHandler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/backup_plugin.py:BackupPlugin",
+      "target": "class:agent/core/backup_manager.py:BackupManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/backup_plugin.py:BackupPlugin",
+      "target": "function:agent/tools/backup_tools.py:backup_service",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/backup_plugin.py:BackupPlugin",
+      "target": "function:agent/tools/backup_tools.py:restore_service",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/backup_plugin.py:BackupPlugin",
+      "target": "function:agent/tools/backup_tools.py:list_backups",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/backup_plugin.py:BackupPlugin",
+      "target": "file:agent/catalog/_index.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/plugins/base.py",
+      "target": "class:agent/plugins/base.py:ScheduleConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/plugins/base.py",
+      "target": "class:agent/plugins/base.py:ScheduleConfig",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/plugins/base.py",
+      "target": "class:agent/plugins/base.py:EventHandler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/plugins/base.py",
+      "target": "class:agent/plugins/base.py:EventHandler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/plugins/base.py",
+      "target": "class:agent/plugins/base.py:PluginMeta",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/plugins/base.py",
+      "target": "class:agent/plugins/base.py:PluginMeta",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/plugins/base.py",
+      "target": "class:agent/plugins/base.py:BasePlugin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/plugins/base.py",
+      "target": "class:agent/plugins/base.py:BasePlugin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/plugins/base.py",
+      "target": "file:tests/test_phase3.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:agent/plugins/docker_plugin.py",
+      "target": "file:agent/plugins/base.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/plugins/docker_plugin.py",
+      "target": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/plugins/docker_plugin.py",
+      "target": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "target": "class:agent/plugins/base.py:BasePlugin",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "target": "class:agent/plugins/base.py:ScheduleConfig",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "target": "class:agent/plugins/base.py:EventHandler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "target": "function:agent/tools/docker_tools.py:service_start",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "target": "function:agent/tools/docker_tools.py:service_stop",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "target": "function:agent/tools/docker_tools.py:service_restart",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "target": "function:agent/tools/docker_tools.py:service_update",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "target": "function:agent/tools/docker_tools.py:service_logs",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "target": "function:agent/tools/discovery_tools.py:list_services",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/docker_plugin.py:DockerPlugin",
+      "target": "function:agent/tools/discovery_tools.py:scan_compose",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/plugins/ha_discovery_plugin.py",
+      "target": "file:agent/plugins/base.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/plugins/ha_discovery_plugin.py",
+      "target": "class:agent/plugins/ha_discovery_plugin.py:HADiscoveryPlugin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/plugins/ha_discovery_plugin.py",
+      "target": "class:agent/plugins/ha_discovery_plugin.py:HADiscoveryPlugin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/ha_discovery_plugin.py:HADiscoveryPlugin",
+      "target": "class:agent/plugins/base.py:BasePlugin",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:agent/plugins/ha_discovery_plugin.py:HADiscoveryPlugin",
+      "target": "class:agent/plugins/base.py:ScheduleConfig",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/ha_discovery_plugin.py:HADiscoveryPlugin",
+      "target": "class:agent/plugins/base.py:EventHandler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/plugins/loader.py",
+      "target": "file:agent/plugins/base.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/plugins/loader.py",
+      "target": "class:agent/plugins/loader.py:PluginLoader",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/plugins/loader.py",
+      "target": "class:agent/plugins/loader.py:PluginLoader",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/plugins/loader.py",
+      "target": "file:tests/test_phase3.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "class:agent/plugins/loader.py:PluginLoader",
+      "target": "class:agent/plugins/base.py:BasePlugin",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/plugins/memory_plugin.py",
+      "target": "file:agent/plugins/base.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/plugins/memory_plugin.py",
+      "target": "class:agent/plugins/memory_plugin.py:MemoryPlugin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/plugins/memory_plugin.py",
+      "target": "class:agent/plugins/memory_plugin.py:MemoryPlugin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/memory_plugin.py:MemoryPlugin",
+      "target": "class:agent/plugins/base.py:BasePlugin",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:agent/plugins/memory_plugin.py:MemoryPlugin",
+      "target": "class:agent/plugins/base.py:ScheduleConfig",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/memory_plugin.py:MemoryPlugin",
+      "target": "class:agent/plugins/base.py:EventHandler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/memory_plugin.py:MemoryPlugin",
+      "target": "class:agent/core/memory.py:MemoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/memory_plugin.py:MemoryPlugin",
+      "target": "function:agent/tools/memory_tools.py:remember",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/memory_plugin.py:MemoryPlugin",
+      "target": "function:agent/tools/memory_tools.py:recall",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/memory_plugin.py:MemoryPlugin",
+      "target": "function:agent/tools/memory_tools.py:learn_skill",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/memory_plugin.py:MemoryPlugin",
+      "target": "function:agent/tools/memory_tools.py:update_user_model",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/memory_plugin.py:MemoryPlugin",
+      "target": "function:agent/tools/memory_tools.py:memory_stats",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/plugins/network_plugin.py",
+      "target": "file:agent/plugins/base.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/plugins/network_plugin.py",
+      "target": "class:agent/plugins/network_plugin.py:NetworkPlugin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/plugins/network_plugin.py",
+      "target": "class:agent/plugins/network_plugin.py:NetworkPlugin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/network_plugin.py:NetworkPlugin",
+      "target": "class:agent/plugins/base.py:BasePlugin",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:agent/plugins/network_plugin.py:NetworkPlugin",
+      "target": "class:agent/plugins/base.py:ScheduleConfig",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/network_plugin.py:NetworkPlugin",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/network_plugin.py:NetworkPlugin",
+      "target": "function:agent/tools/system_tools.py:scan_ports",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/network_plugin.py:NetworkPlugin",
+      "target": "function:agent/tools/system_tools.py:network_info",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/plugins/network_plugin.py:NetworkPlugin",
+      "target": "function:agent/tools/diagnostic_tools.py:port_conflicts",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/plugins/notification_plugin.py",
+      "target": "file:agent/plugins/base.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/plugins/notification_plugin.py",
+      "target": "class:agent/plugins/notification_plugin.py:NotificationPlugin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/plugins/notification_plugin.py",
+      "target": "class:agent/plugins/notification_plugin.py:NotificationPlugin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/plugins/notification_plugin.py:NotificationPlugin",
+      "target": "class:agent/plugins/base.py:BasePlugin",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:agent/plugins/notification_plugin.py:NotificationPlugin",
+      "target": "class:agent/plugins/base.py:EventHandler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/scheduler/__init__.py",
+      "target": "file:agent/scheduler/runner.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/scheduler/runner.py",
+      "target": "file:agent/plugins/base.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/scheduler/runner.py",
+      "target": "class:agent/scheduler/runner.py:TaskState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/scheduler/runner.py",
+      "target": "class:agent/scheduler/runner.py:TaskState",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/scheduler/runner.py",
+      "target": "class:agent/scheduler/runner.py:Scheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/scheduler/runner.py",
+      "target": "class:agent/scheduler/runner.py:Scheduler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/scheduler/runner.py:Scheduler",
+      "target": "class:agent/scheduler/runner.py:TaskState",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/scheduler/runner.py:Scheduler",
+      "target": "class:agent/plugins/base.py:ScheduleConfig",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/scheduler/runner.py:Scheduler",
+      "target": "class:agent/events/bus.py:EventBus",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_phase3.py",
+      "target": "file:agent/cache/store.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_phase3.py",
+      "target": "file:agent/events/bus.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_phase3.py",
+      "target": "file:agent/plugins/base.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_phase3.py",
+      "target": "file:agent/plugins/loader.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_phase3.py",
+      "target": "class:tests/test_phase3.py:TestEventBus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/test_phase3.py",
+      "target": "class:tests/test_phase3.py:TestEventBus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_phase3.py",
+      "target": "class:tests/test_phase3.py:TestCache",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/test_phase3.py",
+      "target": "class:tests/test_phase3.py:TestCache",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_phase3.py",
+      "target": "class:tests/test_phase3.py:TestBasePlugin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/test_phase3.py",
+      "target": "class:tests/test_phase3.py:TestBasePlugin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_phase3.py",
+      "target": "class:tests/test_phase3.py:TestPluginLoader",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/test_phase3.py",
+      "target": "class:tests/test_phase3.py:TestPluginLoader",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_phase3.py:TestEventBus",
+      "target": "class:agent/events/bus.py:EventBus",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_phase3.py:TestCache",
+      "target": "class:agent/cache/store.py:Cache",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_phase3.py:TestBasePlugin",
+      "target": "class:agent/plugins/base.py:BasePlugin",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_phase3.py:TestBasePlugin",
+      "target": "class:agent/plugins/base.py:PluginMeta",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_phase3.py:TestBasePlugin",
+      "target": "class:agent/plugins/base.py:ScheduleConfig",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_phase3.py:TestBasePlugin",
+      "target": "class:agent/plugins/base.py:EventHandler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_phase3.py:TestPluginLoader",
+      "target": "class:agent/plugins/loader.py:PluginLoader",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_phase3.py:TestPluginLoader",
+      "target": "class:agent/plugins/base.py:BasePlugin",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:tests/test_phase3.py:TestPluginLoader",
+      "target": "class:agent/plugins/base.py:PluginMeta",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

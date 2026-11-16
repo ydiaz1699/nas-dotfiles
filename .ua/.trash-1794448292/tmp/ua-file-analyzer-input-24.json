@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/node-red/.env.example",
+      "language": "config",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/node-red/compose.yml",
+      "language": "yaml",
+      "sizeLines": 33,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/node-red/ficha.md",
+      "language": "markdown",
+      "sizeLines": 63,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/node-red/.env.example": [],
+    "agent/catalog/services/node-red/compose.yml": [],
+    "agent/catalog/services/node-red/ficha.md": []
+  }
+}

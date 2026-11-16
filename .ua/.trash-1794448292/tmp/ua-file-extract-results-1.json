@@ -1,0 +1,3293 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 17,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 17,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 17,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "agent/cache/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 13,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/cache/store.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 147,
+      "nonEmptyLines": 130,
+      "classes": [
+        {
+          "name": "Cache",
+          "startLine": 16,
+          "endLine": 147,
+          "methods": [
+            "__init__",
+            "get",
+            "set",
+            "invalidate",
+            "invalidate_prefix",
+            "clear",
+            "keys",
+            "stats",
+            "_save_to_disk",
+            "_load_from_disk"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Cache",
+          "line": 16,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "threading.Lock",
+          "lineNumber": 39
+        },
+        {
+          "caller": "__init__",
+          "callee": "persist_path.exists",
+          "lineNumber": 43
+        },
+        {
+          "caller": "__init__",
+          "callee": "self._load_from_disk",
+          "lineNumber": 44
+        },
+        {
+          "caller": "get",
+          "callee": "self._store.get",
+          "lineNumber": 49
+        },
+        {
+          "caller": "get",
+          "callee": "time.time",
+          "lineNumber": 53
+        },
+        {
+          "caller": "set",
+          "callee": "time.time",
+          "lineNumber": 67
+        },
+        {
+          "caller": "set",
+          "callee": "time.time",
+          "lineNumber": 68
+        },
+        {
+          "caller": "set",
+          "callee": "self._save_to_disk",
+          "lineNumber": 71
+        },
+        {
+          "caller": "invalidate_prefix",
+          "callee": "k.startswith",
+          "lineNumber": 84
+        },
+        {
+          "caller": "invalidate_prefix",
+          "callee": "len",
+          "lineNumber": 87
+        },
+        {
+          "caller": "clear",
+          "callee": "self._store.clear",
+          "lineNumber": 92
+        },
+        {
+          "caller": "keys",
+          "callee": "time.time",
+          "lineNumber": 98
+        },
+        {
+          "caller": "keys",
+          "callee": "self._store.items",
+          "lineNumber": 101
+        },
+        {
+          "caller": "stats",
+          "callee": "time.time",
+          "lineNumber": 109
+        },
+        {
+          "caller": "stats",
+          "callee": "sum",
+          "lineNumber": 110
+        },
+        {
+          "caller": "stats",
+          "callee": "self._store.values",
+          "lineNumber": 111
+        },
+        {
+          "caller": "stats",
+          "callee": "len",
+          "lineNumber": 115
+        },
+        {
+          "caller": "stats",
+          "callee": "len",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_save_to_disk",
+          "callee": "self._persist_path.parent.mkdir",
+          "lineNumber": 131
+        },
+        {
+          "caller": "_save_to_disk",
+          "callee": "json.dumps",
+          "lineNumber": 132
+        },
+        {
+          "caller": "_save_to_disk",
+          "callee": "self._persist_path.write_text",
+          "lineNumber": 133
+        },
+        {
+          "caller": "_load_from_disk",
+          "callee": "self._persist_path.exists",
+          "lineNumber": 139
+        },
+        {
+          "caller": "_load_from_disk",
+          "callee": "json.loads",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_load_from_disk",
+          "callee": "self._persist_path.read_text",
+          "lineNumber": 143
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/events/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 14,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/events/bus.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 170,
+      "nonEmptyLines": 135,
+      "classes": [
+        {
+          "name": "Event",
+          "startLine": 22,
+          "endLine": 38,
+          "methods": [
+            "__repr__"
+          ],
+          "properties": [
+            "type",
+            "data",
+            "source",
+            "timestamp"
+          ]
+        },
+        {
+          "name": "EventBus",
+          "startLine": 45,
+          "endLine": 170,
+          "methods": [
+            "__init__",
+            "on",
+            "off",
+            "emit",
+            "event_count",
+            "history",
+            "last_events",
+            "registered_types",
+            "clear"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Event",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "EventBus",
+          "line": 45,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__repr__",
+          "callee": "list",
+          "lineNumber": 38
+        },
+        {
+          "caller": "__repr__",
+          "callee": "self.data.keys",
+          "lineNumber": 38
+        },
+        {
+          "caller": "__init__",
+          "callee": "threading.Lock",
+          "lineNumber": 66
+        },
+        {
+          "caller": "on",
+          "callee": "self._handlers[event_type].append",
+          "lineNumber": 80
+        },
+        {
+          "caller": "off",
+          "callee": "self._handlers.get",
+          "lineNumber": 89
+        },
+        {
+          "caller": "off",
+          "callee": "handlers.remove",
+          "lineNumber": 91
+        },
+        {
+          "caller": "emit",
+          "callee": "Event",
+          "lineNumber": 107
+        },
+        {
+          "caller": "emit",
+          "callee": "self._history.append",
+          "lineNumber": 111
+        },
+        {
+          "caller": "emit",
+          "callee": "len",
+          "lineNumber": 112
+        },
+        {
+          "caller": "emit",
+          "callee": "matching.extend",
+          "lineNumber": 119
+        },
+        {
+          "caller": "emit",
+          "callee": "self._handlers.get",
+          "lineNumber": 119
+        },
+        {
+          "caller": "emit",
+          "callee": "event_type.rsplit",
+          "lineNumber": 122
+        },
+        {
+          "caller": "emit",
+          "callee": "matching.extend",
+          "lineNumber": 124
+        },
+        {
+          "caller": "emit",
+          "callee": "self._handlers.get",
+          "lineNumber": 124
+        },
+        {
+          "caller": "emit",
+          "callee": "matching.extend",
+          "lineNumber": 127
+        },
+        {
+          "caller": "emit",
+          "callee": "self._handlers.get",
+          "lineNumber": 127
+        },
+        {
+          "caller": "emit",
+          "callee": "handler",
+          "lineNumber": 132
+        },
+        {
+          "caller": "emit",
+          "callee": "logger.error",
+          "lineNumber": 134
+        },
+        {
+          "caller": "history",
+          "callee": "list",
+          "lineNumber": 150
+        },
+        {
+          "caller": "registered_types",
+          "callee": "list",
+          "lineNumber": 163
+        },
+        {
+          "caller": "registered_types",
+          "callee": "self._handlers.keys",
+          "lineNumber": 163
+        },
+        {
+          "caller": "clear",
+          "callee": "self._handlers.clear",
+          "lineNumber": 168
+        },
+        {
+          "caller": "clear",
+          "callee": "self._history.clear",
+          "lineNumber": 169
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "agent/events/mqtt_listener.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 229,
+      "nonEmptyLines": 190,
+      "classes": [
+        {
+          "name": "MQTTListener",
+          "startLine": 32,
+          "endLine": 229,
+          "methods": [
+            "__init__",
+            "add_mapper",
+            "start",
+            "stop",
+            "connected",
+            "_run_loop",
+            "_on_connect",
+            "_on_message",
+            "_on_disconnect",
+            "_default_mapper"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "MQTTListener",
+          "line": 32,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "os.environ.get",
+          "lineNumber": 63
+        },
+        {
+          "caller": "__init__",
+          "callee": "int",
+          "lineNumber": 64
+        },
+        {
+          "caller": "__init__",
+          "callee": "os.environ.get",
+          "lineNumber": 64
+        },
+        {
+          "caller": "__init__",
+          "callee": "os.environ.get",
+          "lineNumber": 65
+        },
+        {
+          "caller": "__init__",
+          "callee": "os.environ.get",
+          "lineNumber": 66
+        },
+        {
+          "caller": "__init__",
+          "callee": "os.environ.get",
+          "lineNumber": 73
+        },
+        {
+          "caller": "__init__",
+          "callee": "t.strip",
+          "lineNumber": 74
+        },
+        {
+          "caller": "__init__",
+          "callee": "topics_env.split",
+          "lineNumber": 74
+        },
+        {
+          "caller": "__init__",
+          "callee": "t.strip",
+          "lineNumber": 74
+        },
+        {
+          "caller": "add_mapper",
+          "callee": "self._mappers.insert",
+          "lineNumber": 87
+        },
+        {
+          "caller": "start",
+          "callee": "logger.warning",
+          "lineNumber": 98
+        },
+        {
+          "caller": "start",
+          "callee": "mqtt.Client",
+          "lineNumber": 104
+        },
+        {
+          "caller": "start",
+          "callee": "self._client.username_pw_set",
+          "lineNumber": 110
+        },
+        {
+          "caller": "start",
+          "callee": "threading.Thread",
+          "lineNumber": 117
+        },
+        {
+          "caller": "start",
+          "callee": "self._thread.start",
+          "lineNumber": 122
+        },
+        {
+          "caller": "start",
+          "callee": "logger.info",
+          "lineNumber": 124
+        },
+        {
+          "caller": "stop",
+          "callee": "self._client.disconnect",
+          "lineNumber": 134
+        },
+        {
+          "caller": "stop",
+          "callee": "self._thread.is_alive",
+          "lineNumber": 135
+        },
+        {
+          "caller": "stop",
+          "callee": "self._thread.join",
+          "lineNumber": 136
+        },
+        {
+          "caller": "stop",
+          "callee": "logger.info",
+          "lineNumber": 137
+        },
+        {
+          "caller": "connected",
+          "callee": "self._client.is_connected",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_run_loop",
+          "callee": "self._client.connect",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_run_loop",
+          "callee": "self._client.loop_forever",
+          "lineNumber": 148
+        },
+        {
+          "caller": "_run_loop",
+          "callee": "logger.error",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_run_loop",
+          "callee": "self._bus.emit",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_run_loop",
+          "callee": "str",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_on_connect",
+          "callee": "logger.info",
+          "lineNumber": 157
+        },
+        {
+          "caller": "_on_connect",
+          "callee": "client.subscribe",
+          "lineNumber": 160
+        },
+        {
+          "caller": "_on_connect",
+          "callee": "logger.debug",
+          "lineNumber": 161
+        },
+        {
+          "caller": "_on_connect",
+          "callee": "self._bus.emit",
+          "lineNumber": 163
+        },
+        {
+          "caller": "_on_connect",
+          "callee": "logger.error",
+          "lineNumber": 169
+        },
+        {
+          "caller": "_on_connect",
+          "callee": "self._bus.emit",
+          "lineNumber": 170
+        },
+        {
+          "caller": "_on_message",
+          "callee": "json.loads",
+          "lineNumber": 180
+        },
+        {
+          "caller": "_on_message",
+          "callee": "msg.payload.decode",
+          "lineNumber": 180
+        },
+        {
+          "caller": "_on_message",
+          "callee": "msg.payload.decode",
+          "lineNumber": 182
+        },
+        {
+          "caller": "_on_message",
+          "callee": "mapper",
+          "lineNumber": 187
+        },
+        {
+          "caller": "_on_message",
+          "callee": "self._bus.emit",
+          "lineNumber": 192
+        },
+        {
+          "caller": "_on_disconnect",
+          "callee": "logger.warning",
+          "lineNumber": 201
+        },
+        {
+          "caller": "_on_disconnect",
+          "callee": "self._bus.emit",
+          "lineNumber": 202
+        },
+        {
+          "caller": "_default_mapper",
+          "callee": "topic.split",
+          "lineNumber": 214
+        },
+        {
+          "caller": "_default_mapper",
+          "callee": "len",
+          "lineNumber": 216
+        },
+        {
+          "caller": "_default_mapper",
+          "callee": "'.'.join",
+          "lineNumber": 218
+        },
+        {
+          "caller": "_default_mapper",
+          "callee": "len",
+          "lineNumber": 222
+        },
+        {
+          "caller": "_default_mapper",
+          "callee": "len",
+          "lineNumber": 224
+        },
+        {
+          "caller": "_default_mapper",
+          "callee": "'.'.join",
+          "lineNumber": 226
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/plugins/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 16,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/plugins/backup_plugin.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 66,
+      "nonEmptyLines": 53,
+      "classes": [
+        {
+          "name": "BackupPlugin",
+          "startLine": 11,
+          "endLine": 66,
+          "methods": [
+            "setup",
+            "_daily_backup",
+            "_on_backup_command"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BackupPlugin",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 25
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 26
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 27
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_schedule",
+          "lineNumber": 30
+        },
+        {
+          "caller": "setup",
+          "callee": "ScheduleConfig",
+          "lineNumber": 30
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 37
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 37
+        },
+        {
+          "caller": "_daily_backup",
+          "callee": "load_index",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_daily_backup",
+          "callee": "index.get(\"services\", {}).items",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_daily_backup",
+          "callee": "index.get",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_daily_backup",
+          "callee": "meta.get",
+          "lineNumber": 50
+        },
+        {
+          "caller": "_daily_backup",
+          "callee": "BackupManager.backup",
+          "lineNumber": 52
+        },
+        {
+          "caller": "_daily_backup",
+          "callee": "logging.getLogger(__name__).error",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_daily_backup",
+          "callee": "logging.getLogger",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_on_backup_command",
+          "callee": "event.data.get",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_on_backup_command",
+          "callee": "payload.get",
+          "lineNumber": 63
+        },
+        {
+          "caller": "_on_backup_command",
+          "callee": "BackupManager.backup",
+          "lineNumber": 66
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/plugins/base.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 160,
+      "nonEmptyLines": 127,
+      "classes": [
+        {
+          "name": "ScheduleConfig",
+          "startLine": 18,
+          "endLine": 32,
+          "methods": [],
+          "properties": [
+            "name",
+            "handler",
+            "interval_minutes",
+            "enabled",
+            "run_on_start"
+          ]
+        },
+        {
+          "name": "EventHandler",
+          "startLine": 36,
+          "endLine": 48,
+          "methods": [],
+          "properties": [
+            "event_type",
+            "handler",
+            "topic_filter",
+            "description"
+          ]
+        },
+        {
+          "name": "PluginMeta",
+          "startLine": 52,
+          "endLine": 66,
+          "methods": [],
+          "properties": [
+            "name",
+            "version",
+            "description",
+            "author",
+            "dependencies"
+          ]
+        },
+        {
+          "name": "BasePlugin",
+          "startLine": 69,
+          "endLine": 160,
+          "methods": [
+            "__init__",
+            "name",
+            "enabled",
+            "enabled",
+            "tools",
+            "event_handlers",
+            "schedules",
+            "register_tool",
+            "register_event",
+            "register_schedule",
+            "setup",
+            "teardown",
+            "__repr__"
+          ],
+          "properties": [
+            "meta"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ScheduleConfig",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "EventHandler",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "PluginMeta",
+          "line": 51,
+          "isDefault": false
+        },
+        {
+          "name": "BasePlugin",
+          "line": 69,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "register_tool",
+          "callee": "self._tools.append",
+          "lineNumber": 137
+        },
+        {
+          "caller": "register_event",
+          "callee": "self._event_handlers.append",
+          "lineNumber": 141
+        },
+        {
+          "caller": "register_schedule",
+          "callee": "self._schedules.append",
+          "lineNumber": 145
+        },
+        {
+          "caller": "__repr__",
+          "callee": "len",
+          "lineNumber": 158
+        },
+        {
+          "caller": "__repr__",
+          "callee": "len",
+          "lineNumber": 158
+        },
+        {
+          "caller": "__repr__",
+          "callee": "len",
+          "lineNumber": 159
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 0,
+        "classCount": 4
+      }
+    },
+    {
+      "path": "agent/plugins/docker_plugin.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 79,
+      "nonEmptyLines": 66,
+      "classes": [
+        {
+          "name": "DockerPlugin",
+          "startLine": 11,
+          "endLine": 79,
+          "methods": [
+            "setup",
+            "_check_health",
+            "_on_unhealthy"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DockerPlugin",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 29
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 30
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 31
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 32
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 33
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 34
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 35
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_schedule",
+          "lineNumber": 38
+        },
+        {
+          "caller": "setup",
+          "callee": "ScheduleConfig",
+          "lineNumber": 38
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 46
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 46
+        },
+        {
+          "caller": "_check_health",
+          "callee": "safe_run",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_check_health",
+          "callee": "output.strip().splitlines",
+          "lineNumber": 63
+        },
+        {
+          "caller": "_check_health",
+          "callee": "output.strip",
+          "lineNumber": 63
+        },
+        {
+          "caller": "_check_health",
+          "callee": "line.split",
+          "lineNumber": 64
+        },
+        {
+          "caller": "_check_health",
+          "callee": "len",
+          "lineNumber": 65
+        },
+        {
+          "caller": "_check_health",
+          "callee": "status.lower",
+          "lineNumber": 67
+        },
+        {
+          "caller": "_on_unhealthy",
+          "callee": "event.data.get",
+          "lineNumber": 74
+        },
+        {
+          "caller": "_on_unhealthy",
+          "callee": "logging.getLogger(__name__).warning",
+          "lineNumber": 77
+        },
+        {
+          "caller": "_on_unhealthy",
+          "callee": "logging.getLogger",
+          "lineNumber": 77
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/plugins/ha_discovery_plugin.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 527,
+      "nonEmptyLines": 452,
+      "classes": [
+        {
+          "name": "HADiscoveryPlugin",
+          "startLine": 72,
+          "endLine": 527,
+          "methods": [
+            "__init__",
+            "setup",
+            "teardown",
+            "_ensure_mqtt",
+            "_mqtt_publish",
+            "_get_services",
+            "_is_running",
+            "_get_compose_file",
+            "_get_container_id",
+            "_inspect",
+            "_get_system_metrics",
+            "_publish_discovery",
+            "_publish_states",
+            "_on_restart_command",
+            "_on_update_all_command"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "HADiscoveryPlugin",
+          "line": 72,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "super().__init__",
+          "lineNumber": 83
+        },
+        {
+          "caller": "__init__",
+          "callee": "super",
+          "lineNumber": 83
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_schedule",
+          "lineNumber": 91
+        },
+        {
+          "caller": "setup",
+          "callee": "ScheduleConfig",
+          "lineNumber": 91
+        },
+        {
+          "caller": "setup",
+          "callee": "max",
+          "lineNumber": 100
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_schedule",
+          "lineNumber": 101
+        },
+        {
+          "caller": "setup",
+          "callee": "ScheduleConfig",
+          "lineNumber": 101
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 110
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 110
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 115
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 115
+        },
+        {
+          "caller": "teardown",
+          "callee": "self._mqtt_publish",
+          "lineNumber": 125
+        },
+        {
+          "caller": "teardown",
+          "callee": "self._mqtt_client.disconnect",
+          "lineNumber": 130
+        },
+        {
+          "caller": "_ensure_mqtt",
+          "callee": "logger.warning",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_ensure_mqtt",
+          "callee": "mqtt.Client",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_ensure_mqtt",
+          "callee": "self._mqtt_client.username_pw_set",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_ensure_mqtt",
+          "callee": "self._mqtt_client.will_set",
+          "lineNumber": 154
+        },
+        {
+          "caller": "_ensure_mqtt",
+          "callee": "self._mqtt_client.connect",
+          "lineNumber": 161
+        },
+        {
+          "caller": "_ensure_mqtt",
+          "callee": "self._mqtt_client.loop_start",
+          "lineNumber": 162
+        },
+        {
+          "caller": "_ensure_mqtt",
+          "callee": "self._mqtt_publish",
+          "lineNumber": 166
+        },
+        {
+          "caller": "_ensure_mqtt",
+          "callee": "logger.info",
+          "lineNumber": 167
+        },
+        {
+          "caller": "_ensure_mqtt",
+          "callee": "logger.error",
+          "lineNumber": 171
+        },
+        {
+          "caller": "_mqtt_publish",
+          "callee": "isinstance",
+          "lineNumber": 179
+        },
+        {
+          "caller": "_mqtt_publish",
+          "callee": "json.dumps",
+          "lineNumber": 180
+        },
+        {
+          "caller": "_mqtt_publish",
+          "callee": "self._mqtt_client.publish",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_get_services",
+          "callee": "DOCKER_BASE.exists",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_get_services",
+          "callee": "sorted",
+          "lineNumber": 190
+        },
+        {
+          "caller": "_get_services",
+          "callee": "DOCKER_BASE.iterdir",
+          "lineNumber": 190
+        },
+        {
+          "caller": "_get_services",
+          "callee": "item.is_dir",
+          "lineNumber": 191
+        },
+        {
+          "caller": "_get_services",
+          "callee": "item.name.startswith",
+          "lineNumber": 191
+        },
+        {
+          "caller": "_get_services",
+          "callee": "(item / name).exists",
+          "lineNumber": 194
+        },
+        {
+          "caller": "_get_services",
+          "callee": "services.append",
+          "lineNumber": 195
+        },
+        {
+          "caller": "_is_running",
+          "callee": "self._get_compose_file",
+          "lineNumber": 201
+        },
+        {
+          "caller": "_is_running",
+          "callee": "subprocess.run",
+          "lineNumber": 204
+        },
+        {
+          "caller": "_is_running",
+          "callee": "str",
+          "lineNumber": 205
+        },
+        {
+          "caller": "_is_running",
+          "callee": "bool",
+          "lineNumber": 208
+        },
+        {
+          "caller": "_is_running",
+          "callee": "result.stdout.strip",
+          "lineNumber": 208
+        },
+        {
+          "caller": "_get_compose_file",
+          "callee": "candidate.exists",
+          "lineNumber": 215
+        },
+        {
+          "caller": "_get_container_id",
+          "callee": "self._get_compose_file",
+          "lineNumber": 221
+        },
+        {
+          "caller": "_get_container_id",
+          "callee": "subprocess.run",
+          "lineNumber": 224
+        },
+        {
+          "caller": "_get_container_id",
+          "callee": "str",
+          "lineNumber": 225
+        },
+        {
+          "caller": "_get_container_id",
+          "callee": "result.stdout.strip",
+          "lineNumber": 228
+        },
+        {
+          "caller": "_get_container_id",
+          "callee": "result.stdout.strip().splitlines",
+          "lineNumber": 229
+        },
+        {
+          "caller": "_get_container_id",
+          "callee": "result.stdout.strip",
+          "lineNumber": 229
+        },
+        {
+          "caller": "_inspect",
+          "callee": "subprocess.run",
+          "lineNumber": 234
+        },
+        {
+          "caller": "_inspect",
+          "callee": "result.stdout.strip",
+          "lineNumber": 238
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "subprocess.run",
+          "lineNumber": 248
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "result.stdout.strip().splitlines",
+          "lineNumber": 253
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "result.stdout.strip",
+          "lineNumber": 253
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "len",
+          "lineNumber": 254
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "int",
+          "lineNumber": 255
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "lines[1].strip().rstrip",
+          "lineNumber": 255
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "lines[1].strip",
+          "lineNumber": 255
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "subprocess.run",
+          "lineNumber": 261
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "result.stdout.splitlines",
+          "lineNumber": 264
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "line.startswith",
+          "lineNumber": 265
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "line.split",
+          "lineNumber": 266
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "int",
+          "lineNumber": 267
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "int",
+          "lineNumber": 268
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "int",
+          "lineNumber": 269
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "open",
+          "lineNumber": 276
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "float",
+          "lineNumber": 277
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "f.read().split",
+          "lineNumber": 277
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "f.read",
+          "lineNumber": 277
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "os.cpu_count",
+          "lineNumber": 279
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "min",
+          "lineNumber": 280
+        },
+        {
+          "caller": "_get_system_metrics",
+          "callee": "int",
+          "lineNumber": 280
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "self._ensure_mqtt",
+          "lineNumber": 290
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "self._get_services",
+          "lineNumber": 293
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "logger.info",
+          "lineNumber": 295
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "len",
+          "lineNumber": 295
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "self._mqtt_publish",
+          "lineNumber": 323
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "svc.replace(\"-\", \"_\").replace",
+          "lineNumber": 331
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "svc.replace",
+          "lineNumber": 331
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "self._mqtt_publish",
+          "lineNumber": 334
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "self._mqtt_publish",
+          "lineNumber": 352
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "self._mqtt_publish",
+          "lineNumber": 367
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "self._mqtt_publish",
+          "lineNumber": 382
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "json.dumps",
+          "lineNumber": 388
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "self._mqtt_publish",
+          "lineNumber": 398
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "json.dumps",
+          "lineNumber": 404
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "logger.info",
+          "lineNumber": 413
+        },
+        {
+          "caller": "_publish_discovery",
+          "callee": "len",
+          "lineNumber": 413
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "self._ensure_mqtt",
+          "lineNumber": 419
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "self._get_services",
+          "lineNumber": 422
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "self._is_running",
+          "lineNumber": 427
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "self._get_container_id",
+          "lineNumber": 436
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "self._inspect",
+          "lineNumber": 439
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "int",
+          "lineNumber": 440
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "rc.isdigit",
+          "lineNumber": 440
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "self._inspect",
+          "lineNumber": 443
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "started.startswith",
+          "lineNumber": 444
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "started.split(\".\")[0].replace(\"T\", \" \").replace",
+          "lineNumber": 447
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "started.split(\".\")[0].replace",
+          "lineNumber": 447
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "started.split",
+          "lineNumber": 447
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "datetime.strptime",
+          "lineNumber": 448
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "datetime.now",
+          "lineNumber": 449
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "int",
+          "lineNumber": 450
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "diff.total_seconds",
+          "lineNumber": 450
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "self._mqtt_publish",
+          "lineNumber": 460
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "self._get_system_metrics",
+          "lineNumber": 466
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "metrics.get",
+          "lineNumber": 468
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "metrics.get",
+          "lineNumber": 469
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "metrics.get",
+          "lineNumber": 470
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "len",
+          "lineNumber": 472
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "self._mqtt_publish",
+          "lineNumber": 475
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "logger.debug",
+          "lineNumber": 477
+        },
+        {
+          "caller": "_publish_states",
+          "callee": "len",
+          "lineNumber": 478
+        },
+        {
+          "caller": "_on_restart_command",
+          "callee": "isinstance",
+          "lineNumber": 488
+        },
+        {
+          "caller": "_on_restart_command",
+          "callee": "getattr",
+          "lineNumber": 488
+        },
+        {
+          "caller": "_on_restart_command",
+          "callee": "data.get",
+          "lineNumber": 489
+        },
+        {
+          "caller": "_on_restart_command",
+          "callee": "payload.get",
+          "lineNumber": 490
+        },
+        {
+          "caller": "_on_restart_command",
+          "callee": "logger.warning",
+          "lineNumber": 493
+        },
+        {
+          "caller": "_on_restart_command",
+          "callee": "self._get_compose_file",
+          "lineNumber": 496
+        },
+        {
+          "caller": "_on_restart_command",
+          "callee": "logger.error",
+          "lineNumber": 498
+        },
+        {
+          "caller": "_on_restart_command",
+          "callee": "logger.info",
+          "lineNumber": 501
+        },
+        {
+          "caller": "_on_restart_command",
+          "callee": "subprocess.run",
+          "lineNumber": 502
+        },
+        {
+          "caller": "_on_restart_command",
+          "callee": "str",
+          "lineNumber": 503
+        },
+        {
+          "caller": "_on_update_all_command",
+          "callee": "logger.info",
+          "lineNumber": 509
+        },
+        {
+          "caller": "_on_update_all_command",
+          "callee": "self._get_services",
+          "lineNumber": 510
+        },
+        {
+          "caller": "_on_update_all_command",
+          "callee": "self._get_compose_file",
+          "lineNumber": 513
+        },
+        {
+          "caller": "_on_update_all_command",
+          "callee": "self._is_running",
+          "lineNumber": 516
+        },
+        {
+          "caller": "_on_update_all_command",
+          "callee": "logger.info",
+          "lineNumber": 519
+        },
+        {
+          "caller": "_on_update_all_command",
+          "callee": "subprocess.run",
+          "lineNumber": 520
+        },
+        {
+          "caller": "_on_update_all_command",
+          "callee": "str",
+          "lineNumber": 521
+        },
+        {
+          "caller": "_on_update_all_command",
+          "callee": "subprocess.run",
+          "lineNumber": 524
+        },
+        {
+          "caller": "_on_update_all_command",
+          "callee": "str",
+          "lineNumber": 525
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/plugins/loader.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 205,
+      "nonEmptyLines": 164,
+      "classes": [
+        {
+          "name": "PluginLoader",
+          "startLine": 24,
+          "endLine": 205,
+          "methods": [
+            "__init__",
+            "plugins",
+            "discover",
+            "load_plugin",
+            "unload_plugin",
+            "get_plugin",
+            "all_tools",
+            "all_events",
+            "all_schedules",
+            "events_for_type",
+            "summary"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PluginLoader",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "plugins",
+          "callee": "dict",
+          "lineNumber": 44
+        },
+        {
+          "caller": "discover",
+          "callee": "sorted",
+          "lineNumber": 61
+        },
+        {
+          "caller": "discover",
+          "callee": "search_dir.glob",
+          "lineNumber": 61
+        },
+        {
+          "caller": "discover",
+          "callee": "py_file.name.startswith",
+          "lineNumber": 63
+        },
+        {
+          "caller": "discover",
+          "callee": "importlib.import_module",
+          "lineNumber": 70
+        },
+        {
+          "caller": "discover",
+          "callee": "inspect.getmembers",
+          "lineNumber": 73
+        },
+        {
+          "caller": "discover",
+          "callee": "issubclass",
+          "lineNumber": 75
+        },
+        {
+          "caller": "discover",
+          "callee": "self.load_plugin",
+          "lineNumber": 79
+        },
+        {
+          "caller": "discover",
+          "callee": "loaded.append",
+          "lineNumber": 80
+        },
+        {
+          "caller": "discover",
+          "callee": "logger.warning",
+          "lineNumber": 83
+        },
+        {
+          "caller": "load_plugin",
+          "callee": "plugin_class",
+          "lineNumber": 97
+        },
+        {
+          "caller": "load_plugin",
+          "callee": "logger.warning",
+          "lineNumber": 103
+        },
+        {
+          "caller": "load_plugin",
+          "callee": "instance.setup",
+          "lineNumber": 109
+        },
+        {
+          "caller": "load_plugin",
+          "callee": "self._load_order.append",
+          "lineNumber": 111
+        },
+        {
+          "caller": "load_plugin",
+          "callee": "logger.info",
+          "lineNumber": 113
+        },
+        {
+          "caller": "load_plugin",
+          "callee": "len",
+          "lineNumber": 115
+        },
+        {
+          "caller": "load_plugin",
+          "callee": "len",
+          "lineNumber": 116
+        },
+        {
+          "caller": "load_plugin",
+          "callee": "len",
+          "lineNumber": 117
+        },
+        {
+          "caller": "load_plugin",
+          "callee": "logger.error",
+          "lineNumber": 122
+        },
+        {
+          "caller": "unload_plugin",
+          "callee": "self._plugins.get",
+          "lineNumber": 134
+        },
+        {
+          "caller": "unload_plugin",
+          "callee": "plugin.teardown",
+          "lineNumber": 139
+        },
+        {
+          "caller": "unload_plugin",
+          "callee": "logger.warning",
+          "lineNumber": 141
+        },
+        {
+          "caller": "unload_plugin",
+          "callee": "self._load_order.remove",
+          "lineNumber": 145
+        },
+        {
+          "caller": "get_plugin",
+          "callee": "self._plugins.get",
+          "lineNumber": 150
+        },
+        {
+          "caller": "all_tools",
+          "callee": "self._plugins.values",
+          "lineNumber": 155
+        },
+        {
+          "caller": "all_tools",
+          "callee": "tools.extend",
+          "lineNumber": 157
+        },
+        {
+          "caller": "all_events",
+          "callee": "self._plugins.values",
+          "lineNumber": 163
+        },
+        {
+          "caller": "all_events",
+          "callee": "handlers.extend",
+          "lineNumber": 165
+        },
+        {
+          "caller": "all_schedules",
+          "callee": "self._plugins.values",
+          "lineNumber": 171
+        },
+        {
+          "caller": "all_schedules",
+          "callee": "schedules.extend",
+          "lineNumber": 173
+        },
+        {
+          "caller": "events_for_type",
+          "callee": "self.all_events",
+          "lineNumber": 179
+        },
+        {
+          "caller": "summary",
+          "callee": "len",
+          "lineNumber": 188
+        },
+        {
+          "caller": "summary",
+          "callee": "lines.append",
+          "lineNumber": 192
+        },
+        {
+          "caller": "summary",
+          "callee": "lines.append",
+          "lineNumber": 198
+        },
+        {
+          "caller": "summary",
+          "callee": "', '.join",
+          "lineNumber": 198
+        },
+        {
+          "caller": "summary",
+          "callee": "lines.append",
+          "lineNumber": 200
+        },
+        {
+          "caller": "summary",
+          "callee": "len",
+          "lineNumber": 200
+        },
+        {
+          "caller": "summary",
+          "callee": "lines.append",
+          "lineNumber": 203
+        },
+        {
+          "caller": "summary",
+          "callee": "', '.join",
+          "lineNumber": 203
+        },
+        {
+          "caller": "summary",
+          "callee": "\"\\n\".join",
+          "lineNumber": 205
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/plugins/memory_plugin.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 153,
+      "nonEmptyLines": 123,
+      "classes": [
+        {
+          "name": "MemoryPlugin",
+          "startLine": 18,
+          "endLine": 153,
+          "methods": [
+            "setup",
+            "_on_task_completed",
+            "_on_user_correction",
+            "_curate_memory"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "MemoryPlugin",
+          "line": 18,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 41
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 42
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 43
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 44
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 45
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 48
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 48
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 56
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 56
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_schedule",
+          "lineNumber": 66
+        },
+        {
+          "caller": "setup",
+          "callee": "ScheduleConfig",
+          "lineNumber": 66
+        },
+        {
+          "caller": "_on_task_completed",
+          "callee": "isinstance",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_on_task_completed",
+          "callee": "getattr",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_on_task_completed",
+          "callee": "data.get",
+          "lineNumber": 88
+        },
+        {
+          "caller": "_on_task_completed",
+          "callee": "data.get",
+          "lineNumber": 89
+        },
+        {
+          "caller": "_on_task_completed",
+          "callee": "data.get",
+          "lineNumber": 90
+        },
+        {
+          "caller": "_on_task_completed",
+          "callee": "data.get",
+          "lineNumber": 102
+        },
+        {
+          "caller": "_on_task_completed",
+          "callee": "data.get",
+          "lineNumber": 113
+        },
+        {
+          "caller": "_on_task_completed",
+          "callee": "data.get",
+          "lineNumber": 120
+        },
+        {
+          "caller": "_on_task_completed",
+          "callee": "MemoryManager.save_session",
+          "lineNumber": 124
+        },
+        {
+          "caller": "_on_user_correction",
+          "callee": "isinstance",
+          "lineNumber": 130
+        },
+        {
+          "caller": "_on_user_correction",
+          "callee": "getattr",
+          "lineNumber": 130
+        },
+        {
+          "caller": "_on_user_correction",
+          "callee": "data.get",
+          "lineNumber": 131
+        },
+        {
+          "caller": "_on_user_correction",
+          "callee": "data.get",
+          "lineNumber": 132
+        },
+        {
+          "caller": "_on_user_correction",
+          "callee": "data.get",
+          "lineNumber": 132
+        },
+        {
+          "caller": "_on_user_correction",
+          "callee": "MemoryManager.update_user_model",
+          "lineNumber": 135
+        },
+        {
+          "caller": "_curate_memory",
+          "callee": "MemoryManager.get_memory_stats",
+          "lineNumber": 143
+        },
+        {
+          "caller": "_curate_memory",
+          "callee": "MemoryManager.trim_sessions",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_curate_memory",
+          "callee": "MemoryManager.prune_old_entries",
+          "lineNumber": 150
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/plugins/network_plugin.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 40,
+      "nonEmptyLines": 30,
+      "classes": [
+        {
+          "name": "NetworkPlugin",
+          "startLine": 10,
+          "endLine": 40,
+          "methods": [
+            "setup",
+            "_scan_ports"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "NetworkPlugin",
+          "line": 10,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 23
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 24
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 25
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_schedule",
+          "lineNumber": 28
+        },
+        {
+          "caller": "setup",
+          "callee": "ScheduleConfig",
+          "lineNumber": 28
+        },
+        {
+          "caller": "_scan_ports",
+          "callee": "safe_run",
+          "lineNumber": 38
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/plugins/notification_plugin.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 277,
+      "nonEmptyLines": 242,
+      "classes": [
+        {
+          "name": "NotificationPlugin",
+          "startLine": 29,
+          "endLine": 277,
+          "methods": [
+            "__init__",
+            "setup",
+            "configure",
+            "ntfy_send",
+            "on_service_unhealthy",
+            "on_service_down",
+            "on_backup_complete",
+            "on_backup_failed",
+            "on_service_updated",
+            "on_system_alert",
+            "send_notification",
+            "test_connection"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "NotificationPlugin",
+          "line": 29,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "super().__init__",
+          "lineNumber": 46
+        },
+        {
+          "caller": "__init__",
+          "callee": "super",
+          "lineNumber": 46
+        },
+        {
+          "caller": "__init__",
+          "callee": "self.DEFAULT_TOPICS.copy",
+          "lineNumber": 48
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 53
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 53
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 58
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 58
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 63
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 63
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 68
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 68
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 73
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 73
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 78
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 78
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 85
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 86
+        },
+        {
+          "caller": "configure",
+          "callee": "config.get",
+          "lineNumber": 96
+        },
+        {
+          "caller": "configure",
+          "callee": "config.get",
+          "lineNumber": 97
+        },
+        {
+          "caller": "configure",
+          "callee": "self.DEFAULT_TOPICS.copy",
+          "lineNumber": 97
+        },
+        {
+          "caller": "ntfy_send",
+          "callee": "str",
+          "lineNumber": 129
+        },
+        {
+          "caller": "ntfy_send",
+          "callee": "subprocess.run",
+          "lineNumber": 141
+        },
+        {
+          "caller": "on_service_unhealthy",
+          "callee": "event.get",
+          "lineNumber": 157
+        },
+        {
+          "caller": "on_service_unhealthy",
+          "callee": "event.get",
+          "lineNumber": 158
+        },
+        {
+          "caller": "on_service_unhealthy",
+          "callee": "self.ntfy_send",
+          "lineNumber": 159
+        },
+        {
+          "caller": "on_service_down",
+          "callee": "event.get",
+          "lineNumber": 169
+        },
+        {
+          "caller": "on_service_down",
+          "callee": "event.get",
+          "lineNumber": 170
+        },
+        {
+          "caller": "on_service_down",
+          "callee": "self.ntfy_send",
+          "lineNumber": 171
+        },
+        {
+          "caller": "on_backup_complete",
+          "callee": "event.get",
+          "lineNumber": 181
+        },
+        {
+          "caller": "on_backup_complete",
+          "callee": "event.get",
+          "lineNumber": 182
+        },
+        {
+          "caller": "on_backup_complete",
+          "callee": "event.get",
+          "lineNumber": 183
+        },
+        {
+          "caller": "on_backup_complete",
+          "callee": "self.ntfy_send",
+          "lineNumber": 189
+        },
+        {
+          "caller": "on_backup_failed",
+          "callee": "event.get",
+          "lineNumber": 199
+        },
+        {
+          "caller": "on_backup_failed",
+          "callee": "event.get",
+          "lineNumber": 200
+        },
+        {
+          "caller": "on_backup_failed",
+          "callee": "self.ntfy_send",
+          "lineNumber": 201
+        },
+        {
+          "caller": "on_service_updated",
+          "callee": "event.get",
+          "lineNumber": 211
+        },
+        {
+          "caller": "on_service_updated",
+          "callee": "event.get",
+          "lineNumber": 212
+        },
+        {
+          "caller": "on_service_updated",
+          "callee": "event.get",
+          "lineNumber": 213
+        },
+        {
+          "caller": "on_service_updated",
+          "callee": "self.ntfy_send",
+          "lineNumber": 217
+        },
+        {
+          "caller": "on_system_alert",
+          "callee": "event.get",
+          "lineNumber": 227
+        },
+        {
+          "caller": "on_system_alert",
+          "callee": "event.get",
+          "lineNumber": 228
+        },
+        {
+          "caller": "on_system_alert",
+          "callee": "event.get",
+          "lineNumber": 229
+        },
+        {
+          "caller": "on_system_alert",
+          "callee": "self.ntfy_send",
+          "lineNumber": 230
+        },
+        {
+          "caller": "send_notification",
+          "callee": "self.ntfy_send",
+          "lineNumber": 254
+        },
+        {
+          "caller": "test_connection",
+          "callee": "self.ntfy_send",
+          "lineNumber": 266
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/scheduler/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 17,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/scheduler/runner.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 210,
+      "nonEmptyLines": 174,
+      "classes": [
+        {
+          "name": "TaskState",
+          "startLine": 23,
+          "endLine": 30,
+          "methods": [],
+          "properties": [
+            "config",
+            "last_run",
+            "run_count",
+            "error_count",
+            "last_error",
+            "running"
+          ]
+        },
+        {
+          "name": "Scheduler",
+          "startLine": 33,
+          "endLine": 210,
+          "methods": [
+            "__init__",
+            "add",
+            "remove",
+            "start",
+            "stop",
+            "running",
+            "status",
+            "_run_loop",
+            "_execute_task"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TaskState",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "Scheduler",
+          "line": 33,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "threading.Lock",
+          "lineNumber": 58
+        },
+        {
+          "caller": "add",
+          "callee": "TaskState",
+          "lineNumber": 67
+        },
+        {
+          "caller": "add",
+          "callee": "logger.info",
+          "lineNumber": 68
+        },
+        {
+          "caller": "start",
+          "callee": "threading.Thread",
+          "lineNumber": 87
+        },
+        {
+          "caller": "start",
+          "callee": "self._thread.start",
+          "lineNumber": 92
+        },
+        {
+          "caller": "start",
+          "callee": "logger.info",
+          "lineNumber": 93
+        },
+        {
+          "caller": "start",
+          "callee": "len",
+          "lineNumber": 94
+        },
+        {
+          "caller": "start",
+          "callee": "self._tasks.values",
+          "lineNumber": 99
+        },
+        {
+          "caller": "start",
+          "callee": "self._execute_task",
+          "lineNumber": 101
+        },
+        {
+          "caller": "stop",
+          "callee": "self._thread.is_alive",
+          "lineNumber": 106
+        },
+        {
+          "caller": "stop",
+          "callee": "self._thread.join",
+          "lineNumber": 107
+        },
+        {
+          "caller": "stop",
+          "callee": "logger.info",
+          "lineNumber": 108
+        },
+        {
+          "caller": "status",
+          "callee": "len",
+          "lineNumber": 120
+        },
+        {
+          "caller": "status",
+          "callee": "sorted",
+          "lineNumber": 121
+        },
+        {
+          "caller": "status",
+          "callee": "self._tasks.items",
+          "lineNumber": 121
+        },
+        {
+          "caller": "status",
+          "callee": "time.time",
+          "lineNumber": 131
+        },
+        {
+          "caller": "status",
+          "callee": "lines.append",
+          "lineNumber": 134
+        },
+        {
+          "caller": "status",
+          "callee": "lines.append",
+          "lineNumber": 140
+        },
+        {
+          "caller": "status",
+          "callee": "\"\\n\".join",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_run_loop",
+          "callee": "time.time",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_run_loop",
+          "callee": "self._tasks.values",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_run_loop",
+          "callee": "self._execute_task",
+          "lineNumber": 160
+        },
+        {
+          "caller": "_run_loop",
+          "callee": "time.sleep",
+          "lineNumber": 162
+        },
+        {
+          "caller": "_run",
+          "callee": "self._bus.emit",
+          "lineNumber": 171
+        },
+        {
+          "caller": "_run",
+          "callee": "state.config.handler",
+          "lineNumber": 178
+        },
+        {
+          "caller": "_run",
+          "callee": "logger.debug",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_run",
+          "callee": "self._bus.emit",
+          "lineNumber": 184
+        },
+        {
+          "caller": "_run",
+          "callee": "str",
+          "lineNumber": 192
+        },
+        {
+          "caller": "_run",
+          "callee": "logger.error",
+          "lineNumber": 193
+        },
+        {
+          "caller": "_run",
+          "callee": "self._bus.emit",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_run",
+          "callee": "str",
+          "lineNumber": 198
+        },
+        {
+          "caller": "_run",
+          "callee": "time.time",
+          "lineNumber": 202
+        },
+        {
+          "caller": "_execute_task",
+          "callee": "threading.Thread",
+          "lineNumber": 205
+        },
+        {
+          "caller": "_execute_task",
+          "callee": "thread.start",
+          "lineNumber": 210
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "tests/test_phase3.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 191,
+      "nonEmptyLines": 158,
+      "classes": [
+        {
+          "name": "TestEventBus",
+          "startLine": 11,
+          "endLine": 64,
+          "methods": [
+            "test_emit_y_handler",
+            "test_wildcard_handler",
+            "test_global_handler",
+            "test_off_desregistra",
+            "test_history",
+            "test_last_events_filtrado"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestCache",
+          "startLine": 67,
+          "endLine": 112,
+          "methods": [
+            "test_set_get",
+            "test_ttl_expiry",
+            "test_invalidate",
+            "test_invalidate_prefix",
+            "test_stats",
+            "test_clear"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestBasePlugin",
+          "startLine": 115,
+          "endLine": 155,
+          "methods": [
+            "test_plugin_basico",
+            "test_plugin_con_schedule",
+            "test_plugin_con_event"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestPluginLoader",
+          "startLine": 158,
+          "endLine": 191,
+          "methods": [
+            "test_load_plugin_manual",
+            "test_unload_plugin",
+            "test_summary"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TestEventBus",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "TestCache",
+          "line": 67,
+          "isDefault": false
+        },
+        {
+          "name": "TestBasePlugin",
+          "line": 115,
+          "isDefault": false
+        },
+        {
+          "name": "TestPluginLoader",
+          "line": 158,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_emit_y_handler",
+          "callee": "EventBus",
+          "lineNumber": 15
+        },
+        {
+          "caller": "test_emit_y_handler",
+          "callee": "bus.on",
+          "lineNumber": 17
+        },
+        {
+          "caller": "test_emit_y_handler",
+          "callee": "received.append",
+          "lineNumber": 17
+        },
+        {
+          "caller": "test_emit_y_handler",
+          "callee": "bus.emit",
+          "lineNumber": 18
+        },
+        {
+          "caller": "test_emit_y_handler",
+          "callee": "len",
+          "lineNumber": 19
+        },
+        {
+          "caller": "test_wildcard_handler",
+          "callee": "EventBus",
+          "lineNumber": 24
+        },
+        {
+          "caller": "test_wildcard_handler",
+          "callee": "bus.on",
+          "lineNumber": 26
+        },
+        {
+          "caller": "test_wildcard_handler",
+          "callee": "received.append",
+          "lineNumber": 26
+        },
+        {
+          "caller": "test_wildcard_handler",
+          "callee": "bus.emit",
+          "lineNumber": 27
+        },
+        {
+          "caller": "test_wildcard_handler",
+          "callee": "bus.emit",
+          "lineNumber": 28
+        },
+        {
+          "caller": "test_wildcard_handler",
+          "callee": "bus.emit",
+          "lineNumber": 29
+        },
+        {
+          "caller": "test_wildcard_handler",
+          "callee": "len",
+          "lineNumber": 30
+        },
+        {
+          "caller": "test_global_handler",
+          "callee": "EventBus",
+          "lineNumber": 33
+        },
+        {
+          "caller": "test_global_handler",
+          "callee": "bus.on",
+          "lineNumber": 35
+        },
+        {
+          "caller": "test_global_handler",
+          "callee": "received.append",
+          "lineNumber": 35
+        },
+        {
+          "caller": "test_global_handler",
+          "callee": "bus.emit",
+          "lineNumber": 36
+        },
+        {
+          "caller": "test_global_handler",
+          "callee": "bus.emit",
+          "lineNumber": 37
+        },
+        {
+          "caller": "test_global_handler",
+          "callee": "len",
+          "lineNumber": 38
+        },
+        {
+          "caller": "test_off_desregistra",
+          "callee": "EventBus",
+          "lineNumber": 41
+        },
+        {
+          "caller": "test_off_desregistra",
+          "callee": "received.append",
+          "lineNumber": 43
+        },
+        {
+          "caller": "test_off_desregistra",
+          "callee": "bus.on",
+          "lineNumber": 44
+        },
+        {
+          "caller": "test_off_desregistra",
+          "callee": "bus.emit",
+          "lineNumber": 45
+        },
+        {
+          "caller": "test_off_desregistra",
+          "callee": "len",
+          "lineNumber": 46
+        },
+        {
+          "caller": "test_off_desregistra",
+          "callee": "bus.off",
+          "lineNumber": 47
+        },
+        {
+          "caller": "test_off_desregistra",
+          "callee": "bus.emit",
+          "lineNumber": 48
+        },
+        {
+          "caller": "test_off_desregistra",
+          "callee": "len",
+          "lineNumber": 49
+        },
+        {
+          "caller": "test_history",
+          "callee": "EventBus",
+          "lineNumber": 52
+        },
+        {
+          "caller": "test_history",
+          "callee": "range",
+          "lineNumber": 53
+        },
+        {
+          "caller": "test_history",
+          "callee": "bus.emit",
+          "lineNumber": 54
+        },
+        {
+          "caller": "test_history",
+          "callee": "len",
+          "lineNumber": 56
+        },
+        {
+          "caller": "test_last_events_filtrado",
+          "callee": "EventBus",
+          "lineNumber": 60
+        },
+        {
+          "caller": "test_last_events_filtrado",
+          "callee": "bus.emit",
+          "lineNumber": 61
+        },
+        {
+          "caller": "test_last_events_filtrado",
+          "callee": "bus.emit",
+          "lineNumber": 62
+        },
+        {
+          "caller": "test_last_events_filtrado",
+          "callee": "bus.emit",
+          "lineNumber": 63
+        },
+        {
+          "caller": "test_last_events_filtrado",
+          "callee": "len",
+          "lineNumber": 64
+        },
+        {
+          "caller": "test_last_events_filtrado",
+          "callee": "bus.last_events",
+          "lineNumber": 64
+        },
+        {
+          "caller": "test_set_get",
+          "callee": "Cache",
+          "lineNumber": 71
+        },
+        {
+          "caller": "test_set_get",
+          "callee": "cache.set",
+          "lineNumber": 72
+        },
+        {
+          "caller": "test_set_get",
+          "callee": "cache.get",
+          "lineNumber": 73
+        },
+        {
+          "caller": "test_ttl_expiry",
+          "callee": "Cache",
+          "lineNumber": 76
+        },
+        {
+          "caller": "test_ttl_expiry",
+          "callee": "cache.set",
+          "lineNumber": 77
+        },
+        {
+          "caller": "test_ttl_expiry",
+          "callee": "time.time",
+          "lineNumber": 79
+        },
+        {
+          "caller": "test_ttl_expiry",
+          "callee": "cache.get",
+          "lineNumber": 80
+        },
+        {
+          "caller": "test_invalidate",
+          "callee": "Cache",
+          "lineNumber": 83
+        },
+        {
+          "caller": "test_invalidate",
+          "callee": "cache.set",
+          "lineNumber": 84
+        },
+        {
+          "caller": "test_invalidate",
+          "callee": "cache.invalidate",
+          "lineNumber": 85
+        },
+        {
+          "caller": "test_invalidate",
+          "callee": "cache.get",
+          "lineNumber": 86
+        },
+        {
+          "caller": "test_invalidate_prefix",
+          "callee": "Cache",
+          "lineNumber": 89
+        },
+        {
+          "caller": "test_invalidate_prefix",
+          "callee": "cache.set",
+          "lineNumber": 90
+        },
+        {
+          "caller": "test_invalidate_prefix",
+          "callee": "cache.set",
+          "lineNumber": 91
+        },
+        {
+          "caller": "test_invalidate_prefix",
+          "callee": "cache.set",
+          "lineNumber": 92
+        },
+        {
+          "caller": "test_invalidate_prefix",
+          "callee": "cache.invalidate_prefix",
+          "lineNumber": 93
+        },
+        {
+          "caller": "test_invalidate_prefix",
+          "callee": "cache.get",
+          "lineNumber": 95
+        },
+        {
+          "caller": "test_stats",
+          "callee": "Cache",
+          "lineNumber": 98
+        },
+        {
+          "caller": "test_stats",
+          "callee": "cache.set",
+          "lineNumber": 99
+        },
+        {
+          "caller": "test_stats",
+          "callee": "cache.get",
+          "lineNumber": 100
+        },
+        {
+          "caller": "test_stats",
+          "callee": "cache.get",
+          "lineNumber": 101
+        },
+        {
+          "caller": "test_clear",
+          "callee": "Cache",
+          "lineNumber": 107
+        },
+        {
+          "caller": "test_clear",
+          "callee": "cache.set",
+          "lineNumber": 108
+        },
+        {
+          "caller": "test_clear",
+          "callee": "cache.set",
+          "lineNumber": 109
+        },
+        {
+          "caller": "test_clear",
+          "callee": "cache.clear",
+          "lineNumber": 110
+        },
+        {
+          "caller": "test_clear",
+          "callee": "cache.get",
+          "lineNumber": 111
+        },
+        {
+          "caller": "test_clear",
+          "callee": "len",
+          "lineNumber": 112
+        },
+        {
+          "caller": "test_clear",
+          "callee": "cache.keys",
+          "lineNumber": 112
+        },
+        {
+          "caller": "test_plugin_basico",
+          "callee": "PluginMeta",
+          "lineNumber": 120
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 122
+        },
+        {
+          "caller": "test_plugin_basico",
+          "callee": "MyPlugin",
+          "lineNumber": 124
+        },
+        {
+          "caller": "test_plugin_basico",
+          "callee": "p.setup",
+          "lineNumber": 125
+        },
+        {
+          "caller": "test_plugin_basico",
+          "callee": "len",
+          "lineNumber": 127
+        },
+        {
+          "caller": "test_plugin_con_schedule",
+          "callee": "PluginMeta",
+          "lineNumber": 131
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_schedule",
+          "lineNumber": 133
+        },
+        {
+          "caller": "setup",
+          "callee": "ScheduleConfig",
+          "lineNumber": 133
+        },
+        {
+          "caller": "test_plugin_con_schedule",
+          "callee": "ScheduledPlugin",
+          "lineNumber": 139
+        },
+        {
+          "caller": "test_plugin_con_schedule",
+          "callee": "p.setup",
+          "lineNumber": 140
+        },
+        {
+          "caller": "test_plugin_con_schedule",
+          "callee": "len",
+          "lineNumber": 141
+        },
+        {
+          "caller": "test_plugin_con_event",
+          "callee": "PluginMeta",
+          "lineNumber": 146
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_event",
+          "lineNumber": 148
+        },
+        {
+          "caller": "setup",
+          "callee": "EventHandler",
+          "lineNumber": 148
+        },
+        {
+          "caller": "test_plugin_con_event",
+          "callee": "EventPlugin",
+          "lineNumber": 153
+        },
+        {
+          "caller": "test_plugin_con_event",
+          "callee": "p.setup",
+          "lineNumber": 154
+        },
+        {
+          "caller": "test_plugin_con_event",
+          "callee": "len",
+          "lineNumber": 155
+        },
+        {
+          "caller": "test_load_plugin_manual",
+          "callee": "PluginMeta",
+          "lineNumber": 163
+        },
+        {
+          "caller": "setup",
+          "callee": "self.register_tool",
+          "lineNumber": 165
+        },
+        {
+          "caller": "test_load_plugin_manual",
+          "callee": "PluginLoader",
+          "lineNumber": 167
+        },
+        {
+          "caller": "test_load_plugin_manual",
+          "callee": "loader.load_plugin",
+          "lineNumber": 168
+        },
+        {
+          "caller": "test_load_plugin_manual",
+          "callee": "len",
+          "lineNumber": 171
+        },
+        {
+          "caller": "test_load_plugin_manual",
+          "callee": "loader.all_tools",
+          "lineNumber": 171
+        },
+        {
+          "caller": "test_unload_plugin",
+          "callee": "PluginMeta",
+          "lineNumber": 175
+        },
+        {
+          "caller": "test_unload_plugin",
+          "callee": "PluginLoader",
+          "lineNumber": 177
+        },
+        {
+          "caller": "test_unload_plugin",
+          "callee": "loader.load_plugin",
+          "lineNumber": 178
+        },
+        {
+          "caller": "test_unload_plugin",
+          "callee": "loader.unload_plugin",
+          "lineNumber": 180
+        },
+        {
+          "caller": "test_summary",
+          "callee": "PluginMeta",
+          "lineNumber": 185
+        },
+        {
+          "caller": "test_summary",
+          "callee": "PluginLoader",
+          "lineNumber": 187
+        },
+        {
+          "caller": "test_summary",
+          "callee": "loader.load_plugin",
+          "lineNumber": 188
+        },
+        {
+          "caller": "test_summary",
+          "callee": "loader.summary",
+          "lineNumber": 189
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 4,
+        "functionCount": 0,
+        "classCount": 4
+      }
+    }
+  ]
+}

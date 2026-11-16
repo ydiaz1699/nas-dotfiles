@@ -1,0 +1,39 @@
+{
+  "issues": [],
+  "warnings": [
+    "Node 'file:agent/__init__.py' has no edges (orphan)",
+    "Node 'file:agent/catalog/__init__.py' has no edges (orphan)",
+    "Node 'file:agent/config/__init__.py' has no edges (orphan)",
+    "Node 'file:agent/memory/sessions/.gitkeep' has no edges (orphan)",
+    "Node 'file:svc_py/core/__init__.py' has no edges (orphan)",
+    "Node 'file:tests/__init__.py' has no edges (orphan)"
+  ],
+  "stats": {
+    "totalNodes": 794,
+    "totalEdges": 2429,
+    "totalLayers": 9,
+    "tourSteps": 12,
+    "nodeTypes": {
+      "file": 126,
+      "class": 72,
+      "function": 423,
+      "service": 22,
+      "config": 37,
+      "document": 114
+    },
+    "edgeTypes": {
+      "imports": 91,
+      "contains": 497,
+      "exports": 384,
+      "tested_by": 12,
+      "calls": 614,
+      "inherits": 6,
+      "depends_on": 149,
+      "deploys": 4,
+      "related": 305,
+      "triggers": 18,
+      "configures": 55,
+      "documents": 294
+    }
+  }
+}

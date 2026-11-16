@@ -1,0 +1,253 @@
+{
+  "nodes": [
+    {
+      "id": "config:.kiro/hooks/catalog-sync-on-compose.json",
+      "type": "config",
+      "name": ".kiro/hooks/catalog-sync-on-compose.json",
+      "filePath": ".kiro/hooks/catalog-sync-on-compose.json",
+      "lineRange": [
+        1,
+        15
+      ],
+      "summary": "Hook de Kiro (PostFileSave) que detecta cambios en archivos compose.yml para generar artefactos faltantes del catálogo y reportar drift semántico frente a fichas y guías.",
+      "tags": [
+        "hook-kiro",
+        "sincronizacion-catalogo",
+        "compose-yml",
+        "deteccion-drift"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Configuración JSON v1 con trigger PostFileSave y matcher regex sobre compose\\.yml$."
+    },
+    {
+      "id": "config:.kiro/hooks/code-map-regen-on-file-change.json",
+      "type": "config",
+      "name": ".kiro/hooks/code-map-regen-on-file-change.json",
+      "filePath": ".kiro/hooks/code-map-regen-on-file-change.json",
+      "lineRange": [
+        1,
+        27
+      ],
+      "summary": "Hook de Kiro con triggers PostFileCreate y PostFileDelete sobre archivos .py y .sh que regenera automáticamente docs/CODE-MAP.md ejecutando project_index.py.",
+      "tags": [
+        "hook-kiro",
+        "code-map",
+        "automatizacion-cli",
+        "indice-proyecto"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Ejecuta un comando shell con timeout de 30s que invoca agent/tools/project_index.py --code-map."
+    },
+    {
+      "id": "config:.kiro/hooks/dependency-cascade-on-save.json",
+      "type": "config",
+      "name": ".kiro/hooks/dependency-cascade-on-save.json",
+      "filePath": ".kiro/hooks/dependency-cascade-on-save.json",
+      "lineRange": [
+        1,
+        14
+      ],
+      "summary": "Hook de Kiro (Stop) que obliga a verificar la cascada de dependencias de edición antes de finalizar el turno usando dependency-map.md, project_index.py y project_scanner.py.",
+      "tags": [
+        "hook-kiro",
+        "cascada-dependencias",
+        "paridad-cli",
+        "validacion-cierre"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Prompt de agente en trigger Stop que enlaza la skill dependency-cascade y contratos de paridad."
+    },
+    {
+      "id": "config:.kiro/hooks/documentation-evolution-on-prompt.json",
+      "type": "config",
+      "name": ".kiro/hooks/documentation-evolution-on-prompt.json",
+      "filePath": ".kiro/hooks/documentation-evolution-on-prompt.json",
+      "lineRange": [
+        1,
+        14
+      ],
+      "summary": "Hook de Kiro (UserPromptSubmit) que enruta peticiones de unificación documental, auditoría de gaps o continuidad de sesiones hacia las skills y contratos de arquitectura correspondientes.",
+      "tags": [
+        "hook-kiro",
+        "evolucion-documental",
+        "clasificacion-prompt",
+        "continuidad-sesion"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Prompt de bootstrap en español que discrimina flujos de reconstrucción documental y checkpoints en _drafts/."
+    },
+    {
+      "id": "config:.kiro/hooks/session-continuity.json",
+      "type": "config",
+      "name": ".kiro/hooks/session-continuity.json",
+      "filePath": ".kiro/hooks/session-continuity.json",
+      "lineRange": [
+        1,
+        15
+      ],
+      "summary": "Hook de Kiro (SessionStart) que comprueba si existen archivos de handoff en _drafts/ (SESSION-*.md o PENDIENTES-*.md) para ofrecer retomar el trabajo previo.",
+      "tags": [
+        "hook-kiro",
+        "continuidad-sesion",
+        "handoff-borradores",
+        "inicio-sesion"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Configuración JSON v1 con trigger SessionStart y acción tipo agent."
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:.kiro/hooks/catalog-sync-on-compose.json",
+      "target": "document:agent/catalog/_template.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia las plantillas del catálogo para generar fichas faltantes al guardar un compose.yml."
+    },
+    {
+      "source": "config:.kiro/hooks/catalog-sync-on-compose.json",
+      "target": "document:agent/catalog/_rules.md",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Sigue las reglas del catálogo para validar estructura, redes, healthchecks y sanitización."
+    },
+    {
+      "source": "config:.kiro/hooks/catalog-sync-on-compose.json",
+      "target": "document:docs/catalog-sync-pipeline.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Implementa el flujo automático de verificación descrito en el pipeline catalog-sync."
+    },
+    {
+      "source": "config:.kiro/hooks/catalog-sync-on-compose.json",
+      "target": "file:docker/cli/lib/catalog-sync.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la sincronización manual de svc catalog-sync al detectar cambios en compose.yml."
+    },
+    {
+      "source": "config:.kiro/hooks/code-map-regen-on-file-change.json",
+      "target": "file:agent/tools/project_index.py",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Dispara la ejecución de project_index.py --code-map cuando se crea o elimina un archivo .py o .sh."
+    },
+    {
+      "source": "config:.kiro/hooks/code-map-regen-on-file-change.json",
+      "target": "document:docs/CODE-MAP.md",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Mantiene actualizado docs/CODE-MAP.md ante altas y bajas de código."
+    },
+    {
+      "source": "config:.kiro/hooks/dependency-cascade-on-save.json",
+      "target": "document:.kiro/skills/dependency-cascade/SKILL.md",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Activa la aplicación obligatoria de la skill dependency-cascade al cierre del turno."
+    },
+    {
+      "source": "config:.kiro/hooks/dependency-cascade-on-save.json",
+      "target": "document:docs/dependency-map.md",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Consulta docs/dependency-map.md para identificar todos los archivos derivados obligatorios."
+    },
+    {
+      "source": "config:.kiro/hooks/dependency-cascade-on-save.json",
+      "target": "file:agent/tools/project_index.py",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Ordena validar la consistencia mediante python3 agent/tools/project_index.py --check."
+    },
+    {
+      "source": "config:.kiro/hooks/dependency-cascade-on-save.json",
+      "target": "file:agent/tools/project_scanner.py",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Ordena ejecutar project_scanner.py --full cuando se modifican servicios, CLI, hooks o tools."
+    },
+    {
+      "source": "config:.kiro/hooks/dependency-cascade-on-save.json",
+      "target": "config:agent/architecture/contracts.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Verifica la paridad declarada en contracts.json para comandos duales."
+    },
+    {
+      "source": "config:.kiro/hooks/dependency-cascade-on-save.json",
+      "target": "document:AGENTS.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Recuerda actualizar la tabla auto-invoke en AGENTS.md al crear o modificar skills."
+    },
+    {
+      "source": "config:.kiro/hooks/documentation-evolution-on-prompt.json",
+      "target": "document:.kiro/skills/documentation-evolution/SKILL.md",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Carga el flujo de la skill documentation-evolution cuando el usuario pide unificar o auditar documentación."
+    },
+    {
+      "source": "config:.kiro/hooks/documentation-evolution-on-prompt.json",
+      "target": "document:docs/meta-prompt-unificar.md",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Usa el contrato de docs/meta-prompt-unificar.md como referencia de clasificación y validación."
+    },
+    {
+      "source": "config:.kiro/hooks/documentation-evolution-on-prompt.json",
+      "target": "document:docs/architecture-consistency.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Inspecciona docs/architecture-consistency.md para distinguir herramientas reales de documentación manual."
+    },
+    {
+      "source": "config:.kiro/hooks/documentation-evolution-on-prompt.json",
+      "target": "file:agent/tools/project_scanner.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Se apoya en project_scanner.py para verificar lagunas reales del repositorio."
+    },
+    {
+      "source": "config:.kiro/hooks/documentation-evolution-on-prompt.json",
+      "target": "file:agent/tools/project_index.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Se apoya en project_index.py para auditar símbolos e índices reales."
+    },
+    {
+      "source": "config:.kiro/hooks/documentation-evolution-on-prompt.json",
+      "target": "config:agent/architecture/contracts.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Consulta contracts.json durante auditorías de contratos y herramientas."
+    },
+    {
+      "source": "config:.kiro/hooks/session-continuity.json",
+      "target": "config:.kiro/hooks/documentation-evolution-on-prompt.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Ambos hooks coordinan la continuidad de sesiones a partir de checkpoints en _drafts/SESSION-*.md y PENDIENTES-*.md."
+    }
+  ]
+}

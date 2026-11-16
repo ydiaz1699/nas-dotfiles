@@ -1,0 +1,1463 @@
+{
+  "nodes": [
+    {
+      "id": "document:systemd/README.md",
+      "type": "document",
+      "name": "systemd/README.md",
+      "filePath": "systemd/README.md",
+      "lineRange": [1, 87],
+      "summary": "Guía de instalación, operación y variables de entorno de los servicios systemd del proyecto, cubriendo el daemon del agente NAS (nas-agent.service) y la generación del arranque escalonado de Docker desde plantilla.",
+      "tags": [
+        "documentacion-systemd",
+        "daemon-agente",
+        "arranque-escalonado",
+        "operacion-servicio"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:systemd/docker-boot-staged.service.template",
+      "type": "file",
+      "name": "docker-boot-staged.service.template",
+      "filePath": "systemd/docker-boot-staged.service.template",
+      "lineRange": [1, 53],
+      "summary": "Plantilla de unidad systemd oneshot para el arranque escalonado de contenedores Docker en el boot mediante boot-order.sh, con placeholders {{NAS_DOTFILES}} y {{DOCKER_BASE}}, esperas de red/montajes, reintentos y TimeoutStartSec de 2400 segundos.",
+      "tags": [
+        "plantilla-systemd",
+        "arranque-docker",
+        "servicio-oneshot",
+        "boot-escalonado"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo INI de unidad systemd parametrizado que es instanciado por shell/scripts/install-boot-service.sh hacia /etc/systemd/system/."
+    },
+    {
+      "id": "file:systemd/docker-shutdown-staged.service.template",
+      "type": "file",
+      "name": "docker-shutdown-staged.service.template",
+      "filePath": "systemd/docker-shutdown-staged.service.template",
+      "lineRange": [1, 47],
+      "summary": "Plantilla de unidad systemd oneshot que ejecuta stop-order.sh --down bajo PID 1 para apagar contenedores Docker en orden inverso de forma inmune a SIGHUP en sesiones SSH.",
+      "tags": [
+        "plantilla-systemd",
+        "apagado-docker",
+        "inmune-sighup",
+        "orden-inverso"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo INI de unidad systemd parametrizado con {{NAS_DOTFILES}} y {{DOCKER_BASE}}, regenerado por shell/scripts/install-shutdown-service.sh."
+    },
+    {
+      "id": "file:systemd/lobehub-mcp-helper.env.example",
+      "type": "file",
+      "name": "lobehub-mcp-helper.env.example",
+      "filePath": "systemd/lobehub-mcp-helper.env.example",
+      "lineRange": [1, 7],
+      "summary": "Plantilla de variables de entorno no secretas (/etc/nas/lobehub-mcp-helper.env) para configurar rutas, socket Unix, GID de nas-mcp y log de auditoría del helper read-only de LobeHub MCP.",
+      "tags": [
+        "variables-entorno",
+        "lobehub-mcp",
+        "socket-unix",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:systemd/lobehub-mcp-helper.service",
+      "type": "file",
+      "name": "lobehub-mcp-helper.service",
+      "filePath": "systemd/lobehub-mcp-helper.service",
+      "lineRange": [1, 43],
+      "summary": "Unidad systemd del helper host read-only de LobeHub MCP que ejecuta agent/lobehub_mcp.py con usuario aadm, grupos docker y nas-mcp, aislamiento estricto (ProtectSystem=strict, NoNewPrivileges) y límites de memoria/CPU.",
+      "tags": [
+        "unidad-systemd",
+        "lobehub-mcp",
+        "aislamiento-seguridad",
+        "helper-readonly"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo INI de servicio systemd con hardening de capacidades y RuntimeDirectory=nas para exponer el socket Unix sin entregar el socket Docker al gateway HTTP."
+    },
+    {
+      "id": "file:systemd/nas-agent.service",
+      "type": "file",
+      "name": "nas-agent.service",
+      "filePath": "systemd/nas-agent.service",
+      "lineRange": [1, 58],
+      "summary": "Unidad systemd para mantener activo 24/7 el daemon del agente NAS ejecutando python3 -m agent.daemon con reinicio automático, lectura de .env.agent, ProtectSystem=strict, escritura restringida y topes de 512M RAM y 50% CPU.",
+      "tags": [
+        "unidad-systemd",
+        "daemon-agente",
+        "reinicio-automatico",
+        "hardening-servicio"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo INI de servicio systemd configurado para ejecutar el módulo Python agent.daemon bajo supervisión continua."
+    },
+    {
+      "id": "file:systemd/nas-mcp-helper.env.example",
+      "type": "file",
+      "name": "nas-mcp-helper.env.example",
+      "filePath": "systemd/nas-mcp-helper.env.example",
+      "lineRange": [1, 6],
+      "summary": "Plantilla de variables de entorno no secretas (/etc/nas/nas-mcp-helper.env) para parametrizar rutas base, socket Unix, GID del grupo nas-mcp y bitácora JSONL de auditoría de nas-mcp-gateway.",
+      "tags": [
+        "variables-entorno",
+        "nas-mcp-gateway",
+        "socket-unix",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:systemd/nas-mcp-helper.service",
+      "type": "file",
+      "name": "nas-mcp-helper.service",
+      "filePath": "systemd/nas-mcp-helper.service",
+      "lineRange": [1, 39],
+      "summary": "Unidad systemd del helper host read-only de nas-mcp-gateway que ejecuta nas_mcp_worker.py --mode helper como usuario aadm con hardening de sistema de archivos y topes de 128M RAM y 10% CPU.",
+      "tags": [
+        "unidad-systemd",
+        "nas-mcp-gateway",
+        "aislamiento-seguridad",
+        "helper-readonly"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo INI de servicio systemd que aísla el acceso al socket Docker detrás de un worker dedicado."
+    },
+    {
+      "id": "file:tests/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "tests/__init__.py",
+      "lineRange": [1, 1],
+      "summary": "Marcador de paquete Python vacío para el directorio de pruebas tests.",
+      "tags": [
+        "paquete-python",
+        "suite-tests",
+        "marcador-modulo"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/conftest.py",
+      "type": "file",
+      "name": "conftest.py",
+      "filePath": "tests/conftest.py",
+      "lineRange": [1, 135],
+      "summary": "Configuración compartida de pytest que inserta mocks del SDK strands, rich y yaml en sys.modules para CI y provee fixtures de aislamiento de memoria, mock de safe_run y memoria pre-poblada.",
+      "tags": [
+        "fixtures-pytest",
+        "mocks-ci",
+        "aislamiento-memoria",
+        "tests-agente"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Módulo Python de pytest con parcheo temprano de sys.modules antes de importar módulos de agent.*."
+    },
+    {
+      "id": "function:tests/conftest.py:isolate_memory",
+      "type": "function",
+      "name": "isolate_memory",
+      "filePath": "tests/conftest.py",
+      "lineRange": [42, 62],
+      "summary": "Fixture autouse de pytest que crea un directorio de memoria temporal por prueba y parchea NAS_AGENT_MEMORY_DIR y las constantes de agent.core.memory.",
+      "tags": [
+        "fixture-autouse",
+        "aislamiento-memoria",
+        "monkeypatch-pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/conftest.py:mock_safe_run",
+      "type": "function",
+      "name": "mock_safe_run",
+      "filePath": "tests/conftest.py",
+      "lineRange": [66, 76],
+      "summary": "Fixture de pytest que reemplaza agent.tools._shell.safe_run con una función simulada para evitar ejecución real de comandos en tests.",
+      "tags": [
+        "fixture-mock",
+        "shell-seguro",
+        "monkeypatch-pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/conftest.py:populated_memory",
+      "type": "function",
+      "name": "populated_memory",
+      "filePath": "tests/conftest.py",
+      "lineRange": [80, 135],
+      "summary": "Fixture que escribe archivos de ejemplo MEMORY.md, USER.md, SKILLS.md y una sesión histórica sobre memoria aislada para pruebas de recall.",
+      "tags": [
+        "datos-prueba",
+        "memoria-poblada",
+        "fixture-pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/simulate_install_docker.sh",
+      "type": "file",
+      "name": "simulate_install_docker.sh",
+      "filePath": "tests/simulate_install_docker.sh",
+      "lineRange": [1, 243],
+      "summary": "Batería de pruebas automatizadas en Bash que ejecuta shell/scripts/install_docker.sh en modo dry-run contra archivos temporales para validar soporte Debian, repositorios legacy, errores de OS/codename y usuario explícito.",
+      "tags": [
+        "tests-bash",
+        "simulacion-docker",
+        "modo-dry-run",
+        "validacion-debian"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Script Bash estricto (set -Eeuo pipefail) con trap de limpieza y variables de entorno DOCKER_INSTALL_*."
+    },
+    {
+      "id": "function:tests/simulate_install_docker.sh:assert_contains",
+      "type": "function",
+      "name": "assert_contains",
+      "filePath": "tests/simulate_install_docker.sh",
+      "lineRange": [28, 38],
+      "summary": "Aserción Bash que comprueba si una cadena literal esperada aparece en la salida capturada y actualiza los contadores PASS o FAIL.",
+      "tags": [
+        "asercion-texto",
+        "tests-bash",
+        "verificacion-salida"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/simulate_install_docker.sh:assert_status",
+      "type": "function",
+      "name": "assert_status",
+      "filePath": "tests/simulate_install_docker.sh",
+      "lineRange": [40, 50],
+      "summary": "Aserción Bash que compara el código o conteo numérico obtenido frente al esperado y registra el resultado de la prueba.",
+      "tags": [
+        "asercion-estado",
+        "tests-bash",
+        "codigo-salida"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/simulate_install_docker.sh:run_installer",
+      "type": "function",
+      "name": "run_installer",
+      "filePath": "tests/simulate_install_docker.sh",
+      "lineRange": [61, 75],
+      "summary": "Invoca install_docker.sh con el flag --dry-run y rutas aisladas mediante variables de entorno DOCKER_INSTALL_*.",
+      "tags": [
+        "ejecucion-simulada",
+        "dry-run",
+        "instalador-docker"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/simulate_install_docker.sh:run_installer_from_env",
+      "type": "function",
+      "name": "run_installer_from_env",
+      "filePath": "tests/simulate_install_docker.sh",
+      "lineRange": [77, 91],
+      "summary": "Invoca install_docker.sh activando la simulación únicamente mediante DOCKER_INSTALL_DRY_RUN=1 sin pasar --dry-run por CLI.",
+      "tags": [
+        "ejecucion-simulada",
+        "variable-entorno",
+        "instalador-docker"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/simulate_install_docker.sh:test_valid_debian",
+      "type": "function",
+      "name": "test_valid_debian",
+      "filePath": "tests/simulate_install_docker.sh",
+      "lineRange": [100, 154],
+      "summary": "Valida la simulación completa en Debian trixie verificando detección de repositorios legacy, formato deb822, inmutabilidad de archivos y generación de log.",
+      "tags": [
+        "caso-prueba",
+        "debian-trixie",
+        "repositorio-deb822"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/simulate_install_docker.sh:test_dry_run_env",
+      "type": "function",
+      "name": "test_dry_run_env",
+      "filePath": "tests/simulate_install_docker.sh",
+      "lineRange": [156, 172],
+      "summary": "Comprueba que la variable DOCKER_INSTALL_DRY_RUN=1 activa el modo simulación en Debian bookworm sin argumentos de línea de comandos.",
+      "tags": [
+        "caso-prueba",
+        "dry-run-env",
+        "debian-bookworm"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/simulate_install_docker.sh:test_invalid_os",
+      "type": "function",
+      "name": "test_invalid_os",
+      "filePath": "tests/simulate_install_docker.sh",
+      "lineRange": [174, 187],
+      "summary": "Verifica que install_docker.sh rechace con código de salida 1 un sistema operativo no compatible como Ubuntu jammy.",
+      "tags": [
+        "caso-prueba",
+        "sistema-invalido",
+        "manejo-errores"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/simulate_install_docker.sh:test_invalid_codename",
+      "type": "function",
+      "name": "test_invalid_codename",
+      "filePath": "tests/simulate_install_docker.sh",
+      "lineRange": [189, 202],
+      "summary": "Verifica que install_docker.sh falle con estado 1 y mensaje claro cuando el codename de Debian (ej. sid) no está soportado.",
+      "tags": [
+        "caso-prueba",
+        "codename-invalido",
+        "manejo-errores"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/simulate_install_docker.sh:test_explicit_user",
+      "type": "function",
+      "name": "test_explicit_user",
+      "filePath": "tests/simulate_install_docker.sh",
+      "lineRange": [204, 229],
+      "summary": "Comprueba la aceptación de DOCKER_INSTALL_USER con un usuario existente en el sistema y la simulación de usermod -aG docker.",
+      "tags": [
+        "caso-prueba",
+        "usuario-docker",
+        "grupo-docker"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_daemon.py",
+      "type": "file",
+      "name": "test_daemon.py",
+      "filePath": "tests/test_daemon.py",
+      "lineRange": [1, 74],
+      "summary": "Suite de pruebas unitarias para la clase Scheduler de agent.daemon que verifica ejecución inmediata, parada graceful, tolerancia a errores en tareas y múltiples tareas concurrentes.",
+      "tags": [
+        "tests-unitarios",
+        "scheduler-daemon",
+        "concurrencia-threads"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_daemon.py:TestScheduler",
+      "type": "class",
+      "name": "TestScheduler",
+      "filePath": "tests/test_daemon.py",
+      "lineRange": [11, 74],
+      "summary": "Clase de pruebas pytest con cuatro métodos que ejercitan el ciclo de vida start/stop y el aislamiento de excepciones del planificador Scheduler.",
+      "tags": [
+        "clase-test",
+        "scheduler",
+        "pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:ui/requirements-setup.txt",
+      "type": "document",
+      "name": "ui/requirements-setup.txt",
+      "filePath": "ui/requirements-setup.txt",
+      "lineRange": [1, 4],
+      "summary": "Lista de dependencias Python mínimas (rich y InquirerPy) requeridas exclusivamente para ejecutar el asistente TUI de primera instalación ui/setup.py.",
+      "tags": [
+        "dependencias-python",
+        "instalador-tui",
+        "rich-inquirerpy"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:ui/setup.py",
+      "type": "file",
+      "name": "setup.py",
+      "filePath": "ui/setup.py",
+      "lineRange": [1, 601],
+      "summary": "Asistente TUI interactivo de primera instalación para nas-dotfiles construido con Rich e InquirerPy que detecta el entorno, recopila configuración de navegación, Docker y proveedor IA, y ejecuta los pasos de despliegue en /nas-dotfiles.",
+      "tags": [
+        "asistente-tui",
+        "instalacion-interactiva",
+        "rich-inquirerpy",
+        "configuracion-inicial"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Script Python CLI con barra de progreso Rich y fallback documentado hacia install.sh si faltan dependencias."
+    },
+    {
+      "id": "function:ui/setup.py:run_cmd",
+      "type": "function",
+      "name": "run_cmd",
+      "filePath": "ui/setup.py",
+      "lineRange": [57, 65],
+      "summary": "Ejecuta un subproceso con timeout y captura de salida retornando la tupla (éxito, stdout).",
+      "tags": [
+        "helper-subproceso",
+        "ejecucion-comandos",
+        "manejo-timeout"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:ui/setup.py:detect_system",
+      "type": "function",
+      "name": "detect_system",
+      "filePath": "ui/setup.py",
+      "lineRange": [68, 116],
+      "summary": "Recopila metadatos del sistema operativo, usuario, hostname, versiones de Docker, Python y Bash, y zona horaria actual.",
+      "tags": [
+        "deteccion-sistema",
+        "entorno-linux",
+        "diagnostico-previo"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:ui/setup.py:check_mark",
+      "type": "function",
+      "name": "check_mark",
+      "filePath": "ui/setup.py",
+      "lineRange": [119, 121],
+      "summary": "Devuelve un icono visual verde o rojo formateado para Rich según una condición booleana.",
+      "tags": [
+        "formato-tui",
+        "indicador-estado",
+        "rich"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:ui/setup.py:show_header",
+      "type": "function",
+      "name": "show_header",
+      "filePath": "ui/setup.py",
+      "lineRange": [129, 142],
+      "summary": "Limpia la consola y dibuja el panel de cabecera principal del asistente de setup.",
+      "tags": [
+        "interfaz-tui",
+        "cabecera-panel",
+        "rich"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:ui/setup.py:show_system_info",
+      "type": "function",
+      "name": "show_system_info",
+      "filePath": "ui/setup.py",
+      "lineRange": [145, 175],
+      "summary": "Renderiza una tabla Rich con los parámetros detectados del host y su estado de disponibilidad.",
+      "tags": [
+        "tabla-sistema",
+        "interfaz-tui",
+        "rich"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:ui/setup.py:ask_configuration",
+      "type": "function",
+      "name": "ask_configuration",
+      "filePath": "ui/setup.py",
+      "lineRange": [178, 297],
+      "summary": "Guía prompts interactivos con InquirerPy para definir atajo de navegación, ruta Docker, timezone, proveedor de IA y credenciales, setup de root e instalación de dependencias.",
+      "tags": [
+        "wizard-interactivo",
+        "prompts-inquirerpy",
+        "configuracion-ia"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:ui/setup.py:show_summary",
+      "type": "function",
+      "name": "show_summary",
+      "filePath": "ui/setup.py",
+      "lineRange": [300, 325],
+      "summary": "Presenta una tabla resumen con todos los parámetros elegidos antes de confirmar la instalación.",
+      "tags": [
+        "resumen-configuracion",
+        "tabla-tui",
+        "confirmacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:ui/setup.py:execute_installation",
+      "type": "function",
+      "name": "execute_installation",
+      "filePath": "ui/setup.py",
+      "lineRange": [328, 363],
+      "summary": "Orquesta secuencialmente la lista de pasos de instalación mostrando una barra de progreso Rich y deteniéndose ante cualquier error.",
+      "tags": [
+        "orquestacion-setup",
+        "barra-progreso",
+        "pasos-instalacion"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:ui/setup.py:_step_copy",
+      "type": "function",
+      "name": "_step_copy",
+      "filePath": "ui/setup.py",
+      "lineRange": [371, 388],
+      "summary": "Copia el repositorio completo hacia /nas-dotfiles y ajusta la propiedad de archivos al usuario actual.",
+      "tags": [
+        "copia-repositorio",
+        "permisos-archivo",
+        "paso-setup"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:ui/setup.py:_step_bashrc_user",
+      "type": "function",
+      "name": "_step_bashrc_user",
+      "filePath": "ui/setup.py",
+      "lineRange": [391, 393],
+      "summary": "Delega la configuración del archivo ~/.bashrc del usuario invocante en _configure_bashrc.",
+      "tags": [
+        "bashrc-usuario",
+        "shell-init",
+        "paso-setup"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:ui/setup.py:_step_user_conf",
+      "type": "function",
+      "name": "_step_user_conf",
+      "filePath": "ui/setup.py",
+      "lineRange": [396, 415],
+      "summary": "Genera el archivo /nas-dotfiles/.config/user.conf con las variables NAV_HOME, NAV_VAR y NAV_CMD.",
+      "tags": [
+        "user-conf",
+        "navegacion-rapida",
+        "paso-setup"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:ui/setup.py:_step_bashrc_root",
+      "type": "function",
+      "name": "_step_bashrc_root",
+      "filePath": "ui/setup.py",
+      "lineRange": [418, 422],
+      "summary": "Configura /root/.bashrc mediante _configure_bashrc si existe o el instalador corre como root.",
+      "tags": [
+        "bashrc-root",
+        "shell-init",
+        "paso-setup"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:ui/setup.py:_configure_bashrc",
+      "type": "function",
+      "name": "_configure_bashrc",
+      "filePath": "ui/setup.py",
+      "lineRange": [425, 460],
+      "summary": "Respalda el .bashrc destino, depura líneas previas de nas-dotfiles e inserta NAS_DOTFILES y la carga de shell/init.sh.",
+      "tags": [
+        "edicion-bashrc",
+        "respaldo-config",
+        "shell-init"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:ui/setup.py:_step_env_vars",
+      "type": "function",
+      "name": "_step_env_vars",
+      "filePath": "ui/setup.py",
+      "lineRange": [463, 491],
+      "summary": "Escribe /nas-dotfiles/.env.agent con el proveedor IA, credenciales, DOCKER_BASE y TZ aplicando permisos 0600.",
+      "tags": [
+        "archivo-env",
+        "credenciales-agente",
+        "permisos-restrictivos"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:ui/setup.py:_step_permissions",
+      "type": "function",
+      "name": "_step_permissions",
+      "filePath": "ui/setup.py",
+      "lineRange": [494, 502],
+      "summary": "Asegura permisos de ejecución (0755) sobre docker/cli/svc.sh y setup.py dentro de /nas-dotfiles.",
+      "tags": [
+        "permisos-ejecucion",
+        "cli-svc",
+        "paso-setup"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:ui/setup.py:_step_python_deps",
+      "type": "function",
+      "name": "_step_python_deps",
+      "filePath": "ui/setup.py",
+      "lineRange": [505, 514],
+      "summary": "Instala los paquetes listados en /nas-dotfiles/requirements.txt usando pip con --break-system-packages.",
+      "tags": [
+        "dependencias-python",
+        "pip-install",
+        "paso-setup"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:ui/setup.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "ui/setup.py",
+      "lineRange": [522, 597],
+      "summary": "Punto de entrada del TUI que encadena detección del sistema, confirmación inicial, wizard de configuración, resumen, ejecución y reporte final.",
+      "tags": [
+        "punto-entrada",
+        "flujo-principal",
+        "asistente-tui"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:systemd/README.md",
+      "target": "file:systemd/nas-agent.service",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica la instalación, comandos systemctl, variables de entorno y comportamiento de reinicio de nas-agent.service."
+    },
+    {
+      "source": "document:systemd/README.md",
+      "target": "file:systemd/docker-boot-staged.service.template",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la generación desde plantilla y activación del servicio de arranque escalonado de Docker."
+    },
+    {
+      "source": "document:systemd/README.md",
+      "target": "document:docs/docker-boot-staged-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Remite a la guía completa de arranque escalonado tras crear layers.conf."
+    },
+    {
+      "source": "document:systemd/README.md",
+      "target": "file:shell/scripts/boot-order.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe que el servicio de arranque escalonado ejecuta boot-order.sh como root."
+    },
+    {
+      "source": "document:systemd/README.md",
+      "target": "file:shell/scripts/install-boot-service.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indica invocar install-boot-service.sh para generar el unit file en /etc/systemd/system/."
+    },
+    {
+      "source": "file:systemd/docker-boot-staged.service.template",
+      "target": "file:shell/scripts/boot-order.sh",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define ExecStart apuntando a {{NAS_DOTFILES}}/shell/scripts/boot-order.sh tras verificar docker.service y montajes."
+    },
+    {
+      "source": "file:systemd/docker-boot-staged.service.template",
+      "target": "document:docs/docker-boot-staged-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia la guía de arranque escalonado en el campo Documentation de la unidad."
+    },
+    {
+      "source": "file:systemd/docker-shutdown-staged.service.template",
+      "target": "file:shell/scripts/stop-order.sh",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define ExecStart ejecutando {{NAS_DOTFILES}}/shell/scripts/stop-order.sh --down fuera de sesiones SSH."
+    },
+    {
+      "source": "file:systemd/docker-shutdown-staged.service.template",
+      "target": "file:systemd/docker-boot-staged.service.template",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Actúa como contraparte de apagado en orden inverso para la plantilla de arranque escalonado."
+    },
+    {
+      "source": "file:systemd/docker-shutdown-staged.service.template",
+      "target": "document:docs/docker-boot-staged-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Apunta a la documentación común del ciclo escalonado de Docker."
+    },
+    {
+      "source": "file:systemd/lobehub-mcp-helper.env.example",
+      "target": "file:systemd/lobehub-mcp-helper.service",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Provee las variables cargadas por EnvironmentFile=-/etc/nas/lobehub-mcp-helper.env en la unidad del helper."
+    },
+    {
+      "source": "file:systemd/lobehub-mcp-helper.env.example",
+      "target": "file:agent/lobehub_mcp.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define rutas, socket Unix y bitácora de auditoría leídas por el helper Python de LobeHub MCP."
+    },
+    {
+      "source": "file:systemd/lobehub-mcp-helper.service",
+      "target": "file:agent/lobehub_mcp.py",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Inicia /usr/bin/python3 ${NAS_DOTFILES}/agent/lobehub_mcp.py en modo helper read-only."
+    },
+    {
+      "source": "file:systemd/lobehub-mcp-helper.service",
+      "target": "document:docs/lobehub-mcp-gateway.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia la documentación de arquitectura del gateway LobeHub MCP."
+    },
+    {
+      "source": "file:systemd/nas-agent.service",
+      "target": "file:agent/daemon.py",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Lanza el daemon continuo mediante ExecStart=/usr/bin/python3 -m agent.daemon."
+    },
+    {
+      "source": "file:systemd/nas-mcp-helper.env.example",
+      "target": "file:systemd/nas-mcp-helper.service",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Suministra los parámetros de entorno cargados por EnvironmentFile=-/etc/nas/nas-mcp-helper.env."
+    },
+    {
+      "source": "file:systemd/nas-mcp-helper.env.example",
+      "target": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define socket, GID y archivo de auditoría utilizados por nas_mcp_worker.py."
+    },
+    {
+      "source": "file:systemd/nas-mcp-helper.service",
+      "target": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Ejecuta nas_mcp_worker.py --mode helper con acceso acotado al socket Docker."
+    },
+    {
+      "source": "file:systemd/nas-mcp-helper.service",
+      "target": "document:docs/nas-mcp-gateway.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia la guía técnica del gateway independiente nas-mcp-gateway."
+    },
+    {
+      "source": "file:tests/conftest.py",
+      "target": "function:tests/conftest.py:isolate_memory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/conftest.py",
+      "target": "function:tests/conftest.py:mock_safe_run",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/conftest.py",
+      "target": "function:tests/conftest.py:populated_memory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/conftest.py",
+      "target": "function:tests/conftest.py:isolate_memory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/conftest.py",
+      "target": "function:tests/conftest.py:mock_safe_run",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/conftest.py",
+      "target": "function:tests/conftest.py:populated_memory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/conftest.py:isolate_memory",
+      "target": "file:agent/core/memory.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Importa y parchea dinámicamente MEMORY_DIR, MEMORY_FILE, USER_FILE, SKILLS_FILE y SESSIONS_DIR en agent.core.memory."
+    },
+    {
+      "source": "function:tests/conftest.py:mock_safe_run",
+      "target": "file:agent/tools/_shell.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Parchea agent.tools._shell.safe_run con monkeypatch para aislar comandos de shell."
+    },
+    {
+      "source": "file:tests/simulate_install_docker.sh",
+      "target": "function:tests/simulate_install_docker.sh:assert_contains",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/simulate_install_docker.sh",
+      "target": "function:tests/simulate_install_docker.sh:assert_status",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/simulate_install_docker.sh",
+      "target": "function:tests/simulate_install_docker.sh:run_installer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/simulate_install_docker.sh",
+      "target": "function:tests/simulate_install_docker.sh:run_installer_from_env",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/simulate_install_docker.sh",
+      "target": "function:tests/simulate_install_docker.sh:test_valid_debian",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/simulate_install_docker.sh",
+      "target": "function:tests/simulate_install_docker.sh:test_dry_run_env",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/simulate_install_docker.sh",
+      "target": "function:tests/simulate_install_docker.sh:test_invalid_os",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/simulate_install_docker.sh",
+      "target": "function:tests/simulate_install_docker.sh:test_invalid_codename",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/simulate_install_docker.sh",
+      "target": "function:tests/simulate_install_docker.sh:test_explicit_user",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/simulate_install_docker.sh",
+      "target": "file:shell/scripts/install_docker.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Ejecuta shell/scripts/install_docker.sh en modo dry-run para simular todos los escenarios."
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_valid_debian",
+      "target": "function:tests/simulate_install_docker.sh:run_installer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_valid_debian",
+      "target": "function:tests/simulate_install_docker.sh:assert_contains",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_valid_debian",
+      "target": "function:tests/simulate_install_docker.sh:assert_status",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_dry_run_env",
+      "target": "function:tests/simulate_install_docker.sh:run_installer_from_env",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_dry_run_env",
+      "target": "function:tests/simulate_install_docker.sh:assert_contains",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_invalid_os",
+      "target": "function:tests/simulate_install_docker.sh:run_installer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_invalid_os",
+      "target": "function:tests/simulate_install_docker.sh:assert_status",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_invalid_os",
+      "target": "function:tests/simulate_install_docker.sh:assert_contains",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_invalid_codename",
+      "target": "function:tests/simulate_install_docker.sh:run_installer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_invalid_codename",
+      "target": "function:tests/simulate_install_docker.sh:assert_status",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_invalid_codename",
+      "target": "function:tests/simulate_install_docker.sh:assert_contains",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_explicit_user",
+      "target": "function:tests/simulate_install_docker.sh:run_installer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:tests/simulate_install_docker.sh:test_explicit_user",
+      "target": "function:tests/simulate_install_docker.sh:assert_contains",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_daemon.py",
+      "target": "class:tests/test_daemon.py:TestScheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:tests/test_daemon.py",
+      "target": "class:tests/test_daemon.py:TestScheduler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_daemon.py",
+      "target": "file:agent/daemon.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_daemon.py",
+      "target": "file:tests/conftest.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Depende del aislamiento global y mocks de entorno cargados por conftest.py."
+    },
+    {
+      "source": "file:agent/daemon.py",
+      "target": "file:tests/test_daemon.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "La clase Scheduler de agent/daemon.py es verificada por tests/test_daemon.py."
+    },
+    {
+      "source": "class:tests/test_daemon.py:TestScheduler",
+      "target": "class:agent/daemon.py:Scheduler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Instancia Scheduler y llama add_task, start y stop en sus cuatro métodos de prueba."
+    },
+    {
+      "source": "document:ui/requirements-setup.txt",
+      "target": "file:ui/setup.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Declara los paquetes rich e InquirerPy consumidos por el asistente TUI ui/setup.py."
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:run_cmd",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:detect_system",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:check_mark",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:show_header",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:show_system_info",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:ask_configuration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:show_summary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:execute_installation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_copy",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_bashrc_user",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_user_conf",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_bashrc_root",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_configure_bashrc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_env_vars",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_permissions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_python_deps",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:run_cmd",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:detect_system",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:check_mark",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:show_header",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:show_system_info",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:ask_configuration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:show_summary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:execute_installation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_copy",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_bashrc_user",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_user_conf",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_bashrc_root",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_configure_bashrc",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_env_vars",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_permissions",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:_step_python_deps",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "function:ui/setup.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:detect_system",
+      "target": "function:ui/setup.py:run_cmd",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:show_system_info",
+      "target": "function:ui/setup.py:check_mark",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:execute_installation",
+      "target": "function:ui/setup.py:_step_copy",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:execute_installation",
+      "target": "function:ui/setup.py:_step_user_conf",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:execute_installation",
+      "target": "function:ui/setup.py:_step_bashrc_user",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:execute_installation",
+      "target": "function:ui/setup.py:_step_bashrc_root",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:execute_installation",
+      "target": "function:ui/setup.py:_step_env_vars",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:execute_installation",
+      "target": "function:ui/setup.py:_step_permissions",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:execute_installation",
+      "target": "function:ui/setup.py:_step_python_deps",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:_step_bashrc_user",
+      "target": "function:ui/setup.py:_configure_bashrc",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:_step_bashrc_root",
+      "target": "function:ui/setup.py:_configure_bashrc",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:main",
+      "target": "function:ui/setup.py:show_header",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:main",
+      "target": "function:ui/setup.py:detect_system",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:main",
+      "target": "function:ui/setup.py:show_system_info",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:main",
+      "target": "function:ui/setup.py:ask_configuration",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:main",
+      "target": "function:ui/setup.py:show_summary",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:ui/setup.py:main",
+      "target": "function:ui/setup.py:execute_installation",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "document:ui/requirements-setup.txt",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Requiere rich e InquirerPy definidos en ui/requirements-setup.txt para renderizar el asistente TUI."
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "document:requirements.txt",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Instala las dependencias del agente definidas en requirements.txt mediante pip."
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "file:shell/init.sh",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Agrega la carga automática de shell/init.sh y NAS_DOTFILES en ~/.bashrc y /root/.bashrc."
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "file:docker/cli/svc.sh",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Establece permisos ejecutables (0755) sobre docker/cli/svc.sh durante la instalación."
+    },
+    {
+      "source": "file:ui/setup.py",
+      "target": "file:install.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Ofrece ./install.sh en Bash como mecanismo de respaldo cuando faltan dependencias Python del TUI."
+    }
+  ]
+}

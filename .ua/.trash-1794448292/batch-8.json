@@ -1,0 +1,362 @@
+{
+  "nodes": [
+    {
+      "id": "document:.kiro/skills/dotfile-skill/references/agent.md",
+      "type": "document",
+      "name": ".kiro/skills/dotfile-skill/references/agent.md",
+      "filePath": ".kiro/skills/dotfile-skill/references/agent.md",
+      "lineRange": [
+        1,
+        124
+      ],
+      "summary": "Referencia técnica completa del agente IA Python: providers (Gemini, Bedrock, Ollama), arquitectura dinámica del prompt, catálogo de tools, gateways MCP, plugins, memoria persistente y daemon systemd.",
+      "tags": [
+        "referencia-agente",
+        "gateways-mcp",
+        "plugins-agente",
+        "memoria-persistente"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.kiro/skills/dotfile-skill/references/diagnostic.md",
+      "type": "document",
+      "name": ".kiro/skills/dotfile-skill/references/diagnostic.md",
+      "filePath": ".kiro/skills/dotfile-skill/references/diagnostic.md",
+      "lineRange": [
+        1,
+        140
+      ],
+      "summary": "Recetario paso a paso para diagnosticar fallos en servicios Docker: contenedores caídos, OOM, crash loops, conflictos de puertos, alto consumo, healthchecks fallidos y problemas de red.",
+      "tags": [
+        "diagnostico-docker",
+        "troubleshooting",
+        "healthcheck",
+        "conflictos-puerto"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.kiro/skills/dotfile-skill/references/extend.md",
+      "type": "document",
+      "name": ".kiro/skills/dotfile-skill/references/extend.md",
+      "filePath": ".kiro/skills/dotfile-skill/references/extend.md",
+      "lineRange": [
+        1,
+        86
+      ],
+      "summary": "Guía de extensión del framework que detalla cómo añadir nuevos comandos svc en Bash, tools @tool para el agente Python, plugins basados en BasePlugin, módulos shell y destinos de navegación.",
+      "tags": [
+        "extension-framework",
+        "patrones-codigo",
+        "plugins-base",
+        "comandos-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.kiro/skills/dotfile-skill/references/security.md",
+      "type": "document",
+      "name": ".kiro/skills/dotfile-skill/references/security.md",
+      "filePath": ".kiro/skills/dotfile-skill/references/security.md",
+      "lineRange": [
+        1,
+        65
+      ],
+      "summary": "Referencia de mecanismos de seguridad, variables de entorno (rutas del proyecto y parámetros del agente) y convenciones de código, puertos y secretos de nas-dotfiles.",
+      "tags": [
+        "seguridad-agente",
+        "variables-entorno",
+        "convenciones",
+        "auditoria-acciones"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.kiro/skills/dotfile-skill/references/shell.md",
+      "type": "document",
+      "name": ".kiro/skills/dotfile-skill/references/shell.md",
+      "filePath": ".kiro/skills/dotfile-skill/references/shell.md",
+      "lineRange": [
+        1,
+        137
+      ],
+      "summary": "Referencia completa del Shell Framework: orden de carga en shell/init.sh, comandos de navegación rápida (adm, dk, nasfk), aliases de sistema/Docker/Git, funciones instal/pipins/nas y prompt dinámico.",
+      "tags": [
+        "shell-framework",
+        "aliases-bash",
+        "navegacion-rapida",
+        "prompt-dinamico"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.kiro/skills/dotfile-skill/references/svc.md",
+      "type": "document",
+      "name": ".kiro/skills/dotfile-skill/references/svc.md",
+      "filePath": ".kiro/skills/dotfile-skill/references/svc.md",
+      "lineRange": [
+        1,
+        226
+      ],
+      "summary": "Referencia completa del CLI Docker svc: arquitectura modular Bash/Python, comandos globales y por servicio, autocompletado, convención de redes compartidas, plantilla compose.yml y variables globales.",
+      "tags": [
+        "cli-svc",
+        "docker-compose",
+        "redes-compartidas",
+        "cli-dual"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/agent.md",
+      "target": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documento de referencia subordinado a la skill principal dotfile-skill."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/agent.md",
+      "target": "file:agent/nas_agent.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la ejecución, providers, sesiones y arquitectura de prompt de agent/nas_agent.py."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/agent.md",
+      "target": "file:agent/daemon.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el daemon 24/7 con scheduler y manejo de SIGTERM en agent/daemon.py."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/agent.md",
+      "target": "file:agent/lobehub_mcp.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el gateway MCP histórico de LobeHub en agent/lobehub_mcp.py."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/agent.md",
+      "target": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el gateway MCP general read-only del NAS y sus herramientas publicadas."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/agent.md",
+      "target": "file:agent/tools/__init__.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enumera el registro ALL_TOOLS y los módulos de herramientas en agent/tools/."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/agent.md",
+      "target": "file:agent/plugins/base.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica la interfaz BasePlugin y los plugins disponibles en agent/plugins/."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/agent.md",
+      "target": "config:agent/catalog/catalog.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe el índice del catálogo de servicios en agent/catalog/catalog.json."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/diagnostic.md",
+      "target": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Recetario de diagnóstico referenciado por dotfile-skill."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/diagnostic.md",
+      "target": "document:.kiro/skills/dotfile-skill/references/svc.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Usa los comandos de diagnóstico de svc documentados en references/svc.md."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/diagnostic.md",
+      "target": "file:docker/cli/lib/health.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica el uso operativo de svc health para detectar crash loops y contenedores unhealthy."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/diagnostic.md",
+      "target": "file:docker/cli/lib/extras.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica el uso de svc doctor, port-map y net para resolver incidencias."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/extend.md",
+      "target": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Guía de extensión referenciada por dotfile-skill."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/extend.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Detalla cómo registrar nuevos subcomandos Bash en docker/cli/svc.sh."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/extend.md",
+      "target": "file:agent/tools/__init__.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica cómo exportar nuevas herramientas @tool en ALL_TOOLS."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/extend.md",
+      "target": "file:agent/plugins/base.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Proporciona un ejemplo concreto de subclase de BasePlugin."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/extend.md",
+      "target": "file:shell/init.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica cómo registrar un nuevo módulo en el array de carga de shell/init.sh."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/security.md",
+      "target": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia de seguridad y variables vinculada a dotfile-skill."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/security.md",
+      "target": "file:agent/tools/_shell.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta safe_run, validate_service_name, validated_service_path y readonly_guard."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/security.md",
+      "target": "file:agent/tools/_audit.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el registro de auditoría JSON Lines y NAS_AGENT_AUDIT."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/security.md",
+      "target": "file:agent/core/compose_manager.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la sanitización YAML al generar servicios desde el agente."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/shell.md",
+      "target": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia del shell framework vinculada a dotfile-skill."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/shell.md",
+      "target": "file:shell/init.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el orden de carga y protección anti-doble-carga de shell/init.sh."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/shell.md",
+      "target": "file:shell/lib/nav.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta los comandos de navegación adm, dk y nasfk."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/shell.md",
+      "target": "file:shell/lib/aliases.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta los aliases de listado, archivos, Docker y sistema."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/shell.md",
+      "target": "file:shell/lib/system.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta nas, disk, netinfo y logs."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/shell.md",
+      "target": "file:shell/lib/prompt.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el prompt dinámico con contadores cacheados de Docker y disco."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/svc.md",
+      "target": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia del CLI Docker svc vinculada a dotfile-skill."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/svc.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta todos los comandos globales y por servicio de docker/cli/svc.sh."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/svc.md",
+      "target": "file:svc_py/app.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el modo alternativo NAS_CLI=python implementado en svc_py/."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/references/svc.md",
+      "target": "document:agent/catalog/_compose_base.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Incluye la plantilla base y convenciones de redes compartidas enlazadas con _compose_base.md."
+    }
+  ]
+}

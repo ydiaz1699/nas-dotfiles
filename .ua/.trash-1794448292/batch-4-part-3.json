@@ -1,0 +1,1581 @@
+{
+  "batchIndex": 4,
+  "part": 3,
+  "totalParts": 3,
+  "nodes": [
+    {
+      "id": "file:agent/tools/project_scanner.py",
+      "type": "file",
+      "name": "project_scanner.py",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        1,
+        1201
+      ],
+      "summary": "Auditor integral del ecosistema nas-dotfiles que detecta inconsistencias entre servicios, higiene Compose, paridad CLI, prompt del agente, documentación y contratos arquitectónicos.",
+      "tags": [
+        "auditoria-proyecto",
+        "escaner-incremental",
+        "contratos-arquitectura",
+        "paridad-cli"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Combina dataclasses (Snapshot, Issue, ScanResult), escaneo incremental basado en git diff, integración con project_index.py y modo dual @tool/CLI."
+    },
+    {
+      "id": "class:agent/tools/project_scanner.py:Snapshot",
+      "type": "class",
+      "name": "Snapshot",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        87,
+        121
+      ],
+      "summary": "Dataclass que persiste y carga en JSON el estado del último escaneo completo (commit, hashes y servicios).",
+      "tags": [
+        "dataclass",
+        "snapshot-estado",
+        "persistencia-json"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_get_current_commit",
+      "type": "function",
+      "name": "_get_current_commit",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        124,
+        134
+      ],
+      "summary": "Obtiene el hash corto del commit HEAD actual mediante git rev-parse.",
+      "tags": [
+        "git",
+        "commit-head",
+        "subproceso"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_get_changed_files",
+      "type": "function",
+      "name": "_get_changed_files",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        137,
+        183
+      ],
+      "summary": "Recopila archivos modificados, en staging y sin seguimiento desde un commit previo usando git diff y git ls-files.",
+      "tags": [
+        "git-diff",
+        "escaner-incremental",
+        "archivos-cambiados"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_hash_file",
+      "type": "function",
+      "name": "_hash_file",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        186,
+        192
+      ],
+      "summary": "Calcula un hash MD5 corto del contenido de un archivo para detectar cambios.",
+      "tags": [
+        "hash-md5",
+        "integridad-archivo",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_classify_changed_file",
+      "type": "function",
+      "name": "_classify_changed_file",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        195,
+        261
+      ],
+      "summary": "Clasifica cada archivo modificado por categoría (servicio, CLI, agente, docs, etc.) para el escaneo incremental.",
+      "tags": [
+        "clasificacion-archivos",
+        "escaner-incremental",
+        "enrutamiento"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_build_snapshot_from_scan",
+      "type": "function",
+      "name": "_build_snapshot_from_scan",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        264,
+        295
+      ],
+      "summary": "Construye un Snapshot con el commit actual, estado de servicios y hashes de archivos clave tras un escaneo.",
+      "tags": [
+        "snapshot-estado",
+        "hashes-archivo",
+        "auditoria"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:incremental_scan",
+      "type": "function",
+      "name": "incremental_scan",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        298,
+        360
+      ],
+      "summary": "Ejecuta un escaneo selectivo analizando cambios en git respecto al snapshot previo y verificando solo las áreas afectadas.",
+      "tags": [
+        "escaner-incremental",
+        "git-diff",
+        "optimizacion"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:agent/tools/project_scanner.py:Issue",
+      "type": "class",
+      "name": "Issue",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        369,
+        382
+      ],
+      "summary": "Dataclass que representa una inconsistencia detectada con severidad, categoría, servicio afectado y sugerencia de corrección.",
+      "tags": [
+        "dataclass",
+        "modelo-issue",
+        "diagnostico"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:agent/tools/project_scanner.py:ScanResult",
+      "type": "class",
+      "name": "ScanResult",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        386,
+        428
+      ],
+      "summary": "Dataclass agregadora del resultado del escaneo con conteos, lista de issues, estado de servicios y métricas arquitectónicas.",
+      "tags": [
+        "dataclass",
+        "resultado-scan",
+        "serializacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_detect_services",
+      "type": "function",
+      "name": "_detect_services",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        436,
+        458
+      ],
+      "summary": "Detecta todos los servicios Docker combinando directorios en DOCKER_BASE y entradas en el catálogo.",
+      "tags": [
+        "descubrimiento-servicios",
+        "docker",
+        "catalogo"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_get_debmenux_scripts_dir",
+      "type": "function",
+      "name": "_get_debmenux_scripts_dir",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        461,
+        467
+      ],
+      "summary": "Resuelve el directorio de scripts de servicios de DebMenux entre la ruta principal y la alternativa.",
+      "tags": [
+        "debmenux",
+        "ruta-scripts",
+        "integracion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_check_services",
+      "type": "function",
+      "name": "_check_services",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        470,
+        551
+      ],
+      "summary": "Verifica por cada servicio la existencia de compose, ficha, guía, script DebMenux y etiquetas Homepage.",
+      "tags": [
+        "verificacion-servicios",
+        "documentacion",
+        "debmenux"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_check_compose_hygiene",
+      "type": "function",
+      "name": "_check_compose_hygiene",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        554,
+        625
+      ],
+      "summary": "Audita los archivos Compose buscando IPs hardcodeadas, variables TZ duplicadas, falta de env_file y ausencia de healthcheck.",
+      "tags": [
+        "higiene-compose",
+        "auditoria-config",
+        "seguridad"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_check_cli_parity",
+      "type": "function",
+      "name": "_check_cli_parity",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        628,
+        680
+      ],
+      "summary": "Compara los comandos registrados en svc.sh (Bash) contra svc_py/app.py (Python) para detectar divergencias de paridad.",
+      "tags": [
+        "paridad-cli",
+        "bash-python",
+        "auditoria"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_check_agent_prompt",
+      "type": "function",
+      "name": "_check_agent_prompt",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        683,
+        730
+      ],
+      "summary": "Comprueba que los comandos reales de svc.sh estén documentados en BLOCK_CONTEXTO_NAS dentro de nas_agent.py.",
+      "tags": [
+        "prompt-agente",
+        "coherencia-cli",
+        "auditoria"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_check_architecture_contracts",
+      "type": "function",
+      "name": "_check_architecture_contracts",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        733,
+        941
+      ],
+      "summary": "Valida el índice estructural generado por project_index.py frente a contracts.json, verificando manifests de capacidades, conexiones, contratos CLI y paridad con DebMenux.",
+      "tags": [
+        "contratos-arquitectura",
+        "indice-proyecto",
+        "capacidades"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:_check_docs_references",
+      "type": "function",
+      "name": "_check_docs_references",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        949,
+        980
+      ],
+      "summary": "Comprueba que las rutas locales docs_url declaradas en las fichas de servicios apunten a archivos existentes.",
+      "tags": [
+        "validacion-docs",
+        "fichas-servicio",
+        "enlaces-rotos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:scan",
+      "type": "function",
+      "name": "scan",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        988,
+        999
+      ],
+      "summary": "Orquesta la ejecución completa de los seis validadores del proyecto y retorna un ScanResult.",
+      "tags": [
+        "orquestacion-scan",
+        "auditoria-completa",
+        "scan-result"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:format_report",
+      "type": "function",
+      "name": "format_report",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        1002,
+        1081
+      ],
+      "summary": "Formatea el resultado del escaneo en un reporte legible con tabla de servicios, métricas arquitectónicas e issues agrupados por severidad.",
+      "tags": [
+        "formateo-reporte",
+        "salida-texto",
+        "auditoria"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:project_scan",
+      "type": "function",
+      "name": "project_scan",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        1092,
+        1119
+      ],
+      "summary": "Tool del agente que ejecuta un escaneo completo o incremental del proyecto y devuelve el reporte formateado.",
+      "tags": [
+        "tool-strands",
+        "escaner-proyecto",
+        "auditoria"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_scanner.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "agent/tools/project_scanner.py",
+      "lineRange": [
+        1143,
+        1197
+      ],
+      "summary": "Punto de entrada CLI de project_scanner con soporte para --verbose, --json, --full y --changed.",
+      "tags": [
+        "cli-standalone",
+        "escaner-proyecto",
+        "salida-json"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/tools/system_tools.py",
+      "type": "file",
+      "name": "system_tools.py",
+      "filePath": "agent/tools/system_tools.py",
+      "lineRange": [
+        1,
+        391
+      ],
+      "summary": "Herramientas @tool de diagnóstico del sistema operativo Linux e inspección segura de archivos del NAS.",
+      "tags": [
+        "tools-agente",
+        "diagnostico-sistema",
+        "lectura-segura"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Ejecuta utilidades Linux (ss, df, free, ps, ip, docker, find, head) via safe_run y aplica sanitización de credenciales en archivos .env."
+    },
+    {
+      "id": "function:agent/tools/system_tools.py:scan_ports",
+      "type": "function",
+      "name": "scan_ports",
+      "filePath": "agent/tools/system_tools.py",
+      "lineRange": [
+        14,
+        45
+      ],
+      "summary": "Tool que escanea puertos TCP/UDP ocupados con ss y sugiere los próximos 10 puertos libres en el rango 8100-8999.",
+      "tags": [
+        "tool-strands",
+        "puertos-red",
+        "diagnostico"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/system_tools.py:_parse_ports",
+      "type": "function",
+      "name": "_parse_ports",
+      "filePath": "agent/tools/system_tools.py",
+      "lineRange": [
+        48,
+        61
+      ],
+      "summary": "Extrae los números de puerto de la salida tabular del comando ss.",
+      "tags": [
+        "parseo-salida",
+        "puertos-red",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/system_tools.py:disk_usage",
+      "type": "function",
+      "name": "disk_usage",
+      "filePath": "agent/tools/system_tools.py",
+      "lineRange": [
+        65,
+        105
+      ],
+      "summary": "Tool que consulta el espacio en disco de particiones físicas con df y genera alertas sobre 75% y 90%.",
+      "tags": [
+        "tool-strands",
+        "uso-disco",
+        "alertas-sistema"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/system_tools.py:memory_info",
+      "type": "function",
+      "name": "memory_info",
+      "filePath": "agent/tools/system_tools.py",
+      "lineRange": [
+        109,
+        151
+      ],
+      "summary": "Tool que reporta memoria RAM/swap con free, porcentaje de uso y los principales procesos consumidores.",
+      "tags": [
+        "tool-strands",
+        "memoria-ram",
+        "procesos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/system_tools.py:_calc_mem_pct",
+      "type": "function",
+      "name": "_calc_mem_pct",
+      "filePath": "agent/tools/system_tools.py",
+      "lineRange": [
+        154,
+        171
+      ],
+      "summary": "Calcula el porcentaje entero de memoria usada a partir de la salida en bytes de free -b.",
+      "tags": [
+        "calculo-memoria",
+        "parseo-salida",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/system_tools.py:network_info",
+      "type": "function",
+      "name": "network_info",
+      "filePath": "agent/tools/system_tools.py",
+      "lineRange": [
+        175,
+        223
+      ],
+      "summary": "Tool que muestra la IP principal, interfaces de red y redes custom de Docker con sus contenedores.",
+      "tags": [
+        "tool-strands",
+        "redes-docker",
+        "interfaces-red"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/system_tools.py:list_files",
+      "type": "function",
+      "name": "list_files",
+      "filePath": "agent/tools/system_tools.py",
+      "lineRange": [
+        228,
+        306
+      ],
+      "summary": "Tool que lista archivos y directorios mediante find validando rutas permitidas y bloqueando directorios sensibles.",
+      "tags": [
+        "tool-strands",
+        "exploracion-archivos",
+        "lista-blanca"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/system_tools.py:read_file_content",
+      "type": "function",
+      "name": "read_file_content",
+      "filePath": "agent/tools/system_tools.py",
+      "lineRange": [
+        310,
+        391
+      ],
+      "summary": "Tool que lee archivos de texto dentro de rutas autorizadas limitando tamaño/líneas y redactando secretos en archivos .env.",
+      "tags": [
+        "tool-strands",
+        "lectura-archivos",
+        "sanitizacion-secretos"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_classify.py",
+      "type": "file",
+      "name": "test_classify.py",
+      "filePath": "tests/test_classify.py",
+      "lineRange": [
+        1,
+        132
+      ],
+      "summary": "Suite de pruebas unitarias para la función pura _classify_query de agent/nas_agent.py organizada por intención de consulta.",
+      "tags": [
+        "pruebas-unitarias",
+        "pytest",
+        "clasificacion-query"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Pruebas basadas en clases pytest; depende de conftest.py para mockear Strands SDK durante la importación."
+    },
+    {
+      "id": "class:tests/test_classify.py:TestDiagnostico",
+      "type": "class",
+      "name": "TestDiagnostico",
+      "filePath": "tests/test_classify.py",
+      "lineRange": [
+        11,
+        31
+      ],
+      "summary": "Agrupa casos de prueba para consultas de diagnóstico y fallos en servicios.",
+      "tags": [
+        "suite-pruebas",
+        "diagnostico",
+        "pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_classify.py:TestCreacion",
+      "type": "class",
+      "name": "TestCreacion",
+      "filePath": "tests/test_classify.py",
+      "lineRange": [
+        34,
+        46
+      ],
+      "summary": "Agrupa casos de prueba para consultas de creación o instalación de nuevos servicios.",
+      "tags": [
+        "suite-pruebas",
+        "creacion-servicios",
+        "pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_classify.py:TestBackup",
+      "type": "class",
+      "name": "TestBackup",
+      "filePath": "tests/test_classify.py",
+      "lineRange": [
+        49,
+        60
+      ],
+      "summary": "Agrupa casos de prueba para consultas de respaldo y restauración.",
+      "tags": [
+        "suite-pruebas",
+        "backup-restore",
+        "pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_classify.py:TestAdmin",
+      "type": "class",
+      "name": "TestAdmin",
+      "filePath": "tests/test_classify.py",
+      "lineRange": [
+        63,
+        78
+      ],
+      "summary": "Agrupa casos de prueba para comandos de administración del ciclo de vida de servicios.",
+      "tags": [
+        "suite-pruebas",
+        "administracion-servicios",
+        "pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_classify.py:TestSistema",
+      "type": "class",
+      "name": "TestSistema",
+      "filePath": "tests/test_classify.py",
+      "lineRange": [
+        81,
+        92
+      ],
+      "summary": "Agrupa casos de prueba para consultas sobre estado general, disco y puertos del sistema.",
+      "tags": [
+        "suite-pruebas",
+        "estado-sistema",
+        "pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_classify.py:TestIdentidad",
+      "type": "class",
+      "name": "TestIdentidad",
+      "filePath": "tests/test_classify.py",
+      "lineRange": [
+        95,
+        103
+      ],
+      "summary": "Agrupa casos de prueba que verifican la carga mínima del bloque identidad.",
+      "tags": [
+        "suite-pruebas",
+        "identidad-agente",
+        "pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_classify.py:TestMemoria",
+      "type": "class",
+      "name": "TestMemoria",
+      "filePath": "tests/test_classify.py",
+      "lineRange": [
+        106,
+        117
+      ],
+      "summary": "Agrupa casos de prueba para consultas relacionadas con memoria y skills guardados.",
+      "tags": [
+        "suite-pruebas",
+        "memoria-agente",
+        "pytest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_classify.py:TestGeneral",
+      "type": "class",
+      "name": "TestGeneral",
+      "filePath": "tests/test_classify.py",
+      "lineRange": [
+        120,
+        132
+      ],
+      "summary": "Agrupa casos de prueba para conversación general y garantías base de bloques cargados.",
+      "tags": [
+        "suite-pruebas",
+        "conversacion-general",
+        "pytest"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "class:agent/tools/project_scanner.py:Snapshot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene Snapshot"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "class:agent/tools/project_scanner.py:Snapshot",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta Snapshot"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_get_current_commit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _get_current_commit"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_get_current_commit",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _get_current_commit"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_get_changed_files",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _get_changed_files"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_get_changed_files",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _get_changed_files"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_hash_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _hash_file"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_hash_file",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _hash_file"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_classify_changed_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _classify_changed_file"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_classify_changed_file",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _classify_changed_file"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_build_snapshot_from_scan",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _build_snapshot_from_scan"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_build_snapshot_from_scan",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _build_snapshot_from_scan"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:incremental_scan",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene incremental_scan"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:incremental_scan",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta incremental_scan"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "class:agent/tools/project_scanner.py:Issue",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene Issue"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "class:agent/tools/project_scanner.py:Issue",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta Issue"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "class:agent/tools/project_scanner.py:ScanResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene ScanResult"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "class:agent/tools/project_scanner.py:ScanResult",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta ScanResult"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_detect_services",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _detect_services"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_detect_services",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _detect_services"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_get_debmenux_scripts_dir",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _get_debmenux_scripts_dir"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_get_debmenux_scripts_dir",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _get_debmenux_scripts_dir"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_check_services",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _check_services"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_check_services",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _check_services"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_check_compose_hygiene",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _check_compose_hygiene"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_check_compose_hygiene",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _check_compose_hygiene"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_check_cli_parity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _check_cli_parity"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_check_cli_parity",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _check_cli_parity"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_check_agent_prompt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _check_agent_prompt"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_check_agent_prompt",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _check_agent_prompt"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_check_architecture_contracts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _check_architecture_contracts"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_check_architecture_contracts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _check_architecture_contracts"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_check_docs_references",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene _check_docs_references"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:_check_docs_references",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta _check_docs_references"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:scan",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene scan"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:scan",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta scan"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:format_report",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene format_report"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:format_report",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta format_report"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:project_scan",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene project_scan"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:project_scan",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta project_scan"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/project_scanner.py contiene main"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "function:agent/tools/project_scanner.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/project_scanner.py exporta main"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:_build_snapshot_from_scan",
+      "target": "function:agent/tools/project_scanner.py:_get_current_commit",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Registra el commit HEAD en el snapshot"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:_build_snapshot_from_scan",
+      "target": "function:agent/tools/project_scanner.py:_hash_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Calcula hashes MD5 de archivos monitoreados"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:incremental_scan",
+      "target": "function:agent/tools/project_scanner.py:scan",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta scan completo si no hay snapshot previo"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:incremental_scan",
+      "target": "function:agent/tools/project_scanner.py:_build_snapshot_from_scan",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Construye nuevo snapshot tras scan completo"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:incremental_scan",
+      "target": "function:agent/tools/project_scanner.py:_get_changed_files",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Detecta archivos modificados via git diff"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:incremental_scan",
+      "target": "function:agent/tools/project_scanner.py:_classify_changed_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Clasifica archivos modificados por dominio"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:_check_services",
+      "target": "function:agent/tools/project_scanner.py:_detect_services",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Lista servicios existentes en local y catálogo"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:_check_services",
+      "target": "function:agent/tools/project_scanner.py:_get_debmenux_scripts_dir",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ubica scripts de servicios de DebMenux"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:scan",
+      "target": "function:agent/tools/project_scanner.py:_check_services",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Verifica completitud de servicios"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:scan",
+      "target": "function:agent/tools/project_scanner.py:_check_compose_hygiene",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Audita convenciones e higiene Compose"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:scan",
+      "target": "function:agent/tools/project_scanner.py:_check_cli_parity",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Verifica paridad entre svc.sh y svc_py"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:scan",
+      "target": "function:agent/tools/project_scanner.py:_check_agent_prompt",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Audita comandos en el prompt del agente"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:scan",
+      "target": "function:agent/tools/project_scanner.py:_check_docs_references",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Valida enlaces locales docs_url"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:scan",
+      "target": "function:agent/tools/project_scanner.py:_check_architecture_contracts",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Valida contratos contra el índice estructural"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:project_scan",
+      "target": "function:agent/tools/project_scanner.py:scan",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta escaneo completo cuando full=True o sin snapshot"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:project_scan",
+      "target": "function:agent/tools/project_scanner.py:_build_snapshot_from_scan",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Construye snapshot para persistir estado"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:project_scan",
+      "target": "function:agent/tools/project_scanner.py:incremental_scan",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta escaneo incremental con snapshot existente"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:project_scan",
+      "target": "function:agent/tools/project_scanner.py:format_report",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Formatea salida del escaneo para el agente"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:main",
+      "target": "function:agent/tools/project_scanner.py:_get_changed_files",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Lista cambios en modo --changed"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:main",
+      "target": "function:agent/tools/project_scanner.py:_classify_changed_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Clasifica cambios en modo --changed"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:main",
+      "target": "function:agent/tools/project_scanner.py:scan",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta escaneo completo en CLI"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:main",
+      "target": "function:agent/tools/project_scanner.py:_build_snapshot_from_scan",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Actualiza snapshot tras escaneo CLI"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:main",
+      "target": "function:agent/tools/project_scanner.py:incremental_scan",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta escaneo incremental en CLI"
+    },
+    {
+      "source": "function:agent/tools/project_scanner.py:main",
+      "target": "function:agent/tools/project_scanner.py:format_report",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Imprime reporte legible en CLI"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "file:agent/nas_agent.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "project_scanner inspecciona BLOCK_CONTEXTO_NAS en agent/nas_agent.py para validar paridad de comandos"
+    },
+    {
+      "source": "file:agent/tools/project_scanner.py",
+      "target": "file:agent/tools/__init__.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "project_scanner referencia el registro de tools en agent/tools/__init__.py"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:scan_ports",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/system_tools.py contiene scan_ports"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:scan_ports",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/system_tools.py exporta scan_ports"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:_parse_ports",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/system_tools.py contiene _parse_ports"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:_parse_ports",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/system_tools.py exporta _parse_ports"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:disk_usage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/system_tools.py contiene disk_usage"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:disk_usage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/system_tools.py exporta disk_usage"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:memory_info",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/system_tools.py contiene memory_info"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:memory_info",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/system_tools.py exporta memory_info"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:_calc_mem_pct",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/system_tools.py contiene _calc_mem_pct"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:_calc_mem_pct",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/system_tools.py exporta _calc_mem_pct"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:network_info",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/system_tools.py contiene network_info"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:network_info",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/system_tools.py exporta network_info"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:list_files",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/system_tools.py contiene list_files"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:list_files",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/system_tools.py exporta list_files"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:read_file_content",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/system_tools.py contiene read_file_content"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "function:agent/tools/system_tools.py:read_file_content",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/system_tools.py exporta read_file_content"
+    },
+    {
+      "source": "file:agent/tools/system_tools.py",
+      "target": "file:agent/tools/_shell.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/system_tools.py importa agent/tools/_shell.py"
+    },
+    {
+      "source": "function:agent/tools/system_tools.py:scan_ports",
+      "target": "function:agent/tools/system_tools.py:_parse_ports",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Extrae puertos numéricos de la salida de ss"
+    },
+    {
+      "source": "function:agent/tools/system_tools.py:memory_info",
+      "target": "function:agent/tools/system_tools.py:_calc_mem_pct",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Calcula porcentaje usado de RAM desde free -b"
+    },
+    {
+      "source": "function:agent/tools/system_tools.py:scan_ports",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta ss -tnlp y ss -unlp de forma segura"
+    },
+    {
+      "source": "function:agent/tools/system_tools.py:disk_usage",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta df -h filtrado por tipo de filesystem"
+    },
+    {
+      "source": "function:agent/tools/system_tools.py:memory_info",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta free y ps aux de forma segura"
+    },
+    {
+      "source": "function:agent/tools/system_tools.py:network_info",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta hostname, ip y docker network"
+    },
+    {
+      "source": "function:agent/tools/system_tools.py:list_files",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta find acotado por profundidad"
+    },
+    {
+      "source": "function:agent/tools/system_tools.py:read_file_content",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta head para leer archivos autorizados"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestDiagnostico",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "tests/test_classify.py contiene TestDiagnostico"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestDiagnostico",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "tests/test_classify.py exporta TestDiagnostico"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestCreacion",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "tests/test_classify.py contiene TestCreacion"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestCreacion",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "tests/test_classify.py exporta TestCreacion"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestBackup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "tests/test_classify.py contiene TestBackup"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestBackup",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "tests/test_classify.py exporta TestBackup"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "tests/test_classify.py contiene TestAdmin"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestAdmin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "tests/test_classify.py exporta TestAdmin"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestSistema",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "tests/test_classify.py contiene TestSistema"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestSistema",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "tests/test_classify.py exporta TestSistema"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestIdentidad",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "tests/test_classify.py contiene TestIdentidad"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestIdentidad",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "tests/test_classify.py exporta TestIdentidad"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestMemoria",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "tests/test_classify.py contiene TestMemoria"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestMemoria",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "tests/test_classify.py exporta TestMemoria"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestGeneral",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "tests/test_classify.py contiene TestGeneral"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "class:tests/test_classify.py:TestGeneral",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "tests/test_classify.py exporta TestGeneral"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "file:agent/nas_agent.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "tests/test_classify.py importa agent/nas_agent.py"
+    },
+    {
+      "source": "file:tests/test_classify.py",
+      "target": "function:agent/nas_agent.py:_classify_query",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejercita _classify_query en todas las clases de prueba"
+    }
+  ]
+}

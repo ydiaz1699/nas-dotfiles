@@ -1,0 +1,124 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/vscode/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/vscode/.env.example",
+      "filePath": "agent/catalog/services/vscode/.env.example",
+      "lineRange": [1, 10],
+      "summary": "Plantilla de variables locales para VS Code Server (code-server): define la ruta de checkout NAS_DOTFILES y los identificadores no-root VSCODE_UID y VSCODE_GID del usuario aadm, manteniendo la contraseña fuera del .env.",
+      "tags": [
+        "variables-entorno",
+        "vscode-server",
+        "usuario-no-root",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/vscode/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/vscode/compose.yml",
+      "filePath": "agent/catalog/services/vscode/compose.yml",
+      "lineRange": [1, 64],
+      "summary": "Definición Docker Compose de VS Code Server (ghcr.io/coder/code-server:4.135.0-39) en 8443:8080 ejecutado como ${VSCODE_UID}:${VSCODE_GID} con entrypoint directo /usr/bin/code-server, montajes para config, workspace, NAS_DOTFILES y ../homeassistant/data, healthcheck /healthz y labels de Homepage.",
+      "tags": [
+        "docker-compose",
+        "code-server",
+        "editor-web",
+        "seguridad-no-root"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo YAML de Docker Compose que extiende ../../_common.yml y reemplaza el entrypoint oficial de code-server para evitar el fallo de fixuid/sudo con no-new-privileges."
+    },
+    {
+      "id": "document:agent/catalog/services/vscode/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/vscode/ficha.md",
+      "filePath": "agent/catalog/services/vscode/ficha.md",
+      "lineRange": [1, 70],
+      "summary": "Ficha técnica del catálogo para VS Code Server con metadatos YAML, límites de montajes y ACL para editar Home Assistant sin exponer secretos ni .storage, estado de la corrección de fixuid y referencia a vscode-guide.md.",
+      "tags": [
+        "ficha-servicio",
+        "vscode-server",
+        "catalogo-nas",
+        "metadatos-yaml"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/vscode/.env.example",
+      "target": "service:agent/catalog/services/vscode/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Suministra NAS_DOTFILES, VSCODE_UID y VSCODE_GID al servicio vscode en compose.yml."
+    },
+    {
+      "source": "service:agent/catalog/services/vscode/compose.yml",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Extiende _defaults desde ../../_common.yml para heredar no-new-privileges y políticas base."
+    },
+    {
+      "source": "service:agent/catalog/services/vscode/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde ../.env para configurar homepage.href."
+    },
+    {
+      "source": "service:agent/catalog/services/vscode/compose.yml",
+      "target": "service:agent/catalog/services/homeassistant/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Monta ../homeassistant/data en /home/coder/project/homeassistant para editar la configuración de Home Assistant."
+    },
+    {
+      "source": "service:agent/catalog/services/vscode/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Expone labels homepage.* para listar VS Code Server en el grupo Herramientas de Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/vscode/ficha.md",
+      "target": "service:agent/catalog/services/vscode/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el puerto 8443, usuario no-root, entrypoint directo, volúmenes y estado de verificación del servicio vscode."
+    },
+    {
+      "source": "document:agent/catalog/services/vscode/ficha.md",
+      "target": "config:agent/catalog/services/vscode/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Lista NAS_DOTFILES, VSCODE_UID y VSCODE_GID como variables requeridas y explica que la contraseña reside en config.yaml."
+    },
+    {
+      "source": "document:agent/catalog/services/vscode/ficha.md",
+      "target": "document:docs/services/vscode-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Apunta mediante docs_url a la guía operativa única de VS Code Server."
+    },
+    {
+      "source": "document:agent/catalog/services/vscode/ficha.md",
+      "target": "config:agent/catalog/catalog.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Provee los metadatos de VS Code Server indexados en el catálogo."
+    }
+  ]
+}

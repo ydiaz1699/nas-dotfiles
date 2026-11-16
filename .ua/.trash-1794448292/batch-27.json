@@ -1,0 +1,162 @@
+{
+  "nodes": [
+    {
+      "id": "document:agent/catalog/services/openwa/n8n-flows/README.md",
+      "type": "document",
+      "name": "agent/catalog/services/openwa/n8n-flows/README.md",
+      "filePath": "agent/catalog/services/openwa/n8n-flows/README.md",
+      "lineRange": [1, 74],
+      "summary": "Guía de uso e importación para los workflows de n8n compatibles con el nodo community @rmyndharis/n8n-nodes-openwa; detalla la instalación con scope, configuración de credenciales y sesión UUID, estructura del payload $json.data y requisitos de Baileys para imágenes.",
+      "tags": [
+        "documentacion-flujos",
+        "n8n-openwa",
+        "guia-importacion",
+        "whatsapp-webhooks"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:agent/catalog/services/openwa/n8n-flows/auto-reply.json",
+      "type": "config",
+      "name": "agent/catalog/services/openwa/n8n-flows/auto-reply.json",
+      "filePath": "agent/catalog/services/openwa/n8n-flows/auto-reply.json",
+      "lineRange": [1, 100],
+      "summary": "Workflow exportado de n8n (OpenWA — Auto-respuesta) compuesto por un trigger openWaTrigger (message.received), un nodo condicional If que verifica si el cuerpo contiene 'hola' y una acción openWa sendText de respuesta al chatId.",
+      "tags": [
+        "workflow-n8n",
+        "auto-respuesta",
+        "openwa",
+        "plantilla-json"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:agent/catalog/services/openwa/n8n-flows/echo-simple.json",
+      "type": "config",
+      "name": "agent/catalog/services/openwa/n8n-flows/echo-simple.json",
+      "filePath": "agent/catalog/services/openwa/n8n-flows/echo-simple.json",
+      "lineRange": [1, 60],
+      "summary": "Workflow exportado de n8n (OpenWA — Eco simple) que escucha eventos message.received mediante openWaTrigger y responde inmediatamente con un eco del texto recibido usando openWa sendText.",
+      "tags": [
+        "workflow-n8n",
+        "eco-whatsapp",
+        "openwa",
+        "plantilla-json"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:agent/catalog/services/openwa/n8n-flows/pide-camara.json",
+      "type": "config",
+      "name": "agent/catalog/services/openwa/n8n-flows/pide-camara.json",
+      "filePath": "agent/catalog/services/openwa/n8n-flows/pide-camara.json",
+      "lineRange": [1, 131],
+      "summary": "Workflow exportado de n8n (OpenWA — Pide cámara) que detecta mensajes con 'camara', solicita una captura binaria al nodo Home Assistant cameraProxy y envía la imagen resultante por WhatsApp mediante openWa sendImage.",
+      "tags": [
+        "workflow-n8n",
+        "home-assistant-camara",
+        "openwa-media",
+        "plantilla-json"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:agent/catalog/services/openwa/n8n-flows/README.md",
+      "target": "config:agent/catalog/services/openwa/n8n-flows/auto-reply.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica el funcionamiento, importación y prueba del flujo de auto-respuesta."
+    },
+    {
+      "source": "document:agent/catalog/services/openwa/n8n-flows/README.md",
+      "target": "config:agent/catalog/services/openwa/n8n-flows/echo-simple.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el flujo mínimo de eco sin filtros para validar la recepción y envío en OpenWA."
+    },
+    {
+      "source": "document:agent/catalog/services/openwa/n8n-flows/README.md",
+      "target": "config:agent/catalog/services/openwa/n8n-flows/pide-camara.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Detalla los ajustes del envío binario, la credencial de Home Assistant y el requisito de Baileys para pide-camara.json."
+    },
+    {
+      "source": "document:agent/catalog/services/openwa/n8n-flows/README.md",
+      "target": "service:agent/catalog/services/openwa/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia el endpoint interno http://openwa:2785 y el requisito de ENGINE_TYPE=baileys."
+    },
+    {
+      "source": "document:agent/catalog/services/openwa/n8n-flows/README.md",
+      "target": "service:agent/catalog/services/n8n/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe los pasos de instalación de nodos community e importación dentro de n8n."
+    },
+    {
+      "source": "config:agent/catalog/services/openwa/n8n-flows/auto-reply.json",
+      "target": "service:agent/catalog/services/n8n/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define un workflow importable para su ejecución en la instancia de n8n."
+    },
+    {
+      "source": "config:agent/catalog/services/openwa/n8n-flows/auto-reply.json",
+      "target": "service:agent/catalog/services/openwa/compose.yml",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Registra un trigger de eventos message.received e invoca la API de OpenWA para enviar texto."
+    },
+    {
+      "source": "config:agent/catalog/services/openwa/n8n-flows/echo-simple.json",
+      "target": "service:agent/catalog/services/n8n/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define un workflow importable para su ejecución en n8n."
+    },
+    {
+      "source": "config:agent/catalog/services/openwa/n8n-flows/echo-simple.json",
+      "target": "service:agent/catalog/services/openwa/compose.yml",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Escucha eventos message.received desde OpenWA y envía la respuesta por el nodo openWa."
+    },
+    {
+      "source": "config:agent/catalog/services/openwa/n8n-flows/pide-camara.json",
+      "target": "service:agent/catalog/services/n8n/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define un workflow importable en n8n que coordina Home Assistant y OpenWA."
+    },
+    {
+      "source": "config:agent/catalog/services/openwa/n8n-flows/pide-camara.json",
+      "target": "service:agent/catalog/services/openwa/compose.yml",
+      "type": "triggers",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Se activa con message.received en OpenWA y envía la captura binaria mediante sendImage."
+    },
+    {
+      "source": "config:agent/catalog/services/openwa/n8n-flows/pide-camara.json",
+      "target": "service:agent/catalog/services/homeassistant/compose.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Utiliza el nodo n8n-nodes-base.homeAssistant (cameraProxy) para obtener la captura de cámara."
+    }
+  ]
+}

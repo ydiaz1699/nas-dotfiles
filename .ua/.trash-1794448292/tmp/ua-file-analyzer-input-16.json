@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/homeassistant/.env.example",
+      "language": "config",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/homeassistant/compose.yml",
+      "language": "yaml",
+      "sizeLines": 43,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/homeassistant/ficha.md",
+      "language": "markdown",
+      "sizeLines": 93,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/homeassistant/.env.example": [],
+    "agent/catalog/services/homeassistant/compose.yml": [],
+    "agent/catalog/services/homeassistant/ficha.md": []
+  }
+}

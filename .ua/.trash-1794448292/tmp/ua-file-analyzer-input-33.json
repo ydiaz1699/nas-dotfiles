@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "docs/session-handoff.md",
+      "language": "markdown",
+      "sizeLines": 192,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tools-index.md",
+      "language": "markdown",
+      "sizeLines": 216,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/troubleshooting.md",
+      "language": "markdown",
+      "sizeLines": 544,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "docs/session-handoff.md": [],
+    "docs/tools-index.md": [],
+    "docs/troubleshooting.md": []
+  }
+}

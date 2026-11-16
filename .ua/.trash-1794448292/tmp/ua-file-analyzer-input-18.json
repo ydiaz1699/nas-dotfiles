@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/iobroker/.env.example",
+      "language": "config",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/iobroker/compose.yml",
+      "language": "yaml",
+      "sizeLines": 49,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/iobroker/ficha.md",
+      "language": "markdown",
+      "sizeLines": 49,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/iobroker/.env.example": [],
+    "agent/catalog/services/iobroker/compose.yml": [],
+    "agent/catalog/services/iobroker/ficha.md": []
+  }
+}

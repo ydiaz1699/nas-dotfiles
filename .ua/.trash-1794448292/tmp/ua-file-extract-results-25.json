@@ -1,0 +1,115 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 3
+    }
+  },
+  "results": [
+    {
+      "path": "agent/catalog/services/ntfy/.env.example",
+      "language": "config",
+      "fileCategory": "config",
+      "totalLines": 11,
+      "nonEmptyLines": 9,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "agent/catalog/services/ntfy/compose.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 47,
+      "nonEmptyLines": 46,
+      "sections": [
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "networks",
+          "level": 1,
+          "line": 45
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "agent/catalog/services/ntfy/ficha.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 104,
+      "nonEmptyLines": 87,
+      "sections": [
+        {
+          "heading": "ntfy",
+          "level": 1,
+          "line": 44
+        },
+        {
+          "heading": "Qué es",
+          "level": 2,
+          "line": 46
+        },
+        {
+          "heading": "Estructura",
+          "level": 2,
+          "line": 52
+        },
+        {
+          "heading": "Topics configurados",
+          "level": 2,
+          "line": 66
+        },
+        {
+          "heading": "Redes",
+          "level": 2,
+          "line": 77
+        },
+        {
+          "heading": "Enviar notificación (ejemplos)",
+          "level": 2,
+          "line": 81
+        },
+        {
+          "heading": "Clientes",
+          "level": 2,
+          "line": 96
+        },
+        {
+          "heading": "docs_url",
+          "level": 2,
+          "line": 102
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    }
+  ]
+}

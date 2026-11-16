@@ -1,0 +1,195 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 3
+    }
+  },
+  "results": [
+    {
+      "path": "agent/catalog/services/emqx/.env.example",
+      "language": "config",
+      "fileCategory": "config",
+      "totalLines": 18,
+      "nonEmptyLines": 15,
+      "definitions": [
+        {
+          "name": "EMQX_NODE_COOKIE",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 6,
+          "endLine": 6
+        },
+        {
+          "name": "EMQX_DASHBOARD_USER",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 7,
+          "endLine": 7
+        },
+        {
+          "name": "EMQX_DASHBOARD_PASSWORD",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 8,
+          "endLine": 8
+        },
+        {
+          "name": "EMQX_ALLOW_ANONYMOUS",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 11,
+          "endLine": 11
+        },
+        {
+          "name": "EMQX_PORT_MQTT",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 14,
+          "endLine": 14
+        },
+        {
+          "name": "EMQX_PORT_MQTTS",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 15,
+          "endLine": 15
+        },
+        {
+          "name": "EMQX_PORT_WS",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 16,
+          "endLine": 16
+        },
+        {
+          "name": "EMQX_PORT_WSS",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 17,
+          "endLine": 17
+        },
+        {
+          "name": "EMQX_PORT_DASHBOARD",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 18,
+          "endLine": 18
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 9
+      }
+    },
+    {
+      "path": "agent/catalog/services/emqx/compose.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 64,
+      "nonEmptyLines": 63,
+      "sections": [
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "networks",
+          "level": 1,
+          "line": 60
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "agent/catalog/services/emqx/ficha.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 158,
+      "nonEmptyLines": 136,
+      "sections": [
+        {
+          "heading": "EMQX",
+          "level": 1,
+          "line": 53
+        },
+        {
+          "heading": "Qué es",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "Estructura",
+          "level": 2,
+          "line": 60
+        },
+        {
+          "heading": "Setup inicial",
+          "level": 2,
+          "line": 78
+        },
+        {
+          "heading": "Variables de entorno específicas",
+          "level": 2,
+          "line": 85
+        },
+        {
+          "heading": "Puertos",
+          "level": 2,
+          "line": 101
+        },
+        {
+          "heading": "Redes",
+          "level": 2,
+          "line": 111
+        },
+        {
+          "heading": ".env",
+          "level": 2,
+          "line": 116
+        },
+        {
+          "heading": "Generar secretos",
+          "level": 3,
+          "line": 131
+        },
+        {
+          "heading": "Configuración importante",
+          "level": 2,
+          "line": 143
+        },
+        {
+          "heading": "Notas",
+          "level": 2,
+          "line": 151
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    }
+  ]
+}

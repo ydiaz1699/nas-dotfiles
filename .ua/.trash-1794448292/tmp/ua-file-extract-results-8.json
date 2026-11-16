@@ -1,0 +1,405 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 6,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 6,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 6
+    }
+  },
+  "results": [
+    {
+      "path": ".kiro/skills/dotfile-skill/references/agent.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 124,
+      "nonEmptyLines": 93,
+      "sections": [
+        {
+          "heading": "Agente IA — referencia completa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Ejecución",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Providers",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Arquitectura del prompt",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "Tools",
+          "level": 2,
+          "line": 37
+        },
+        {
+          "heading": "Gateways MCP",
+          "level": 2,
+          "line": 56
+        },
+        {
+          "heading": "Memoria persistente",
+          "level": 2,
+          "line": 79
+        },
+        {
+          "heading": "Plugins (agent/plugins/)",
+          "level": 2,
+          "line": 92
+        },
+        {
+          "heading": "Daemon (systemd)",
+          "level": 2,
+          "line": 105
+        },
+        {
+          "heading": "Sesiones",
+          "level": 2,
+          "line": 112
+        },
+        {
+          "heading": "Catálogo de servicios",
+          "level": 2,
+          "line": 118
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/diagnostic.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 140,
+      "nonEmptyLines": 105,
+      "sections": [
+        {
+          "heading": "Recetas de diagnóstico",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Servicio caído (no arranca / exit code ≠ 0)",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "OOM (Out of Memory)",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "Crash loop (reinicio continuo)",
+          "level": 2,
+          "line": 43
+        },
+        {
+          "heading": "Conflicto de puerto",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "Servicio lento / alto consumo",
+          "level": 2,
+          "line": 80
+        },
+        {
+          "heading": "Healthcheck fallando (unhealthy)",
+          "level": 2,
+          "line": 98
+        },
+        {
+          "heading": "Red / conectividad entre servicios",
+          "level": 2,
+          "line": 114
+        },
+        {
+          "heading": "Orden general de diagnóstico (cualquier problema)",
+          "level": 2,
+          "line": 130
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/extend.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 86,
+      "nonEmptyLines": 69,
+      "sections": [
+        {
+          "heading": "Cómo extender el framework",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Nuevo comando svc (bash)",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Nueva tool del agente (Python)",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Nuevo plugin del agente",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "Nuevo módulo del shell",
+          "level": 2,
+          "line": 68
+        },
+        {
+          "heading": "Nuevo destino de navegación",
+          "level": 2,
+          "line": 78
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/security.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 65,
+      "nonEmptyLines": 54,
+      "sections": [
+        {
+          "heading": "Seguridad y Variables — referencia completa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Mecanismos de seguridad",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Modos de seguridad",
+          "level": 2,
+          "line": 18
+        },
+        {
+          "heading": "Variables de entorno — referencia completa",
+          "level": 2,
+          "line": 26
+        },
+        {
+          "heading": "Paths y proyecto",
+          "level": 3,
+          "line": 28
+        },
+        {
+          "heading": "Agente",
+          "level": 3,
+          "line": 39
+        },
+        {
+          "heading": "Convenciones del proyecto",
+          "level": 2,
+          "line": 53
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/shell.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 137,
+      "nonEmptyLines": 108,
+      "sections": [
+        {
+          "heading": "Shell Framework — referencia completa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Loader",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Navegación",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Variables vs Comandos",
+          "level": 3,
+          "line": 36
+        },
+        {
+          "heading": "Alias — listado (usa eza)",
+          "level": 2,
+          "line": 52
+        },
+        {
+          "heading": "Alias — sistema",
+          "level": 2,
+          "line": 61
+        },
+        {
+          "heading": "Alias — archivos (confirmación en TTY)",
+          "level": 2,
+          "line": 71
+        },
+        {
+          "heading": "Alias — Docker rápido",
+          "level": 2,
+          "line": 81
+        },
+        {
+          "heading": "Alias — Git",
+          "level": 2,
+          "line": 92
+        },
+        {
+          "heading": "Funciones de sistema",
+          "level": 2,
+          "line": 103
+        },
+        {
+          "heading": "Prompt dinámico",
+          "level": 2,
+          "line": 115
+        },
+        {
+          "heading": "Dependencias opcionales",
+          "level": 2,
+          "line": 128
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/svc.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 226,
+      "nonEmptyLines": 190,
+      "sections": [
+        {
+          "heading": "svc — CLI Docker referencia completa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Archivos",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Detección de servicios",
+          "level": 2,
+          "line": 20
+        },
+        {
+          "heading": "CLI dual",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "Comandos globales (sin servicio)",
+          "level": 2,
+          "line": 32
+        },
+        {
+          "heading": "Comandos con servicio",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "Autocompletado TAB",
+          "level": 2,
+          "line": 85
+        },
+        {
+          "heading": "Plantilla compose.yml (con anchors obligatorios)",
+          "level": 2,
+          "line": 92
+        },
+        {
+          "heading": "Redes compartidas — convención",
+          "level": 2,
+          "line": 155
+        },
+        {
+          "heading": "Plantilla con secretos",
+          "level": 2,
+          "line": 171
+        },
+        {
+          "heading": "Carpetas disponibles",
+          "level": 2,
+          "line": 190
+        },
+        {
+          "heading": "Flujo completo — nuevo servicio",
+          "level": 2,
+          "line": 199
+        },
+        {
+          "heading": "Variables globales ($dkco/.env)",
+          "level": 2,
+          "line": 212
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 13
+      }
+    }
+  ]
+}

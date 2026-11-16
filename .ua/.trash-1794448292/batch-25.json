@@ -1,0 +1,108 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/ntfy/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/ntfy/.env.example",
+      "filePath": "agent/catalog/services/ntfy/.env.example",
+      "lineRange": [1, 11],
+      "summary": "Plantilla de entorno local para el servidor de notificaciones ntfy; hereda SERVER_IP y TZ desde $dkco/.env e incluye overrides comentados opcionales.",
+      "tags": [
+        "variables-entorno",
+        "ntfy",
+        "notificaciones-push",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/ntfy/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/ntfy/compose.yml",
+      "filePath": "agent/catalog/services/ntfy/compose.yml",
+      "lineRange": [1, 47],
+      "summary": "Definición Docker Compose de ntfy (binwiederhier/ntfy:latest) en modo serve, publicado en 8090:80 sobre la red externa homepage_net, con persistencia de configuración, caché y adjuntos, cap_drop ALL, límite de 256M de memoria, healthcheck /v1/health y labels de Homepage.",
+      "tags": [
+        "docker-compose",
+        "ntfy",
+        "notificaciones-push",
+        "red-homepage-net"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Archivo YAML de Docker Compose autónomo con política explícita de seguridad (no-new-privileges, cap_drop ALL) y cuotas de recursos."
+    },
+    {
+      "id": "document:agent/catalog/services/ntfy/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/ntfy/ficha.md",
+      "filePath": "agent/catalog/services/ntfy/ficha.md",
+      "lineRange": [1, 104],
+      "summary": "Ficha técnica del catálogo para ntfy con metadatos YAML, estructura de directorios, tabla de topics configurados (usb, docker, backups, system, alarma, nas-alerts), ejemplos de envío por curl, clientes soportados y referencia a ntfy-guide.md.",
+      "tags": [
+        "ficha-servicio",
+        "ntfy",
+        "catalogo-nas",
+        "topics-alertas"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/ntfy/.env.example",
+      "target": "service:agent/catalog/services/ntfy/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define la plantilla del .env local cargado por el contenedor ntfy."
+    },
+    {
+      "source": "service:agent/catalog/services/ntfy/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde ../.env para la etiqueta homepage.href y zona horaria."
+    },
+    {
+      "source": "service:agent/catalog/services/ntfy/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Se conecta a la red externa homepage_net y expone labels homepage.* para su integración y consulta desde Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/ntfy/ficha.md",
+      "target": "service:agent/catalog/services/ntfy/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la estructura de volúmenes, puerto 8090, red homepage_net, healthcheck y límites del servicio ntfy."
+    },
+    {
+      "source": "document:agent/catalog/services/ntfy/ficha.md",
+      "target": "config:agent/catalog/services/ntfy/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Especifica las variables requeridas y opcionales para el servicio ntfy."
+    },
+    {
+      "source": "document:agent/catalog/services/ntfy/ficha.md",
+      "target": "document:docs/services/ntfy-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Apunta mediante docs_url a la guía operativa de ntfy."
+    },
+    {
+      "source": "document:agent/catalog/services/ntfy/ficha.md",
+      "target": "config:agent/catalog/catalog.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Provee los metadatos del servicio ntfy indexados en el catálogo."
+    }
+  ]
+}

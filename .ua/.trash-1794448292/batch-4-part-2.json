@@ -1,0 +1,1246 @@
+{
+  "batchIndex": 4,
+  "part": 2,
+  "totalParts": 3,
+  "nodes": [
+    {
+      "id": "file:agent/tools/capability_tools.py",
+      "type": "file",
+      "name": "capability_tools.py",
+      "filePath": "agent/tools/capability_tools.py",
+      "lineRange": [
+        1,
+        47
+      ],
+      "summary": "Expone al agente la herramienta @tool discover_capabilities para consultar comandos reales sin ejecutar mutaciones.",
+      "tags": [
+        "tools-agente",
+        "descubrimiento-capacidades",
+        "solo-lectura"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Wrapper ligero de Strands @tool sobre agent.tools.capabilities._operations."
+    },
+    {
+      "id": "function:agent/tools/capability_tools.py:discover_capabilities",
+      "type": "function",
+      "name": "discover_capabilities",
+      "filePath": "agent/tools/capability_tools.py",
+      "lineRange": [
+        13,
+        47
+      ],
+      "summary": "Busca operaciones reales en los manifests e índice filtrando por query y servicio, devolviendo guards y evidencias en JSON.",
+      "tags": [
+        "tool-strands",
+        "busqueda-comandos",
+        "salida-json"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/tools/compare_tools.py",
+      "type": "file",
+      "name": "compare_tools.py",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        1,
+        415
+      ],
+      "summary": "Detector de drift que compara archivos Docker Compose en producción contra el catálogo y la ficha del servicio.",
+      "tags": [
+        "deteccion-drift",
+        "docker-compose",
+        "catalogo-servicios"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Parsea YAML mediante análisis línea por línea y regex sin dependencia externa de PyYAML; soporta uso como @tool y CLI."
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_compose_candidates",
+      "type": "function",
+      "name": "_compose_candidates",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        53,
+        59
+      ],
+      "summary": "Lista los archivos compose existentes de un servicio en orden de prioridad canónica.",
+      "tags": [
+        "docker-compose",
+        "resolucion-archivos",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_find_compose",
+      "type": "function",
+      "name": "_find_compose",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        62,
+        65
+      ],
+      "summary": "Selecciona el archivo compose principal de un servicio conservando la lista de candidatos ambiguos.",
+      "tags": [
+        "docker-compose",
+        "busqueda-archivo",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_discover_services",
+      "type": "function",
+      "name": "_discover_services",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        68,
+        81
+      ],
+      "summary": "Descubre nombres de servicios válidos en un directorio base por presencia de compose o ficha.md.",
+      "tags": [
+        "descubrimiento-servicios",
+        "directorio",
+        "catalogo"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_extract_ports",
+      "type": "function",
+      "name": "_extract_ports",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        84,
+        101
+      ],
+      "summary": "Extrae los mapeos de puertos publicados desde el bloque ports de un archivo compose.",
+      "tags": [
+        "parseo-compose",
+        "puertos",
+        "regex"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_extract_networks",
+      "type": "function",
+      "name": "_extract_networks",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        104,
+        127
+      ],
+      "summary": "Extrae las redes Docker declaradas dentro de la sección de servicio de un compose.",
+      "tags": [
+        "parseo-compose",
+        "redes-docker",
+        "indentacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_extract_volumes",
+      "type": "function",
+      "name": "_extract_volumes",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        130,
+        146
+      ],
+      "summary": "Extrae los bind mounts y volúmenes con mapeo host:contenedor de un compose.",
+      "tags": [
+        "parseo-compose",
+        "volumenes",
+        "almacenamiento"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_extract_env_vars",
+      "type": "function",
+      "name": "_extract_env_vars",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        149,
+        151
+      ],
+      "summary": "Extrae mediante regex las variables interpoladas con sintaxis ${VAR} en el compose.",
+      "tags": [
+        "parseo-compose",
+        "variables-entorno",
+        "regex"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_extract_image",
+      "type": "function",
+      "name": "_extract_image",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        154,
+        157
+      ],
+      "summary": "Obtiene la imagen Docker principal definida en el archivo compose.",
+      "tags": [
+        "parseo-compose",
+        "imagen-docker",
+        "regex"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_has_env_file_global",
+      "type": "function",
+      "name": "_has_env_file_global",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        160,
+        162
+      ],
+      "summary": "Comprueba si el compose referencia el archivo global ../.env.",
+      "tags": [
+        "validacion-compose",
+        "variables-entorno",
+        "convenciones"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_has_healthcheck",
+      "type": "function",
+      "name": "_has_healthcheck",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        165,
+        167
+      ],
+      "summary": "Verifica si el compose incluye configuración de healthcheck.",
+      "tags": [
+        "validacion-compose",
+        "healthcheck",
+        "convenciones"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_has_security_opt",
+      "type": "function",
+      "name": "_has_security_opt",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        170,
+        172
+      ],
+      "summary": "Verifica si el compose define security_opt o no-new-privileges.",
+      "tags": [
+        "validacion-compose",
+        "seguridad-docker",
+        "convenciones"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_has_resource_limits",
+      "type": "function",
+      "name": "_has_resource_limits",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        175,
+        177
+      ],
+      "summary": "Comprueba si el compose establece límites de memoria o CPU.",
+      "tags": [
+        "validacion-compose",
+        "limites-recursos",
+        "convenciones"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_parse_ficha_frontmatter",
+      "type": "function",
+      "name": "_parse_ficha_frontmatter",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        180,
+        200
+      ],
+      "summary": "Extrae pares clave-valor del frontmatter YAML de una ficha.md del catálogo.",
+      "tags": [
+        "parseo-yaml",
+        "ficha-servicio",
+        "catalogo"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:_compare",
+      "type": "function",
+      "name": "_compare",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        208,
+        365
+      ],
+      "summary": "Compara el compose real con el del catálogo y su ficha, reportando drift de imagen, puertos, redes, volúmenes y convenciones pendientes.",
+      "tags": [
+        "comparacion-config",
+        "deteccion-drift",
+        "reporte-servicio"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:agent/tools/compare_tools.py:compare_catalog",
+      "type": "function",
+      "name": "compare_catalog",
+      "filePath": "agent/tools/compare_tools.py",
+      "lineRange": [
+        376,
+        388
+      ],
+      "summary": "Tool del agente que compara la configuración real de un servicio contra su entrada en el catálogo.",
+      "tags": [
+        "tool-strands",
+        "deteccion-drift",
+        "comparacion-catalogo"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/tools/docker_tools.py",
+      "type": "file",
+      "name": "docker_tools.py",
+      "filePath": "agent/tools/docker_tools.py",
+      "lineRange": [
+        1,
+        80
+      ],
+      "summary": "Provee herramientas @tool del agente para iniciar, detener, reiniciar, actualizar y consultar logs de servicios Docker.",
+      "tags": [
+        "tools-agente",
+        "control-docker",
+        "ciclo-vida"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Thin wrappers @tool que delegan mediante importación perezosa en agent.core.service_manager.ServiceManager."
+    },
+    {
+      "id": "function:agent/tools/docker_tools.py:_get_service_manager",
+      "type": "function",
+      "name": "_get_service_manager",
+      "filePath": "agent/tools/docker_tools.py",
+      "lineRange": [
+        10,
+        13
+      ],
+      "summary": "Importa perezosamente ServiceManager para evitar dependencias circulares.",
+      "tags": [
+        "lazy-import",
+        "service-manager",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/docker_tools.py:service_start",
+      "type": "function",
+      "name": "service_start",
+      "filePath": "agent/tools/docker_tools.py",
+      "lineRange": [
+        17,
+        27
+      ],
+      "summary": "Tool que levanta un servicio Docker ejecutando docker compose up -d.",
+      "tags": [
+        "tool-strands",
+        "iniciar-servicio",
+        "docker-compose"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/docker_tools.py:service_stop",
+      "type": "function",
+      "name": "service_stop",
+      "filePath": "agent/tools/docker_tools.py",
+      "lineRange": [
+        31,
+        42
+      ],
+      "summary": "Tool destructiva que detiene un servicio Docker solo cuando confirm='si'.",
+      "tags": [
+        "tool-strands",
+        "detener-servicio",
+        "guard-confirmacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/docker_tools.py:service_restart",
+      "type": "function",
+      "name": "service_restart",
+      "filePath": "agent/tools/docker_tools.py",
+      "lineRange": [
+        46,
+        54
+      ],
+      "summary": "Tool que reinicia los contenedores de un servicio sin destruirlos.",
+      "tags": [
+        "tool-strands",
+        "reiniciar-servicio",
+        "docker-compose"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/docker_tools.py:service_update",
+      "type": "function",
+      "name": "service_update",
+      "filePath": "agent/tools/docker_tools.py",
+      "lineRange": [
+        58,
+        67
+      ],
+      "summary": "Tool que actualiza un servicio descargando su nueva imagen y recreando contenedores.",
+      "tags": [
+        "tool-strands",
+        "actualizar-servicio",
+        "docker-compose"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/docker_tools.py:service_logs",
+      "type": "function",
+      "name": "service_logs",
+      "filePath": "agent/tools/docker_tools.py",
+      "lineRange": [
+        71,
+        80
+      ],
+      "summary": "Tool de solo lectura que obtiene las últimas N líneas de logs de un servicio.",
+      "tags": [
+        "tool-strands",
+        "logs-contenedor",
+        "diagnostico"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/tools/memory_tools.py",
+      "type": "file",
+      "name": "memory_tools.py",
+      "filePath": "agent/tools/memory_tools.py",
+      "lineRange": [
+        1,
+        107
+      ],
+      "summary": "Expone herramientas @tool de memoria persistente y aprendizaje continuo (learning loop) delegando en MemoryManager.",
+      "tags": [
+        "tools-agente",
+        "memoria-persistente",
+        "learning-loop"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Delega en agent.core.memory.MemoryManager para leer y escribir MEMORY.md, USER.md, SKILLS.md y sesiones."
+    },
+    {
+      "id": "function:agent/tools/memory_tools.py:_mgr",
+      "type": "function",
+      "name": "_mgr",
+      "filePath": "agent/tools/memory_tools.py",
+      "lineRange": [
+        13,
+        16
+      ],
+      "summary": "Importa perezosamente y retorna la clase MemoryManager.",
+      "tags": [
+        "lazy-import",
+        "memory-manager",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/memory_tools.py:_now",
+      "type": "function",
+      "name": "_now",
+      "filePath": "agent/tools/memory_tools.py",
+      "lineRange": [
+        19,
+        20
+      ],
+      "summary": "Genera el timestamp ISO actual con precisión de segundos.",
+      "tags": [
+        "timestamp",
+        "fecha-hora",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/memory_tools.py:remember",
+      "type": "function",
+      "name": "remember",
+      "filePath": "agent/tools/memory_tools.py",
+      "lineRange": [
+        24,
+        38
+      ],
+      "summary": "Tool que persiste un hecho o lección aprendida bajo una categoría en MEMORY.md.",
+      "tags": [
+        "tool-strands",
+        "guardar-memoria",
+        "aprendizaje"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/memory_tools.py:recall",
+      "type": "function",
+      "name": "recall",
+      "filePath": "agent/tools/memory_tools.py",
+      "lineRange": [
+        42,
+        54
+      ],
+      "summary": "Tool que busca conocimiento previo por prioridad en skills, memoria y sesiones.",
+      "tags": [
+        "tool-strands",
+        "consulta-memoria",
+        "recuperacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/memory_tools.py:learn_skill",
+      "type": "function",
+      "name": "learn_skill",
+      "filePath": "agent/tools/memory_tools.py",
+      "lineRange": [
+        58,
+        70
+      ],
+      "summary": "Tool que registra un nuevo procedimiento reutilizable con su trigger en SKILLS.md.",
+      "tags": [
+        "tool-strands",
+        "skills-reutilizables",
+        "aprendizaje"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/memory_tools.py:update_user_model",
+      "type": "function",
+      "name": "update_user_model",
+      "filePath": "agent/tools/memory_tools.py",
+      "lineRange": [
+        74,
+        85
+      ],
+      "summary": "Tool que actualiza preferencias observadas del usuario en USER.md.",
+      "tags": [
+        "tool-strands",
+        "perfil-usuario",
+        "preferencias"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/memory_tools.py:memory_stats",
+      "type": "function",
+      "name": "memory_stats",
+      "filePath": "agent/tools/memory_tools.py",
+      "lineRange": [
+        89,
+        107
+      ],
+      "summary": "Tool que formatea estadísticas de tamaño y uso de los archivos de memoria y sesiones.",
+      "tags": [
+        "tool-strands",
+        "estadisticas-memoria",
+        "diagnostico"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:agent/tools/capability_tools.py",
+      "target": "function:agent/tools/capability_tools.py:discover_capabilities",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/capability_tools.py contiene discover_capabilities"
+    },
+    {
+      "source": "file:agent/tools/capability_tools.py",
+      "target": "function:agent/tools/capability_tools.py:discover_capabilities",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/capability_tools.py exporta discover_capabilities"
+    },
+    {
+      "source": "file:agent/tools/capability_tools.py",
+      "target": "file:agent/tools/capabilities.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "description": "agent/tools/capability_tools.py importa agent/tools/capabilities.py"
+    },
+    {
+      "source": "function:agent/tools/capability_tools.py:discover_capabilities",
+      "target": "function:agent/tools/capabilities.py:_operations",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Consulta operaciones registradas desde manifests e índice"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_compose_candidates",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _compose_candidates"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_compose_candidates",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _compose_candidates"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_find_compose",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _find_compose"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_find_compose",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _find_compose"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_discover_services",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _discover_services"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_discover_services",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _discover_services"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_extract_ports",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _extract_ports"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_extract_ports",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _extract_ports"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_extract_networks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _extract_networks"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_extract_networks",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _extract_networks"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_extract_volumes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _extract_volumes"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_extract_volumes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _extract_volumes"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_extract_env_vars",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _extract_env_vars"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_extract_env_vars",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _extract_env_vars"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_extract_image",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _extract_image"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_extract_image",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _extract_image"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_has_env_file_global",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _has_env_file_global"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_has_env_file_global",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _has_env_file_global"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_has_healthcheck",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _has_healthcheck"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_has_healthcheck",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _has_healthcheck"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_has_security_opt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _has_security_opt"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_has_security_opt",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _has_security_opt"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_has_resource_limits",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _has_resource_limits"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_has_resource_limits",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _has_resource_limits"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_parse_ficha_frontmatter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _parse_ficha_frontmatter"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_parse_ficha_frontmatter",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _parse_ficha_frontmatter"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_compare",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene _compare"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:_compare",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta _compare"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:compare_catalog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/compare_tools.py contiene compare_catalog"
+    },
+    {
+      "source": "file:agent/tools/compare_tools.py",
+      "target": "function:agent/tools/compare_tools.py:compare_catalog",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/compare_tools.py exporta compare_catalog"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:_find_compose",
+      "target": "function:agent/tools/compare_tools.py:_compose_candidates",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Lista archivos compose candidatos"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:_discover_services",
+      "target": "function:agent/tools/compare_tools.py:_compose_candidates",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Detecta servicios con archivo compose"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:_compare",
+      "target": "function:agent/tools/compare_tools.py:_find_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Localiza compose real y del catálogo"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:_compare",
+      "target": "function:agent/tools/compare_tools.py:_parse_ficha_frontmatter",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Extrae metadatos de ficha.md"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:_compare",
+      "target": "function:agent/tools/compare_tools.py:_extract_image",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Compara imagen Docker entre real y catálogo"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:_compare",
+      "target": "function:agent/tools/compare_tools.py:_extract_ports",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Compara puertos publicados"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:_compare",
+      "target": "function:agent/tools/compare_tools.py:_extract_networks",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Compara redes declaradas"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:_compare",
+      "target": "function:agent/tools/compare_tools.py:_extract_volumes",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Compara bind mounts y volúmenes"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:_compare",
+      "target": "function:agent/tools/compare_tools.py:_has_env_file_global",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Verifica env_file global ../.env"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:_compare",
+      "target": "function:agent/tools/compare_tools.py:_has_healthcheck",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Verifica presencia de healthcheck"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:_compare",
+      "target": "function:agent/tools/compare_tools.py:_has_security_opt",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Verifica configuración security_opt"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:_compare",
+      "target": "function:agent/tools/compare_tools.py:_has_resource_limits",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Verifica límites de recursos"
+    },
+    {
+      "source": "function:agent/tools/compare_tools.py:compare_catalog",
+      "target": "function:agent/tools/compare_tools.py:_compare",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta comparación real vs catálogo"
+    },
+    {
+      "source": "file:agent/tools/docker_tools.py",
+      "target": "function:agent/tools/docker_tools.py:_get_service_manager",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/docker_tools.py contiene _get_service_manager"
+    },
+    {
+      "source": "file:agent/tools/docker_tools.py",
+      "target": "function:agent/tools/docker_tools.py:_get_service_manager",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/docker_tools.py exporta _get_service_manager"
+    },
+    {
+      "source": "file:agent/tools/docker_tools.py",
+      "target": "function:agent/tools/docker_tools.py:service_start",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/docker_tools.py contiene service_start"
+    },
+    {
+      "source": "file:agent/tools/docker_tools.py",
+      "target": "function:agent/tools/docker_tools.py:service_start",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/docker_tools.py exporta service_start"
+    },
+    {
+      "source": "file:agent/tools/docker_tools.py",
+      "target": "function:agent/tools/docker_tools.py:service_stop",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/docker_tools.py contiene service_stop"
+    },
+    {
+      "source": "file:agent/tools/docker_tools.py",
+      "target": "function:agent/tools/docker_tools.py:service_stop",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/docker_tools.py exporta service_stop"
+    },
+    {
+      "source": "file:agent/tools/docker_tools.py",
+      "target": "function:agent/tools/docker_tools.py:service_restart",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/docker_tools.py contiene service_restart"
+    },
+    {
+      "source": "file:agent/tools/docker_tools.py",
+      "target": "function:agent/tools/docker_tools.py:service_restart",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/docker_tools.py exporta service_restart"
+    },
+    {
+      "source": "file:agent/tools/docker_tools.py",
+      "target": "function:agent/tools/docker_tools.py:service_update",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/docker_tools.py contiene service_update"
+    },
+    {
+      "source": "file:agent/tools/docker_tools.py",
+      "target": "function:agent/tools/docker_tools.py:service_update",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/docker_tools.py exporta service_update"
+    },
+    {
+      "source": "file:agent/tools/docker_tools.py",
+      "target": "function:agent/tools/docker_tools.py:service_logs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/docker_tools.py contiene service_logs"
+    },
+    {
+      "source": "file:agent/tools/docker_tools.py",
+      "target": "function:agent/tools/docker_tools.py:service_logs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/docker_tools.py exporta service_logs"
+    },
+    {
+      "source": "function:agent/tools/docker_tools.py:service_start",
+      "target": "function:agent/tools/docker_tools.py:_get_service_manager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Obtiene ServiceManager para iniciar servicio"
+    },
+    {
+      "source": "function:agent/tools/docker_tools.py:service_stop",
+      "target": "function:agent/tools/docker_tools.py:_get_service_manager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Obtiene ServiceManager para detener servicio"
+    },
+    {
+      "source": "function:agent/tools/docker_tools.py:service_restart",
+      "target": "function:agent/tools/docker_tools.py:_get_service_manager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Obtiene ServiceManager para reiniciar servicio"
+    },
+    {
+      "source": "function:agent/tools/docker_tools.py:service_update",
+      "target": "function:agent/tools/docker_tools.py:_get_service_manager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Obtiene ServiceManager para actualizar servicio"
+    },
+    {
+      "source": "function:agent/tools/docker_tools.py:service_logs",
+      "target": "function:agent/tools/docker_tools.py:_get_service_manager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Obtiene ServiceManager para leer logs"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:_mgr",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/memory_tools.py contiene _mgr"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:_mgr",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/memory_tools.py exporta _mgr"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:_now",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/memory_tools.py contiene _now"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:_now",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/memory_tools.py exporta _now"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:remember",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/memory_tools.py contiene remember"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:remember",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/memory_tools.py exporta remember"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:recall",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/memory_tools.py contiene recall"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:recall",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/memory_tools.py exporta recall"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:learn_skill",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/memory_tools.py contiene learn_skill"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:learn_skill",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/memory_tools.py exporta learn_skill"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:update_user_model",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/memory_tools.py contiene update_user_model"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:update_user_model",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/memory_tools.py exporta update_user_model"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:memory_stats",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "agent/tools/memory_tools.py contiene memory_stats"
+    },
+    {
+      "source": "file:agent/tools/memory_tools.py",
+      "target": "function:agent/tools/memory_tools.py:memory_stats",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "agent/tools/memory_tools.py exporta memory_stats"
+    },
+    {
+      "source": "function:agent/tools/memory_tools.py:remember",
+      "target": "function:agent/tools/memory_tools.py:_mgr",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Accede a MemoryManager para guardar hecho"
+    },
+    {
+      "source": "function:agent/tools/memory_tools.py:remember",
+      "target": "function:agent/tools/memory_tools.py:_now",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Genera timestamp del aprendizaje"
+    },
+    {
+      "source": "function:agent/tools/memory_tools.py:recall",
+      "target": "function:agent/tools/memory_tools.py:_mgr",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Accede a MemoryManager para recuperar contexto"
+    },
+    {
+      "source": "function:agent/tools/memory_tools.py:learn_skill",
+      "target": "function:agent/tools/memory_tools.py:_mgr",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Accede a MemoryManager para registrar skill"
+    },
+    {
+      "source": "function:agent/tools/memory_tools.py:update_user_model",
+      "target": "function:agent/tools/memory_tools.py:_mgr",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Accede a MemoryManager para actualizar perfil"
+    },
+    {
+      "source": "function:agent/tools/memory_tools.py:memory_stats",
+      "target": "function:agent/tools/memory_tools.py:_mgr",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Accede a MemoryManager para métricas de tamaño"
+    }
+  ]
+}

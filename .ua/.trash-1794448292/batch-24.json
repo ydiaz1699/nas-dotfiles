@@ -1,0 +1,124 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/node-red/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/node-red/.env.example",
+      "filePath": "agent/catalog/services/node-red/.env.example",
+      "lineRange": [1, 3],
+      "summary": "Plantilla mínima de entorno local para Node-RED; indica que SERVER_IP y TZ se heredan desde el archivo global $dkco/.env sin requerir secretos específicos.",
+      "tags": [
+        "variables-entorno",
+        "node-red",
+        "plantilla-env",
+        "iot"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/node-red/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/node-red/compose.yml",
+      "filePath": "agent/catalog/services/node-red/compose.yml",
+      "lineRange": [1, 33],
+      "summary": "Definición Docker Compose de Node-RED (nodered/node-red:latest) expuesto en el puerto 1880 sobre la red externa iot_net, con persistencia ./data:/data, no-new-privileges:true, healthcheck con curl y labels para Homepage.",
+      "tags": [
+        "docker-compose",
+        "node-red",
+        "automatizacion-iot",
+        "red-iot-net"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Archivo YAML de Docker Compose autónomo sin extends a _common.yml y sin cap_drop ALL para permitir la instalación en runtime de paquetes npm."
+    },
+    {
+      "id": "document:agent/catalog/services/node-red/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/node-red/ficha.md",
+      "filePath": "agent/catalog/services/node-red/ficha.md",
+      "lineRange": [1, 63],
+      "summary": "Ficha técnica del catálogo para Node-RED con metadatos YAML, estructura del directorio ./data (flows.json, flows_cred.json, settings.js), conectividad en iot_net con EMQX y Home Assistant, y enlace a node-red-guide.md.",
+      "tags": [
+        "ficha-servicio",
+        "node-red",
+        "catalogo-nas",
+        "domotica-iot"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/node-red/.env.example",
+      "target": "service:agent/catalog/services/node-red/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define la plantilla del .env local consumido junto con ../.env por el contenedor node-red."
+    },
+    {
+      "source": "service:agent/catalog/services/node-red/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde ../.env para la etiqueta homepage.href."
+    },
+    {
+      "source": "service:agent/catalog/services/node-red/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Expone labels homepage.* para registrar Node-RED en el grupo IoT de Homepage."
+    },
+    {
+      "source": "service:agent/catalog/services/node-red/compose.yml",
+      "target": "service:agent/catalog/services/emqx/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Comparte la red iot_net para comunicarse por MQTT con el broker EMQX."
+    },
+    {
+      "source": "service:agent/catalog/services/node-red/compose.yml",
+      "target": "service:agent/catalog/services/homeassistant/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Comparte la red iot_net para automatizar flujos integrados con Home Assistant."
+    },
+    {
+      "source": "document:agent/catalog/services/node-red/ficha.md",
+      "target": "service:agent/catalog/services/node-red/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe la configuración de Node-RED, sus volúmenes críticos, puerto 1880 y excepción respecto a cap_drop ALL."
+    },
+    {
+      "source": "document:agent/catalog/services/node-red/ficha.md",
+      "target": "config:agent/catalog/services/node-red/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta que el .env local permanece vacío al heredar únicamente variables globales."
+    },
+    {
+      "source": "document:agent/catalog/services/node-red/ficha.md",
+      "target": "document:docs/services/node-red-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Apunta mediante docs_url a la guía operativa de Node-RED."
+    },
+    {
+      "source": "document:agent/catalog/services/node-red/ficha.md",
+      "target": "config:agent/catalog/catalog.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Provee los metadatos de Node-RED indexados en catalog.json."
+    }
+  ]
+}

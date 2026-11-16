@@ -1,0 +1,820 @@
+{
+  "nodes": [
+    {
+      "id": "file:svc_py/core/docker.py",
+      "type": "file",
+      "name": "docker.py",
+      "filePath": "svc_py/core/docker.py",
+      "summary": "Abstracción de operaciones Docker que combina el SDK nativo docker-py para inspección rápida, estadísticas y redes con subprocesos docker compose y fallback por CLI.",
+      "tags": [
+        "docker",
+        "docker-sdk",
+        "subprocesos",
+        "core",
+        "contenedores"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Usa un cliente Docker SDK en patrón singleton opcional (_get_client) con degradación automática a subprocesos CLI cuando el SDK no está disponible."
+    },
+    {
+      "id": "function:svc_py/core/docker.py:_get_client",
+      "type": "function",
+      "name": "_get_client",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        30,
+        38
+      ],
+      "summary": "Inicializa y almacena en caché el cliente singleton del Docker SDK desde variables de entorno.",
+      "tags": [
+        "docker-sdk",
+        "singleton",
+        "conexion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/docker.py:compose_run",
+      "type": "function",
+      "name": "compose_run",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        44,
+        56
+      ],
+      "summary": "Ejecuta docker compose -f con soporte para capturar salida o heredar terminal.",
+      "tags": [
+        "docker-compose",
+        "subproceso",
+        "ejecucion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/docker.py:compose_output",
+      "type": "function",
+      "name": "compose_output",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        59,
+        62
+      ],
+      "summary": "Ejecuta un comando docker compose capturando su salida estándar limpia y código de retorno.",
+      "tags": [
+        "docker-compose",
+        "subproceso",
+        "captura"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/docker.py:compose_passthrough",
+      "type": "function",
+      "name": "compose_passthrough",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        65,
+        69
+      ],
+      "summary": "Ejecuta docker compose con herencia completa de terminal para streaming interactivo.",
+      "tags": [
+        "docker-compose",
+        "passthrough",
+        "streaming"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/docker.py:docker_run",
+      "type": "function",
+      "name": "docker_run",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        75,
+        83
+      ],
+      "summary": "Ejecuta comandos directos de la CLI docker como alternativa cuando el SDK no aplica.",
+      "tags": [
+        "docker",
+        "subproceso",
+        "fallback"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/docker.py:is_service_running",
+      "type": "function",
+      "name": "is_service_running",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        86,
+        89
+      ],
+      "summary": "Determina si al menos un contenedor de un compose file está activo mediante ps -q.",
+      "tags": [
+        "docker-compose",
+        "estado",
+        "contenedores"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/docker.py:get_container_ids",
+      "type": "function",
+      "name": "get_container_ids",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        92,
+        97
+      ],
+      "summary": "Devuelve la lista de IDs de contenedores activos asociados a un archivo compose.",
+      "tags": [
+        "docker-compose",
+        "contenedores",
+        "consulta"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/docker.py:container_inspect",
+      "type": "function",
+      "name": "container_inspect",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        100,
+        122
+      ],
+      "summary": "Inspecciona atributos de un contenedor usando mapeo rápido del SDK para templates comunes o docker inspect como fallback.",
+      "tags": [
+        "docker-sdk",
+        "inspeccion",
+        "contenedores"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/core/docker.py:get_container_stats",
+      "type": "function",
+      "name": "get_container_stats",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        128,
+        137
+      ],
+      "summary": "Obtiene una lectura puntual de estadísticas de CPU y memoria de un contenedor vía Docker SDK.",
+      "tags": [
+        "docker-sdk",
+        "metricas",
+        "estadisticas"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/docker.py:get_container_info",
+      "type": "function",
+      "name": "get_container_info",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        140,
+        157
+      ],
+      "summary": "Recupera nombre, estado, imagen, puertos, reinicios y health de un contenedor mediante Docker SDK.",
+      "tags": [
+        "docker-sdk",
+        "inspeccion",
+        "metadatos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/docker.py:list_all_containers",
+      "type": "function",
+      "name": "list_all_containers",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        160,
+        178
+      ],
+      "summary": "Lista contenedores activos o totales mediante Docker SDK devolviendo sus metadatos básicos.",
+      "tags": [
+        "docker-sdk",
+        "listado",
+        "contenedores"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/docker.py:get_networks",
+      "type": "function",
+      "name": "get_networks",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        181,
+        206
+      ],
+      "summary": "Enumera redes Docker personalizadas y los contenedores e IPs conectados usando el SDK.",
+      "tags": [
+        "docker-sdk",
+        "redes",
+        "inspeccion"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/core/docker.py:sdk_available",
+      "type": "function",
+      "name": "sdk_available",
+      "filePath": "svc_py/core/docker.py",
+      "lineRange": [
+        209,
+        218
+      ],
+      "summary": "Verifica si el Docker SDK está instalado y responde al comando ping.",
+      "tags": [
+        "docker-sdk",
+        "verificacion",
+        "disponibilidad"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:svc_py/ui.py",
+      "type": "file",
+      "name": "ui.py",
+      "filePath": "svc_py/ui.py",
+      "summary": "Utilidades compartidas de interfaz Rich para el CLI svc, incluyendo consola global, mensajes estilizados, indicadores de estado y constructor de tablas.",
+      "tags": [
+        "ui",
+        "rich",
+        "tablas",
+        "formato",
+        "utilidades"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/ui.py:error",
+      "type": "function",
+      "name": "error",
+      "filePath": "svc_py/ui.py",
+      "lineRange": [
+        16,
+        18
+      ],
+      "summary": "Imprime un mensaje de error formateado con símbolo de cruz en rojo.",
+      "tags": [
+        "ui",
+        "logging",
+        "error"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/ui.py:warn",
+      "type": "function",
+      "name": "warn",
+      "filePath": "svc_py/ui.py",
+      "lineRange": [
+        21,
+        23
+      ],
+      "summary": "Imprime una advertencia formateada con símbolo de alerta en amarillo.",
+      "tags": [
+        "ui",
+        "logging",
+        "advertencia"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/ui.py:success",
+      "type": "function",
+      "name": "success",
+      "filePath": "svc_py/ui.py",
+      "lineRange": [
+        26,
+        28
+      ],
+      "summary": "Imprime un mensaje de éxito formateado con símbolo de check en verde.",
+      "tags": [
+        "ui",
+        "logging",
+        "exito"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/ui.py:info",
+      "type": "function",
+      "name": "info",
+      "filePath": "svc_py/ui.py",
+      "lineRange": [
+        31,
+        33
+      ],
+      "summary": "Imprime un mensaje informativo formateado con símbolo de información en cian.",
+      "tags": [
+        "ui",
+        "logging",
+        "informacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/ui.py:header",
+      "type": "function",
+      "name": "header",
+      "filePath": "svc_py/ui.py",
+      "lineRange": [
+        36,
+        46
+      ],
+      "summary": "Renderiza un encabezado dentro de un Panel Rich con título y subtítulo opcional.",
+      "tags": [
+        "ui",
+        "rich",
+        "panel"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/ui.py:status_dot",
+      "type": "function",
+      "name": "status_dot",
+      "filePath": "svc_py/ui.py",
+      "lineRange": [
+        49,
+        51
+      ],
+      "summary": "Devuelve un indicador visual verde o rojo según si el servicio está activo.",
+      "tags": [
+        "ui",
+        "estado",
+        "indicador"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/ui.py:health_colored",
+      "type": "function",
+      "name": "health_colored",
+      "filePath": "svc_py/ui.py",
+      "lineRange": [
+        54,
+        61
+      ],
+      "summary": "Aplica color Rich al estado de healthcheck (healthy, unhealthy, starting).",
+      "tags": [
+        "ui",
+        "salud",
+        "formato"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/ui.py:restart_colored",
+      "type": "function",
+      "name": "restart_colored",
+      "filePath": "svc_py/ui.py",
+      "lineRange": [
+        64,
+        70
+      ],
+      "summary": "Colorea el contador de reinicios según su severidad.",
+      "tags": [
+        "ui",
+        "reinicios",
+        "formato"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/ui.py:service_table",
+      "type": "function",
+      "name": "service_table",
+      "filePath": "svc_py/ui.py",
+      "lineRange": [
+        73,
+        89
+      ],
+      "summary": "Construye una Table Rich con estilo redondeado y columnas configurables para listar servicios.",
+      "tags": [
+        "ui",
+        "rich",
+        "tabla"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/ui.py:confirm_action",
+      "type": "function",
+      "name": "confirm_action",
+      "filePath": "svc_py/ui.py",
+      "lineRange": [
+        92,
+        94
+      ],
+      "summary": "Muestra en consola la acción que está por ejecutarse sobre un servicio.",
+      "tags": [
+        "ui",
+        "confirmacion",
+        "feedback"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:_get_client",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:_get_client",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:compose_run",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:compose_run",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:compose_output",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:compose_output",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:compose_passthrough",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:compose_passthrough",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:docker_run",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:docker_run",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:is_service_running",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:is_service_running",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:get_container_ids",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:get_container_ids",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:container_inspect",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:container_inspect",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:get_container_stats",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:get_container_stats",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:get_container_info",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:get_container_info",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:list_all_containers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:list_all_containers",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:get_networks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:get_networks",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:sdk_available",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/docker.py",
+      "target": "function:svc_py/core/docker.py:sdk_available",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/docker.py:compose_output",
+      "target": "function:svc_py/core/docker.py:compose_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/docker.py:is_service_running",
+      "target": "function:svc_py/core/docker.py:compose_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/docker.py:get_container_ids",
+      "target": "function:svc_py/core/docker.py:compose_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/docker.py:container_inspect",
+      "target": "function:svc_py/core/docker.py:_get_client",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/docker.py:container_inspect",
+      "target": "function:svc_py/core/docker.py:docker_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/docker.py:get_container_stats",
+      "target": "function:svc_py/core/docker.py:_get_client",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/docker.py:get_container_info",
+      "target": "function:svc_py/core/docker.py:_get_client",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/docker.py:list_all_containers",
+      "target": "function:svc_py/core/docker.py:_get_client",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/docker.py:get_networks",
+      "target": "function:svc_py/core/docker.py:_get_client",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/docker.py:sdk_available",
+      "target": "function:svc_py/core/docker.py:_get_client",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:error",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:error",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:warn",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:warn",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:success",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:success",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:info",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:info",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:header",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:header",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:status_dot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:status_dot",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:health_colored",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:health_colored",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:restart_colored",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:restart_colored",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:service_table",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:service_table",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:confirm_action",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/ui.py",
+      "target": "function:svc_py/ui.py:confirm_action",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

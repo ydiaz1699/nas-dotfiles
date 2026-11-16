@@ -1,0 +1,131 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 3
+    }
+  },
+  "results": [
+    {
+      "path": "agent/catalog/services/jdownloader/.env.example",
+      "language": "config",
+      "fileCategory": "config",
+      "totalLines": 17,
+      "nonEmptyLines": 15,
+      "definitions": [
+        {
+          "name": "JD_USER_ID",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 11,
+          "endLine": 11
+        },
+        {
+          "name": "JD_GROUP_ID",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 12,
+          "endLine": 12
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 2
+      }
+    },
+    {
+      "path": "agent/catalog/services/jdownloader/compose.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 62,
+      "nonEmptyLines": 62,
+      "sections": [
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 1
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "agent/catalog/services/jdownloader/ficha.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 123,
+      "nonEmptyLines": 102,
+      "sections": [
+        {
+          "heading": "JDownloader 2",
+          "level": 1,
+          "line": 45
+        },
+        {
+          "heading": "Qué es",
+          "level": 2,
+          "line": 47
+        },
+        {
+          "heading": "Estructura",
+          "level": 2,
+          "line": 54
+        },
+        {
+          "heading": "Arquitectura de control",
+          "level": 2,
+          "line": 73
+        },
+        {
+          "heading": "Dos destinos de descarga",
+          "level": 2,
+          "line": 80
+        },
+        {
+          "heading": "Setup inicial",
+          "level": 2,
+          "line": 90
+        },
+        {
+          "heading": "Puertos",
+          "level": 2,
+          "line": 100
+        },
+        {
+          "heading": ".env",
+          "level": 2,
+          "line": 107
+        },
+        {
+          "heading": "Notas",
+          "level": 2,
+          "line": 116
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+[
+  {
+    "order": 1,
+    "title": "Visión general y arquitectura en tres capas",
+    "description": "El proyecto nas-dotfiles transforma la terminal de un servidor Linux/NAS en una consola de administración unificada dividida en tres capas: un framework de shell en Bash, un CLI dual de servicios Docker (svc en Bash y Python) y un agente de IA basado en Strands Agents con daemon y gateways MCP. El archivo README.md presenta el mapa general del repositorio, GUIDE.md profundiza en la filosofía operativa para usuarios y AGENTS.md establece las reglas estrictas y convenciones para asistentes de IA.",
+    "nodeIds": [
+      "document:README.md",
+      "document:GUIDE.md",
+      "document:AGENTS.md"
+    ]
+  },
+  {
+    "order": 2,
+    "title": "Instalación universal y configuración inicial del entorno",
+    "description": "El despliegue en /nas-dotfiles comienza por el script setup, que actúa como punto de entrada universal evaluando si existe el entorno Python requerido para lanzar la interfaz TUI interactiva ui/setup.py (construida con Rich e InquirerPy). Cuando Python o sus dependencias no están disponibles, delega automáticamente en install.sh como fallback en Bash para detectar el sistema, copiar archivos y generar la configuración de usuario a partir de .config/user.conf.example.",
+    "nodeIds": [
+      "file:setup",
+      "file:install.sh",
+      "file:ui/setup.py",
+      "file:.config/user.conf.example"
+    ],
+    "languageLesson": "Patrón de degradación elegante (graceful fallback): el lanzador Bash `setup` verifica dependencias en tiempo de ejecución para ofrecer una TUI moderna en Python y, si faltan librerías, retrocede a `install.sh` en Bash puro sin bloquear el bootstrap del servidor."
+  },
+  {
+    "order": 3,
+    "title": "Capa 1: El Shell Framework y la terminal diaria del NAS",
+    "description": "Cada sesión interactiva de terminal carga shell/init.sh, el punto único de inicialización que valida NAS_DOTFILES, carga user.conf y el .env global de Docker, e importa los módulos especializados de shell/lib/. Estos módulos aportan alias seguros y de productividad (aliases.sh), navegación rápida entre directorios clave como dk y nasfk (nav.sh), un prompt PS1 dinámico con el estado de contenedores activos (prompt.sh) y el dashboard de diagnóstico del sistema nas (system.sh).",
+    "nodeIds": [
+      "file:shell/init.sh",
+      "file:shell/lib/aliases.sh",
+      "file:shell/lib/nav.sh",
+      "file:shell/lib/prompt.sh",
+      "file:shell/lib/system.sh"
+    ]
+  },
+  {
+    "order": 4,
+    "title": "Capa 2 (Bash): El CLI modular svc.sh como fuente de verdad",
+    "description": "Con el mayor grado de acoplamiento entrante del código (31 referencias), docker/cli/svc.sh es el núcleo operativo para gestionar servicios Docker Compose aplicando automáticamente los archivos --env-file global y local. Su diseño modular separa el descubrimiento de servicios en discovery.sh, la inspección de salud en health.sh, las copias de seguridad y restauración de volúmenes en backup.sh y el pipeline de sincronización automática con el catálogo en catalog-sync.sh.",
+    "nodeIds": [
+      "file:docker/cli/svc.sh",
+      "file:docker/cli/lib/discovery.sh",
+      "file:docker/cli/lib/health.sh",
+      "file:docker/cli/lib/backup.sh",
+      "file:docker/cli/lib/catalog-sync.sh"
+    ]
+  },
+  {
+    "order": 5,
+    "title": "Capa 2 (Python): El CLI moderno svc_py y su puente hacia Bash",
+    "description": "La implementación paralela en Python parte de svc_py/__main__.py y svc_py/app.py usando Typer para el enrutamiento de subcomandos y svc_py/ui.py (Rich) para renderizar tablas e indicadores visuales. En lugar de reimplementar toda la lógica crítica de Bash, svc_py/core/bash_bridge.py actúa como puente passthrough hacia svc.sh, mientras discovery.py replica la detección de servicios Compose bajo DOCKER_BASE.",
+    "nodeIds": [
+      "file:svc_py/__main__.py",
+      "file:svc_py/app.py",
+      "file:svc_py/core/bash_bridge.py",
+      "file:svc_py/core/discovery.py",
+      "file:svc_py/ui.py"
+    ],
+    "languageLesson": "Patrón Bridge / Strangler Fig en CLIs: `svc_py` moderniza la experiencia de usuario con Typer y Rich, pero delega operaciones complejas a `svc.sh` mediante `bash_bridge.py`, preservando una única fuente de verdad (Single Source of Truth) durante la evolución del CLI."
+  },
+  {
+    "order": 6,
+    "title": "Orquestación del ciclo de vida: arranque escalonado y systemd",
+    "description": "Para evitar condiciones de carrera entre bases de datos y servicios consumidores al reiniciar el NAS, boot-order.sh y stop-order.sh leen la definición por capas de layers.conf (modelada en layers.conf.example) aplicando bloqueo con flock, espera de healthchecks y orden inverso al apagar. Las plantillas systemd docker-boot-staged.service.template y docker-shutdown-staged.service.template ejecutan estos scripts bajo PID 1 para garantizar inmunidad frente a cortes SSH (SIGHUP).",
+    "nodeIds": [
+      "file:shell/scripts/boot-order.sh",
+      "file:shell/scripts/stop-order.sh",
+      "file:shell/scripts/layers.conf.example",
+      "file:systemd/docker-boot-staged.service.template",
+      "file:systemd/docker-shutdown-staged.service.template"
+    ]
+  },
+  {
+    "order": 7,
+    "title": "Catálogo declarativo de servicios Docker e infraestructura base",
+    "description": "El directorio agent/catalog/ estandariza todos los stacks del servidor: los compose.yml heredan políticas comunes de seguridad, logging y límites mediante extends desde _common.yml y variables globales desde .env.global.example. El script _index.py compila el frontmatter YAML de las fichas técnicas en agent/catalog/catalog.json, sirviendo como mapa estructurado de redes y puertos donde destaca datasql/compose.yml como base compartida de PostgreSQL y Redis.",
+    "nodeIds": [
+      "config:agent/catalog/catalog.json",
+      "config:agent/catalog/_common.yml",
+      "config:agent/catalog/.env.global.example",
+      "file:agent/catalog/_index.py",
+      "service:agent/catalog/services/datasql/compose.yml"
+    ]
+  },
+  {
+    "order": 8,
+    "title": "Capa 3: El Agente IA (nas_agent.py) y su núcleo de negocio",
+    "description": "El punto de entrada agent/nas_agent.py construye el agente conversacional sobre Strands Agents SDK con soporte multi-proveedor (Gemini, Bedrock, Ollama), sesiones persistentes y clasificación dinámica de prompts. Toda la lógica reutilizable reside desacoplada en agent/core/: _result.py define el contrato estándar ToolResult, mientras service_manager.py, compose_manager.py y memory.py encapsulan el control de contenedores, la generación segura de Compose y la memoria en Markdown.",
+    "nodeIds": [
+      "file:agent/nas_agent.py",
+      "file:agent/core/_result.py",
+      "file:agent/core/service_manager.py",
+      "file:agent/core/compose_manager.py",
+      "file:agent/core/memory.py"
+    ]
+  },
+  {
+    "order": 9,
+    "title": "Herramientas @tool del agente y ejecución defensiva",
+    "description": "El módulo agent/tools/__init__.py centraliza en ALL_TOOLS las funciones decoradas con @tool (como docker_tools.py y compose_tools.py) que el modelo puede invocar directamente. Para proteger al host de inyecciones de comandos y modificaciones accidentales, todas las operaciones de sistema pasan por _shell.py —que impone shell=False, validación anti path-traversal y modos read-only/dry-run— y quedan registradas en JSON Lines mediante _audit.py.",
+    "nodeIds": [
+      "file:agent/tools/__init__.py",
+      "file:agent/tools/_shell.py",
+      "file:agent/tools/_audit.py",
+      "file:agent/tools/docker_tools.py",
+      "file:agent/tools/compose_tools.py"
+    ],
+    "languageLesson": "En Strands Agents SDK, el decorador `@tool` convierte funciones Python con type hints y docstrings en esquemas JSON invocables por el LLM; combinarlo con `subprocess.run(..., shell=False)` en `_shell.py` evita la interpolación de shell y mitiga inyecciones de comandos."
+  },
+  {
+    "order": 10,
+    "title": "Daemon 24/7, arquitectura de plugins y bus de eventos",
+    "description": "Además del modo interactivo, agent/daemon.py ejecuta el agente de forma autónoma en segundo plano gestionado por la unidad endurecida systemd/nas-agent.service. Su extensibilidad se apoya en el contrato BasePlugin (plugins/base.py) y el cargador dinámico con validación de dependencias (plugins/loader.py), conectados a un bus pub/sub en memoria con soporte de wildcards y eventos MQTT (events/bus.py).",
+    "nodeIds": [
+      "file:agent/daemon.py",
+      "file:agent/plugins/base.py",
+      "file:agent/plugins/loader.py",
+      "file:agent/events/bus.py",
+      "file:systemd/nas-agent.service"
+    ]
+  },
+  {
+    "order": 11,
+    "title": "Gateways MCP Read-Only: frontera de privilegios y worker lazy",
+    "description": "La especificación docs/nas-mcp-gateway.md describe cómo exponer el estado del NAS a clientes MCP externos sin montar el socket de Docker dentro de contenedores. El front-door HTTP nas_mcp_gateway.py publica las capacidades declaradas en nas_mcp_manifest.json y activa bajo demanda un worker efímero (nas_mcp_worker.py) que consulta vía Unix socket al helper systemd de solo lectura nas-mcp-helper.service en el host.",
+    "nodeIds": [
+      "document:docs/nas-mcp-gateway.md",
+      "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "config:agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json",
+      "file:systemd/nas-mcp-helper.service"
+    ],
+    "languageLesson": "Separación de privilegios mediante socket Unix + lazy worker: el contenedor expuesto en red (`nas_mcp_gateway.py`) corre sin privilegios ni acceso a `/var/run/docker.sock`, delegando lecturas allowlisted al proceso host `nas-mcp-helper.service` endurecido con `ProtectSystem=strict`."
+  },
+  {
+    "order": 12,
+    "title": "Gobernanza arquitectónica, auditoría automatizada y pruebas",
+    "description": "Para mantener la coherencia entre 299 artefactos de Bash, Python, Compose y documentación, agent/architecture/contracts.json formaliza los contratos de paridad CLI, descubrimiento de herramientas y niveles de dependencia. Sobre ese contrato operan project_scanner.py (auditor de drift e inconsistencias), project_index.py (generador AST de docs/CODE-MAP.md) y la suite pytest encabezada por tests/conftest.py y tests/test_validation.py.",
+    "nodeIds": [
+      "config:agent/architecture/contracts.json",
+      "file:agent/tools/project_scanner.py",
+      "file:agent/tools/project_index.py",
+      "file:tests/conftest.py",
+      "file:tests/test_validation.py"
+    ]
+  }
+]

@@ -1,0 +1,565 @@
+{
+  "nodes": [
+    {
+      "id": "file:shell/lib/aliases.sh",
+      "type": "file",
+      "name": "aliases.sh",
+      "filePath": "shell/lib/aliases.sh",
+      "summary": "Define alias de navegación, listado con eza, utilidades Docker, envolturas interactivas seguras para rm/cp/mv, recarga de bashrc y batr para inspección recursiva excluyendo credenciales.",
+      "tags": [
+        "alias-shell",
+        "utilidades-tty",
+        "comandos-docker",
+        "inspeccion-archivos"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Módulo Bash cargado en sesiones interactivas; sobreescribe rm, cp y mv verificando descriptores TTY con [[ -t 0 && -t 1 ]] para evitar bloqueos en scripts o pipes."
+    },
+    {
+      "id": "function:shell/lib/aliases.sh:batr",
+      "type": "function",
+      "name": "batr",
+      "filePath": "shell/lib/aliases.sh",
+      "lineRange": [
+        82,
+        93
+      ],
+      "summary": "Muestra recursivamente el contenido de los archivos de un directorio usando batcat, filtrando opcionalmente por extensión y excluyendo secrets.yaml, .env y rutas ocultas salvo que FORCE=1.",
+      "tags": [
+        "lectura-recursiva",
+        "filtro-secretos",
+        "batcat",
+        "busqueda-archivos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:shell/lib/completions.sh",
+      "type": "file",
+      "name": "completions.sh",
+      "filePath": "shell/lib/completions.sh",
+      "summary": "Registra funciones de autocompletado Bash para los comandos personalizados instal y logs.",
+      "tags": [
+        "autocompletado-bash",
+        "apt-cache",
+        "logs-sistema"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Usa las variables de programación de completions de Bash (COMP_WORDS, COMP_CWORD, COMPREPLY), compgen y complete -F."
+    },
+    {
+      "id": "function:shell/lib/completions.sh:_instal_complete",
+      "type": "function",
+      "name": "_instal_complete",
+      "filePath": "shell/lib/completions.sh",
+      "lineRange": [
+        5,
+        16
+      ],
+      "summary": "Completa nombres de paquetes APT mediante apt-cache pkgnames cuando el usuario ha escrito al menos dos caracteres.",
+      "tags": [
+        "autocompletado-apt",
+        "paquetes-debian",
+        "cli-instal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/lib/completions.sh:_logs_complete",
+      "type": "function",
+      "name": "_logs_complete",
+      "filePath": "shell/lib/completions.sh",
+      "lineRange": [
+        21,
+        39
+      ],
+      "summary": "Sugiere flags (-f, --follow), logs estándar (syslog, auth, kern) y archivos *.log presentes en /var/log para el comando logs.",
+      "tags": [
+        "autocompletado-logs",
+        "var-log",
+        "compgen"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:shell/lib/docker.sh",
+      "type": "file",
+      "name": "docker.sh",
+      "filePath": "shell/lib/docker.sh",
+      "summary": "Provee el autocompletado Bash dinámico para el CLI svc, descubriendo servicios Compose en DOCKER_BASE y subacciones de LobeHub desde capabilities.py.",
+      "tags": [
+        "autocompletado-svc",
+        "servicios-compose",
+        "lobehub-cli",
+        "docker-nas"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Combina listas estáticas de comandos globales y por servicio con invocación en caliente de find y python3 sobre agent/tools/capabilities.py."
+    },
+    {
+      "id": "function:shell/lib/docker.sh:_svc_complete",
+      "type": "function",
+      "name": "_svc_complete",
+      "filePath": "shell/lib/docker.sh",
+      "lineRange": [
+        32,
+        75
+      ],
+      "summary": "Resuelve el completado posicional de svc: lista comandos en el primer argumento, acciones de LobeHub para svc lobehub y servicios Compose para comandos de ciclo de vida o gestión.",
+      "tags": [
+        "autocompletado-posicional",
+        "cli-svc",
+        "compgen"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:shell/lib/git.sh",
+      "type": "file",
+      "name": "git.sh",
+      "filePath": "shell/lib/git.sh",
+      "summary": "Agrupa alias abreviados de Git junto con los helpers git-clean-branches para podar ramas ya fusionadas y git-quick para agregar, hacer commit y push en un paso.",
+      "tags": [
+        "alias-git",
+        "limpieza-ramas",
+        "flujo-trabajo-git"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Define funciones con guion en el nombre (git-clean-branches y git-quick), válidas en Bash interactivo aunque omitidas por parsers estándar."
+    },
+    {
+      "id": "function:shell/lib/git.sh:git-clean-branches",
+      "type": "function",
+      "name": "git-clean-branches",
+      "filePath": "shell/lib/git.sh",
+      "lineRange": [
+        25,
+        49
+      ],
+      "summary": "Detecta la rama principal remota, lista las ramas locales ya fusionadas en ella y solicita confirmación interactiva antes de borrarlas con git branch -d.",
+      "tags": [
+        "limpieza-ramas",
+        "confirmacion-interactiva",
+        "git-branch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:shell/lib/instal.sh",
+      "type": "file",
+      "name": "instal.sh",
+      "filePath": "shell/lib/instal.sh",
+      "summary": "Implementa un wrapper idempotente alrededor de apt-get/apt-fast que verifica paquetes instalados, refresca la caché APT si supera 6 horas y registra instalaciones exitosas en logs/packages.txt.",
+      "tags": [
+        "gestor-paquetes",
+        "apt-wrapper",
+        "registro-paquetes",
+        "idempotencia"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Usa dpkg-query, apt-cache show, stat sobre /var/cache/apt/pkgcache.bin y sudo automático cuando EUID != 0."
+    },
+    {
+      "id": "function:shell/lib/instal.sh:_apt_cache_stale",
+      "type": "function",
+      "name": "_apt_cache_stale",
+      "filePath": "shell/lib/instal.sh",
+      "lineRange": [
+        13,
+        27
+      ],
+      "summary": "Evalúa si /var/cache/apt/pkgcache.bin no existe o tiene una antigüedad mayor o igual al umbral en horas indicado (por defecto 6).",
+      "tags": [
+        "cache-apt",
+        "validacion-temporal",
+        "helper-apt"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/lib/instal.sh:instal",
+      "type": "function",
+      "name": "instal",
+      "filePath": "shell/lib/instal.sh",
+      "lineRange": [
+        29,
+        105
+      ],
+      "summary": "Clasifica los paquetes solicitados en ya instalados, inexistentes o pendientes, actualiza el índice APT si está obsoleto, instala mediante apt-fast o apt-get y persiste los instalados en logs/packages.txt.",
+      "tags": [
+        "instalacion-apt",
+        "dpkg-query",
+        "auditoria-paquetes",
+        "cli-instal"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:shell/lib/nav.sh",
+      "type": "file",
+      "name": "nav.sh",
+      "filePath": "shell/lib/nav.sh",
+      "summary": "Provee comandos rápidos de navegación por directorios (up, dk, dkf, nasfk, nasfkf y comando configurable vía NAV_CMD), integración interactiva con fzf y autocompletado.",
+      "tags": [
+        "navegacion-directorios",
+        "integracion-fzf",
+        "autocompletado-rutas",
+        "evaluacion-dinamica"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Genera dinámicamente funciones y completions con eval usando NAV_CMD, NAV_VAR y NAV_HOME definidos en shell/init.sh."
+    },
+    {
+      "id": "function:shell/lib/nav.sh:_nav",
+      "type": "function",
+      "name": "_nav",
+      "filePath": "shell/lib/nav.sh",
+      "lineRange": [
+        13,
+        42
+      ],
+      "summary": "Navega al directorio base si no recibe argumentos, sube niveles con '..', entra a un subdirectorio ejecutando comandos opcionales o corre un comando dentro de la carpeta base.",
+      "tags": [
+        "navegacion-base",
+        "ejecucion-contextual",
+        "helper-cd"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:shell/lib/nav.sh:_nav_fzf",
+      "type": "function",
+      "name": "_nav_fzf",
+      "filePath": "shell/lib/nav.sh",
+      "lineRange": [
+        56,
+        78
+      ],
+      "summary": "Busca subdirectorios hasta profundidad 4 excluyendo carpetas ocultas, node_modules, __pycache__ y .git para seleccionarlos interactivamente con fzf y vista previa ls.",
+      "tags": [
+        "busqueda-difusa",
+        "fzf",
+        "navegacion-interactiva"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:shell/lib/pipins.sh",
+      "type": "file",
+      "name": "pipins.sh",
+      "filePath": "shell/lib/pipins.sh",
+      "summary": "Implementa pipins como instalador y actualizador de paquetes Python con pip/pip3, evitando reinstalaciones innecesarias, manejando PEP 668 y registrando instalaciones en logs/pip_packages.txt.",
+      "tags": [
+        "gestor-pip",
+        "paquetes-python",
+        "pep-668",
+        "registro-paquetes"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Comprueba en dry-run la disponibilidad de --break-system-packages para entornos Debian con Python 3.12+."
+    },
+    {
+      "id": "function:shell/lib/pipins.sh:pipins",
+      "type": "function",
+      "name": "pipins",
+      "filePath": "shell/lib/pipins.sh",
+      "lineRange": [
+        26,
+        120
+      ],
+      "summary": "Procesa paquetes y el flag -u/--upgrade, omite paquetes ya presentes salvo en upgrade, aplica --break-system-packages si aplica, instala vía pip/pip3 y guarda el historial con versión.",
+      "tags": [
+        "instalacion-pip",
+        "actualizacion-paquetes",
+        "auditoria-python"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:shell/lib/prompt.sh",
+      "type": "file",
+      "name": "prompt.sh",
+      "filePath": "shell/lib/prompt.sh",
+      "summary": "Configura PROMPT_COMMAND para construir un prompt PS1 con estado de contenedores Docker activos, porcentaje de uso de disco raíz con caché por TTL, rama Git y código de salida.",
+      "tags": [
+        "prompt-bash",
+        "cache-ttl",
+        "estado-docker",
+        "estado-git"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Utiliza la variable interna SECONDS de Bash para invalidar cachés de Docker (5s) y disco (10s) sin añadir latencia perceptible al prompt."
+    },
+    {
+      "id": "function:shell/lib/prompt.sh:_prompt_git",
+      "type": "function",
+      "name": "_prompt_git",
+      "filePath": "shell/lib/prompt.sh",
+      "lineRange": [
+        31,
+        42
+      ],
+      "summary": "Obtiene la rama actual o hash corto de HEAD y agrega un indicador '*' cuando existen cambios sin confirmar en el árbol de trabajo o en el índice.",
+      "tags": [
+        "prompt-git",
+        "estado-repositorio",
+        "dirty-flag"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/lib/prompt.sh:_build_prompt",
+      "type": "function",
+      "name": "_build_prompt",
+      "filePath": "shell/lib/prompt.sh",
+      "lineRange": [
+        45,
+        85
+      ],
+      "summary": "Refresca las cachés de Docker y disco, calcula colores según umbrales de uso, privilegios de root y código de retorno previo, y ensambla la cadena PS1.",
+      "tags": [
+        "prompt-command",
+        "colores-ansi",
+        "metricas-nas"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:shell/lib/system.sh",
+      "type": "file",
+      "name": "system.sh",
+      "filePath": "shell/lib/system.sh",
+      "summary": "Reúne utilidades de diagnóstico del NAS para terminal: dashboard resumen nas, vista rápida disk, diagnóstico de red y puertos netinfo, y visor de logs con journalctl/tail.",
+      "tags": [
+        "monitoreo-sistema",
+        "diagnostico-nas",
+        "red-puertos",
+        "visor-logs"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Integra herramientas estándar Linux (uptime, free, df, ip, ss, docker ps, sensors, journalctl) en funciones de shell orientadas a administración."
+    },
+    {
+      "id": "function:shell/lib/system.sh:nas",
+      "type": "function",
+      "name": "nas",
+      "filePath": "shell/lib/system.sh",
+      "lineRange": [
+        4,
+        76
+      ],
+      "summary": "Imprime un dashboard en color con uptime, carga promedio, uso porcentual de memoria, ocupación de discos filtrando filesystems virtuales, interfaces IPv4, conteo Docker y temperaturas vía sensors.",
+      "tags": [
+        "dashboard-terminal",
+        "metricas-hardware",
+        "estado-servicios"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:shell/lib/system.sh:netinfo",
+      "type": "function",
+      "name": "netinfo",
+      "filePath": "shell/lib/system.sh",
+      "lineRange": [
+        85,
+        95
+      ],
+      "summary": "Lista las interfaces de red IPv4 activas con ip -4 addr show y los puertos TCP en estado LISTEN ordenados mediante ss -tulnp.",
+      "tags": [
+        "diagnostico-red",
+        "puertos-tcp",
+        "sockets-listen"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/lib/system.sh:logs",
+      "type": "function",
+      "name": "logs",
+      "filePath": "shell/lib/system.sh",
+      "lineRange": [
+        102,
+        148
+      ],
+      "summary": "Muestra las últimas 50 líneas o sigue en tiempo real (-f/--follow) el journal del sistema o archivos específicos de /var/log como syslog, auth.log y kern.log.",
+      "tags": [
+        "journalctl",
+        "logs-sistema",
+        "seguimiento-tiempo-real"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:shell/lib/aliases.sh",
+      "target": "function:shell/lib/aliases.sh:batr",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/lib/aliases.sh",
+      "target": "file:shell/init.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "La función reload marca _SHELL_RELOAD=1 para forzar la recarga de shell/init.sh al hacer source de ~/.bashrc."
+    },
+    {
+      "source": "file:shell/lib/completions.sh",
+      "target": "function:shell/lib/completions.sh:_instal_complete",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/lib/completions.sh",
+      "target": "function:shell/lib/completions.sh:_logs_complete",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/lib/completions.sh",
+      "target": "function:shell/lib/instal.sh:instal",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Registra el autocompletado Bash _instal_complete sobre la función instal."
+    },
+    {
+      "source": "file:shell/lib/completions.sh",
+      "target": "function:shell/lib/system.sh:logs",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Registra el autocompletado Bash _logs_complete sobre la función logs."
+    },
+    {
+      "source": "file:shell/lib/docker.sh",
+      "target": "function:shell/lib/docker.sh:_svc_complete",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/lib/docker.sh",
+      "target": "file:docker/cli/svc.sh",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Configura el autocompletado Bash complete -F _svc_complete svc para el CLI svc.sh."
+    },
+    {
+      "source": "file:shell/lib/docker.sh",
+      "target": "file:agent/tools/capabilities.py",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta capabilities.py --service lobehub --json en _lobe_actions para completar dinámicamente subcomandos de LobeHub."
+    },
+    {
+      "source": "file:shell/lib/git.sh",
+      "target": "function:shell/lib/git.sh:git-clean-branches",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/lib/instal.sh",
+      "target": "function:shell/lib/instal.sh:_apt_cache_stale",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/lib/instal.sh",
+      "target": "function:shell/lib/instal.sh:instal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "function:shell/lib/instal.sh:instal",
+      "target": "function:shell/lib/instal.sh:_apt_cache_stale",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Consulta si la caché de APT supera las 6 horas antes de ejecutar apt update."
+    },
+    {
+      "source": "file:shell/lib/nav.sh",
+      "target": "function:shell/lib/nav.sh:_nav",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/lib/nav.sh",
+      "target": "function:shell/lib/nav.sh:_nav_fzf",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/lib/nav.sh",
+      "target": "file:shell/init.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Depende de las variables NAV_CMD, NAV_VAR, NAV_HOME, dkco y NAS_DOTFILES inicializadas por shell/init.sh."
+    },
+    {
+      "source": "file:shell/lib/pipins.sh",
+      "target": "function:shell/lib/pipins.sh:pipins",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/lib/prompt.sh",
+      "target": "function:shell/lib/prompt.sh:_prompt_git",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/lib/prompt.sh",
+      "target": "function:shell/lib/prompt.sh:_build_prompt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "function:shell/lib/prompt.sh:_build_prompt",
+      "target": "function:shell/lib/prompt.sh:_prompt_git",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Obtiene el segmento coloreado de rama Git y estado dirty para incrustarlo en PS1."
+    },
+    {
+      "source": "file:shell/lib/system.sh",
+      "target": "function:shell/lib/system.sh:nas",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/lib/system.sh",
+      "target": "function:shell/lib/system.sh:netinfo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/lib/system.sh",
+      "target": "function:shell/lib/system.sh:logs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    }
+  ]
+}

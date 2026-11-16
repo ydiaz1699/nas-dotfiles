@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/filebrowser/.env.example",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/filebrowser/compose.yml",
+      "language": "yaml",
+      "sizeLines": 38,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/filebrowser/ficha.md",
+      "language": "markdown",
+      "sizeLines": 60,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/filebrowser/.env.example": [],
+    "agent/catalog/services/filebrowser/compose.yml": [],
+    "agent/catalog/services/filebrowser/ficha.md": []
+  }
+}

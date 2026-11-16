@@ -1,0 +1,49 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": ".kiro/skills/dotfile-skill/references/agent.md",
+      "language": "markdown",
+      "sizeLines": 124,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/diagnostic.md",
+      "language": "markdown",
+      "sizeLines": 140,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/extend.md",
+      "language": "markdown",
+      "sizeLines": 86,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/security.md",
+      "language": "markdown",
+      "sizeLines": 65,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/shell.md",
+      "language": "markdown",
+      "sizeLines": 137,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/svc.md",
+      "language": "markdown",
+      "sizeLines": 226,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    ".kiro/skills/dotfile-skill/references/agent.md": [],
+    ".kiro/skills/dotfile-skill/references/diagnostic.md": [],
+    ".kiro/skills/dotfile-skill/references/extend.md": [],
+    ".kiro/skills/dotfile-skill/references/security.md": [],
+    ".kiro/skills/dotfile-skill/references/shell.md": [],
+    ".kiro/skills/dotfile-skill/references/svc.md": []
+  }
+}

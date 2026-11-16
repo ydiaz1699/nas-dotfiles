@@ -1,0 +1,1330 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 11,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 11,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 11
+    }
+  },
+  "results": [
+    {
+      "path": "docker-nas/references/agent.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 336,
+      "nonEmptyLines": 263,
+      "sections": [
+        {
+          "heading": "Agente IA — referencia completa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Invocación",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Providers",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "Modelos disponibles (via `agent --model`)",
+          "level": 3,
+          "line": 29
+        },
+        {
+          "heading": "Arquitectura del prompt",
+          "level": 2,
+          "line": 43
+        },
+        {
+          "heading": "Reglas de ejecución del agente",
+          "level": 2,
+          "line": 69
+        },
+        {
+          "heading": "Mapeo acción → herramienta",
+          "level": 3,
+          "line": 76
+        },
+        {
+          "heading": "Tools disponibles (31 total)",
+          "level": 2,
+          "line": 92
+        },
+        {
+          "heading": "Descubrimiento",
+          "level": 3,
+          "line": 94
+        },
+        {
+          "heading": "Sistema",
+          "level": 3,
+          "line": 103
+        },
+        {
+          "heading": "Docker",
+          "level": 3,
+          "line": 113
+        },
+        {
+          "heading": "Compose",
+          "level": 3,
+          "line": 122
+        },
+        {
+          "heading": "Backup",
+          "level": 3,
+          "line": 129
+        },
+        {
+          "heading": "Búsqueda y Diagnóstico",
+          "level": 3,
+          "line": 136
+        },
+        {
+          "heading": "Índice estructural",
+          "level": 3,
+          "line": 147
+        },
+        {
+          "heading": "Gateways MCP",
+          "level": 3,
+          "line": 156
+        },
+        {
+          "heading": "Sistema de memoria",
+          "level": 2,
+          "line": 178
+        },
+        {
+          "heading": "Flujo de memoria",
+          "level": 3,
+          "line": 191
+        },
+        {
+          "heading": "Búsqueda (recall)",
+          "level": 3,
+          "line": 199
+        },
+        {
+          "heading": "Sesiones",
+          "level": 2,
+          "line": 206
+        },
+        {
+          "heading": "Plugins",
+          "level": 2,
+          "line": 217
+        },
+        {
+          "heading": "Daemon (systemd)",
+          "level": 2,
+          "line": 243
+        },
+        {
+          "heading": "Catálogo de servicios",
+          "level": 2,
+          "line": 260
+        },
+        {
+          "heading": "Variables de entorno",
+          "level": 2,
+          "line": 280
+        },
+        {
+          "heading": "Dependencias Python",
+          "level": 2,
+          "line": 301
+        },
+        {
+          "heading": "Configuración (defaults.yml)",
+          "level": 2,
+          "line": 316
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 26
+      }
+    },
+    {
+      "path": "docker-nas/references/diagnostic.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 181,
+      "nonEmptyLines": 137,
+      "sections": [
+        {
+          "heading": "Recetas de diagnóstico",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Servicio caído (no arranca / exit code ≠ 0)",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "OOM (Out of Memory)",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "Crash loop (reinicio continuo)",
+          "level": 2,
+          "line": 43
+        },
+        {
+          "heading": "Conflicto de puerto",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "`Address already in use` al crear la red del contenedor",
+          "level": 2,
+          "line": 80
+        },
+        {
+          "heading": "Servicio lento / alto consumo",
+          "level": 2,
+          "line": 121
+        },
+        {
+          "heading": "Healthcheck fallando (unhealthy)",
+          "level": 2,
+          "line": 139
+        },
+        {
+          "heading": "Red / conectividad entre servicios",
+          "level": 2,
+          "line": 155
+        },
+        {
+          "heading": "Orden general de diagnóstico (cualquier problema)",
+          "level": 2,
+          "line": 171
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": "docker-nas/references/entorno.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 323,
+      "nonEmptyLines": 257,
+      "sections": [
+        {
+          "heading": "Entorno Shell — referencia completa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Arquitectura",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Variables exportadas por init.sh",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "Funciones definidas en init.sh",
+          "level": 2,
+          "line": 45
+        },
+        {
+          "heading": "Alias — Listado (eza)",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "Alias — Navegación",
+          "level": 2,
+          "line": 65
+        },
+        {
+          "heading": "Alias — Sistema",
+          "level": 2,
+          "line": 74
+        },
+        {
+          "heading": "Alias — Docker rápido",
+          "level": 2,
+          "line": 84
+        },
+        {
+          "heading": "Alias — Archivos (TTY-safe)",
+          "level": 2,
+          "line": 95
+        },
+        {
+          "heading": "Alias — Grep",
+          "level": 2,
+          "line": 113
+        },
+        {
+          "heading": "Navegación",
+          "level": 2,
+          "line": 123
+        },
+        {
+          "heading": "up [n]",
+          "level": 3,
+          "line": 125
+        },
+        {
+          "heading": "adm (o NAV_CMD configurado) → home del usuario",
+          "level": 3,
+          "line": 132
+        },
+        {
+          "heading": "dk → /docker (misma lógica que adm)",
+          "level": 3,
+          "line": 144
+        },
+        {
+          "heading": "Funciones de sistema",
+          "level": 2,
+          "line": 158
+        },
+        {
+          "heading": "nas",
+          "level": 3,
+          "line": 160
+        },
+        {
+          "heading": "disk",
+          "level": 3,
+          "line": 169
+        },
+        {
+          "heading": "netinfo",
+          "level": 3,
+          "line": 175
+        },
+        {
+          "heading": "logs",
+          "level": 3,
+          "line": 181
+        },
+        {
+          "heading": "instal — apt inteligente",
+          "level": 2,
+          "line": 195
+        },
+        {
+          "heading": "pipins — pip inteligente",
+          "level": 2,
+          "line": 212
+        },
+        {
+          "heading": "Git aliases",
+          "level": 2,
+          "line": 228
+        },
+        {
+          "heading": "Funciones git",
+          "level": 3,
+          "line": 251
+        },
+        {
+          "heading": "Prompt dinámico",
+          "level": 2,
+          "line": 260
+        },
+        {
+          "heading": "Cache del prompt",
+          "level": 3,
+          "line": 277
+        },
+        {
+          "heading": "Autocompletado TAB",
+          "level": 2,
+          "line": 284
+        },
+        {
+          "heading": "Dependencias opcionales",
+          "level": 2,
+          "line": 298
+        },
+        {
+          "heading": "Extender con nuevo destino de navegación",
+          "level": 2,
+          "line": 312
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 28
+      }
+    },
+    {
+      "path": "docker-nas/references/extend.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 86,
+      "nonEmptyLines": 69,
+      "sections": [
+        {
+          "heading": "Cómo extender el framework",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Nuevo comando svc (bash)",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Nueva tool del agente (Python)",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Nuevo plugin del agente",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "Nuevo módulo del shell",
+          "level": 2,
+          "line": 68
+        },
+        {
+          "heading": "Nuevo destino de navegación",
+          "level": 2,
+          "line": 78
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "docker-nas/references/nas-context.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 570,
+      "nonEmptyLines": 482,
+      "sections": [
+        {
+          "heading": "NAS Skill — Contexto Operativo",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. Metadata & Trigger",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "2. Entorno (lo justo para no improvisar)",
+          "level": 2,
+          "line": 38
+        },
+        {
+          "heading": "Máquina",
+          "level": 3,
+          "line": 40
+        },
+        {
+          "heading": "Variables de entorno",
+          "level": 3,
+          "line": 51
+        },
+        {
+          "heading": "3. Encoded Preferences (NUNCA/SIEMPRE)",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "Notificaciones",
+          "level": 3,
+          "line": 91
+        },
+        {
+          "heading": "Nuevo servicio (orden obligatorio)",
+          "level": 3,
+          "line": 101
+        },
+        {
+          "heading": "Homepage",
+          "level": 3,
+          "line": 124
+        },
+        {
+          "heading": "4. Skill Registry [AUTO]",
+          "level": 2,
+          "line": 132
+        },
+        {
+          "heading": "Servicios nuevos que dependen de DataSQL",
+          "level": 3,
+          "line": 156
+        },
+        {
+          "heading": "Redes",
+          "level": 3,
+          "line": 186
+        },
+        {
+          "heading": "OpenWA (gateway WhatsApp) — gotchas operativos",
+          "level": 3,
+          "line": 195
+        },
+        {
+          "heading": "USB Automount",
+          "level": 3,
+          "line": 240
+        },
+        {
+          "heading": "4b. Herramientas de verificación (3 tools que trabajan juntas)",
+          "level": 2,
+          "line": 252
+        },
+        {
+          "heading": "Scanner — modos de uso",
+          "level": 3,
+          "line": 270
+        },
+        {
+          "heading": "Capacidades operativas de LobeHub",
+          "level": 3,
+          "line": 280
+        },
+        {
+          "heading": "Gateway MCP para LobeHub",
+          "level": 3,
+          "line": 300
+        },
+        {
+          "heading": "Gateway MCP general del NAS",
+          "level": 3,
+          "line": 310
+        },
+        {
+          "heading": "Cómo descubrir una capacidad nueva",
+          "level": 3,
+          "line": 332
+        },
+        {
+          "heading": "Cómo funciona actualmente el scanner incremental",
+          "level": 3,
+          "line": 340
+        },
+        {
+          "heading": "Estado objetivo del scanner (pendiente)",
+          "level": 3,
+          "line": 353
+        },
+        {
+          "heading": "Cuándo usar cada herramienta",
+          "level": 3,
+          "line": 368
+        },
+        {
+          "heading": "5. Documentación disponible (lazy loading)",
+          "level": 2,
+          "line": 380
+        },
+        {
+          "heading": "6. Progressive Updates (self-learning)",
+          "level": 2,
+          "line": 419
+        },
+        {
+          "heading": "7. Verificación rápida (para el LLM)",
+          "level": 2,
+          "line": 525
+        },
+        {
+          "heading": "Antes de decir \"listo\" o \"terminado\"",
+          "level": 3,
+          "line": 542
+        },
+        {
+          "heading": "4c. Consistencia arquitectónica",
+          "level": 2,
+          "line": 551
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 28
+      }
+    },
+    {
+      "path": "docker-nas/references/networking-install.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 320,
+      "nonEmptyLines": 238,
+      "sections": [
+        {
+          "heading": "📦 Derivación de instalación — systemd-networkd, macvlan y systemd-resolved",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. 🧭 Condiciones antes de empezar",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "2. ⚙️ Variables que deben confirmarse",
+          "level": 2,
+          "line": 20
+        },
+        {
+          "heading": "3. 💾 Snapshot y rescate opcional",
+          "level": 2,
+          "line": 74
+        },
+        {
+          "heading": "4. 🛠️ Crear los archivos de networkd antes de tocar servicios",
+          "level": 2,
+          "line": 108
+        },
+        {
+          "heading": "4.1 🖧 Interfaz física",
+          "level": 3,
+          "line": 116
+        },
+        {
+          "heading": "4.2 🔗 Interfaz macvlan del host",
+          "level": 3,
+          "line": 140
+        },
+        {
+          "heading": "5. 🧹 Neutralizar el backend legacy antes de activar networkd",
+          "level": 2,
+          "line": 169
+        },
+        {
+          "heading": "6. 🔌 Activar networkd después de asegurar exclusividad",
+          "level": 2,
+          "line": 224
+        },
+        {
+          "heading": "7. 🧩 Retirar ifupdown de forma controlada",
+          "level": 2,
+          "line": 258
+        },
+        {
+          "heading": "8. 🛡️ Verificar el shim y después desplegar AdGuard",
+          "level": 2,
+          "line": 278
+        },
+        {
+          "heading": "9. 🔄 Reinicio de aceptación",
+          "level": 2,
+          "line": 298
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "docker-nas/references/networking-migration.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 301,
+      "nonEmptyLines": 226,
+      "sections": [
+        {
+          "heading": "🔀 Derivación de migración — cambio de backend o de rango IP",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. 🧭 Cuándo usar este procedimiento",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "2. 🛡️ Guardarraíles",
+          "level": 2,
+          "line": 35
+        },
+        {
+          "heading": "3. 🔎 Inventario previo",
+          "level": 2,
+          "line": 45
+        },
+        {
+          "heading": "3.1 🔒 Compuerta de exclusividad por interfaz",
+          "level": 3,
+          "line": 76
+        },
+        {
+          "heading": "4. 🔁 Estrategia de cambio de rango",
+          "level": 2,
+          "line": 105
+        },
+        {
+          "heading": "4.1 🕒 Opción preferida: ventana controlada",
+          "level": 3,
+          "line": 107
+        },
+        {
+          "heading": "4.2 🌉 Opción puente: doble IP temporal",
+          "level": 3,
+          "line": 126
+        },
+        {
+          "heading": "5. 🛠️ Orden de modificación",
+          "level": 2,
+          "line": 145
+        },
+        {
+          "heading": "5.1 🖧 Interfaz física",
+          "level": 3,
+          "line": 147
+        },
+        {
+          "heading": "5.2 🔗 Shim macvlan",
+          "level": 3,
+          "line": 166
+        },
+        {
+          "heading": "5.3 ✅ Aplicar y comprobar networkd",
+          "level": 3,
+          "line": 184
+        },
+        {
+          "heading": "6. 🛡️ Actualizar AdGuard y redes macvlan",
+          "level": 2,
+          "line": 209
+        },
+        {
+          "heading": "7. 🧩 Cambiar DNS después de la red",
+          "level": 2,
+          "line": 240
+        },
+        {
+          "heading": "8. ✅ Cierre de la migración",
+          "level": 2,
+          "line": 269
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 15
+      }
+    },
+    {
+      "path": "docker-nas/references/networking-recovery.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 590,
+      "nonEmptyLines": 446,
+      "sections": [
+        {
+          "heading": "🆘 Derivación de recuperación — red, DNS, macvlan y SSH",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. 🔎 Antes de cambiar nada",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "🧾 Incidente confirmado: carrera ifupdown → ifup@eno1 → dhcpcd",
+          "level": 2,
+          "line": 58
+        },
+        {
+          "heading": "Evidencia observada",
+          "level": 3,
+          "line": 64
+        },
+        {
+          "heading": "Diagnóstico que diferencia las capas",
+          "level": 3,
+          "line": 75
+        },
+        {
+          "heading": "Recuperación persistente confirmada",
+          "level": 3,
+          "line": 103
+        },
+        {
+          "heading": "🧾 Incidente separado: rutas IPv4 desaparecidas durante una reconfiguración DHCPv6",
+          "level": 2,
+          "line": 146
+        },
+        {
+          "heading": "🩺 Síntomas y significado",
+          "level": 3,
+          "line": 154
+        },
+        {
+          "heading": "🧯 Recuperación temporal, en el orden correcto",
+          "level": 3,
+          "line": 163
+        },
+        {
+          "heading": "💾 Backup PRE y POST de la incidencia",
+          "level": 3,
+          "line": 222
+        },
+        {
+          "heading": "🔧 Corrección persistente del error DHCPv6",
+          "level": 3,
+          "line": 337
+        },
+        {
+          "heading": "2. 🌳 Árbol rápido de decisión",
+          "level": 2,
+          "line": 369
+        },
+        {
+          "heading": "A. 🔌 `eno1` está `DOWN` o `NO-CARRIER`",
+          "level": 3,
+          "line": 371
+        },
+        {
+          "heading": "B. 🖧 La interfaz está `UP` pero no tiene la IP esperada",
+          "level": 3,
+          "line": 390
+        },
+        {
+          "heading": "C. 🧭 Hay una IP DHCP residual o dos IPs inesperadas",
+          "level": 3,
+          "line": 411
+        },
+        {
+          "heading": "D. 🧩 SSH funciona por IP, pero no resuelven dominios",
+          "level": 3,
+          "line": 424
+        },
+        {
+          "heading": "E. 🔗 El host no llega a AdGuard macvlan",
+          "level": 3,
+          "line": 447
+        },
+        {
+          "heading": "F. 🏠 `Nas.local` no resuelve o desaparece el descubrimiento",
+          "level": 3,
+          "line": 468
+        },
+        {
+          "heading": "G. 🤖 Home Assistant perdió descubrimiento",
+          "level": 3,
+          "line": 481
+        },
+        {
+          "heading": "H. 🚪 El puerto 53 está ocupado",
+          "level": 3,
+          "line": 495
+        },
+        {
+          "heading": "3. 🛠️ Recuperar la conectividad mínima",
+          "level": 2,
+          "line": 503
+        },
+        {
+          "heading": "4. 🧩 Recuperar solo el DNS",
+          "level": 2,
+          "line": 525
+        },
+        {
+          "heading": "5. ↩️ Rollback selectivo desde `LATEST`",
+          "level": 2,
+          "line": 546
+        },
+        {
+          "heading": "6. ✅ Validación de recuperación",
+          "level": 2,
+          "line": 559
+        },
+        {
+          "heading": "7. 📝 Datos que registrar para mejorar la guía",
+          "level": 2,
+          "line": 579
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 25
+      }
+    },
+    {
+      "path": "docker-nas/references/networking.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 757,
+      "nonEmptyLines": 582,
+      "sections": [
+        {
+          "heading": "🌐 Redes avanzadas del NAS — systemd-networkd, systemd-resolved, Avahi y macvlan",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "🧭 Cómo usar esta documentación",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "1. 🧭 Arquitectura que debe conservarse",
+          "level": 2,
+          "line": 19
+        },
+        {
+          "heading": "⚠️ Topología física real: doble NAT (el NAS vive en una subred aislada)",
+          "level": 3,
+          "line": 45
+        },
+        {
+          "heading": "🔒 Invariantes de `systemd-networkd` y del shim macvlan",
+          "level": 3,
+          "line": 81
+        },
+        {
+          "heading": "Regla de exclusividad del propietario de la interfaz",
+          "level": 3,
+          "line": 134
+        },
+        {
+          "heading": "2. 🧠 Qué hace systemd-resolved",
+          "level": 2,
+          "line": 157
+        },
+        {
+          "heading": "3. 🔎 Preflight obligatorio — solo lectura",
+          "level": 2,
+          "line": 182
+        },
+        {
+          "heading": "4. 💾 Snapshot reversible",
+          "level": 2,
+          "line": 286
+        },
+        {
+          "heading": "4.1 📁 Crear la carpeta del snapshot",
+          "level": 3,
+          "line": 290
+        },
+        {
+          "heading": "4.2 🧾 Guardar archivos y estado",
+          "level": 3,
+          "line": 312
+        },
+        {
+          "heading": "4.3 🗂️ Convención de copias PRE, CURRENT y LATEST",
+          "level": 3,
+          "line": 387
+        },
+        {
+          "heading": "5. 📦 Instalar el paquete sin borrar la configuración actual",
+          "level": 2,
+          "line": 397
+        },
+        {
+          "heading": "6. ⚙️ Configuración recomendada mediante drop-in",
+          "level": 2,
+          "line": 427
+        },
+        {
+          "heading": "7. 🔗 Configurar el enlace `resolv.conf` sin destruirlo",
+          "level": 2,
+          "line": 469
+        },
+        {
+          "heading": "8. ✅ Validación por capas",
+          "level": 2,
+          "line": 502
+        },
+        {
+          "heading": "🖥️ Host y stub local",
+          "level": 3,
+          "line": 504
+        },
+        {
+          "heading": "🛡️ AdGuard y red macvlan",
+          "level": 3,
+          "line": 518
+        },
+        {
+          "heading": "🌐 IPv6",
+          "level": 3,
+          "line": 534
+        },
+        {
+          "heading": "🏡 Avahi y Home Assistant",
+          "level": 3,
+          "line": 552
+        },
+        {
+          "heading": "🐳 Docker bridge",
+          "level": 3,
+          "line": 583
+        },
+        {
+          "heading": "9. 🏠 IPv6, Avahi y reglas para Home Assistant",
+          "level": 2,
+          "line": 592
+        },
+        {
+          "heading": "10. ↩️ Rollback",
+          "level": 2,
+          "line": 601
+        },
+        {
+          "heading": "10.1 🔎 Recuperar y validar el snapshot",
+          "level": 3,
+          "line": 606
+        },
+        {
+          "heading": "10.2 🔄 Restaurar resolved y `resolv.conf`",
+          "level": 3,
+          "line": 630
+        },
+        {
+          "heading": "10.3 🧩 Restaurar networkd o Avahi solo si fueron modificados",
+          "level": 3,
+          "line": 673
+        },
+        {
+          "heading": "10.4 🧩 Restaurar ifupdown solo si era el backend anterior",
+          "level": 3,
+          "line": 702
+        },
+        {
+          "heading": "11. 🆘 Diagnóstico rápido",
+          "level": 2,
+          "line": 736
+        },
+        {
+          "heading": "📚 Referencias oficiales",
+          "level": 2,
+          "line": 750
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 29
+      }
+    },
+    {
+      "path": "docker-nas/references/seguridad.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 273,
+      "nonEmptyLines": 210,
+      "sections": [
+        {
+          "heading": "Seguridad y Variables — referencia completa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Mecanismos de seguridad",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "safe_run() — ejecución segura",
+          "level": 2,
+          "line": 20
+        },
+        {
+          "heading": "validate_service_name() — anti path-traversal",
+          "level": 2,
+          "line": 43
+        },
+        {
+          "heading": "validated_service_path()",
+          "level": 3,
+          "line": 56
+        },
+        {
+          "heading": "readonly_guard() — protección de tools destructivas",
+          "level": 2,
+          "line": 66
+        },
+        {
+          "heading": "Modo Dry-Run",
+          "level": 2,
+          "line": 83
+        },
+        {
+          "heading": "Audit Log",
+          "level": 2,
+          "line": 95
+        },
+        {
+          "heading": "Seguridad del shell (bash)",
+          "level": 2,
+          "line": 124
+        },
+        {
+          "heading": "rm/cp/mv seguros (TTY-safe)",
+          "level": 3,
+          "line": 126
+        },
+        {
+          "heading": "instal — no ejecuta sin verificar",
+          "level": 3,
+          "line": 138
+        },
+        {
+          "heading": "svc restore — doble confirmación",
+          "level": 3,
+          "line": 143
+        },
+        {
+          "heading": "Protección del agente (tools Python)",
+          "level": 2,
+          "line": 151
+        },
+        {
+          "heading": "read_file_content — sanitiza .env",
+          "level": 3,
+          "line": 153
+        },
+        {
+          "heading": "list_files — rutas permitidas",
+          "level": 3,
+          "line": 163
+        },
+        {
+          "heading": "read_file_content — límites",
+          "level": 3,
+          "line": 174
+        },
+        {
+          "heading": ".gitignore — protección de secretos",
+          "level": 2,
+          "line": 181
+        },
+        {
+          "heading": "Modos de seguridad",
+          "level": 2,
+          "line": 201
+        },
+        {
+          "heading": "Variables de entorno — referencia completa",
+          "level": 2,
+          "line": 211
+        },
+        {
+          "heading": "Paths y proyecto",
+          "level": 3,
+          "line": 213
+        },
+        {
+          "heading": "Agente",
+          "level": 3,
+          "line": 224
+        },
+        {
+          "heading": "Convenciones del proyecto",
+          "level": 2,
+          "line": 242
+        },
+        {
+          "heading": "Resumen de mecanismos",
+          "level": 2,
+          "line": 260
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 23
+      }
+    },
+    {
+      "path": "docker-nas/references/svc.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 504,
+      "nonEmptyLines": 412,
+      "sections": [
+        {
+          "heading": "svc — CLI Docker referencia completa",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Archivos",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "CLI dual",
+          "level": 2,
+          "line": 19
+        },
+        {
+          "heading": "Sintaxis real de `svc exec` en los dos CLI",
+          "level": 3,
+          "line": 50
+        },
+        {
+          "heading": "Detección de servicios",
+          "level": 2,
+          "line": 94
+        },
+        {
+          "heading": "Comandos globales (sin servicio)",
+          "level": 2,
+          "line": 110
+        },
+        {
+          "heading": "Operaciones LobeHub",
+          "level": 2,
+          "line": 132
+        },
+        {
+          "heading": "Comandos propios (requieren servicio)",
+          "level": 2,
+          "line": 153
+        },
+        {
+          "heading": "Docker Compose passthrough",
+          "level": 2,
+          "line": 168
+        },
+        {
+          "heading": "`svc exec`: Bash y Python no son intercambiables",
+          "level": 3,
+          "line": 200
+        },
+        {
+          "heading": "Plantilla compose.yml (estándar actual con `extends`)",
+          "level": 2,
+          "line": 237
+        },
+        {
+          "heading": "Redes compartidas — convención",
+          "level": 2,
+          "line": 295
+        },
+        {
+          "heading": "Plantilla con secretos (.env)",
+          "level": 2,
+          "line": 316
+        },
+        {
+          "heading": "Carpetas disponibles",
+          "level": 2,
+          "line": 342
+        },
+        {
+          "heading": "Ejemplos por tipo de servicio",
+          "level": 2,
+          "line": 353
+        },
+        {
+          "heading": "Simple (solo datos)",
+          "level": 3,
+          "line": 355
+        },
+        {
+          "heading": "Con configuración separada",
+          "level": 3,
+          "line": 365
+        },
+        {
+          "heading": "Con secretos",
+          "level": 3,
+          "line": 377
+        },
+        {
+          "heading": "Con logs externos",
+          "level": 3,
+          "line": 390
+        },
+        {
+          "heading": "Stack complejo (múltiples contenedores)",
+          "level": 3,
+          "line": 402
+        },
+        {
+          "heading": "Flujo completo — nuevo servicio",
+          "level": 2,
+          "line": 420
+        },
+        {
+          "heading": "Backup y restauración",
+          "level": 2,
+          "line": 444
+        },
+        {
+          "heading": "Snapshot y rollback de configuración",
+          "level": 3,
+          "line": 459
+        },
+        {
+          "heading": "Convenciones de puertos",
+          "level": 2,
+          "line": 483
+        },
+        {
+          "heading": "Notas",
+          "level": 2,
+          "line": 497
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 25
+      }
+    }
+  ]
+}

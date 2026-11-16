@@ -1,0 +1,6139 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 15,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 15,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 15,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "agent/core/_result.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 149,
+      "nonEmptyLines": 128,
+      "classes": [
+        {
+          "name": "Status",
+          "startLine": 19,
+          "endLine": 23,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "ToolResult",
+          "startLine": 27,
+          "endLine": 124,
+          "methods": [
+            "__str__",
+            "__repr__",
+            "ok",
+            "warn",
+            "error",
+            "to_dict"
+          ],
+          "properties": [
+            "success",
+            "message",
+            "status",
+            "data",
+            "suggestions",
+            "elapsed_ms",
+            "tool_name"
+          ]
+        },
+        {
+          "name": "Timer",
+          "startLine": 127,
+          "endLine": 149,
+          "methods": [
+            "__init__",
+            "__enter__",
+            "__exit__",
+            "elapsed_ms"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Status",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "ToolResult",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "Timer",
+          "line": 127,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__repr__",
+          "callee": "list",
+          "lineNumber": 55
+        },
+        {
+          "caller": "__repr__",
+          "callee": "self.data.keys",
+          "lineNumber": 55
+        },
+        {
+          "caller": "ok",
+          "callee": "cls",
+          "lineNumber": 68
+        },
+        {
+          "caller": "warn",
+          "callee": "cls",
+          "lineNumber": 87
+        },
+        {
+          "caller": "error",
+          "callee": "cls",
+          "lineNumber": 105
+        },
+        {
+          "caller": "__enter__",
+          "callee": "time.perf_counter",
+          "lineNumber": 140
+        },
+        {
+          "caller": "__exit__",
+          "callee": "time.perf_counter",
+          "lineNumber": 144
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "agent/core/backup_manager.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 179,
+      "nonEmptyLines": 150,
+      "classes": [
+        {
+          "name": "BackupManager",
+          "startLine": 24,
+          "endLine": 179,
+          "methods": [
+            "backup",
+            "restore",
+            "list_all"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BackupManager",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "backup",
+          "callee": "readonly_guard",
+          "lineNumber": 30
+        },
+        {
+          "caller": "backup",
+          "callee": "ToolResult.error",
+          "lineNumber": 32
+        },
+        {
+          "caller": "backup",
+          "callee": "validated_service_path",
+          "lineNumber": 35
+        },
+        {
+          "caller": "backup",
+          "callee": "ToolResult.error",
+          "lineNumber": 37
+        },
+        {
+          "caller": "backup",
+          "callee": "svc_path.exists",
+          "lineNumber": 39
+        },
+        {
+          "caller": "backup",
+          "callee": "ToolResult.error",
+          "lineNumber": 40
+        },
+        {
+          "caller": "backup",
+          "callee": "Timer",
+          "lineNumber": 45
+        },
+        {
+          "caller": "backup",
+          "callee": "safe_run",
+          "lineNumber": 46
+        },
+        {
+          "caller": "backup",
+          "callee": "ToolResult.ok",
+          "lineNumber": 49
+        },
+        {
+          "caller": "backup",
+          "callee": "ToolResult.ok",
+          "lineNumber": 56
+        },
+        {
+          "caller": "restore",
+          "callee": "readonly_guard",
+          "lineNumber": 66
+        },
+        {
+          "caller": "restore",
+          "callee": "ToolResult.error",
+          "lineNumber": 68
+        },
+        {
+          "caller": "restore",
+          "callee": "validate_service_name",
+          "lineNumber": 71
+        },
+        {
+          "caller": "restore",
+          "callee": "ToolResult.error",
+          "lineNumber": 73
+        },
+        {
+          "caller": "restore",
+          "callee": "BACKUP_DIR.exists",
+          "lineNumber": 75
+        },
+        {
+          "caller": "restore",
+          "callee": "ToolResult.error",
+          "lineNumber": 76
+        },
+        {
+          "caller": "restore",
+          "callee": "sorted",
+          "lineNumber": 81
+        },
+        {
+          "caller": "restore",
+          "callee": "BACKUP_DIR.glob",
+          "lineNumber": 82
+        },
+        {
+          "caller": "restore",
+          "callee": "f.stat",
+          "lineNumber": 83
+        },
+        {
+          "caller": "restore",
+          "callee": "ToolResult.warn",
+          "lineNumber": 88
+        },
+        {
+          "caller": "restore",
+          "callee": "enumerate",
+          "lineNumber": 95
+        },
+        {
+          "caller": "restore",
+          "callee": "b.stat",
+          "lineNumber": 96
+        },
+        {
+          "caller": "restore",
+          "callee": "datetime.fromtimestamp",
+          "lineNumber": 97
+        },
+        {
+          "caller": "restore",
+          "callee": "b.stat",
+          "lineNumber": 97
+        },
+        {
+          "caller": "restore",
+          "callee": "lista.append",
+          "lineNumber": 98
+        },
+        {
+          "caller": "restore",
+          "callee": "\"\\n\".join",
+          "lineNumber": 102
+        },
+        {
+          "caller": "restore",
+          "callee": "confirm.lower",
+          "lineNumber": 104
+        },
+        {
+          "caller": "restore",
+          "callee": "ToolResult.warn",
+          "lineNumber": 105
+        },
+        {
+          "caller": "restore",
+          "callee": "len",
+          "lineNumber": 108
+        },
+        {
+          "caller": "restore",
+          "callee": "len",
+          "lineNumber": 112
+        },
+        {
+          "caller": "restore",
+          "callee": "Timer",
+          "lineNumber": 118
+        },
+        {
+          "caller": "restore",
+          "callee": "safe_run",
+          "lineNumber": 119
+        },
+        {
+          "caller": "restore",
+          "callee": "str",
+          "lineNumber": 120
+        },
+        {
+          "caller": "restore",
+          "callee": "ToolResult.ok",
+          "lineNumber": 124
+        },
+        {
+          "caller": "list_all",
+          "callee": "BACKUP_DIR.exists",
+          "lineNumber": 135
+        },
+        {
+          "caller": "list_all",
+          "callee": "ToolResult.warn",
+          "lineNumber": 136
+        },
+        {
+          "caller": "list_all",
+          "callee": "sorted",
+          "lineNumber": 141
+        },
+        {
+          "caller": "list_all",
+          "callee": "BACKUP_DIR.glob",
+          "lineNumber": 141
+        },
+        {
+          "caller": "list_all",
+          "callee": "ToolResult.warn",
+          "lineNumber": 144
+        },
+        {
+          "caller": "list_all",
+          "callee": "b.name.split",
+          "lineNumber": 153
+        },
+        {
+          "caller": "list_all",
+          "callee": "b.stat",
+          "lineNumber": 157
+        },
+        {
+          "caller": "list_all",
+          "callee": "por_servicio[svc].append",
+          "lineNumber": 159
+        },
+        {
+          "caller": "list_all",
+          "callee": "len",
+          "lineNumber": 162
+        },
+        {
+          "caller": "list_all",
+          "callee": "sorted",
+          "lineNumber": 165
+        },
+        {
+          "caller": "list_all",
+          "callee": "por_servicio.items",
+          "lineNumber": 165
+        },
+        {
+          "caller": "list_all",
+          "callee": "len",
+          "lineNumber": 166
+        },
+        {
+          "caller": "list_all",
+          "callee": "len",
+          "lineNumber": 169
+        },
+        {
+          "caller": "list_all",
+          "callee": "len",
+          "lineNumber": 170
+        },
+        {
+          "caller": "list_all",
+          "callee": "ToolResult.ok",
+          "lineNumber": 173
+        },
+        {
+          "caller": "list_all",
+          "callee": "len",
+          "lineNumber": 175
+        },
+        {
+          "caller": "list_all",
+          "callee": "round",
+          "lineNumber": 176
+        },
+        {
+          "caller": "list_all",
+          "callee": "list",
+          "lineNumber": 177
+        },
+        {
+          "caller": "list_all",
+          "callee": "por_servicio.keys",
+          "lineNumber": 177
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/core/compose_manager.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 287,
+      "nonEmptyLines": 251,
+      "classes": [
+        {
+          "name": "ComposeManager",
+          "startLine": 39,
+          "endLine": 287,
+          "methods": [
+            "load_rules",
+            "load_compose_base_anchors",
+            "_fallback_anchors",
+            "sanitize_value",
+            "read",
+            "validate"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ComposeManager",
+          "line": 39,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "load_rules",
+          "callee": "RULES_FILE.exists",
+          "lineNumber": 47
+        },
+        {
+          "caller": "load_rules",
+          "callee": "fm.load",
+          "lineNumber": 48
+        },
+        {
+          "caller": "load_rules",
+          "callee": "str",
+          "lineNumber": 48
+        },
+        {
+          "caller": "load_compose_base_anchors",
+          "callee": "COMPOSE_BASE_FILE.exists",
+          "lineNumber": 57
+        },
+        {
+          "caller": "load_compose_base_anchors",
+          "callee": "ComposeManager._fallback_anchors",
+          "lineNumber": 58
+        },
+        {
+          "caller": "load_compose_base_anchors",
+          "callee": "COMPOSE_BASE_FILE.read_text",
+          "lineNumber": 60
+        },
+        {
+          "caller": "load_compose_base_anchors",
+          "callee": "re.findall",
+          "lineNumber": 61
+        },
+        {
+          "caller": "load_compose_base_anchors",
+          "callee": "block.rstrip",
+          "lineNumber": 64
+        },
+        {
+          "caller": "load_compose_base_anchors",
+          "callee": "ComposeManager._fallback_anchors",
+          "lineNumber": 66
+        },
+        {
+          "caller": "sanitize_value",
+          "callee": "val.strip",
+          "lineNumber": 103
+        },
+        {
+          "caller": "sanitize_value",
+          "callee": "_YAML_UNSAFE_RE.search",
+          "lineNumber": 104
+        },
+        {
+          "caller": "sanitize_value",
+          "callee": "InvalidServiceName",
+          "lineNumber": 105
+        },
+        {
+          "caller": "sanitize_value",
+          "callee": "InvalidServiceName",
+          "lineNumber": 109
+        },
+        {
+          "caller": "read",
+          "callee": "validate_service_name",
+          "lineNumber": 118
+        },
+        {
+          "caller": "read",
+          "callee": "ToolResult.error",
+          "lineNumber": 120
+        },
+        {
+          "caller": "read",
+          "callee": "find_compose",
+          "lineNumber": 122
+        },
+        {
+          "caller": "read",
+          "callee": "ToolResult.error",
+          "lineNumber": 124
+        },
+        {
+          "caller": "read",
+          "callee": "compose.read_text",
+          "lineNumber": 128
+        },
+        {
+          "caller": "read",
+          "callee": "ToolResult.ok",
+          "lineNumber": 129
+        },
+        {
+          "caller": "read",
+          "callee": "str",
+          "lineNumber": 131
+        },
+        {
+          "caller": "validate",
+          "callee": "validate_service_name",
+          "lineNumber": 139
+        },
+        {
+          "caller": "validate",
+          "callee": "ToolResult.error",
+          "lineNumber": 141
+        },
+        {
+          "caller": "validate",
+          "callee": "find_compose",
+          "lineNumber": 143
+        },
+        {
+          "caller": "validate",
+          "callee": "ToolResult.error",
+          "lineNumber": 145
+        },
+        {
+          "caller": "validate",
+          "callee": "compose_path.read_text",
+          "lineNumber": 151
+        },
+        {
+          "caller": "validate",
+          "callee": "yaml.safe_load",
+          "lineNumber": 152
+        },
+        {
+          "caller": "validate",
+          "callee": "ToolResult.error",
+          "lineNumber": 154
+        },
+        {
+          "caller": "validate",
+          "callee": "ComposeManager.load_rules",
+          "lineNumber": 159
+        },
+        {
+          "caller": "validate",
+          "callee": "rules.get",
+          "lineNumber": 160
+        },
+        {
+          "caller": "validate",
+          "callee": "ports_config.get",
+          "lineNumber": 161
+        },
+        {
+          "caller": "validate",
+          "callee": "ok.append",
+          "lineNumber": 170
+        },
+        {
+          "caller": "validate",
+          "callee": "errores.append",
+          "lineNumber": 172
+        },
+        {
+          "caller": "validate",
+          "callee": "advertencias.append",
+          "lineNumber": 177
+        },
+        {
+          "caller": "validate",
+          "callee": "', '.join",
+          "lineNumber": 178
+        },
+        {
+          "caller": "validate",
+          "callee": "ok.append",
+          "lineNumber": 182
+        },
+        {
+          "caller": "validate",
+          "callee": "data.get",
+          "lineNumber": 184
+        },
+        {
+          "caller": "validate",
+          "callee": "ToolResult.error",
+          "lineNumber": 186
+        },
+        {
+          "caller": "validate",
+          "callee": "services.items",
+          "lineNumber": 191
+        },
+        {
+          "caller": "validate",
+          "callee": "ok.append",
+          "lineNumber": 193
+        },
+        {
+          "caller": "validate",
+          "callee": "advertencias.append",
+          "lineNumber": 195
+        },
+        {
+          "caller": "validate",
+          "callee": "svc_config.get",
+          "lineNumber": 197
+        },
+        {
+          "caller": "validate",
+          "callee": "ok.append",
+          "lineNumber": 199
+        },
+        {
+          "caller": "validate",
+          "callee": "ok.append",
+          "lineNumber": 201
+        },
+        {
+          "caller": "validate",
+          "callee": "advertencias.append",
+          "lineNumber": 203
+        },
+        {
+          "caller": "validate",
+          "callee": "errores.append",
+          "lineNumber": 205
+        },
+        {
+          "caller": "validate",
+          "callee": "svc_config.get",
+          "lineNumber": 207
+        },
+        {
+          "caller": "validate",
+          "callee": "str(p).replace('\"', '').replace",
+          "lineNumber": 208
+        },
+        {
+          "caller": "validate",
+          "callee": "str(p).replace",
+          "lineNumber": 208
+        },
+        {
+          "caller": "validate",
+          "callee": "str",
+          "lineNumber": 208
+        },
+        {
+          "caller": "validate",
+          "callee": "p_str.split",
+          "lineNumber": 209
+        },
+        {
+          "caller": "validate",
+          "callee": "int",
+          "lineNumber": 211
+        },
+        {
+          "caller": "validate",
+          "callee": "errores.append",
+          "lineNumber": 212
+        },
+        {
+          "caller": "validate",
+          "callee": "str(svc_config).lower",
+          "lineNumber": 217
+        },
+        {
+          "caller": "validate",
+          "callee": "str",
+          "lineNumber": 217
+        },
+        {
+          "caller": "validate",
+          "callee": "p_str.startswith",
+          "lineNumber": 218
+        },
+        {
+          "caller": "validate",
+          "callee": "advertencias.append",
+          "lineNumber": 219
+        },
+        {
+          "caller": "validate",
+          "callee": "ok.append",
+          "lineNumber": 225
+        },
+        {
+          "caller": "validate",
+          "callee": "advertencias.append",
+          "lineNumber": 227
+        },
+        {
+          "caller": "validate",
+          "callee": "svc_config.get",
+          "lineNumber": 229
+        },
+        {
+          "caller": "validate",
+          "callee": "isinstance",
+          "lineNumber": 230
+        },
+        {
+          "caller": "validate",
+          "callee": "e.lower",
+          "lineNumber": 232
+        },
+        {
+          "caller": "validate",
+          "callee": "isinstance",
+          "lineNumber": 232
+        },
+        {
+          "caller": "validate",
+          "callee": "any",
+          "lineNumber": 233
+        },
+        {
+          "caller": "validate",
+          "callee": "errores.append",
+          "lineNumber": 235
+        },
+        {
+          "caller": "validate",
+          "callee": "e.split",
+          "lineNumber": 236
+        },
+        {
+          "caller": "validate",
+          "callee": "validated_service_path",
+          "lineNumber": 239
+        },
+        {
+          "caller": "validate",
+          "callee": "(svc_dir / \".env\").exists",
+          "lineNumber": 240
+        },
+        {
+          "caller": "validate",
+          "callee": "ok.append",
+          "lineNumber": 241
+        },
+        {
+          "caller": "validate",
+          "callee": "advertencias.append",
+          "lineNumber": 243
+        },
+        {
+          "caller": "validate",
+          "callee": "(svc_dir / \"README.md\").exists",
+          "lineNumber": 244
+        },
+        {
+          "caller": "validate",
+          "callee": "ok.append",
+          "lineNumber": 245
+        },
+        {
+          "caller": "validate",
+          "callee": "advertencias.append",
+          "lineNumber": 247
+        },
+        {
+          "caller": "validate",
+          "callee": "safe_run",
+          "lineNumber": 250
+        },
+        {
+          "caller": "validate",
+          "callee": "str",
+          "lineNumber": 251
+        },
+        {
+          "caller": "validate",
+          "callee": "config_check.lower",
+          "lineNumber": 254
+        },
+        {
+          "caller": "validate",
+          "callee": "errores.append",
+          "lineNumber": 255
+        },
+        {
+          "caller": "validate",
+          "callee": "ok.append",
+          "lineNumber": 257
+        },
+        {
+          "caller": "validate",
+          "callee": "\"\\n\".join",
+          "lineNumber": 262
+        },
+        {
+          "caller": "validate",
+          "callee": "\"\\n\".join",
+          "lineNumber": 264
+        },
+        {
+          "caller": "validate",
+          "callee": "\"\\n\".join",
+          "lineNumber": 267
+        },
+        {
+          "caller": "validate",
+          "callee": "len",
+          "lineNumber": 271
+        },
+        {
+          "caller": "validate",
+          "callee": "ToolResult",
+          "lineNumber": 274
+        },
+        {
+          "caller": "validate",
+          "callee": "ToolResult.error",
+          "lineNumber": 277
+        },
+        {
+          "caller": "validate",
+          "callee": "ToolResult.ok",
+          "lineNumber": 277
+        },
+        {
+          "caller": "validate",
+          "callee": "len",
+          "lineNumber": 283
+        },
+        {
+          "caller": "validate",
+          "callee": "len",
+          "lineNumber": 284
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/core/memory.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 475,
+      "nonEmptyLines": 390,
+      "functions": [
+        {
+          "name": "_now",
+          "startLine": 473,
+          "endLine": 475,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "MemoryManager",
+          "startLine": 45,
+          "endLine": 468,
+          "methods": [
+            "ensure_initialized",
+            "load_memory",
+            "load_memory_section",
+            "add_to_memory",
+            "load_user_model",
+            "update_user_model",
+            "load_skills",
+            "add_skill",
+            "save_session",
+            "recall",
+            "trim_sessions",
+            "prune_old_entries",
+            "get_memory_stats"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "MemoryManager",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "_now",
+          "line": 473,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ensure_initialized",
+          "callee": "MEMORY_DIR.mkdir",
+          "lineNumber": 53
+        },
+        {
+          "caller": "ensure_initialized",
+          "callee": "SESSIONS_DIR.mkdir",
+          "lineNumber": 54
+        },
+        {
+          "caller": "ensure_initialized",
+          "callee": "MEMORY_FILE.exists",
+          "lineNumber": 56
+        },
+        {
+          "caller": "ensure_initialized",
+          "callee": "MEMORY_FILE.write_text",
+          "lineNumber": 57
+        },
+        {
+          "caller": "ensure_initialized",
+          "callee": "_now",
+          "lineNumber": 59
+        },
+        {
+          "caller": "ensure_initialized",
+          "callee": "USER_FILE.exists",
+          "lineNumber": 66
+        },
+        {
+          "caller": "ensure_initialized",
+          "callee": "USER_FILE.write_text",
+          "lineNumber": 67
+        },
+        {
+          "caller": "ensure_initialized",
+          "callee": "_now",
+          "lineNumber": 69
+        },
+        {
+          "caller": "ensure_initialized",
+          "callee": "SKILLS_FILE.exists",
+          "lineNumber": 75
+        },
+        {
+          "caller": "ensure_initialized",
+          "callee": "SKILLS_FILE.write_text",
+          "lineNumber": 76
+        },
+        {
+          "caller": "ensure_initialized",
+          "callee": "_now",
+          "lineNumber": 78
+        },
+        {
+          "caller": "load_memory",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 87
+        },
+        {
+          "caller": "load_memory",
+          "callee": "MEMORY_FILE.read_text",
+          "lineNumber": 88
+        },
+        {
+          "caller": "load_memory_section",
+          "callee": "MemoryManager.load_memory",
+          "lineNumber": 93
+        },
+        {
+          "caller": "load_memory_section",
+          "callee": "re.escape",
+          "lineNumber": 94
+        },
+        {
+          "caller": "load_memory_section",
+          "callee": "re.search",
+          "lineNumber": 95
+        },
+        {
+          "caller": "load_memory_section",
+          "callee": "match.group(1).strip",
+          "lineNumber": 96
+        },
+        {
+          "caller": "load_memory_section",
+          "callee": "match.group",
+          "lineNumber": 96
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 101
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "ToolResult.error",
+          "lineNumber": 104
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "', '.join",
+          "lineNumber": 105
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "sorted",
+          "lineNumber": 105
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "len",
+          "lineNumber": 109
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "ToolResult.error",
+          "lineNumber": 110
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "MEMORY_FILE.read_text",
+          "lineNumber": 116
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "fact.lower",
+          "lineNumber": 117
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "content.lower",
+          "lineNumber": 117
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "ToolResult.warn",
+          "lineNumber": 118
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "MEMORY_FILE.stat",
+          "lineNumber": 124
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "ToolResult.warn",
+          "lineNumber": 126
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "content.find",
+          "lineNumber": 143
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "content.find",
+          "lineNumber": 147
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "re.sub",
+          "lineNumber": 151
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "MEMORY_FILE.write_text",
+          "lineNumber": 157
+        },
+        {
+          "caller": "add_to_memory",
+          "callee": "ToolResult.ok",
+          "lineNumber": 159
+        },
+        {
+          "caller": "load_user_model",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 170
+        },
+        {
+          "caller": "load_user_model",
+          "callee": "USER_FILE.read_text",
+          "lineNumber": 171
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 176
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "USER_FILE.read_text",
+          "lineNumber": 178
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "re.escape",
+          "lineNumber": 181
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "re.search",
+          "lineNumber": 184
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "re.sub",
+          "lineNumber": 185
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "content.find",
+          "lineNumber": 190
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "content.find",
+          "lineNumber": 191
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "len",
+          "lineNumber": 192
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "content[:insert_pos].rstrip",
+          "lineNumber": 193
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "re.sub",
+          "lineNumber": 199
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "_now",
+          "lineNumber": 201
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "USER_FILE.write_text",
+          "lineNumber": 205
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "ToolResult.ok",
+          "lineNumber": 207
+        },
+        {
+          "caller": "load_skills",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 218
+        },
+        {
+          "caller": "load_skills",
+          "callee": "SKILLS_FILE.read_text",
+          "lineNumber": 219
+        },
+        {
+          "caller": "add_skill",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 224
+        },
+        {
+          "caller": "add_skill",
+          "callee": "SKILLS_FILE.read_text",
+          "lineNumber": 226
+        },
+        {
+          "caller": "add_skill",
+          "callee": "ToolResult.warn",
+          "lineNumber": 230
+        },
+        {
+          "caller": "add_skill",
+          "callee": "SKILLS_FILE.stat",
+          "lineNumber": 236
+        },
+        {
+          "caller": "add_skill",
+          "callee": "ToolResult.warn",
+          "lineNumber": 238
+        },
+        {
+          "caller": "add_skill",
+          "callee": "_now",
+          "lineNumber": 243
+        },
+        {
+          "caller": "add_skill",
+          "callee": "content.count",
+          "lineNumber": 255
+        },
+        {
+          "caller": "add_skill",
+          "callee": "re.sub",
+          "lineNumber": 256
+        },
+        {
+          "caller": "add_skill",
+          "callee": "re.sub",
+          "lineNumber": 261
+        },
+        {
+          "caller": "add_skill",
+          "callee": "_now",
+          "lineNumber": 263
+        },
+        {
+          "caller": "add_skill",
+          "callee": "SKILLS_FILE.write_text",
+          "lineNumber": 268
+        },
+        {
+          "caller": "add_skill",
+          "callee": "ToolResult.ok",
+          "lineNumber": 270
+        },
+        {
+          "caller": "save_session",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 281
+        },
+        {
+          "caller": "save_session",
+          "callee": "_now",
+          "lineNumber": 283
+        },
+        {
+          "caller": "save_session",
+          "callee": "re.sub(r\"[^a-z0-9]+\", \"-\", title.lower())[:50].strip",
+          "lineNumber": 284
+        },
+        {
+          "caller": "save_session",
+          "callee": "re.sub",
+          "lineNumber": 284
+        },
+        {
+          "caller": "save_session",
+          "callee": "title.lower",
+          "lineNumber": 284
+        },
+        {
+          "caller": "save_session",
+          "callee": "filepath.write_text",
+          "lineNumber": 288
+        },
+        {
+          "caller": "save_session",
+          "callee": "sum",
+          "lineNumber": 291
+        },
+        {
+          "caller": "save_session",
+          "callee": "f.stat",
+          "lineNumber": 291
+        },
+        {
+          "caller": "save_session",
+          "callee": "SESSIONS_DIR.glob",
+          "lineNumber": 291
+        },
+        {
+          "caller": "save_session",
+          "callee": "ToolResult.ok",
+          "lineNumber": 296
+        },
+        {
+          "caller": "recall",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 310
+        },
+        {
+          "caller": "recall",
+          "callee": "query.lower",
+          "lineNumber": 313
+        },
+        {
+          "caller": "recall",
+          "callee": "query_lower.split",
+          "lineNumber": 314
+        },
+        {
+          "caller": "recall",
+          "callee": "len",
+          "lineNumber": 314
+        },
+        {
+          "caller": "recall",
+          "callee": "ToolResult.ok",
+          "lineNumber": 317
+        },
+        {
+          "caller": "recall",
+          "callee": "MemoryManager.load_skills",
+          "lineNumber": 324
+        },
+        {
+          "caller": "recall",
+          "callee": "skills_content.split",
+          "lineNumber": 325
+        },
+        {
+          "caller": "recall",
+          "callee": "skill_block.strip().split",
+          "lineNumber": 326
+        },
+        {
+          "caller": "recall",
+          "callee": "skill_block.strip",
+          "lineNumber": 326
+        },
+        {
+          "caller": "recall",
+          "callee": "lines[0].strip",
+          "lineNumber": 327
+        },
+        {
+          "caller": "recall",
+          "callee": "next",
+          "lineNumber": 328
+        },
+        {
+          "caller": "recall",
+          "callee": "ln.startswith",
+          "lineNumber": 332
+        },
+        {
+          "caller": "recall",
+          "callee": "procedure_lines.append",
+          "lineNumber": 336
+        },
+        {
+          "caller": "recall",
+          "callee": "f\"{skill_name} {trigger_line}\".lower",
+          "lineNumber": 338
+        },
+        {
+          "caller": "recall",
+          "callee": "any",
+          "lineNumber": 339
+        },
+        {
+          "caller": "recall",
+          "callee": "\"\\n\".join(procedure_lines[:8]).strip",
+          "lineNumber": 340
+        },
+        {
+          "caller": "recall",
+          "callee": "\"\\n\".join",
+          "lineNumber": 340
+        },
+        {
+          "caller": "recall",
+          "callee": "results.append",
+          "lineNumber": 341
+        },
+        {
+          "caller": "recall",
+          "callee": "trigger_line.split('Trigger:')[-1].strip",
+          "lineNumber": 343
+        },
+        {
+          "caller": "recall",
+          "callee": "trigger_line.split",
+          "lineNumber": 343
+        },
+        {
+          "caller": "recall",
+          "callee": "MemoryManager.load_memory",
+          "lineNumber": 348
+        },
+        {
+          "caller": "recall",
+          "callee": "memory_content.splitlines",
+          "lineNumber": 349
+        },
+        {
+          "caller": "recall",
+          "callee": "line.startswith",
+          "lineNumber": 350
+        },
+        {
+          "caller": "recall",
+          "callee": "any",
+          "lineNumber": 350
+        },
+        {
+          "caller": "recall",
+          "callee": "line.lower",
+          "lineNumber": 350
+        },
+        {
+          "caller": "recall",
+          "callee": "results.append",
+          "lineNumber": 351
+        },
+        {
+          "caller": "recall",
+          "callee": "line.strip",
+          "lineNumber": 351
+        },
+        {
+          "caller": "recall",
+          "callee": "SESSIONS_DIR.exists",
+          "lineNumber": 354
+        },
+        {
+          "caller": "recall",
+          "callee": "sorted",
+          "lineNumber": 355
+        },
+        {
+          "caller": "recall",
+          "callee": "SESSIONS_DIR.glob",
+          "lineNumber": 355
+        },
+        {
+          "caller": "recall",
+          "callee": "session_file.read_text",
+          "lineNumber": 357
+        },
+        {
+          "caller": "recall",
+          "callee": "any",
+          "lineNumber": 360
+        },
+        {
+          "caller": "recall",
+          "callee": "session_content.lower",
+          "lineNumber": 360
+        },
+        {
+          "caller": "recall",
+          "callee": "session_content.splitlines",
+          "lineNumber": 361
+        },
+        {
+          "caller": "recall",
+          "callee": "results.append",
+          "lineNumber": 362
+        },
+        {
+          "caller": "recall",
+          "callee": "ToolResult.ok",
+          "lineNumber": 365
+        },
+        {
+          "caller": "recall",
+          "callee": "ToolResult.ok",
+          "lineNumber": 372
+        },
+        {
+          "caller": "recall",
+          "callee": "len",
+          "lineNumber": 373
+        },
+        {
+          "caller": "recall",
+          "callee": "\"\\n\\n\".join",
+          "lineNumber": 374
+        },
+        {
+          "caller": "recall",
+          "callee": "len",
+          "lineNumber": 375
+        },
+        {
+          "caller": "trim_sessions",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 384
+        },
+        {
+          "caller": "trim_sessions",
+          "callee": "SESSIONS_DIR.exists",
+          "lineNumber": 386
+        },
+        {
+          "caller": "trim_sessions",
+          "callee": "ToolResult.ok",
+          "lineNumber": 387
+        },
+        {
+          "caller": "trim_sessions",
+          "callee": "datetime.now",
+          "lineNumber": 389
+        },
+        {
+          "caller": "trim_sessions",
+          "callee": "timedelta",
+          "lineNumber": 389
+        },
+        {
+          "caller": "trim_sessions",
+          "callee": "SESSIONS_DIR.glob",
+          "lineNumber": 392
+        },
+        {
+          "caller": "trim_sessions",
+          "callee": "re.match",
+          "lineNumber": 394
+        },
+        {
+          "caller": "trim_sessions",
+          "callee": "datetime.strptime",
+          "lineNumber": 397
+        },
+        {
+          "caller": "trim_sessions",
+          "callee": "match.group",
+          "lineNumber": 397
+        },
+        {
+          "caller": "trim_sessions",
+          "callee": "session_file.unlink",
+          "lineNumber": 399
+        },
+        {
+          "caller": "trim_sessions",
+          "callee": "ToolResult.ok",
+          "lineNumber": 404
+        },
+        {
+          "caller": "prune_old_entries",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 413
+        },
+        {
+          "caller": "prune_old_entries",
+          "callee": "MEMORY_FILE.read_text",
+          "lineNumber": 415
+        },
+        {
+          "caller": "prune_old_entries",
+          "callee": "datetime.now",
+          "lineNumber": 416
+        },
+        {
+          "caller": "prune_old_entries",
+          "callee": "timedelta",
+          "lineNumber": 416
+        },
+        {
+          "caller": "prune_old_entries",
+          "callee": "content.splitlines",
+          "lineNumber": 417
+        },
+        {
+          "caller": "prune_old_entries",
+          "callee": "re.match",
+          "lineNumber": 423
+        },
+        {
+          "caller": "prune_old_entries",
+          "callee": "datetime.strptime",
+          "lineNumber": 426
+        },
+        {
+          "caller": "prune_old_entries",
+          "callee": "match.group",
+          "lineNumber": 426
+        },
+        {
+          "caller": "prune_old_entries",
+          "callee": "new_lines.append",
+          "lineNumber": 432
+        },
+        {
+          "caller": "prune_old_entries",
+          "callee": "MEMORY_FILE.write_text",
+          "lineNumber": 435
+        },
+        {
+          "caller": "prune_old_entries",
+          "callee": "\"\\n\".join",
+          "lineNumber": 435
+        },
+        {
+          "caller": "prune_old_entries",
+          "callee": "ToolResult.ok",
+          "lineNumber": 437
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 448
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "MEMORY_FILE.stat",
+          "lineNumber": 450
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "MEMORY_FILE.exists",
+          "lineNumber": 450
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "USER_FILE.stat",
+          "lineNumber": 451
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "USER_FILE.exists",
+          "lineNumber": 451
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "SKILLS_FILE.stat",
+          "lineNumber": 452
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "SKILLS_FILE.exists",
+          "lineNumber": 452
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "SKILLS_FILE.read_text",
+          "lineNumber": 454
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "SKILLS_FILE.exists",
+          "lineNumber": 454
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "skills_content.count",
+          "lineNumber": 455
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "list",
+          "lineNumber": 457
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "SESSIONS_DIR.glob",
+          "lineNumber": 457
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "SESSIONS_DIR.exists",
+          "lineNumber": 457
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "sum",
+          "lineNumber": 458
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "f.stat",
+          "lineNumber": 458
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "round",
+          "lineNumber": 461
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "round",
+          "lineNumber": 462
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "round",
+          "lineNumber": 463
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "len",
+          "lineNumber": 465
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "round",
+          "lineNumber": 466
+        },
+        {
+          "caller": "get_memory_stats",
+          "callee": "round",
+          "lineNumber": 467
+        },
+        {
+          "caller": "_now",
+          "callee": "datetime.now().isoformat",
+          "lineNumber": 475
+        },
+        {
+          "caller": "_now",
+          "callee": "datetime.now",
+          "lineNumber": 475
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/core/service_manager.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 183,
+      "nonEmptyLines": 155,
+      "classes": [
+        {
+          "name": "ServiceManager",
+          "startLine": 19,
+          "endLine": 183,
+          "methods": [
+            "start",
+            "stop",
+            "restart",
+            "update",
+            "logs"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ServiceManager",
+          "line": 19,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "start",
+          "callee": "service_exists_or_error",
+          "lineNumber": 25
+        },
+        {
+          "caller": "start",
+          "callee": "ToolResult.error",
+          "lineNumber": 27
+        },
+        {
+          "caller": "start",
+          "callee": "find_compose",
+          "lineNumber": 29
+        },
+        {
+          "caller": "start",
+          "callee": "Timer",
+          "lineNumber": 30
+        },
+        {
+          "caller": "start",
+          "callee": "safe_run",
+          "lineNumber": 31
+        },
+        {
+          "caller": "start",
+          "callee": "str",
+          "lineNumber": 32
+        },
+        {
+          "caller": "start",
+          "callee": "ToolResult.ok",
+          "lineNumber": 36
+        },
+        {
+          "caller": "stop",
+          "callee": "readonly_guard",
+          "lineNumber": 47
+        },
+        {
+          "caller": "stop",
+          "callee": "ToolResult.error",
+          "lineNumber": 49
+        },
+        {
+          "caller": "stop",
+          "callee": "service_exists_or_error",
+          "lineNumber": 51
+        },
+        {
+          "caller": "stop",
+          "callee": "ToolResult.error",
+          "lineNumber": 53
+        },
+        {
+          "caller": "stop",
+          "callee": "find_compose",
+          "lineNumber": 55
+        },
+        {
+          "caller": "stop",
+          "callee": "confirm.lower",
+          "lineNumber": 57
+        },
+        {
+          "caller": "stop",
+          "callee": "safe_run",
+          "lineNumber": 58
+        },
+        {
+          "caller": "stop",
+          "callee": "str",
+          "lineNumber": 59
+        },
+        {
+          "caller": "stop",
+          "callee": "running.strip().splitlines",
+          "lineNumber": 63
+        },
+        {
+          "caller": "stop",
+          "callee": "running.strip",
+          "lineNumber": 63
+        },
+        {
+          "caller": "stop",
+          "callee": "running.strip",
+          "lineNumber": 63
+        },
+        {
+          "caller": "stop",
+          "callee": "ToolResult.warn",
+          "lineNumber": 64
+        },
+        {
+          "caller": "stop",
+          "callee": "Timer",
+          "lineNumber": 74
+        },
+        {
+          "caller": "stop",
+          "callee": "safe_run",
+          "lineNumber": 75
+        },
+        {
+          "caller": "stop",
+          "callee": "str",
+          "lineNumber": 76
+        },
+        {
+          "caller": "stop",
+          "callee": "ToolResult.ok",
+          "lineNumber": 80
+        },
+        {
+          "caller": "restart",
+          "callee": "service_exists_or_error",
+          "lineNumber": 91
+        },
+        {
+          "caller": "restart",
+          "callee": "ToolResult.error",
+          "lineNumber": 93
+        },
+        {
+          "caller": "restart",
+          "callee": "find_compose",
+          "lineNumber": 95
+        },
+        {
+          "caller": "restart",
+          "callee": "Timer",
+          "lineNumber": 96
+        },
+        {
+          "caller": "restart",
+          "callee": "safe_run",
+          "lineNumber": 97
+        },
+        {
+          "caller": "restart",
+          "callee": "str",
+          "lineNumber": 98
+        },
+        {
+          "caller": "restart",
+          "callee": "ToolResult.ok",
+          "lineNumber": 102
+        },
+        {
+          "caller": "update",
+          "callee": "readonly_guard",
+          "lineNumber": 114
+        },
+        {
+          "caller": "update",
+          "callee": "ToolResult.error",
+          "lineNumber": 116
+        },
+        {
+          "caller": "update",
+          "callee": "service_exists_or_error",
+          "lineNumber": 118
+        },
+        {
+          "caller": "update",
+          "callee": "ToolResult.error",
+          "lineNumber": 120
+        },
+        {
+          "caller": "update",
+          "callee": "find_compose",
+          "lineNumber": 122
+        },
+        {
+          "caller": "update",
+          "callee": "Timer",
+          "lineNumber": 124
+        },
+        {
+          "caller": "update",
+          "callee": "safe_run",
+          "lineNumber": 125
+        },
+        {
+          "caller": "update",
+          "callee": "str",
+          "lineNumber": 126
+        },
+        {
+          "caller": "update",
+          "callee": "safe_run",
+          "lineNumber": 129
+        },
+        {
+          "caller": "update",
+          "callee": "str",
+          "lineNumber": 130
+        },
+        {
+          "caller": "update",
+          "callee": "ToolResult.ok",
+          "lineNumber": 135
+        },
+        {
+          "caller": "logs",
+          "callee": "service_exists_or_error",
+          "lineNumber": 149
+        },
+        {
+          "caller": "logs",
+          "callee": "ToolResult.error",
+          "lineNumber": 151
+        },
+        {
+          "caller": "logs",
+          "callee": "find_compose",
+          "lineNumber": 153
+        },
+        {
+          "caller": "logs",
+          "callee": "min",
+          "lineNumber": 154
+        },
+        {
+          "caller": "logs",
+          "callee": "max",
+          "lineNumber": 154
+        },
+        {
+          "caller": "logs",
+          "callee": "Timer",
+          "lineNumber": 156
+        },
+        {
+          "caller": "logs",
+          "callee": "safe_run",
+          "lineNumber": 157
+        },
+        {
+          "caller": "logs",
+          "callee": "str",
+          "lineNumber": 158
+        },
+        {
+          "caller": "logs",
+          "callee": "ToolResult.warn",
+          "lineNumber": 164
+        },
+        {
+          "caller": "logs",
+          "callee": "len",
+          "lineNumber": 172
+        },
+        {
+          "caller": "logs",
+          "callee": "ToolResult.ok",
+          "lineNumber": 177
+        },
+        {
+          "caller": "logs",
+          "callee": "len",
+          "lineNumber": 180
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/tools/_shell.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 291,
+      "nonEmptyLines": 227,
+      "functions": [
+        {
+          "name": "validate_service_name",
+          "startLine": 47,
+          "endLine": 93,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "validated_service_path",
+          "startLine": 96,
+          "endLine": 121,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "safe_run",
+          "startLine": 129,
+          "endLine": 179,
+          "params": [
+            "args",
+            "timeout",
+            "check",
+            "cwd"
+          ]
+        },
+        {
+          "name": "find_compose",
+          "startLine": 187,
+          "endLine": 208,
+          "params": [
+            "service"
+          ]
+        },
+        {
+          "name": "service_exists_or_error",
+          "startLine": 211,
+          "endLine": 240,
+          "params": [
+            "service"
+          ]
+        },
+        {
+          "name": "is_readonly",
+          "startLine": 257,
+          "endLine": 262,
+          "params": []
+        },
+        {
+          "name": "is_dryrun",
+          "startLine": 265,
+          "endLine": 271,
+          "params": []
+        },
+        {
+          "name": "readonly_guard",
+          "startLine": 274,
+          "endLine": 291,
+          "params": [
+            "tool_name"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "InvalidServiceName",
+          "startLine": 42,
+          "endLine": 44,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "InvalidServiceName",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "validate_service_name",
+          "line": 47,
+          "isDefault": false
+        },
+        {
+          "name": "validated_service_path",
+          "line": 96,
+          "isDefault": false
+        },
+        {
+          "name": "safe_run",
+          "line": 129,
+          "isDefault": false
+        },
+        {
+          "name": "find_compose",
+          "line": 187,
+          "isDefault": false
+        },
+        {
+          "name": "service_exists_or_error",
+          "line": 211,
+          "isDefault": false
+        },
+        {
+          "name": "is_readonly",
+          "line": 257,
+          "isDefault": false
+        },
+        {
+          "name": "is_dryrun",
+          "line": 265,
+          "isDefault": false
+        },
+        {
+          "name": "readonly_guard",
+          "line": 274,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "validate_service_name",
+          "callee": "isinstance",
+          "lineNumber": 67
+        },
+        {
+          "caller": "validate_service_name",
+          "callee": "InvalidServiceName",
+          "lineNumber": 68
+        },
+        {
+          "caller": "validate_service_name",
+          "callee": "name.strip",
+          "lineNumber": 70
+        },
+        {
+          "caller": "validate_service_name",
+          "callee": "InvalidServiceName",
+          "lineNumber": 74
+        },
+        {
+          "caller": "validate_service_name",
+          "callee": "name.lower",
+          "lineNumber": 79
+        },
+        {
+          "caller": "validate_service_name",
+          "callee": "InvalidServiceName",
+          "lineNumber": 80
+        },
+        {
+          "caller": "validate_service_name",
+          "callee": "_SERVICE_NAME_RE.match",
+          "lineNumber": 85
+        },
+        {
+          "caller": "validate_service_name",
+          "callee": "name.lower",
+          "lineNumber": 85
+        },
+        {
+          "caller": "validate_service_name",
+          "callee": "InvalidServiceName",
+          "lineNumber": 86
+        },
+        {
+          "caller": "validated_service_path",
+          "callee": "validate_service_name",
+          "lineNumber": 109
+        },
+        {
+          "caller": "validated_service_path",
+          "callee": "(DOCKER_BASE / name).resolve",
+          "lineNumber": 110
+        },
+        {
+          "caller": "validated_service_path",
+          "callee": "svc_path.relative_to",
+          "lineNumber": 114
+        },
+        {
+          "caller": "validated_service_path",
+          "callee": "DOCKER_BASE.resolve",
+          "lineNumber": 114
+        },
+        {
+          "caller": "validated_service_path",
+          "callee": "InvalidServiceName",
+          "lineNumber": 116
+        },
+        {
+          "caller": "safe_run",
+          "callee": "is_dryrun",
+          "lineNumber": 152
+        },
+        {
+          "caller": "safe_run",
+          "callee": "\" \".join",
+          "lineNumber": 153
+        },
+        {
+          "caller": "safe_run",
+          "callee": "subprocess.run",
+          "lineNumber": 158
+        },
+        {
+          "caller": "safe_run",
+          "callee": "result.stdout.strip",
+          "lineNumber": 166
+        },
+        {
+          "caller": "safe_run",
+          "callee": "result.stderr.strip",
+          "lineNumber": 168
+        },
+        {
+          "caller": "safe_run",
+          "callee": "subprocess.CalledProcessError",
+          "lineNumber": 170
+        },
+        {
+          "caller": "find_compose",
+          "callee": "validated_service_path",
+          "lineNumber": 199
+        },
+        {
+          "caller": "find_compose",
+          "callee": "path.exists",
+          "lineNumber": 206
+        },
+        {
+          "caller": "service_exists_or_error",
+          "callee": "validate_service_name",
+          "lineNumber": 221
+        },
+        {
+          "caller": "service_exists_or_error",
+          "callee": "find_compose",
+          "lineNumber": 225
+        },
+        {
+          "caller": "service_exists_or_error",
+          "callee": "sorted",
+          "lineNumber": 227
+        },
+        {
+          "caller": "service_exists_or_error",
+          "callee": "DOCKER_BASE.iterdir",
+          "lineNumber": 228
+        },
+        {
+          "caller": "service_exists_or_error",
+          "callee": "d.is_dir",
+          "lineNumber": 229
+        },
+        {
+          "caller": "service_exists_or_error",
+          "callee": "d.name.startswith",
+          "lineNumber": 229
+        },
+        {
+          "caller": "service_exists_or_error",
+          "callee": "find_compose",
+          "lineNumber": 231
+        },
+        {
+          "caller": "service_exists_or_error",
+          "callee": "', '.join",
+          "lineNumber": 238
+        },
+        {
+          "caller": "is_readonly",
+          "callee": "os.environ.get(\"NAS_AGENT_READONLY\", \"0\").strip",
+          "lineNumber": 262
+        },
+        {
+          "caller": "is_readonly",
+          "callee": "os.environ.get",
+          "lineNumber": 262
+        },
+        {
+          "caller": "is_dryrun",
+          "callee": "os.environ.get(\"NAS_AGENT_DRYRUN\", \"0\").strip",
+          "lineNumber": 271
+        },
+        {
+          "caller": "is_dryrun",
+          "callee": "os.environ.get",
+          "lineNumber": 271
+        },
+        {
+          "caller": "readonly_guard",
+          "callee": "is_readonly",
+          "lineNumber": 283
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 9,
+        "functionCount": 8,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "agent/tools/compose_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 316,
+      "nonEmptyLines": 278,
+      "functions": [
+        {
+          "name": "_get_compose_manager",
+          "startLine": 25,
+          "endLine": 28,
+          "params": []
+        },
+        {
+          "name": "read_compose",
+          "startLine": 32,
+          "endLine": 41,
+          "params": [
+            "service_name"
+          ]
+        },
+        {
+          "name": "validate_compose",
+          "startLine": 45,
+          "endLine": 55,
+          "params": [
+            "service_name"
+          ]
+        },
+        {
+          "name": "create_service",
+          "startLine": 59,
+          "endLine": 316,
+          "params": [
+            "service_name",
+            "image",
+            "port_external",
+            "port_internal",
+            "volumes",
+            "env_vars",
+            "healthcheck_url",
+            "healthcheck_cmd",
+            "description",
+            "is_dashboard",
+            "expose_lan",
+            "memory_limit",
+            "memory_reservation",
+            "high_concurrency",
+            "networks"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_get_compose_manager",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "read_compose",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "validate_compose",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "create_service",
+          "line": 58,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "read_compose",
+          "callee": "str",
+          "lineNumber": 41
+        },
+        {
+          "caller": "read_compose",
+          "callee": "_get_compose_manager().read",
+          "lineNumber": 41
+        },
+        {
+          "caller": "read_compose",
+          "callee": "_get_compose_manager",
+          "lineNumber": 41
+        },
+        {
+          "caller": "validate_compose",
+          "callee": "str",
+          "lineNumber": 55
+        },
+        {
+          "caller": "validate_compose",
+          "callee": "_get_compose_manager().validate",
+          "lineNumber": 55
+        },
+        {
+          "caller": "validate_compose",
+          "callee": "_get_compose_manager",
+          "lineNumber": 55
+        },
+        {
+          "caller": "create_service",
+          "callee": "readonly_guard",
+          "lineNumber": 100
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 102
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 102
+        },
+        {
+          "caller": "create_service",
+          "callee": "validated_service_path",
+          "lineNumber": 105
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 107
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 107
+        },
+        {
+          "caller": "create_service",
+          "callee": "svc_dir.exists",
+          "lineNumber": 109
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 110
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 110
+        },
+        {
+          "caller": "create_service",
+          "callee": "safe_run",
+          "lineNumber": 117
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 119
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 119
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager().load_rules",
+          "lineNumber": 124
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager",
+          "lineNumber": 124
+        },
+        {
+          "caller": "create_service",
+          "callee": "rules.get(\"nas\", {}).get",
+          "lineNumber": 125
+        },
+        {
+          "caller": "create_service",
+          "callee": "rules.get",
+          "lineNumber": 125
+        },
+        {
+          "caller": "create_service",
+          "callee": "v.strip",
+          "lineNumber": 127
+        },
+        {
+          "caller": "create_service",
+          "callee": "volumes.split",
+          "lineNumber": 127
+        },
+        {
+          "caller": "create_service",
+          "callee": "v.strip",
+          "lineNumber": 127
+        },
+        {
+          "caller": "create_service",
+          "callee": "e.strip",
+          "lineNumber": 128
+        },
+        {
+          "caller": "create_service",
+          "callee": "env_vars.split",
+          "lineNumber": 128
+        },
+        {
+          "caller": "create_service",
+          "callee": "e.strip",
+          "lineNumber": 128
+        },
+        {
+          "caller": "create_service",
+          "callee": "n.strip",
+          "lineNumber": 129
+        },
+        {
+          "caller": "create_service",
+          "callee": "networks.split",
+          "lineNumber": 129
+        },
+        {
+          "caller": "create_service",
+          "callee": "n.strip",
+          "lineNumber": 129
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager().sanitize_value",
+          "lineNumber": 133
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager",
+          "lineNumber": 133
+        },
+        {
+          "caller": "create_service",
+          "callee": "re.match",
+          "lineNumber": 134
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 135
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 135
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 139
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 139
+        },
+        {
+          "caller": "create_service",
+          "callee": "safe_vol_list.append",
+          "lineNumber": 144
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager().sanitize_value",
+          "lineNumber": 144
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager",
+          "lineNumber": 144
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 146
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 146
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager().sanitize_value",
+          "lineNumber": 152
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager",
+          "lineNumber": 152
+        },
+        {
+          "caller": "create_service",
+          "callee": "re.match",
+          "lineNumber": 153
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 154
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 154
+        },
+        {
+          "caller": "create_service",
+          "callee": "safe_env_list.append",
+          "lineNumber": 157
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 159
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 159
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager().sanitize_value",
+          "lineNumber": 165
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager",
+          "lineNumber": 165
+        },
+        {
+          "caller": "create_service",
+          "callee": "re.match",
+          "lineNumber": 166
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 167
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 167
+        },
+        {
+          "caller": "create_service",
+          "callee": "safe_net_list.append",
+          "lineNumber": 170
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 172
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 172
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager().sanitize_value",
+          "lineNumber": 177
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager",
+          "lineNumber": 177
+        },
+        {
+          "caller": "create_service",
+          "callee": "healthcheck_url.startswith",
+          "lineNumber": 178
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 179
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 179
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 183
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 183
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager().sanitize_value",
+          "lineNumber": 187
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager",
+          "lineNumber": 187
+        },
+        {
+          "caller": "create_service",
+          "callee": "healthcheck_cmd.strip().startswith",
+          "lineNumber": 188
+        },
+        {
+          "caller": "create_service",
+          "callee": "healthcheck_cmd.strip",
+          "lineNumber": 188
+        },
+        {
+          "caller": "create_service",
+          "callee": "healthcheck_cmd.strip().endswith",
+          "lineNumber": 188
+        },
+        {
+          "caller": "create_service",
+          "callee": "healthcheck_cmd.strip",
+          "lineNumber": 188
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 189
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 189
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 193
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 193
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager().load_compose_base_anchors",
+          "lineNumber": 207
+        },
+        {
+          "caller": "create_service",
+          "callee": "_get_compose_manager",
+          "lineNumber": 207
+        },
+        {
+          "caller": "create_service",
+          "callee": "anchors_block.replace",
+          "lineNumber": 209
+        },
+        {
+          "caller": "create_service",
+          "callee": "re.sub",
+          "lineNumber": 221
+        },
+        {
+          "caller": "create_service",
+          "callee": "re.sub",
+          "lineNumber": 223
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 228
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 229
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 230
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 231
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 232
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 233
+        },
+        {
+          "caller": "create_service",
+          "callee": "e.split",
+          "lineNumber": 235
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 236
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 237
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 238
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.extend",
+          "lineNumber": 241
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.extend",
+          "lineNumber": 247
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 253
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 254
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 256
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 258
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 259
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 260
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 262
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 264
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 266
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.append",
+          "lineNumber": 267
+        },
+        {
+          "caller": "create_service",
+          "callee": "compose_lines.extend",
+          "lineNumber": 269
+        },
+        {
+          "caller": "create_service",
+          "callee": "\"\\n\".join",
+          "lineNumber": 271
+        },
+        {
+          "caller": "create_service",
+          "callee": "e.split",
+          "lineNumber": 277
+        },
+        {
+          "caller": "create_service",
+          "callee": "v.split",
+          "lineNumber": 291
+        },
+        {
+          "caller": "create_service",
+          "callee": "svc_dir.mkdir",
+          "lineNumber": 299
+        },
+        {
+          "caller": "create_service",
+          "callee": "(svc_dir / \"compose.yml\").write_text",
+          "lineNumber": 300
+        },
+        {
+          "caller": "create_service",
+          "callee": "(svc_dir / \".env\").write_text",
+          "lineNumber": 301
+        },
+        {
+          "caller": "create_service",
+          "callee": "(svc_dir / \"README.md\").write_text",
+          "lineNumber": 302
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 304
+        },
+        {
+          "caller": "create_service",
+          "callee": "ToolResult.ok",
+          "lineNumber": 304
+        },
+        {
+          "caller": "create_service",
+          "callee": "str",
+          "lineNumber": 312
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/tools/diagnostic_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 241,
+      "nonEmptyLines": 196,
+      "functions": [
+        {
+          "name": "service_health",
+          "startLine": 25,
+          "endLine": 77,
+          "params": []
+        },
+        {
+          "name": "port_conflicts",
+          "startLine": 82,
+          "endLine": 138,
+          "params": []
+        },
+        {
+          "name": "troubleshoot",
+          "startLine": 143,
+          "endLine": 241,
+          "params": [
+            "service_name"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "service_health",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "port_conflicts",
+          "line": 81,
+          "isDefault": false
+        },
+        {
+          "name": "troubleshoot",
+          "line": 142,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "service_health",
+          "callee": "safe_run",
+          "lineNumber": 34
+        },
+        {
+          "caller": "service_health",
+          "callee": "safe_run",
+          "lineNumber": 40
+        },
+        {
+          "caller": "service_health",
+          "callee": "containers.strip().splitlines",
+          "lineNumber": 48
+        },
+        {
+          "caller": "service_health",
+          "callee": "containers.strip",
+          "lineNumber": 48
+        },
+        {
+          "caller": "service_health",
+          "callee": "sum",
+          "lineNumber": 49
+        },
+        {
+          "caller": "service_health",
+          "callee": "l.lower",
+          "lineNumber": 49
+        },
+        {
+          "caller": "service_health",
+          "callee": "len",
+          "lineNumber": 50
+        },
+        {
+          "caller": "service_health",
+          "callee": "line.split",
+          "lineNumber": 54
+        },
+        {
+          "caller": "service_health",
+          "callee": "len",
+          "lineNumber": 55
+        },
+        {
+          "caller": "service_health",
+          "callee": "state.lower",
+          "lineNumber": 57
+        },
+        {
+          "caller": "service_health",
+          "callee": "problemas.append",
+          "lineNumber": 58
+        },
+        {
+          "caller": "service_health",
+          "callee": "status.lower",
+          "lineNumber": 59
+        },
+        {
+          "caller": "service_health",
+          "callee": "problemas.append",
+          "lineNumber": 60
+        },
+        {
+          "caller": "service_health",
+          "callee": "problemas.append",
+          "lineNumber": 62
+        },
+        {
+          "caller": "service_health",
+          "callee": "len",
+          "lineNumber": 67
+        },
+        {
+          "caller": "service_health",
+          "callee": "\"\\n\".join",
+          "lineNumber": 72
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "sorted",
+          "lineNumber": 92
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "DOCKER_BASE.iterdir",
+          "lineNumber": 92
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "d.is_dir",
+          "lineNumber": 93
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "d.name.startswith",
+          "lineNumber": 93
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "validate_service_name",
+          "lineNumber": 96
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "find_compose",
+          "lineNumber": 99
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "yaml.safe_load",
+          "lineNumber": 104
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "compose.read_text",
+          "lineNumber": 104
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "data.get",
+          "lineNumber": 105
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "services.values",
+          "lineNumber": 106
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "svc_config.get",
+          "lineNumber": 107
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "str(p).split(\":\")[0].replace('\"', '').replace",
+          "lineNumber": 108
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "str(p).split(\":\")[0].replace",
+          "lineNumber": 108
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "str(p).split",
+          "lineNumber": 108
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "str",
+          "lineNumber": 108
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "int",
+          "lineNumber": 110
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "puertos[port_num].append",
+          "lineNumber": 113
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "puertos.items",
+          "lineNumber": 119
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "len",
+          "lineNumber": 119
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "sum",
+          "lineNumber": 122
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "DOCKER_BASE.iterdir",
+          "lineNumber": 122
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "d.is_dir",
+          "lineNumber": 122
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "len",
+          "lineNumber": 123
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "sorted",
+          "lineNumber": 127
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "conflictos.items",
+          "lineNumber": 127
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "', '.join",
+          "lineNumber": 128
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "sorted",
+          "lineNumber": 134
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "puertos.keys",
+          "lineNumber": 134
+        },
+        {
+          "caller": "port_conflicts",
+          "callee": "', '.join",
+          "lineNumber": 136
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "service_exists_or_error",
+          "lineNumber": 152
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "find_compose",
+          "lineNumber": 156
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "safe_run",
+          "lineNumber": 160
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "str",
+          "lineNumber": 161
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "safe_run",
+          "lineNumber": 168
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "str",
+          "lineNumber": 169
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "container_id.strip().splitlines",
+          "lineNumber": 172
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "container_id.strip",
+          "lineNumber": 172
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "container_id.strip",
+          "lineNumber": 172
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "safe_run",
+          "lineNumber": 176
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "safe_run",
+          "lineNumber": 184
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "int",
+          "lineNumber": 190
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "safe_run",
+          "lineNumber": 197
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "safe_run",
+          "lineNumber": 206
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "str",
+          "lineNumber": 207
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "(logs or \"\").splitlines",
+          "lineNumber": 211
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "any",
+          "lineNumber": 212
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "l.lower",
+          "lineNumber": 212
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "line.strip",
+          "lineNumber": 218
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "(status or \"\").lower",
+          "lineNumber": 227
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "sugerencias.append",
+          "lineNumber": 228
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "int",
+          "lineNumber": 230
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "sugerencias.append",
+          "lineNumber": 231
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "sugerencias.append",
+          "lineNumber": 232
+        },
+        {
+          "caller": "troubleshoot",
+          "callee": "\"\\n\".join",
+          "lineNumber": 237
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/tools/discovery_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 750,
+      "nonEmptyLines": 639,
+      "functions": [
+        {
+          "name": "_catalogize_compose_paths",
+          "startLine": 26,
+          "endLine": 38,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "list_services",
+          "startLine": 43,
+          "endLine": 96,
+          "params": []
+        },
+        {
+          "name": "scan_compose",
+          "startLine": 100,
+          "endLine": 192,
+          "params": [
+            "service_name"
+          ]
+        },
+        {
+          "name": "auto_catalog",
+          "startLine": 196,
+          "endLine": 523,
+          "params": [
+            "service_name"
+          ]
+        },
+        {
+          "name": "bulk_discover",
+          "startLine": 528,
+          "endLine": 618,
+          "params": []
+        },
+        {
+          "name": "export_service",
+          "startLine": 623,
+          "endLine": 750,
+          "params": [
+            "service_name"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_catalogize_compose_paths",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "list_services",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "scan_compose",
+          "line": 99,
+          "isDefault": false
+        },
+        {
+          "name": "auto_catalog",
+          "line": 195,
+          "isDefault": false
+        },
+        {
+          "name": "bulk_discover",
+          "line": 527,
+          "isDefault": false
+        },
+        {
+          "name": "export_service",
+          "line": 622,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_catalogize_compose_paths",
+          "callee": "re.sub",
+          "lineNumber": 34
+        },
+        {
+          "caller": "list_services",
+          "callee": "DOCKER_BASE.exists",
+          "lineNumber": 51
+        },
+        {
+          "caller": "list_services",
+          "callee": "sorted",
+          "lineNumber": 59
+        },
+        {
+          "caller": "list_services",
+          "callee": "DOCKER_BASE.iterdir",
+          "lineNumber": 59
+        },
+        {
+          "caller": "list_services",
+          "callee": "d.is_dir",
+          "lineNumber": 60
+        },
+        {
+          "caller": "list_services",
+          "callee": "d.name.startswith",
+          "lineNumber": 60
+        },
+        {
+          "caller": "list_services",
+          "callee": "validate_service_name",
+          "lineNumber": 63
+        },
+        {
+          "caller": "list_services",
+          "callee": "find_compose",
+          "lineNumber": 66
+        },
+        {
+          "caller": "list_services",
+          "callee": "servicios.append",
+          "lineNumber": 67
+        },
+        {
+          "caller": "list_services",
+          "callee": "find_compose",
+          "lineNumber": 78
+        },
+        {
+          "caller": "list_services",
+          "callee": "safe_run",
+          "lineNumber": 79
+        },
+        {
+          "caller": "list_services",
+          "callee": "str",
+          "lineNumber": 80
+        },
+        {
+          "caller": "list_services",
+          "callee": "len",
+          "lineNumber": 83
+        },
+        {
+          "caller": "list_services",
+          "callee": "running.strip().splitlines",
+          "lineNumber": 83
+        },
+        {
+          "caller": "list_services",
+          "callee": "running.strip",
+          "lineNumber": 83
+        },
+        {
+          "caller": "list_services",
+          "callee": "running.strip",
+          "lineNumber": 83
+        },
+        {
+          "caller": "list_services",
+          "callee": "resultados.append",
+          "lineNumber": 86
+        },
+        {
+          "caller": "list_services",
+          "callee": "resultados.append",
+          "lineNumber": 89
+        },
+        {
+          "caller": "list_services",
+          "callee": "len",
+          "lineNumber": 94
+        },
+        {
+          "caller": "list_services",
+          "callee": "\"\\n\".join",
+          "lineNumber": 95
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "validate_service_name",
+          "lineNumber": 112
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "find_compose",
+          "lineNumber": 116
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "DOCKER_BASE.iterdir",
+          "lineNumber": 120
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "d.is_dir",
+          "lineNumber": 121
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "d.name.startswith",
+          "lineNumber": 121
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "', '.join",
+          "lineNumber": 126
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "sorted",
+          "lineNumber": 126
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "compose_path.read_text",
+          "lineNumber": 130
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "yaml.safe_load",
+          "lineNumber": 131
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "data.get",
+          "lineNumber": 136
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 138
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "services.items",
+          "lineNumber": 140
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 141
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 142
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "svc_config.get",
+          "lineNumber": 142
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 143
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "svc_config.get",
+          "lineNumber": 144
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 146
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "svc_config.get",
+          "lineNumber": 147
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "svc_config.get",
+          "lineNumber": 150
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 152
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "svc_config.get",
+          "lineNumber": 154
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 156
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "svc_config.get",
+          "lineNumber": 158
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "svc_config.get",
+          "lineNumber": 159
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "isinstance",
+          "lineNumber": 161
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "e.split",
+          "lineNumber": 163
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "any",
+          "lineNumber": 163
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "e.lower",
+          "lineNumber": 164
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "list",
+          "lineNumber": 173
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "env.keys",
+          "lineNumber": 173
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 174
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 176
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "svc_config.get",
+          "lineNumber": 178
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 180
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "svc_config.get",
+          "lineNumber": 182
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 184
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "health.get",
+          "lineNumber": 184
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "svc_config.get",
+          "lineNumber": 186
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 188
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "info_parts.append",
+          "lineNumber": 190
+        },
+        {
+          "caller": "scan_compose",
+          "callee": "\"\\n\".join",
+          "lineNumber": 192
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "validate_service_name",
+          "lineNumber": 208
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "find_compose",
+          "lineNumber": 212
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "compose_path.read_text",
+          "lineNumber": 218
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "yaml.safe_load",
+          "lineNumber": 219
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "data.get",
+          "lineNumber": 223
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "re.compile",
+          "lineNumber": 229
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "set",
+          "lineNumber": 230
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "var_pattern.finditer",
+          "lineNumber": 232
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "all_external_vars.add",
+          "lineNumber": 233
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "match.group",
+          "lineNumber": 233
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "len",
+          "lineNumber": 236
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "set",
+          "lineNumber": 243
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "set",
+          "lineNumber": 244
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "enumerate",
+          "lineNumber": 247
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "services.items",
+          "lineNumber": 247
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_config.get",
+          "lineNumber": 248
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_config.get",
+          "lineNumber": 249
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_config.get",
+          "lineNumber": 250
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_config.get",
+          "lineNumber": 251
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_config.get",
+          "lineNumber": 252
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_config.get",
+          "lineNumber": 253
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_config.get",
+          "lineNumber": 254
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_config.get",
+          "lineNumber": 255
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_config.get",
+          "lineNumber": 256
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_config.get",
+          "lineNumber": 257
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "str",
+          "lineNumber": 268
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "port_str.replace('\"', '').replace(\"'\", \"\").split",
+          "lineNumber": 270
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "port_str.replace('\"', '').replace",
+          "lineNumber": 270
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "port_str.replace",
+          "lineNumber": 270
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "len",
+          "lineNumber": 271
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "parts[-2].split",
+          "lineNumber": 272
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "parts[-1].split",
+          "lineNumber": 273
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "isinstance",
+          "lineNumber": 277
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_healthcheck.get",
+          "lineNumber": 277
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "len",
+          "lineNumber": 277
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "\" \".join",
+          "lineNumber": 278
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_deploy.get",
+          "lineNumber": 281
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "resources.get",
+          "lineNumber": 282
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "resources.get",
+          "lineNumber": 283
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "int",
+          "lineNumber": 291
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "port_internal.isdigit",
+          "lineNumber": 291
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "int",
+          "lineNumber": 293
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "port_external.isdigit",
+          "lineNumber": 293
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "isinstance",
+          "lineNumber": 299
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "isinstance",
+          "lineNumber": 301
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "list",
+          "lineNumber": 302
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_depends.keys",
+          "lineNumber": 302
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "limits.get",
+          "lineNumber": 305
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "limits.get",
+          "lineNumber": 307
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "all_services_info.append",
+          "lineNumber": 316
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "all_ports.extend",
+          "lineNumber": 319
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "all_volumes.extend",
+          "lineNumber": 320
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "isinstance",
+          "lineNumber": 321
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "all_networks.update",
+          "lineNumber": 322
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "isinstance",
+          "lineNumber": 323
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "all_networks.update",
+          "lineNumber": 324
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_networks.keys",
+          "lineNumber": 324
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "data.get",
+          "lineNumber": 327
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "top_networks.items",
+          "lineNumber": 328
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "isinstance",
+          "lineNumber": 329
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "net_config.get",
+          "lineNumber": 329
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "networks_external.add",
+          "lineNumber": 330
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "str",
+          "lineNumber": 336
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "port_str.replace('\"', '').replace(\"'\", \"\").split",
+          "lineNumber": 338
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "port_str.replace('\"', '').replace",
+          "lineNumber": 338
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "port_str.replace",
+          "lineNumber": 338
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "len",
+          "lineNumber": 339
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "parts[-2].split",
+          "lineNumber": 340
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "parts[-1].split",
+          "lineNumber": 341
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "isinstance",
+          "lineNumber": 346
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "vol_list.append",
+          "lineNumber": 347
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "isinstance",
+          "lineNumber": 348
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "v.get",
+          "lineNumber": 349
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "v.get",
+          "lineNumber": 350
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "vol_list.append",
+          "lineNumber": 351
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "main_image.lower",
+          "lineNumber": 355
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "any",
+          "lineNumber": 356
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "any",
+          "lineNumber": 358
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "any",
+          "lineNumber": 360
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "any",
+          "lineNumber": 362
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "any",
+          "lineNumber": 364
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "any",
+          "lineNumber": 366
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "any",
+          "lineNumber": 368
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "str(list(all_networks)).lower",
+          "lineNumber": 371
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "str",
+          "lineNumber": 371
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "list",
+          "lineNumber": 371
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "set",
+          "lineNumber": 374
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "aliases.add",
+          "lineNumber": 375
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "aliases.add",
+          "lineNumber": 377
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_info[\"image\"].split(\"/\")[-1].split",
+          "lineNumber": 378
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_info[\"image\"].split",
+          "lineNumber": 378
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "aliases.add",
+          "lineNumber": 379
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "aliases.discard",
+          "lineNumber": 380
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "sorted",
+          "lineNumber": 381
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "svc_info.get",
+          "lineNumber": 394
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "\", \".join",
+          "lineNumber": 399
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "rl.get",
+          "lineNumber": 403
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "rl.get",
+          "lineNumber": 405
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "service_name.replace('-', ' ').replace('_', ' ').title",
+          "lineNumber": 415
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "service_name.replace('-', ' ').replace",
+          "lineNumber": 415
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "service_name.replace",
+          "lineNumber": 415
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "' + '.join",
+          "lineNumber": 422
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "sorted",
+          "lineNumber": 430
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "newline.join",
+          "lineNumber": 438
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "sorted",
+          "lineNumber": 439
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "newline.join",
+          "lineNumber": 440
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "\", \".join",
+          "lineNumber": 441
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "\", \".join",
+          "lineNumber": 442
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "sorted",
+          "lineNumber": 442
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "len",
+          "lineNumber": 443
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "len",
+          "lineNumber": 444
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "len",
+          "lineNumber": 445
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "isinstance",
+          "lineNumber": 449
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "main_healthcheck.get",
+          "lineNumber": 449
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "len",
+          "lineNumber": 449
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "\" \".join",
+          "lineNumber": 450
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "newline.join",
+          "lineNumber": 454
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "newline.join",
+          "lineNumber": 455
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "\", \".join",
+          "lineNumber": 456
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "\", \".join",
+          "lineNumber": 457
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "sorted",
+          "lineNumber": 457
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "len",
+          "lineNumber": 458
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "len",
+          "lineNumber": 459
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "len",
+          "lineNumber": 460
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "str(needs_proxy).lower",
+          "lineNumber": 471
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "str",
+          "lineNumber": 471
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "catalog_svc_dir.mkdir",
+          "lineNumber": 509
+        },
+        {
+          "caller": "auto_catalog",
+          "callee": "catalog_file.write_text",
+          "lineNumber": 511
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "DOCKER_BASE.exists",
+          "lineNumber": 543
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "str",
+          "lineNumber": 544
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "ToolResult.error",
+          "lineNumber": 544
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "sorted",
+          "lineNumber": 551
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "DOCKER_BASE.iterdir",
+          "lineNumber": 551
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "d.is_dir",
+          "lineNumber": 552
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "d.name.startswith",
+          "lineNumber": 552
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "validate_service_name",
+          "lineNumber": 555
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "find_compose",
+          "lineNumber": 558
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "servicios_docker.append",
+          "lineNumber": 559
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "str",
+          "lineNumber": 562
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "ToolResult.warn",
+          "lineNumber": 562
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "Timer",
+          "lineNumber": 571
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "export_service",
+          "lineNumber": 574
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "generadas.append",
+          "lineNumber": 576
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "errores.append",
+          "lineNumber": 578
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "errores.append",
+          "lineNumber": 580
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "build_index",
+          "lineNumber": 583
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "write_index",
+          "lineNumber": 584
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "len",
+          "lineNumber": 589
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "len",
+          "lineNumber": 590
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "msg_parts.append",
+          "lineNumber": 594
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "msg_parts.append",
+          "lineNumber": 596
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "msg_parts.append",
+          "lineNumber": 599
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "msg_parts.append",
+          "lineNumber": 601
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "msg_parts.append",
+          "lineNumber": 603
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "msg_parts.append",
+          "lineNumber": 604
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "str",
+          "lineNumber": 606
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "ToolResult.ok",
+          "lineNumber": 606
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "\"\\n\".join",
+          "lineNumber": 607
+        },
+        {
+          "caller": "bulk_discover",
+          "callee": "len",
+          "lineNumber": 609
+        },
+        {
+          "caller": "export_service",
+          "callee": "validate_service_name",
+          "lineNumber": 644
+        },
+        {
+          "caller": "export_service",
+          "callee": "str",
+          "lineNumber": 646
+        },
+        {
+          "caller": "export_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 646
+        },
+        {
+          "caller": "export_service",
+          "callee": "find_compose",
+          "lineNumber": 648
+        },
+        {
+          "caller": "export_service",
+          "callee": "str",
+          "lineNumber": 650
+        },
+        {
+          "caller": "export_service",
+          "callee": "ToolResult.error",
+          "lineNumber": 650
+        },
+        {
+          "caller": "export_service",
+          "callee": "catalog_svc_dir.mkdir",
+          "lineNumber": 657
+        },
+        {
+          "caller": "export_service",
+          "callee": "compose_path.read_text",
+          "lineNumber": 664
+        },
+        {
+          "caller": "export_service",
+          "callee": "_catalogize_compose_paths",
+          "lineNumber": 665
+        },
+        {
+          "caller": "export_service",
+          "callee": "(catalog_svc_dir / \"compose.yml\").write_text",
+          "lineNumber": 666
+        },
+        {
+          "caller": "export_service",
+          "callee": "exported.append",
+          "lineNumber": 669
+        },
+        {
+          "caller": "export_service",
+          "callee": "env_path.exists",
+          "lineNumber": 673
+        },
+        {
+          "caller": "export_service",
+          "callee": "env_path.read_text",
+          "lineNumber": 674
+        },
+        {
+          "caller": "export_service",
+          "callee": "env_content.splitlines",
+          "lineNumber": 686
+        },
+        {
+          "caller": "export_service",
+          "callee": "line.strip().startswith",
+          "lineNumber": 687
+        },
+        {
+          "caller": "export_service",
+          "callee": "line.strip",
+          "lineNumber": 687
+        },
+        {
+          "caller": "export_service",
+          "callee": "line.partition",
+          "lineNumber": 688
+        },
+        {
+          "caller": "export_service",
+          "callee": "key.strip().lower",
+          "lineNumber": 689
+        },
+        {
+          "caller": "export_service",
+          "callee": "key.strip",
+          "lineNumber": 689
+        },
+        {
+          "caller": "export_service",
+          "callee": "any",
+          "lineNumber": 690
+        },
+        {
+          "caller": "export_service",
+          "callee": "value.strip",
+          "lineNumber": 690
+        },
+        {
+          "caller": "export_service",
+          "callee": "any",
+          "lineNumber": 692
+        },
+        {
+          "caller": "export_service",
+          "callee": "sanitized_lines.append",
+          "lineNumber": 693
+        },
+        {
+          "caller": "export_service",
+          "callee": "key.strip",
+          "lineNumber": 693
+        },
+        {
+          "caller": "export_service",
+          "callee": "sanitized_lines.append",
+          "lineNumber": 695
+        },
+        {
+          "caller": "export_service",
+          "callee": "sanitized_lines.append",
+          "lineNumber": 697
+        },
+        {
+          "caller": "export_service",
+          "callee": "sanitized_lines.append",
+          "lineNumber": 699
+        },
+        {
+          "caller": "export_service",
+          "callee": "(catalog_svc_dir / \".env.example\").write_text",
+          "lineNumber": 700
+        },
+        {
+          "caller": "export_service",
+          "callee": "\"\\n\".join",
+          "lineNumber": 701
+        },
+        {
+          "caller": "export_service",
+          "callee": "exported.append",
+          "lineNumber": 703
+        },
+        {
+          "caller": "export_service",
+          "callee": "exported.append",
+          "lineNumber": 705
+        },
+        {
+          "caller": "export_service",
+          "callee": "readme_path.exists",
+          "lineNumber": 709
+        },
+        {
+          "caller": "export_service",
+          "callee": "readme_path.read_text",
+          "lineNumber": 710
+        },
+        {
+          "caller": "export_service",
+          "callee": "(catalog_svc_dir / \"README.md\").write_text",
+          "lineNumber": 711
+        },
+        {
+          "caller": "export_service",
+          "callee": "exported.append",
+          "lineNumber": 712
+        },
+        {
+          "caller": "export_service",
+          "callee": "ficha_path.exists",
+          "lineNumber": 716
+        },
+        {
+          "caller": "export_service",
+          "callee": "auto_catalog",
+          "lineNumber": 718
+        },
+        {
+          "caller": "export_service",
+          "callee": "ficha_path.exists",
+          "lineNumber": 720
+        },
+        {
+          "caller": "export_service",
+          "callee": "exported.append",
+          "lineNumber": 721
+        },
+        {
+          "caller": "export_service",
+          "callee": "exported.append",
+          "lineNumber": 723
+        },
+        {
+          "caller": "export_service",
+          "callee": "exported.append",
+          "lineNumber": 725
+        },
+        {
+          "caller": "export_service",
+          "callee": "write_index",
+          "lineNumber": 730
+        },
+        {
+          "caller": "export_service",
+          "callee": "str",
+          "lineNumber": 734
+        },
+        {
+          "caller": "export_service",
+          "callee": "ToolResult.ok",
+          "lineNumber": 734
+        },
+        {
+          "caller": "export_service",
+          "callee": "\"\\n\".join",
+          "lineNumber": 737
+        },
+        {
+          "caller": "export_service",
+          "callee": "str",
+          "lineNumber": 742
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/tools/search_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 155,
+      "nonEmptyLines": 122,
+      "functions": [
+        {
+          "name": "search_service_info",
+          "startLine": 21,
+          "endLine": 74,
+          "params": [
+            "service_name"
+          ]
+        },
+        {
+          "name": "_search_dockerhub",
+          "startLine": 77,
+          "endLine": 106,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "_search_github_compose",
+          "startLine": 109,
+          "endLine": 130,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "_extract_info_from_readme",
+          "startLine": 133,
+          "endLine": 155,
+          "params": [
+            "desc"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "search_service_info",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "_search_dockerhub",
+          "line": 77,
+          "isDefault": false
+        },
+        {
+          "name": "_search_github_compose",
+          "line": 109,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_info_from_readme",
+          "line": 133,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "search_service_info",
+          "callee": "validate_service_name",
+          "lineNumber": 34
+        },
+        {
+          "caller": "search_service_info",
+          "callee": "catalog_file.exists",
+          "lineNumber": 40
+        },
+        {
+          "caller": "search_service_info",
+          "callee": "catalog_file.read_text",
+          "lineNumber": 41
+        },
+        {
+          "caller": "search_service_info",
+          "callee": "_search_dockerhub",
+          "lineNumber": 49
+        },
+        {
+          "caller": "search_service_info",
+          "callee": "_search_github_compose",
+          "lineNumber": 52
+        },
+        {
+          "caller": "_search_dockerhub",
+          "callee": "safe_run",
+          "lineNumber": 81
+        },
+        {
+          "caller": "_search_dockerhub",
+          "callee": "json.loads",
+          "lineNumber": 88
+        },
+        {
+          "caller": "_search_dockerhub",
+          "callee": "data.get",
+          "lineNumber": 89
+        },
+        {
+          "caller": "_search_dockerhub",
+          "callee": "r.get",
+          "lineNumber": 96
+        },
+        {
+          "caller": "_search_dockerhub",
+          "callee": "r.get",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_search_dockerhub",
+          "callee": "r.get",
+          "lineNumber": 98
+        },
+        {
+          "caller": "_search_dockerhub",
+          "callee": "r.get",
+          "lineNumber": 99
+        },
+        {
+          "caller": "_search_dockerhub",
+          "callee": "lines.append",
+          "lineNumber": 100
+        },
+        {
+          "caller": "_search_dockerhub",
+          "callee": "lines.append",
+          "lineNumber": 102
+        },
+        {
+          "caller": "_search_dockerhub",
+          "callee": "\"\\n\".join",
+          "lineNumber": 104
+        },
+        {
+          "caller": "_search_github_compose",
+          "callee": "safe_run",
+          "lineNumber": 115
+        },
+        {
+          "caller": "_search_github_compose",
+          "callee": "json.loads",
+          "lineNumber": 121
+        },
+        {
+          "caller": "_search_github_compose",
+          "callee": "data.get",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_search_github_compose",
+          "callee": "_extract_info_from_readme",
+          "lineNumber": 124
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "re.findall",
+          "lineNumber": 139
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "info_lines.append",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "', '.join",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "set",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "re.findall",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "info_lines.append",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "', '.join",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "set",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "re.findall",
+          "lineNumber": 149
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "set",
+          "lineNumber": 150
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "any",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "info_lines.append",
+          "lineNumber": 153
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "', '.join",
+          "lineNumber": 153
+        },
+        {
+          "caller": "_extract_info_from_readme",
+          "callee": "\"\\n\".join",
+          "lineNumber": 155
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "tests/test_compose_generation.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 69,
+      "nonEmptyLines": 51,
+      "classes": [
+        {
+          "name": "TestComposeManagerSanitize",
+          "startLine": 8,
+          "endLine": 39,
+          "methods": [
+            "test_valor_normal",
+            "test_strip_espacios",
+            "test_path_traversal_falla",
+            "test_backslash_falla",
+            "test_control_chars_falla",
+            "test_backtick_falla",
+            "test_imagen_valida",
+            "test_ruta_volumen_valida"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestComposeManagerAnchors",
+          "startLine": 42,
+          "endLine": 57,
+          "methods": [
+            "test_fallback_anchors_contiene_bloques",
+            "test_load_compose_base_anchors_retorna_string"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestComposeManagerRules",
+          "startLine": 60,
+          "endLine": 69,
+          "methods": [
+            "test_load_rules_retorna_dict"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TestComposeManagerSanitize",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "TestComposeManagerAnchors",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "TestComposeManagerRules",
+          "line": 60,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_valor_normal",
+          "callee": "ComposeManager.sanitize_value",
+          "lineNumber": 12
+        },
+        {
+          "caller": "test_strip_espacios",
+          "callee": "ComposeManager.sanitize_value",
+          "lineNumber": 15
+        },
+        {
+          "caller": "test_path_traversal_falla",
+          "callee": "pytest.raises",
+          "lineNumber": 18
+        },
+        {
+          "caller": "test_path_traversal_falla",
+          "callee": "ComposeManager.sanitize_value",
+          "lineNumber": 19
+        },
+        {
+          "caller": "test_backslash_falla",
+          "callee": "pytest.raises",
+          "lineNumber": 22
+        },
+        {
+          "caller": "test_backslash_falla",
+          "callee": "ComposeManager.sanitize_value",
+          "lineNumber": 23
+        },
+        {
+          "caller": "test_control_chars_falla",
+          "callee": "pytest.raises",
+          "lineNumber": 26
+        },
+        {
+          "caller": "test_control_chars_falla",
+          "callee": "ComposeManager.sanitize_value",
+          "lineNumber": 27
+        },
+        {
+          "caller": "test_backtick_falla",
+          "callee": "pytest.raises",
+          "lineNumber": 30
+        },
+        {
+          "caller": "test_backtick_falla",
+          "callee": "ComposeManager.sanitize_value",
+          "lineNumber": 31
+        },
+        {
+          "caller": "test_imagen_valida",
+          "callee": "ComposeManager.sanitize_value",
+          "lineNumber": 34
+        },
+        {
+          "caller": "test_ruta_volumen_valida",
+          "callee": "ComposeManager.sanitize_value",
+          "lineNumber": 38
+        },
+        {
+          "caller": "test_fallback_anchors_contiene_bloques",
+          "callee": "ComposeManager._fallback_anchors",
+          "lineNumber": 46
+        },
+        {
+          "caller": "test_load_compose_base_anchors_retorna_string",
+          "callee": "ComposeManager.load_compose_base_anchors",
+          "lineNumber": 54
+        },
+        {
+          "caller": "test_load_compose_base_anchors_retorna_string",
+          "callee": "isinstance",
+          "lineNumber": 55
+        },
+        {
+          "caller": "test_load_compose_base_anchors_retorna_string",
+          "callee": "len",
+          "lineNumber": 56
+        },
+        {
+          "caller": "test_load_rules_retorna_dict",
+          "callee": "ComposeManager.load_rules",
+          "lineNumber": 64
+        },
+        {
+          "caller": "test_load_rules_retorna_dict",
+          "callee": "isinstance",
+          "lineNumber": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "tests/test_memory.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 210,
+      "nonEmptyLines": 176,
+      "classes": [
+        {
+          "name": "TestEnsureInitialized",
+          "startLine": 12,
+          "endLine": 27,
+          "methods": [
+            "test_creates_files",
+            "test_idempotent"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestAddToMemory",
+          "startLine": 30,
+          "endLine": 71,
+          "methods": [
+            "test_add_leccion",
+            "test_add_entorno",
+            "test_invalid_category",
+            "test_too_long",
+            "test_duplicate_detection",
+            "test_updates_timestamp"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestRecall",
+          "startLine": 74,
+          "endLine": 102,
+          "methods": [
+            "test_recall_from_memory",
+            "test_recall_from_skills",
+            "test_recall_from_sessions",
+            "test_recall_not_found",
+            "test_recall_short_query"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestAddSkill",
+          "startLine": 105,
+          "endLine": 128,
+          "methods": [
+            "test_add_skill_success",
+            "test_add_duplicate_skill",
+            "test_skill_counter_increments"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestUpdateUserModel",
+          "startLine": 131,
+          "endLine": 146,
+          "methods": [
+            "test_add_new_key",
+            "test_update_existing_key"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestSaveSession",
+          "startLine": 149,
+          "endLine": 158,
+          "methods": [
+            "test_save_session"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestCuration",
+          "startLine": 161,
+          "endLine": 190,
+          "methods": [
+            "test_trim_sessions",
+            "test_prune_old_entries"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestMemoryStats",
+          "startLine": 193,
+          "endLine": 210,
+          "methods": [
+            "test_stats_structure",
+            "test_stats_with_data"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TestEnsureInitialized",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "TestAddToMemory",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "TestRecall",
+          "line": 74,
+          "isDefault": false
+        },
+        {
+          "name": "TestAddSkill",
+          "line": 105,
+          "isDefault": false
+        },
+        {
+          "name": "TestUpdateUserModel",
+          "line": 131,
+          "isDefault": false
+        },
+        {
+          "name": "TestSaveSession",
+          "line": 149,
+          "isDefault": false
+        },
+        {
+          "name": "TestCuration",
+          "line": 161,
+          "isDefault": false
+        },
+        {
+          "name": "TestMemoryStats",
+          "line": 193,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_creates_files",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 15
+        },
+        {
+          "caller": "test_creates_files",
+          "callee": "(isolate_memory / \"MEMORY.md\").exists",
+          "lineNumber": 16
+        },
+        {
+          "caller": "test_creates_files",
+          "callee": "(isolate_memory / \"USER.md\").exists",
+          "lineNumber": 17
+        },
+        {
+          "caller": "test_creates_files",
+          "callee": "(isolate_memory / \"SKILLS.md\").exists",
+          "lineNumber": 18
+        },
+        {
+          "caller": "test_creates_files",
+          "callee": "(isolate_memory / \"sessions\").is_dir",
+          "lineNumber": 19
+        },
+        {
+          "caller": "test_idempotent",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 23
+        },
+        {
+          "caller": "test_idempotent",
+          "callee": "(isolate_memory / \"MEMORY.md\").read_text",
+          "lineNumber": 24
+        },
+        {
+          "caller": "test_idempotent",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 25
+        },
+        {
+          "caller": "test_idempotent",
+          "callee": "(isolate_memory / \"MEMORY.md\").read_text",
+          "lineNumber": 26
+        },
+        {
+          "caller": "test_add_leccion",
+          "callee": "MemoryManager.add_to_memory",
+          "lineNumber": 32
+        },
+        {
+          "caller": "test_add_leccion",
+          "callee": "(isolate_memory / \"MEMORY.md\").read_text",
+          "lineNumber": 36
+        },
+        {
+          "caller": "test_add_entorno",
+          "callee": "MemoryManager.add_to_memory",
+          "lineNumber": 41
+        },
+        {
+          "caller": "test_add_entorno",
+          "callee": "(isolate_memory / \"MEMORY.md\").read_text",
+          "lineNumber": 45
+        },
+        {
+          "caller": "test_invalid_category",
+          "callee": "MemoryManager.add_to_memory",
+          "lineNumber": 49
+        },
+        {
+          "caller": "test_too_long",
+          "callee": "MemoryManager.add_to_memory",
+          "lineNumber": 56
+        },
+        {
+          "caller": "test_duplicate_detection",
+          "callee": "MemoryManager.add_to_memory",
+          "lineNumber": 63
+        },
+        {
+          "caller": "test_duplicate_detection",
+          "callee": "MemoryManager.add_to_memory",
+          "lineNumber": 64
+        },
+        {
+          "caller": "test_duplicate_detection",
+          "callee": "result.message.lower",
+          "lineNumber": 66
+        },
+        {
+          "caller": "test_duplicate_detection",
+          "callee": "result.message.lower",
+          "lineNumber": 66
+        },
+        {
+          "caller": "test_updates_timestamp",
+          "callee": "MemoryManager.add_to_memory",
+          "lineNumber": 69
+        },
+        {
+          "caller": "test_updates_timestamp",
+          "callee": "(isolate_memory / \"MEMORY.md\").read_text",
+          "lineNumber": 70
+        },
+        {
+          "caller": "test_recall_from_memory",
+          "callee": "MemoryManager.recall",
+          "lineNumber": 76
+        },
+        {
+          "caller": "test_recall_from_skills",
+          "callee": "MemoryManager.recall",
+          "lineNumber": 82
+        },
+        {
+          "caller": "test_recall_from_sessions",
+          "callee": "MemoryManager.recall",
+          "lineNumber": 88
+        },
+        {
+          "caller": "test_recall_not_found",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 93
+        },
+        {
+          "caller": "test_recall_not_found",
+          "callee": "MemoryManager.recall",
+          "lineNumber": 94
+        },
+        {
+          "caller": "test_recall_not_found",
+          "callee": "result.message.lower",
+          "lineNumber": 97
+        },
+        {
+          "caller": "test_recall_short_query",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 100
+        },
+        {
+          "caller": "test_recall_short_query",
+          "callee": "MemoryManager.recall",
+          "lineNumber": 101
+        },
+        {
+          "caller": "test_recall_short_query",
+          "callee": "result.message.lower",
+          "lineNumber": 102
+        },
+        {
+          "caller": "test_add_skill_success",
+          "callee": "MemoryManager.add_skill",
+          "lineNumber": 107
+        },
+        {
+          "caller": "test_add_skill_success",
+          "callee": "(isolate_memory / \"SKILLS.md\").read_text",
+          "lineNumber": 113
+        },
+        {
+          "caller": "test_add_duplicate_skill",
+          "callee": "MemoryManager.add_skill",
+          "lineNumber": 119
+        },
+        {
+          "caller": "test_add_duplicate_skill",
+          "callee": "MemoryManager.add_skill",
+          "lineNumber": 120
+        },
+        {
+          "caller": "test_add_duplicate_skill",
+          "callee": "result.message.lower",
+          "lineNumber": 122
+        },
+        {
+          "caller": "test_skill_counter_increments",
+          "callee": "MemoryManager.add_skill",
+          "lineNumber": 125
+        },
+        {
+          "caller": "test_skill_counter_increments",
+          "callee": "MemoryManager.add_skill",
+          "lineNumber": 126
+        },
+        {
+          "caller": "test_skill_counter_increments",
+          "callee": "(isolate_memory / \"SKILLS.md\").read_text",
+          "lineNumber": 127
+        },
+        {
+          "caller": "test_add_new_key",
+          "callee": "MemoryManager.update_user_model",
+          "lineNumber": 133
+        },
+        {
+          "caller": "test_add_new_key",
+          "callee": "(isolate_memory / \"USER.md\").read_text",
+          "lineNumber": 136
+        },
+        {
+          "caller": "test_update_existing_key",
+          "callee": "MemoryManager.update_user_model",
+          "lineNumber": 140
+        },
+        {
+          "caller": "test_update_existing_key",
+          "callee": "(populated_memory / \"USER.md\").read_text",
+          "lineNumber": 143
+        },
+        {
+          "caller": "test_save_session",
+          "callee": "MemoryManager.save_session",
+          "lineNumber": 151
+        },
+        {
+          "caller": "test_save_session",
+          "callee": "list",
+          "lineNumber": 156
+        },
+        {
+          "caller": "test_save_session",
+          "callee": "(isolate_memory / \"sessions\").glob",
+          "lineNumber": 156
+        },
+        {
+          "caller": "test_save_session",
+          "callee": "len",
+          "lineNumber": 157
+        },
+        {
+          "caller": "test_trim_sessions",
+          "callee": "(sessions_dir / \"2020-01-01_old-session.md\").write_text",
+          "lineNumber": 165
+        },
+        {
+          "caller": "test_trim_sessions",
+          "callee": "(sessions_dir / \"2026-08-01_recent.md\").write_text",
+          "lineNumber": 167
+        },
+        {
+          "caller": "test_trim_sessions",
+          "callee": "MemoryManager.trim_sessions",
+          "lineNumber": 169
+        },
+        {
+          "caller": "test_trim_sessions",
+          "callee": "list",
+          "lineNumber": 172
+        },
+        {
+          "caller": "test_trim_sessions",
+          "callee": "sessions_dir.glob",
+          "lineNumber": 172
+        },
+        {
+          "caller": "test_trim_sessions",
+          "callee": "len",
+          "lineNumber": 173
+        },
+        {
+          "caller": "test_prune_old_entries",
+          "callee": "(isolate_memory / \"MEMORY.md\").write_text",
+          "lineNumber": 177
+        },
+        {
+          "caller": "test_prune_old_entries",
+          "callee": "MemoryManager.prune_old_entries",
+          "lineNumber": 185
+        },
+        {
+          "caller": "test_prune_old_entries",
+          "callee": "(isolate_memory / \"MEMORY.md\").read_text",
+          "lineNumber": 188
+        },
+        {
+          "caller": "test_stats_structure",
+          "callee": "MemoryManager.ensure_initialized",
+          "lineNumber": 195
+        },
+        {
+          "caller": "test_stats_structure",
+          "callee": "MemoryManager.get_memory_stats",
+          "lineNumber": 196
+        },
+        {
+          "caller": "test_stats_with_data",
+          "callee": "MemoryManager.get_memory_stats",
+          "lineNumber": 207
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 8,
+        "functionCount": 0,
+        "classCount": 8
+      }
+    },
+    {
+      "path": "tests/test_result.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 83,
+      "nonEmptyLines": 66,
+      "classes": [
+        {
+          "name": "TestToolResult",
+          "startLine": 8,
+          "endLine": 67,
+          "methods": [
+            "test_ok_basico",
+            "test_error_basico",
+            "test_warn_basico",
+            "test_ok_con_data",
+            "test_ok_con_suggestions",
+            "test_ok_con_elapsed",
+            "test_ok_con_tool_name",
+            "test_to_dict",
+            "test_str_backward_compat",
+            "test_defaults"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestTimer",
+          "startLine": 70,
+          "endLine": 83,
+          "methods": [
+            "test_timer_mide_tiempo",
+            "test_timer_zero_sin_sleep"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TestToolResult",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "TestTimer",
+          "line": 70,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_ok_basico",
+          "callee": "ToolResult.ok",
+          "lineNumber": 12
+        },
+        {
+          "caller": "test_ok_basico",
+          "callee": "str",
+          "lineNumber": 16
+        },
+        {
+          "caller": "test_error_basico",
+          "callee": "ToolResult.error",
+          "lineNumber": 19
+        },
+        {
+          "caller": "test_error_basico",
+          "callee": "str",
+          "lineNumber": 22
+        },
+        {
+          "caller": "test_warn_basico",
+          "callee": "ToolResult.warn",
+          "lineNumber": 25
+        },
+        {
+          "caller": "test_ok_con_data",
+          "callee": "ToolResult.ok",
+          "lineNumber": 30
+        },
+        {
+          "caller": "test_ok_con_suggestions",
+          "callee": "ToolResult.ok",
+          "lineNumber": 35
+        },
+        {
+          "caller": "test_ok_con_elapsed",
+          "callee": "ToolResult.ok",
+          "lineNumber": 39
+        },
+        {
+          "caller": "test_ok_con_tool_name",
+          "callee": "ToolResult.ok",
+          "lineNumber": 43
+        },
+        {
+          "caller": "test_to_dict",
+          "callee": "ToolResult.ok",
+          "lineNumber": 47
+        },
+        {
+          "caller": "test_to_dict",
+          "callee": "r.to_dict",
+          "lineNumber": 48
+        },
+        {
+          "caller": "test_str_backward_compat",
+          "callee": "ToolResult.ok",
+          "lineNumber": 57
+        },
+        {
+          "caller": "test_str_backward_compat",
+          "callee": "str",
+          "lineNumber": 59
+        },
+        {
+          "caller": "test_defaults",
+          "callee": "ToolResult",
+          "lineNumber": 62
+        },
+        {
+          "caller": "test_timer_mide_tiempo",
+          "callee": "Timer",
+          "lineNumber": 74
+        },
+        {
+          "caller": "test_timer_mide_tiempo",
+          "callee": "time.sleep",
+          "lineNumber": 75
+        },
+        {
+          "caller": "test_timer_zero_sin_sleep",
+          "callee": "Timer",
+          "lineNumber": 80
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "tests/test_tool_result.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 67,
+      "nonEmptyLines": 51,
+      "classes": [
+        {
+          "name": "TestToolResultOk",
+          "startLine": 8,
+          "endLine": 24,
+          "methods": [
+            "test_ok_is_success",
+            "test_ok_str",
+            "test_ok_data",
+            "test_ok_suggestions"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestToolResultError",
+          "startLine": 27,
+          "endLine": 35,
+          "methods": [
+            "test_error_not_success",
+            "test_error_str"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestToolResultWarn",
+          "startLine": 38,
+          "endLine": 42,
+          "methods": [
+            "test_warn_is_success"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestToolResultSerialization",
+          "startLine": 45,
+          "endLine": 58,
+          "methods": [
+            "test_to_dict",
+            "test_repr"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestTimer",
+          "startLine": 61,
+          "endLine": 67,
+          "methods": [
+            "test_timer_measures_time"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TestToolResultOk",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "TestToolResultError",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "TestToolResultWarn",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "TestToolResultSerialization",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "TestTimer",
+          "line": 61,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_ok_is_success",
+          "callee": "ToolResult.ok",
+          "lineNumber": 10
+        },
+        {
+          "caller": "test_ok_str",
+          "callee": "ToolResult.ok",
+          "lineNumber": 15
+        },
+        {
+          "caller": "test_ok_str",
+          "callee": "str",
+          "lineNumber": 16
+        },
+        {
+          "caller": "test_ok_data",
+          "callee": "ToolResult.ok",
+          "lineNumber": 19
+        },
+        {
+          "caller": "test_ok_suggestions",
+          "callee": "ToolResult.ok",
+          "lineNumber": 23
+        },
+        {
+          "caller": "test_error_not_success",
+          "callee": "ToolResult.error",
+          "lineNumber": 29
+        },
+        {
+          "caller": "test_error_str",
+          "callee": "ToolResult.error",
+          "lineNumber": 34
+        },
+        {
+          "caller": "test_error_str",
+          "callee": "str",
+          "lineNumber": 35
+        },
+        {
+          "caller": "test_warn_is_success",
+          "callee": "ToolResult.warn",
+          "lineNumber": 40
+        },
+        {
+          "caller": "test_to_dict",
+          "callee": "ToolResult.ok",
+          "lineNumber": 47
+        },
+        {
+          "caller": "test_to_dict",
+          "callee": "r.to_dict",
+          "lineNumber": 48
+        },
+        {
+          "caller": "test_repr",
+          "callee": "ToolResult.ok",
+          "lineNumber": 55
+        },
+        {
+          "caller": "test_repr",
+          "callee": "repr",
+          "lineNumber": 56
+        },
+        {
+          "caller": "test_timer_measures_time",
+          "callee": "Timer",
+          "lineNumber": 64
+        },
+        {
+          "caller": "test_timer_measures_time",
+          "callee": "time.sleep",
+          "lineNumber": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 5,
+        "functionCount": 0,
+        "classCount": 5
+      }
+    },
+    {
+      "path": "tests/test_validation.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 68,
+      "nonEmptyLines": 51,
+      "classes": [
+        {
+          "name": "TestValidateServiceName",
+          "startLine": 16,
+          "endLine": 68,
+          "methods": [
+            "test_valid_simple",
+            "test_valid_with_dash",
+            "test_valid_with_numbers",
+            "test_valid_underscore",
+            "test_path_traversal",
+            "test_empty_name",
+            "test_command_injection_semicolon",
+            "test_command_injection_pipe",
+            "test_command_injection_backtick",
+            "test_absolute_path",
+            "test_spaces",
+            "test_dollar_sign"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TestValidateServiceName",
+          "line": 16,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_valid_simple",
+          "callee": "validate_service_name",
+          "lineNumber": 19
+        },
+        {
+          "caller": "test_valid_with_dash",
+          "callee": "validate_service_name",
+          "lineNumber": 22
+        },
+        {
+          "caller": "test_valid_with_numbers",
+          "callee": "validate_service_name",
+          "lineNumber": 25
+        },
+        {
+          "caller": "test_valid_underscore",
+          "callee": "validate_service_name",
+          "lineNumber": 28
+        },
+        {
+          "caller": "test_path_traversal",
+          "callee": "pytest.raises",
+          "lineNumber": 32
+        },
+        {
+          "caller": "test_path_traversal",
+          "callee": "validate_service_name",
+          "lineNumber": 33
+        },
+        {
+          "caller": "test_empty_name",
+          "callee": "pytest.raises",
+          "lineNumber": 37
+        },
+        {
+          "caller": "test_empty_name",
+          "callee": "validate_service_name",
+          "lineNumber": 38
+        },
+        {
+          "caller": "test_command_injection_semicolon",
+          "callee": "pytest.raises",
+          "lineNumber": 42
+        },
+        {
+          "caller": "test_command_injection_semicolon",
+          "callee": "validate_service_name",
+          "lineNumber": 43
+        },
+        {
+          "caller": "test_command_injection_pipe",
+          "callee": "pytest.raises",
+          "lineNumber": 47
+        },
+        {
+          "caller": "test_command_injection_pipe",
+          "callee": "validate_service_name",
+          "lineNumber": 48
+        },
+        {
+          "caller": "test_command_injection_backtick",
+          "callee": "pytest.raises",
+          "lineNumber": 52
+        },
+        {
+          "caller": "test_command_injection_backtick",
+          "callee": "validate_service_name",
+          "lineNumber": 53
+        },
+        {
+          "caller": "test_absolute_path",
+          "callee": "pytest.raises",
+          "lineNumber": 57
+        },
+        {
+          "caller": "test_absolute_path",
+          "callee": "validate_service_name",
+          "lineNumber": 58
+        },
+        {
+          "caller": "test_spaces",
+          "callee": "pytest.raises",
+          "lineNumber": 62
+        },
+        {
+          "caller": "test_spaces",
+          "callee": "validate_service_name",
+          "lineNumber": 63
+        },
+        {
+          "caller": "test_dollar_sign",
+          "callee": "pytest.raises",
+          "lineNumber": 67
+        },
+        {
+          "caller": "test_dollar_sign",
+          "callee": "validate_service_name",
+          "lineNumber": 68
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    }
+  ]
+}

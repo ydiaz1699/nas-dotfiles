@@ -1,0 +1,49 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/.env.global.example",
+      "language": "config",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/_common.yml",
+      "language": "yaml",
+      "sizeLines": 51,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/_compose_base.md",
+      "language": "markdown",
+      "sizeLines": 256,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/_rules.md",
+      "language": "markdown",
+      "sizeLines": 167,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/_template.md",
+      "language": "markdown",
+      "sizeLines": 78,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/catalog.json",
+      "language": "json",
+      "sizeLines": 1007,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/.env.global.example": [],
+    "agent/catalog/_common.yml": [],
+    "agent/catalog/_compose_base.md": [],
+    "agent/catalog/_rules.md": [],
+    "agent/catalog/_template.md": [],
+    "agent/catalog/catalog.json": []
+  }
+}

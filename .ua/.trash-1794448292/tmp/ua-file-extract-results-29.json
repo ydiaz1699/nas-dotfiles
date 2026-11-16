@@ -1,0 +1,117 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 3
+    }
+  },
+  "results": [
+    {
+      "path": "agent/memory/MEMORY.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 10,
+      "nonEmptyLines": 6,
+      "sections": [
+        {
+          "heading": "Memoria del Agente NAS",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Entorno",
+          "level": 2,
+          "line": 4
+        },
+        {
+          "heading": "Lecciones aprendidas",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Patrones que funcionaron",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "Estado pendiente",
+          "level": 2,
+          "line": 10
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": "agent/memory/SKILLS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "sections": [
+        {
+          "heading": "Skills del Agente NAS",
+          "level": 1,
+          "line": 1
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "agent/memory/USER.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 8,
+      "nonEmptyLines": 5,
+      "sections": [
+        {
+          "heading": "Perfil del Usuario",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Preferencias de interacción",
+          "level": 2,
+          "line": 4
+        },
+        {
+          "heading": "Decisiones técnicas",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Proyectos activos",
+          "level": 2,
+          "line": 8
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/homepage/config/docker.yaml",
+      "language": "yaml",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/homepage/config/services.yaml",
+      "language": "yaml",
+      "sizeLines": 33,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/homepage/config/settings.yaml",
+      "language": "yaml",
+      "sizeLines": 31,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/homepage/config/widgets.yaml",
+      "language": "yaml",
+      "sizeLines": 19,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/homepage/config/docker.yaml": [],
+    "agent/catalog/services/homepage/config/services.yaml": [],
+    "agent/catalog/services/homepage/config/settings.yaml": [],
+    "agent/catalog/services/homepage/config/widgets.yaml": []
+  }
+}

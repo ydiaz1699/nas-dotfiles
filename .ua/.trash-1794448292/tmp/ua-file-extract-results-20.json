@@ -1,0 +1,127 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 3
+    }
+  },
+  "results": [
+    {
+      "path": "agent/catalog/services/karakeep/.env.example",
+      "language": "config",
+      "fileCategory": "config",
+      "totalLines": 35,
+      "nonEmptyLines": 31,
+      "definitions": [
+        {
+          "name": "NEXTAUTH_SECRET",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 7,
+          "endLine": 7
+        },
+        {
+          "name": "MEILI_MASTER_KEY",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 12,
+          "endLine": 12
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 16,
+          "endLine": 16
+        },
+        {
+          "name": "OPENAI_BASE_URL",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 17,
+          "endLine": 17
+        },
+        {
+          "name": "INFERENCE_TEXT_MODEL",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 21,
+          "endLine": 21
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 5
+      }
+    },
+    {
+      "path": "agent/catalog/services/karakeep/compose.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 106,
+      "nonEmptyLines": 104,
+      "sections": [
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 8
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "agent/catalog/services/karakeep/ficha.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 88,
+      "nonEmptyLines": 78,
+      "sections": [
+        {
+          "heading": "Karakeep",
+          "level": 1,
+          "line": 49
+        },
+        {
+          "heading": "Resumen de arquitectura",
+          "level": 2,
+          "line": 56
+        },
+        {
+          "heading": "Interfaces de acceso (un almacén, 4 caras + Floccus)",
+          "level": 2,
+          "line": 69
+        },
+        {
+          "heading": "Pendiente",
+          "level": 2,
+          "line": 84
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    }
+  ]
+}

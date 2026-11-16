@@ -1,0 +1,621 @@
+{
+  "nodes": [
+    {
+      "id": "document:docker-nas/references/agent.md",
+      "type": "document",
+      "name": "docker-nas/references/agent.md",
+      "filePath": "docker-nas/references/agent.md",
+      "lineRange": [
+        1,
+        336
+      ],
+      "summary": "Referencia completa del agente IA del NAS: comandos de invocación, providers y modelos LLM, arquitectura del prompt, catálogo de 31 herramientas, memoria persistente, sesiones, plugins, daemon systemd y configuración en defaults.yml.",
+      "tags": [
+        "documentacion",
+        "agente-ia",
+        "herramientas-mcp",
+        "memoria-daemon"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documentación técnica en Markdown sobre la arquitectura y operación de agent/."
+    },
+    {
+      "id": "document:docker-nas/references/diagnostic.md",
+      "type": "document",
+      "name": "docker-nas/references/diagnostic.md",
+      "filePath": "docker-nas/references/diagnostic.md",
+      "lineRange": [
+        1,
+        181
+      ],
+      "summary": "Recetario paso a paso para diagnosticar fallos de contenedores en el NAS: servicios caídos, errores OOM, crash loops, conflictos de puertos, errores de red en Compose, healthchecks fallidos y conectividad entre servicios.",
+      "tags": [
+        "diagnostico",
+        "troubleshooting",
+        "docker-compose",
+        "redes"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Guía operativa en Markdown con comandos svc y docker para aislar causa raíz."
+    },
+    {
+      "id": "document:docker-nas/references/entorno.md",
+      "type": "document",
+      "name": "docker-nas/references/entorno.md",
+      "filePath": "docker-nas/references/entorno.md",
+      "lineRange": [
+        1,
+        323
+      ],
+      "summary": "Referencia completa del entorno shell del NAS cargado desde shell/init.sh: variables exportadas, funciones, aliases de listado/navegación/Docker/archivos, utilidades del sistema, instaladores inteligentes (instal, pipins) y aliases de Git.",
+      "tags": [
+        "entorno-shell",
+        "bash-aliases",
+        "navegacion-fzf",
+        "documentacion"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documenta la arquitectura modular bajo shell/init.sh y shell/lib/."
+    },
+    {
+      "id": "document:docker-nas/references/extend.md",
+      "type": "document",
+      "name": "docker-nas/references/extend.md",
+      "filePath": "docker-nas/references/extend.md",
+      "lineRange": [
+        1,
+        86
+      ],
+      "summary": "Guía concisa para extender el framework nas-dotfiles: pasos para añadir comandos svc en Bash, nuevas tools @tool y plugins en Python para el agente, módulos shell y destinos de navegación.",
+      "tags": [
+        "extensibilidad",
+        "guia-desarrollo",
+        "cli-svc",
+        "plugins-agente"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Manual corto de extensión que enlaza puntos de entrada en docker/cli/, agent/ y shell/."
+    },
+    {
+      "id": "document:docker-nas/references/nas-context.md",
+      "type": "document",
+      "name": "docker-nas/references/nas-context.md",
+      "filePath": "docker-nas/references/nas-context.md",
+      "lineRange": [
+        1,
+        570
+      ],
+      "summary": "Contexto operativo comprimido y skill registry para LLMs que operan el NAS: entorno de hardware, reglas NUNCA/SIEMPRE, catálogo de servicios, herramientas de verificación (scanner, project_index, gateway MCP) y carga diferida de referencias.",
+      "tags": [
+        "contexto-operativo",
+        "skill-registry",
+        "reglas-llm",
+        "servicios-nas"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Documento central de referencia operativa enlazado por docker-nas/SKILL.md y regenerado parcialmente por catalog-sync.sh."
+    },
+    {
+      "id": "document:docker-nas/references/networking-install.md",
+      "type": "document",
+      "name": "docker-nas/references/networking-install.md",
+      "filePath": "docker-nas/references/networking-install.md",
+      "lineRange": [
+        1,
+        319
+      ],
+      "summary": "Procedimiento de instalación limpia de red del NAS con systemd-networkd, interfaz shim macvlan y systemd-resolved, incluyendo creación previa de archivos, neutralización de ifupdown, despliegue de AdGuard y reinicio de aceptación.",
+      "tags": [
+        "redes-nas",
+        "systemd-networkd",
+        "macvlan",
+        "instalacion-red"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Derivación operativa subordinada a la guía canónica networking.md."
+    },
+    {
+      "id": "document:docker-nas/references/networking-migration.md",
+      "type": "document",
+      "name": "docker-nas/references/networking-migration.md",
+      "filePath": "docker-nas/references/networking-migration.md",
+      "lineRange": [
+        1,
+        300
+      ],
+      "summary": "Procedimiento de migración de backend de red o cambio de rango IP en un NAS existente sin perder acceso SSH ni romper el shim macvlan, AdGuard, IPv6 o Home Assistant.",
+      "tags": [
+        "migracion-red",
+        "systemd-networkd",
+        "macvlan",
+        "cambio-rango-ip"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Derivación de migración que remite a networking.md para snapshot y rollback."
+    },
+    {
+      "id": "document:docker-nas/references/networking-recovery.md",
+      "type": "document",
+      "name": "docker-nas/references/networking-recovery.md",
+      "filePath": "docker-nas/references/networking-recovery.md",
+      "lineRange": [
+        1,
+        589
+      ],
+      "summary": "Runbook de triage y recuperación de red del NAS ante pérdida de conectividad, reinicio en frío, carrera ifupdown/dhcpcd, fallo de DNS o pérdida de rutas IPv4, con árbol de decisión y rollback selectivo.",
+      "tags": [
+        "recuperacion-red",
+        "runbook-triage",
+        "dns-macvlan",
+        "rollback"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Runbook de emergencia basado en la guía canónica networking.md."
+    },
+    {
+      "id": "document:docker-nas/references/networking.md",
+      "type": "document",
+      "name": "docker-nas/references/networking.md",
+      "filePath": "docker-nas/references/networking.md",
+      "lineRange": [
+        1,
+        757
+      ],
+      "summary": "Guía canónica de redes avanzadas del NAS: arquitectura con systemd-networkd, systemd-resolved, Avahi/mDNS, macvlan para AdGuard, IPv4/IPv6, preflight obligatorio, snapshots atómicos, validación y rollback.",
+      "tags": [
+        "guia-canonica-red",
+        "systemd-resolved",
+        "avahi-mdns",
+        "macvlan"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Fuente de verdad para networking-install.md, networking-migration.md y networking-recovery.md."
+    },
+    {
+      "id": "document:docker-nas/references/seguridad.md",
+      "type": "document",
+      "name": "docker-nas/references/seguridad.md",
+      "filePath": "docker-nas/references/seguridad.md",
+      "lineRange": [
+        1,
+        273
+      ],
+      "summary": "Referencia completa de mecanismos de seguridad, protecciones en tools Python y scripts Bash, sanitización de secretos, modos de seguridad, variables de entorno y convenciones del proyecto.",
+      "tags": [
+        "seguridad",
+        "sanitizacion-secretos",
+        "audit-log",
+        "variables-entorno"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documenta protecciones en agent/tools/_shell.py, _audit.py, backup.sh y .gitignore."
+    },
+    {
+      "id": "document:docker-nas/references/svc.md",
+      "type": "document",
+      "name": "docker-nas/references/svc.md",
+      "filePath": "docker-nas/references/svc.md",
+      "lineRange": [
+        1,
+        504
+      ],
+      "summary": "Referencia completa del CLI dual svc (Bash y Python/Typer): detección de servicios, comandos globales y por servicio, operaciones LobeHub, passthrough a Docker Compose, plantillas compose.yml con extends, redes, secretos, backups, snapshots y puertos.",
+      "tags": [
+        "cli-svc",
+        "docker-compose",
+        "referencia-comandos",
+        "plantillas-servicios"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Documenta la arquitectura y sintaxis de docker/cli/svc.sh, docker/cli/lib/* y svc_py/."
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:docker-nas/references/agent.md",
+      "target": "config:agent/config/defaults.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/agent.md",
+      "target": "file:agent/lobehub_mcp.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/agent.md",
+      "target": "file:agent/tools/project_index.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/agent.md",
+      "target": "file:agent/daemon.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/agent.md",
+      "target": "file:agent/plugins/loader.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/agent.md",
+      "target": "document:requirements.txt",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/agent.md",
+      "target": "config:agent/catalog/catalog.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/diagnostic.md",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/diagnostic.md",
+      "target": "document:docs/services/datasql-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/diagnostic.md",
+      "target": "document:docker-nas/references/svc.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/entorno.md",
+      "target": "file:shell/init.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/entorno.md",
+      "target": "file:shell/lib/aliases.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/entorno.md",
+      "target": "file:shell/lib/nav.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/entorno.md",
+      "target": "file:shell/lib/docker.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/entorno.md",
+      "target": "file:shell/lib/system.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/entorno.md",
+      "target": "file:shell/lib/instal.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/entorno.md",
+      "target": "file:shell/lib/pipins.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/entorno.md",
+      "target": "file:shell/lib/completions.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/entorno.md",
+      "target": "file:shell/lib/prompt.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/extend.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/extend.md",
+      "target": "file:docker/cli/lib/help.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/extend.md",
+      "target": "file:shell/lib/docker.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/extend.md",
+      "target": "file:agent/tools/__init__.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/extend.md",
+      "target": "file:agent/tools/_shell.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/extend.md",
+      "target": "file:agent/plugins/loader.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/extend.md",
+      "target": "file:shell/init.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/extend.md",
+      "target": "file:shell/lib/nav.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/nas-context.md",
+      "target": "document:docker-nas/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/nas-context.md",
+      "target": "document:docs/framework-knowledge-compilation.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/nas-context.md",
+      "target": "config:agent/architecture/contracts.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/nas-context.md",
+      "target": "file:agent/tools/project_index.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/nas-context.md",
+      "target": "file:systemd/nas-mcp-helper.service",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/nas-context.md",
+      "target": "document:docker-nas/references/agent.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/nas-context.md",
+      "target": "document:docker-nas/references/svc.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/nas-context.md",
+      "target": "document:docker-nas/references/networking.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/networking-install.md",
+      "target": "document:docker-nas/references/networking.md",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:docker-nas/references/networking-install.md",
+      "target": "document:docs/docker-entorno.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/networking-migration.md",
+      "target": "document:docker-nas/references/networking.md",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:docker-nas/references/networking-migration.md",
+      "target": "document:docker-nas/references/networking-recovery.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/networking-recovery.md",
+      "target": "document:docker-nas/references/networking.md",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:docker-nas/references/networking.md",
+      "target": "document:docker-nas/references/networking-install.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/networking.md",
+      "target": "document:docker-nas/references/networking-migration.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/networking.md",
+      "target": "document:docker-nas/references/networking-recovery.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/seguridad.md",
+      "target": "file:agent/tools/_shell.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/seguridad.md",
+      "target": "file:agent/tools/_audit.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/seguridad.md",
+      "target": "file:docker/cli/lib/backup.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/seguridad.md",
+      "target": "file:install.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/svc.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/svc.md",
+      "target": "file:docker/cli/lib/discovery.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/svc.md",
+      "target": "file:docker/cli/lib/docker.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/svc.md",
+      "target": "file:docker/cli/lib/health.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/svc.md",
+      "target": "file:docker/cli/lib/backup.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/svc.md",
+      "target": "file:docker/cli/lib/extras.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/svc.md",
+      "target": "file:docker/cli/lib/lobehub.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/svc.md",
+      "target": "file:docker/cli/lib/menu.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/svc.md",
+      "target": "file:docker/cli/lib/help.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/svc.md",
+      "target": "file:svc_py/core/bash_bridge.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docker-nas/references/svc.md",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

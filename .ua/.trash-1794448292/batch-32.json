@@ -1,0 +1,1290 @@
+{
+  "nodes": [
+    {
+      "id": "document:docs/CODE-MAP.md",
+      "type": "document",
+      "name": "docs/CODE-MAP.md",
+      "filePath": "docs/CODE-MAP.md",
+      "lineRange": [
+        1,
+        165
+      ],
+      "summary": "Índice autogenerado de los 111 archivos de código del repositorio (agent/, docker/, shell/, svc_py/, tests/, ui/, install.sh y uninstall.sh), detallando propósito, símbolos y dependencias internas.",
+      "tags": [
+        "mapa-codigo",
+        "indice-simbolos",
+        "documentacion-generada",
+        "referencia-tecnica"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Archivo Markdown autogenerado mediante project_index.py --code-map; no debe editarse manualmente."
+    },
+    {
+      "id": "document:docs/PLAN-extends-common.md",
+      "type": "document",
+      "name": "docs/PLAN-extends-common.md",
+      "filePath": "docs/PLAN-extends-common.md",
+      "lineRange": [
+        1,
+        206
+      ],
+      "summary": "Plan de migración para centralizar valores por defecto de Docker Compose (recursos, seguridad, logging y healthcheck) en _common.yml usando extends, comparando rutas entre catálogo y NAS y detallando rollback.",
+      "tags": [
+        "plan-migracion",
+        "docker-compose",
+        "extends-common",
+        "catalogo-servicios"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Especifica reglas de deep merge en Docker Compose v2.17+ y procedimientos seguros de reversión con snapshots."
+    },
+    {
+      "id": "document:docs/VS Code Remote.md",
+      "type": "document",
+      "name": "docs/VS Code Remote.md",
+      "filePath": "docs/VS Code Remote.md",
+      "lineRange": [
+        1,
+        237
+      ],
+      "summary": "Guía paso a paso para configurar claves SSH Ed25519 desde Windows hacia los usuarios aadm y root del NAS, definir alias en ~/.ssh/config y conectarse mediante VS Code Remote SSH.",
+      "tags": [
+        "vscode-remote",
+        "ssh-windows",
+        "acceso-remoto",
+        "guia-usuario"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Separa explícitamente los comandos ejecutados en PowerShell (Windows) de los ejecutados dentro del NAS."
+    },
+    {
+      "id": "document:docs/architecture-consistency.md",
+      "type": "document",
+      "name": "docs/architecture-consistency.md",
+      "filePath": "docs/architecture-consistency.md",
+      "lineRange": [
+        1,
+        98
+      ],
+      "summary": "Especificación del Architecture Consistency Scanner que define niveles de dependencia y contratos verificables en contracts.json para detectar automáticamente gaps, drift, huérfanos y paridad entre capas.",
+      "tags": [
+        "consistencia-arquitectonica",
+        "contratos-verificables",
+        "scanner-estructural",
+        "especificacion"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Delimita responsabilidades entre dependency-map.md, contracts.json, project_index.py, project_scanner.py y catalog-sync."
+    },
+    {
+      "id": "document:docs/catalog-sync-pipeline.md",
+      "type": "document",
+      "name": "docs/catalog-sync-pipeline.md",
+      "filePath": "docs/catalog-sync-pipeline.md",
+      "lineRange": [
+        1,
+        335
+      ],
+      "summary": "Documentación del pipeline de auto-documentación en cascada (svc catalog-sync, DebMenux y hook de Kiro) que sincroniza servicios Docker generando ficha.md, compose.yml, .env.example y guías placeholder.",
+      "tags": [
+        "pipeline-documentacion",
+        "catalog-sync",
+        "auto-documentacion",
+        "servicios-docker"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Describe el flujo bidireccional entre el entorno runtime del NAS, el catálogo del repositorio y DebMenux."
+    },
+    {
+      "id": "document:docs/cheatsheet.md",
+      "type": "document",
+      "name": "docs/cheatsheet.md",
+      "filePath": "docs/cheatsheet.md",
+      "lineRange": [
+        1,
+        427
+      ],
+      "summary": "Hoja de referencia rápida para operar manualmente el NAS usando aliases del shell, comandos de navegación (dk, adm, nasfk), CLI svc, variables globales .env, wrappers instal/pipins, Git y agente IA.",
+      "tags": [
+        "cheatsheet",
+        "operacion-nas",
+        "comandos-shell",
+        "referencia-rapida"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Orientado a uso diario en terminal con ejemplos prácticos de comandos Bash del framework."
+    },
+    {
+      "id": "document:docs/dependency-map.md",
+      "type": "document",
+      "name": "docs/dependency-map.md",
+      "filePath": "docs/dependency-map.md",
+      "lineRange": [
+        1,
+        611
+      ],
+      "summary": "Mapa completo de dependencias e impacto en cascada entre nas-dotfiles y DebMenux-, cubriendo grafos de propagación para servicios Docker, CLI svc, módulos shell, plugins/tools del agente, gateways MCP y arranque escalonado.",
+      "tags": [
+        "mapa-dependencias",
+        "analisis-impacto",
+        "arquitectura-sistema",
+        "cascada-cambios"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Incluye tabla de impacto, archivos espejo entre repositorios, reglas para cambios nuevos y checklists de verificación."
+    },
+    {
+      "id": "document:docs/docker-boot-staged-guide.md",
+      "type": "document",
+      "name": "docs/docker-boot-staged-guide.md",
+      "filePath": "docs/docker-boot-staged-guide.md",
+      "lineRange": [
+        1,
+        332
+      ],
+      "summary": "Guía técnica del sistema de arranque y apagado escalonado de contenedores Docker por capas (layers.conf), detallando el uso de service_started frente a service_healthy, pausas de estabilización, unidades systemd y operación.",
+      "tags": [
+        "arranque-escalonado",
+        "docker-boot",
+        "systemd",
+        "capas-servicios"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documenta la separación entre código versionado en shell/scripts/ y estado runtime en $dkco/scripts."
+    },
+    {
+      "id": "document:docs/docker-entorno.md",
+      "type": "document",
+      "name": "docs/docker-entorno.md",
+      "filePath": "docs/docker-entorno.md",
+      "lineRange": [
+        1,
+        444
+      ],
+      "summary": "Guía de referencia del entorno Docker del NAS (/docker), definiendo convenciones obligatorias para compose.yml, herencia de $dkco/.env global, redes Docker, labels de Homepage, volúmenes, notificaciones y seguridad.",
+      "tags": [
+        "entorno-docker",
+        "convenciones-compose",
+        "redes-docker",
+        "seguridad-nas"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Reglas canónicas que todo compose del NAS debe cumplir antes de desplegarse o sincronizarse."
+    },
+    {
+      "id": "document:docs/esphome-meta-prompt.md",
+      "type": "document",
+      "name": "docs/esphome-meta-prompt.md",
+      "filePath": "docs/esphome-meta-prompt.md",
+      "lineRange": [
+        1,
+        747
+      ],
+      "summary": "Meta-prompt maestro reutilizable para crear, revisar y mantener configuraciones modulares de ESPHome en ESP32 mediante packages, operadores !extend/!remove, reglas de fusión no destructiva y seguridad física e informática.",
+      "tags": [
+        "meta-prompt",
+        "esphome",
+        "esp32-modular",
+        "firmware-packages"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Incluye protocolo de fusión R1-R10, niveles de complejidad y sección opcional de integración con el entorno NAS."
+    },
+    {
+      "id": "document:docs/framework-audit.md",
+      "type": "document",
+      "name": "docs/framework-audit.md",
+      "filePath": "docs/framework-audit.md",
+      "lineRange": [
+        1,
+        325
+      ],
+      "summary": "Auditoría ejecutiva e inventario por capas de nas-dotfiles y DebMenux-, resumiendo módulos shell, scripts de arranque, CLI dual (svc.sh y svc_py), agente Strands, gateways MCP, catálogo, skills y métricas del scanner.",
+      "tags": [
+        "auditoria-framework",
+        "inventario-capas",
+        "arquitectura-nas",
+        "mapa-componentes"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Diseñado como vista rápida para contextualizar sesiones LLM sin releer todo el repositorio."
+    },
+    {
+      "id": "document:docs/framework-knowledge-compilation.md",
+      "type": "document",
+      "name": "docs/framework-knowledge-compilation.md",
+      "filePath": "docs/framework-knowledge-compilation.md",
+      "lineRange": [
+        1,
+        347
+      ],
+      "summary": "Documento canónico de arquitectura y continuidad que compila intención original, evolución de decisiones, modelo unificado de dos repositorios, jerarquía de autoridad, superficies MCP, gaps confirmados y criterios de aceptación.",
+      "tags": [
+        "arquitectura-canonica",
+        "compilacion-conocimiento",
+        "criterios-aceptacion",
+        "continuidad-proyecto"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Fuente principal para resolver contradicciones entre documentos y validar la integridad del sistema."
+    },
+    {
+      "id": "document:docs/github-cli.md",
+      "type": "document",
+      "name": "docs/github-cli.md",
+      "filePath": "docs/github-cli.md",
+      "lineRange": [
+        1,
+        142
+      ],
+      "summary": "Guía práctica para instalar GitHub CLI (gh) en un NAS Debian/Ubuntu, autenticarse mediante navegador o Personal Access Token sin navegador, verificar el estado y resolver errores comunes de permisos.",
+      "tags": [
+        "github-cli",
+        "autenticacion-git",
+        "guia-instalacion",
+        "debian-ubuntu"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Documenta las rutas de configuración del binario, repositorio apt y credenciales en ~/.config/gh/hosts.yml."
+    },
+    {
+      "id": "document:docs/ideas-decisions.md",
+      "type": "document",
+      "name": "docs/ideas-decisions.md",
+      "filePath": "docs/ideas-decisions.md",
+      "lineRange": [
+        1,
+        1535
+      ],
+      "summary": "Registro cronológico vivo de decisiones arquitectónicas y sagas técnicas (#1 a #32), capturando problema, solución y aprendizajes sobre ntfy, usb-api, extends, CLI dual, boot escalonado, OpenWA, gateways MCP y ESPHome.",
+      "tags": [
+        "registro-decisiones",
+        "historial-arquitectura",
+        "lecciones-aprendidas",
+        "resolucion-problemas"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Preserva el razonamiento histórico detrás de las convenciones actuales del framework."
+    },
+    {
+      "id": "document:docs/llm-context-bootstrap.md",
+      "type": "document",
+      "name": "docs/llm-context-bootstrap.md",
+      "filePath": "docs/llm-context-bootstrap.md",
+      "lineRange": [
+        1,
+        91
+      ],
+      "summary": "Prompt de arranque portable para inicializar chats LLM externos cuando no cargan automáticamente AGENTS.md, .kiro/skills/ o .kiro/hooks/, indicando qué documentos y skills consultar según el tipo de tarea.",
+      "tags": [
+        "bootstrap-llm",
+        "contexto-portable",
+        "prompt-arranque",
+        "flujo-documental"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Detalla qué contexto se carga automáticamente en Kiro frente a chats manuales."
+    },
+    {
+      "id": "document:docs/lobehub-mcp-gateway.md",
+      "type": "document",
+      "name": "docs/lobehub-mcp-gateway.md",
+      "filePath": "docs/lobehub-mcp-gateway.md",
+      "lineRange": [
+        1,
+        959
+      ],
+      "summary": "Guía de arquitectura, instalación segura y troubleshooting del gateway MCP read-only entre LobeHub y nas-dotfiles (sidecar lobehub-mcp + helper systemd lobehub-mcp-helper), incluyendo socket Unix, configuración web y estado de pausa.",
+      "tags": [
+        "gateway-mcp",
+        "lobehub",
+        "systemd-helper",
+        "seguridad-readonly"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Incluye comandos paste-safe para despliegue como root o aadm, límites de seguridad y handoff de pausa."
+    },
+    {
+      "id": "document:docs/meta-prompt-unificar.md",
+      "type": "document",
+      "name": "docs/meta-prompt-unificar.md",
+      "filePath": "docs/meta-prompt-unificar.md",
+      "lineRange": [
+        1,
+        611
+      ],
+      "summary": "Meta-prompt estricto para unificar fragmentos y diagnósticos dispersos de múltiples conversaciones en una única guía de ejecución sin perder contenido, exigiendo auditoría de fuentes, trazabilidad y análisis por partes.",
+      "tags": [
+        "meta-prompt",
+        "unificacion-documental",
+        "trazabilidad-fuentes",
+        "flujo-llm"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Define plantilla de guía unificada y protocolo de verificación aplicable a documentos extensos."
+    },
+    {
+      "id": "document:docs/multi-nas-architecture.md",
+      "type": "document",
+      "name": "docs/multi-nas-architecture.md",
+      "filePath": "docs/multi-nas-architecture.md",
+      "lineRange": [
+        1,
+        268
+      ],
+      "summary": "Propuesta de diseño futuro para arquitectura multi-NAS distribuida mediante VPN mesh (Tailscale/WireGuard), sincronización P2P con Syncthing, réplica de PostgreSQL y backups offsite automatizados con rclone.",
+      "tags": [
+        "arquitectura-multinas",
+        "diseno-futuro",
+        "alta-disponibilidad",
+        "backup-offsite"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documento conceptual no implementado todavía; incluye orden recomendado de despliegue y decisiones pendientes."
+    },
+    {
+      "id": "document:docs/nas-manual.md",
+      "type": "document",
+      "name": "docs/nas-manual.md",
+      "filePath": "docs/nas-manual.md",
+      "lineRange": [
+        1,
+        607
+      ],
+      "summary": "Manual maestro de infraestructura física y de sistema del NAS, documentando hardware, paquetes de Debian, almacenamiento, redes del host y Docker, puertos asignados, USB automount, notificaciones ntfy, backups y mantenimiento.",
+      "tags": [
+        "manual-nas",
+        "infraestructura-host",
+        "redes-almacenamiento",
+        "operacion-sistema"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Referencia operativa del servidor físico y su configuración base fuera de los contenedores."
+    },
+    {
+      "id": "document:docs/nas-mcp-gateway.md",
+      "type": "document",
+      "name": "docs/nas-mcp-gateway.md",
+      "filePath": "docs/nas-mcp-gateway.md",
+      "lineRange": [
+        1,
+        224
+      ],
+      "summary": "Especificación del gateway MCP independiente nas-mcp-gateway con activación lazy (front-door + worker efímero + helper systemd read-only), cubriendo manifest canónico, transportes stdio/HTTP, compose propio y compatibilidad con lobehub-mcp.",
+      "tags": [
+        "nas-mcp-gateway",
+        "activacion-lazy",
+        "protocolo-mcp",
+        "helper-systemd"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Implementado en código y catálogo pero pendiente de validación final antes de su despliegue en runtime."
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:docs/CODE-MAP.md",
+      "target": "file:agent/tools/project_index.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el índice generado por project_index.py --code-map."
+    },
+    {
+      "source": "document:docs/CODE-MAP.md",
+      "target": "file:svc_py/commands/codemap.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Registra el comando CLI svc code-map encargado de regenerar este mapa."
+    },
+    {
+      "source": "document:docs/CODE-MAP.md",
+      "target": "file:agent/nas_agent.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa el entrypoint y símbolos principales del agente NAS."
+    },
+    {
+      "source": "document:docs/CODE-MAP.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa el CLI Bash principal svc y sus módulos en docker/cli/lib/."
+    },
+    {
+      "source": "document:docs/CODE-MAP.md",
+      "target": "file:shell/init.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indexa el cargador del entorno shell y sus módulos."
+    },
+    {
+      "source": "document:docs/CODE-MAP.md",
+      "target": "document:docs/dependency-map.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa el mapa de dependencias indicando qué archivo concreto modificar."
+    },
+    {
+      "source": "document:docs/CODE-MAP.md",
+      "target": "config:.kiro/hooks/code-map-regen-on-file-change.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Hook de Kiro asociado a la regeneración de CODE-MAP ante cambios."
+    },
+    {
+      "source": "document:docs/PLAN-extends-common.md",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Define la estructura y secciones comunes que centraliza _common.yml."
+    },
+    {
+      "source": "document:docs/PLAN-extends-common.md",
+      "target": "service:agent/catalog/services/emqx/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Usa EMQX como caso piloto antes y después de migrar a extends."
+    },
+    {
+      "source": "document:docs/PLAN-extends-common.md",
+      "target": "document:agent/catalog/_compose_base.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Planifica la evolución respecto a los anchors documentados en _compose_base.md."
+    },
+    {
+      "source": "document:docs/PLAN-extends-common.md",
+      "target": "file:docker/cli/lib/catalog-sync.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Contempla la adaptación de rutas extends entre catálogo y NAS en catalog-sync."
+    },
+    {
+      "source": "document:docs/PLAN-extends-common.md",
+      "target": "file:agent/tools/discovery_tools.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Identifica discovery_tools.py entre los archivos afectados por la migración."
+    },
+    {
+      "source": "document:docs/PLAN-extends-common.md",
+      "target": "document:docs/ideas-decisions.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Desarrolla la implementación de la decisión #16 registrada en ideas-decisions.md."
+    },
+    {
+      "source": "document:docs/VS Code Remote.md",
+      "target": "document:docs/services/vscode-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la guía del servicio code-server con acceso SSH desde VS Code desktop."
+    },
+    {
+      "source": "document:docs/VS Code Remote.md",
+      "target": "document:docs/nas-manual.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Se apoya en la configuración de red y acceso SSH del NAS descrita en nas-manual.md."
+    },
+    {
+      "source": "document:docs/architecture-consistency.md",
+      "target": "config:agent/architecture/contracts.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Especifica el esquema de contratos mínimos verificables definidos en contracts.json."
+    },
+    {
+      "source": "document:docs/architecture-consistency.md",
+      "target": "file:agent/tools/project_index.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Define el rol del descubridor de entidades y conexiones reales."
+    },
+    {
+      "source": "document:docs/architecture-consistency.md",
+      "target": "file:agent/tools/project_scanner.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Especifica la lógica de comparación entre realidad y contratos para detectar drift y gaps."
+    },
+    {
+      "source": "document:docs/architecture-consistency.md",
+      "target": "document:docs/framework-knowledge-compilation.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Se alinea con el mapa canónico de arquitectura del framework."
+    },
+    {
+      "source": "document:docs/architecture-consistency.md",
+      "target": "document:docs/dependency-map.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Añade verificación automática sobre las cascadas descritas en dependency-map.md."
+    },
+    {
+      "source": "document:docs/architecture-consistency.md",
+      "target": "document:AGENTS.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia las reglas arquitectónicas globales mantenidas en AGENTS.md."
+    },
+    {
+      "source": "document:docs/catalog-sync-pipeline.md",
+      "target": "file:docker/cli/lib/catalog-sync.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica el funcionamiento y opciones de svc catalog-sync en Bash."
+    },
+    {
+      "source": "document:docs/catalog-sync-pipeline.md",
+      "target": "config:.kiro/hooks/catalog-sync-on-compose.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe el disparo automático del pipeline desde Kiro al guardar un compose.yml."
+    },
+    {
+      "source": "document:docs/catalog-sync-pipeline.md",
+      "target": "document:agent/catalog/_template.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Detalla el uso de la plantilla base para generar ficha.md de nuevos servicios."
+    },
+    {
+      "source": "document:docs/catalog-sync-pipeline.md",
+      "target": "document:docker-nas/SKILL.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la actualización automática de la tabla de guías en SKILL.md."
+    },
+    {
+      "source": "document:docs/catalog-sync-pipeline.md",
+      "target": "document:docs/dependency-map.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Automatiza la cascada documental definida para nuevos servicios en dependency-map.md."
+    },
+    {
+      "source": "document:docs/cheatsheet.md",
+      "target": "file:shell/lib/nav.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta comandos y atajos de navegación rápida (dk, adm, nasfk, up)."
+    },
+    {
+      "source": "document:docs/cheatsheet.md",
+      "target": "file:shell/lib/aliases.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Resume los aliases de listado, búsqueda y edición en terminal."
+    },
+    {
+      "source": "document:docs/cheatsheet.md",
+      "target": "file:shell/lib/instal.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica el wrapper instal para paquetes apt con registro automático."
+    },
+    {
+      "source": "document:docs/cheatsheet.md",
+      "target": "file:shell/lib/pipins.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica el wrapper pipins para instalación de paquetes Python."
+    },
+    {
+      "source": "document:docs/cheatsheet.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Recopila operaciones frecuentes del CLI svc para servicios Docker."
+    },
+    {
+      "source": "document:docs/cheatsheet.md",
+      "target": "document:docs/tools-index.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la referencia operativa con el inventario atómico en tools-index.md."
+    },
+    {
+      "source": "document:docs/dependency-map.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Mapea las dependencias de propagación al modificar comandos de svc."
+    },
+    {
+      "source": "document:docs/dependency-map.md",
+      "target": "file:shell/init.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el impacto al añadir o modificar módulos del shell en shell/lib/."
+    },
+    {
+      "source": "document:docs/dependency-map.md",
+      "target": "file:agent/nas_agent.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe las cascadas al añadir plugins o tools en el agente."
+    },
+    {
+      "source": "document:docs/dependency-map.md",
+      "target": "file:agent/tools/project_scanner.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Integra el scanner de consistencia como verificador de conexiones declaradas."
+    },
+    {
+      "source": "document:docs/dependency-map.md",
+      "target": "config:agent/architecture/contracts.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Vincula las cascadas humanas con los contratos verificables de contracts.json."
+    },
+    {
+      "source": "document:docs/dependency-map.md",
+      "target": "file:shell/scripts/boot-order.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la relación entre servicios desplegados, layers.conf y boot-order.sh."
+    },
+    {
+      "source": "document:docs/dependency-map.md",
+      "target": "document:docs/framework-knowledge-compilation.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Se vincula con la compilación canónica del framework."
+    },
+    {
+      "source": "document:docs/dependency-map.md",
+      "target": "document:docs/CODE-MAP.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza con el mapa de archivos y símbolos CODE-MAP.md."
+    },
+    {
+      "source": "document:docs/dependency-map.md",
+      "target": "document:docs/architecture-consistency.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Comparte la capa de verificación arquitectónica definida en architecture-consistency.md."
+    },
+    {
+      "source": "document:docs/docker-boot-staged-guide.md",
+      "target": "file:shell/scripts/boot-order.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el orquestador de arranque escalonado por capas y sus variables."
+    },
+    {
+      "source": "document:docs/docker-boot-staged-guide.md",
+      "target": "file:shell/scripts/stop-order.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el apagado ordenado en orden inverso de capas."
+    },
+    {
+      "source": "document:docs/docker-boot-staged-guide.md",
+      "target": "file:shell/scripts/install-boot-service.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica la instalación y habilitación del servicio systemd de arranque."
+    },
+    {
+      "source": "document:docs/docker-boot-staged-guide.md",
+      "target": "file:shell/scripts/install-shutdown-service.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica la instalación del servicio systemd de apagado ordenado."
+    },
+    {
+      "source": "document:docs/docker-boot-staged-guide.md",
+      "target": "file:shell/scripts/layers.conf.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Detalla la plantilla de definición de capas usada para construir $dkco/scripts/layers.conf."
+    },
+    {
+      "source": "document:docs/docker-boot-staged-guide.md",
+      "target": "file:systemd/docker-boot-staged.service.template",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la plantilla de unidad systemd para el arranque escalonado."
+    },
+    {
+      "source": "document:docs/docker-boot-staged-guide.md",
+      "target": "file:systemd/docker-shutdown-staged.service.template",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la plantilla de unidad systemd para el apagado ordenado."
+    },
+    {
+      "source": "document:docs/docker-boot-staged-guide.md",
+      "target": "document:.kiro/skills/docker-boot-order/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Proporciona la guía operativa detallada referenciada por la skill docker-boot-order."
+    },
+    {
+      "source": "document:docs/docker-entorno.md",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Define la estructura y herencia del archivo $dkco/.env global."
+    },
+    {
+      "source": "document:docs/docker-entorno.md",
+      "target": "document:agent/catalog/_compose_base.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Se complementa con los patrones base de Compose documentados en _compose_base.md."
+    },
+    {
+      "source": "document:docs/docker-entorno.md",
+      "target": "document:agent/catalog/_rules.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Comparte las reglas de validación y seguridad para servicios del catálogo."
+    },
+    {
+      "source": "document:docs/docker-entorno.md",
+      "target": "document:docs/docker-boot-staged-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia las reglas de arranque escalonado de contenedores en boot."
+    },
+    {
+      "source": "document:docs/docker-entorno.md",
+      "target": "document:docs/nas-manual.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Conecta las convenciones de /docker con el diseño de redes y rutas del NAS."
+    },
+    {
+      "source": "document:docs/esphome-meta-prompt.md",
+      "target": "document:docs/services/esphome-device-config.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Toma esphome-device-config.md como fuente de verdad de estructura y fusión de packages."
+    },
+    {
+      "source": "document:docs/esphome-meta-prompt.md",
+      "target": "document:docs/services/esphome-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia esphome-guide.md para operación y despliegue del servicio en el NAS."
+    },
+    {
+      "source": "document:docs/esphome-meta-prompt.md",
+      "target": "document:docker-nas/references/networking.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Consulta la topología de red IoT del NAS al configurar dispositivos ESPHome."
+    },
+    {
+      "source": "document:docs/framework-audit.md",
+      "target": "file:shell/init.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Inventaria la capa shell y los 9 módulos cargados desde shell/init.sh."
+    },
+    {
+      "source": "document:docs/framework-audit.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Inventaria los subcomandos del CLI Bash svc."
+    },
+    {
+      "source": "document:docs/framework-audit.md",
+      "target": "file:svc_py/app.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Inventaria el CLI Python/Typer equivalente en svc_py/."
+    },
+    {
+      "source": "document:docs/framework-audit.md",
+      "target": "file:agent/nas_agent.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Resume la capa del agente IA, sus tools y plugins."
+    },
+    {
+      "source": "document:docs/framework-audit.md",
+      "target": "file:agent/lobehub_mcp.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Inventaria la capa de gateways MCP integrados."
+    },
+    {
+      "source": "document:docs/framework-audit.md",
+      "target": "document:docs/framework-knowledge-compilation.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Remite al documento canónico para criterios de arquitectura y estado reconciliado."
+    },
+    {
+      "source": "document:docs/framework-audit.md",
+      "target": "document:docs/dependency-map.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indica consultar dependency-map.md después de cualquier cambio en el inventario."
+    },
+    {
+      "source": "document:docs/framework-audit.md",
+      "target": "document:docs/docker-entorno.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Remite a docker-entorno.md antes de modificar archivos Compose."
+    },
+    {
+      "source": "document:docs/framework-knowledge-compilation.md",
+      "target": "file:agent/tools/project_scanner.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe cómo project_scanner.py verifica contratos y detecta gaps/drift."
+    },
+    {
+      "source": "document:docs/framework-knowledge-compilation.md",
+      "target": "file:agent/tools/project_index.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe cómo project_index.py construye el índice estructural real del proyecto."
+    },
+    {
+      "source": "document:docs/framework-knowledge-compilation.md",
+      "target": "config:agent/architecture/contracts.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Integra contracts.json como fuente de contratos verificables entre superficies."
+    },
+    {
+      "source": "document:docs/framework-knowledge-compilation.md",
+      "target": "file:svc_py/app.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Analiza la paridad y rol del CLI Python frente al CLI Bash."
+    },
+    {
+      "source": "document:docs/framework-knowledge-compilation.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Establece el CLI Bash svc.sh como fuente de verdad operativa de la CLI dual."
+    },
+    {
+      "source": "document:docs/framework-knowledge-compilation.md",
+      "target": "document:docs/architecture-consistency.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Consolida el diseño de verificación definido en architecture-consistency.md."
+    },
+    {
+      "source": "document:docs/framework-knowledge-compilation.md",
+      "target": "document:docs/dependency-map.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Articula la relación entre mapa de cascadas esperado y verificación real."
+    },
+    {
+      "source": "document:docs/framework-knowledge-compilation.md",
+      "target": "document:docs/framework-audit.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Sirve como mapa canónico complementario al inventario de framework-audit.md."
+    },
+    {
+      "source": "document:docs/framework-knowledge-compilation.md",
+      "target": "document:docs/ideas-decisions.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Sintetiza la evolución arquitectónica registrada en ideas-decisions.md."
+    },
+    {
+      "source": "document:docs/github-cli.md",
+      "target": "document:docs/nas-manual.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la configuración base del sistema operativo en el NAS."
+    },
+    {
+      "source": "document:docs/github-cli.md",
+      "target": "document:INSTALL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Facilita la autenticación Git requerida durante la instalación y actualización del repo."
+    },
+    {
+      "source": "document:docs/ideas-decisions.md",
+      "target": "document:docs/framework-knowledge-compilation.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Remite a framework-knowledge-compilation.md para la arquitectura reconciliada vigente."
+    },
+    {
+      "source": "document:docs/ideas-decisions.md",
+      "target": "document:docs/PLAN-extends-common.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Origina la decisión #16 detallada en PLAN-extends-common.md."
+    },
+    {
+      "source": "document:docs/ideas-decisions.md",
+      "target": "document:docs/docker-boot-staged-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Recoge las sagas #18, #20, #23, #27, #28 y #29 que moldearon el arranque escalonado."
+    },
+    {
+      "source": "document:docs/ideas-decisions.md",
+      "target": "document:docs/troubleshooting.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Comparte incidentes resueltos y lecciones de depuración con troubleshooting.md."
+    },
+    {
+      "source": "document:docs/ideas-decisions.md",
+      "target": "document:docs/services/openwa-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta las decisiones #19, #21 y #22 detrás del diseño actual de OpenWA."
+    },
+    {
+      "source": "document:docs/ideas-decisions.md",
+      "target": "document:docs/services/esphome-pueba-handoff.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Registra las decisiones #30-#32 sobre ESPHome y esphome-common."
+    },
+    {
+      "source": "document:docs/llm-context-bootstrap.md",
+      "target": "document:AGENTS.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Instruye leer AGENTS.md como punto de partida obligatorio en cualquier chat LLM."
+    },
+    {
+      "source": "document:docs/llm-context-bootstrap.md",
+      "target": "document:.kiro/skills/documentation-evolution/SKILL.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indica activar la skill documentation-evolution ante tareas documentales o de scanner."
+    },
+    {
+      "source": "document:docs/llm-context-bootstrap.md",
+      "target": "document:.kiro/skills/nas-runtime-secrets/SKILL.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indica activar nas-runtime-secrets antes de trabajar con credenciales o .env."
+    },
+    {
+      "source": "document:docs/llm-context-bootstrap.md",
+      "target": "config:.kiro/hooks/documentation-evolution-on-prompt.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Replica manualmente las reglas activadas por el hook de evolución documental en Kiro."
+    },
+    {
+      "source": "document:docs/llm-context-bootstrap.md",
+      "target": "document:docs/meta-prompt-unificar.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia meta-prompt-unificar.md cuando el usuario solicita unificar fragmentos."
+    },
+    {
+      "source": "document:docs/lobehub-mcp-gateway.md",
+      "target": "file:agent/lobehub_mcp.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el servidor sidecar MCP implementado en agent/lobehub_mcp.py."
+    },
+    {
+      "source": "document:docs/lobehub-mcp-gateway.md",
+      "target": "service:agent/mcp/Dockerfile",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la imagen Docker del sidecar lobehub-mcp."
+    },
+    {
+      "source": "document:docs/lobehub-mcp-gateway.md",
+      "target": "service:agent/catalog/services/lobehub/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Detalla la integración del servicio lobehub-mcp dentro del compose de LobeHub."
+    },
+    {
+      "source": "document:docs/lobehub-mcp-gateway.md",
+      "target": "config:agent/catalog/services/lobehub/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe las variables de entorno requeridas por LobeHub y su sidecar MCP."
+    },
+    {
+      "source": "document:docs/lobehub-mcp-gateway.md",
+      "target": "file:systemd/lobehub-mcp-helper.service",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la unidad systemd del helper host read-only."
+    },
+    {
+      "source": "document:docs/lobehub-mcp-gateway.md",
+      "target": "file:systemd/lobehub-mcp-helper.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la configuración de entorno no secreta del helper host."
+    },
+    {
+      "source": "document:docs/lobehub-mcp-gateway.md",
+      "target": "document:docs/services/lobehub-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la guía operativa general del servicio LobeHub."
+    },
+    {
+      "source": "document:docs/lobehub-mcp-gateway.md",
+      "target": "document:docs/nas-mcp-gateway.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Representa la integración histórica precursora de nas-mcp-gateway."
+    },
+    {
+      "source": "document:docs/meta-prompt-unificar.md",
+      "target": "document:.kiro/skills/documentation-evolution/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Forma parte del flujo de evolución y unificación documental guiado por la skill."
+    },
+    {
+      "source": "document:docs/meta-prompt-unificar.md",
+      "target": "document:docs/llm-context-bootstrap.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Es invocado por el bootstrap cuando la petición implica unificar fragmentos."
+    },
+    {
+      "source": "document:docs/multi-nas-architecture.md",
+      "target": "document:docs/nas-manual.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Proyecta una topología distribuida sobre la base de nodo único de nas-manual.md."
+    },
+    {
+      "source": "document:docs/multi-nas-architecture.md",
+      "target": "document:docs/docker-entorno.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Asume la organización estándar de servicios Docker en /docker."
+    },
+    {
+      "source": "document:docs/multi-nas-architecture.md",
+      "target": "file:shell/init.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Propone detección de nodo o perfiles por host compatibles con el arranque del shell."
+    },
+    {
+      "source": "document:docs/nas-manual.md",
+      "target": "file:setup",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el entorno base del NAS sobre el que opera el instalador setup."
+    },
+    {
+      "source": "document:docs/nas-manual.md",
+      "target": "document:docker-nas/references/networking.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Comparte el detalle de subredes Docker, puertos y topología de red del NAS."
+    },
+    {
+      "source": "document:docs/nas-manual.md",
+      "target": "document:docs/docker-entorno.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza la infraestructura del host con las convenciones de /docker."
+    },
+    {
+      "source": "document:docs/nas-manual.md",
+      "target": "document:docs/github-cli.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa el mantenimiento del repositorio en el NAS con autenticación GitHub CLI."
+    },
+    {
+      "source": "document:docs/nas-mcp-gateway.md",
+      "target": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el front-door MCP ligero con activación lazy del worker."
+    },
+    {
+      "source": "document:docs/nas-mcp-gateway.md",
+      "target": "file:agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el worker efímero encargado de ejecutar llamadas tools/call."
+    },
+    {
+      "source": "document:docs/nas-mcp-gateway.md",
+      "target": "config:agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia el manifest canónico de capacidades y esquemas MCP."
+    },
+    {
+      "source": "document:docs/nas-mcp-gateway.md",
+      "target": "service:agent/mcp/nas_mcp_gateway/Dockerfile",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la imagen del contenedor independiente nas-mcp-gateway."
+    },
+    {
+      "source": "document:docs/nas-mcp-gateway.md",
+      "target": "service:agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe el compose independiente para desplegar nas-mcp-gateway."
+    },
+    {
+      "source": "document:docs/nas-mcp-gateway.md",
+      "target": "file:systemd/nas-mcp-helper.service",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la unidad systemd del helper host read-only independiente."
+    },
+    {
+      "source": "document:docs/nas-mcp-gateway.md",
+      "target": "file:systemd/nas-mcp-helper.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la plantilla de entorno del helper systemd de nas-mcp-gateway."
+    },
+    {
+      "source": "document:docs/nas-mcp-gateway.md",
+      "target": "document:.kiro/skills/nas-mcp-gateway/SKILL.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Vincula la skill ligera de activación lazy con la especificación técnica del gateway."
+    },
+    {
+      "source": "document:docs/nas-mcp-gateway.md",
+      "target": "document:docs/lobehub-mcp-gateway.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Evoluciona y desacopla el gateway MCP respecto a lobehub-mcp-gateway.md."
+    }
+  ]
+}

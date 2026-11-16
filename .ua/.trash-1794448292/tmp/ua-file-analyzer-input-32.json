@@ -1,0 +1,147 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "docs/CODE-MAP.md",
+      "language": "markdown",
+      "sizeLines": 164,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/PLAN-extends-common.md",
+      "language": "markdown",
+      "sizeLines": 205,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/VS Code Remote.md",
+      "language": "markdown",
+      "sizeLines": 236,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/architecture-consistency.md",
+      "language": "markdown",
+      "sizeLines": 97,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/catalog-sync-pipeline.md",
+      "language": "markdown",
+      "sizeLines": 334,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/cheatsheet.md",
+      "language": "markdown",
+      "sizeLines": 426,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/dependency-map.md",
+      "language": "markdown",
+      "sizeLines": 610,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/docker-boot-staged-guide.md",
+      "language": "markdown",
+      "sizeLines": 331,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/docker-entorno.md",
+      "language": "markdown",
+      "sizeLines": 443,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/esphome-meta-prompt.md",
+      "language": "markdown",
+      "sizeLines": 746,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/framework-audit.md",
+      "language": "markdown",
+      "sizeLines": 324,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/framework-knowledge-compilation.md",
+      "language": "markdown",
+      "sizeLines": 346,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/github-cli.md",
+      "language": "markdown",
+      "sizeLines": 141,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/ideas-decisions.md",
+      "language": "markdown",
+      "sizeLines": 1534,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/llm-context-bootstrap.md",
+      "language": "markdown",
+      "sizeLines": 90,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/lobehub-mcp-gateway.md",
+      "language": "markdown",
+      "sizeLines": 958,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/meta-prompt-unificar.md",
+      "language": "markdown",
+      "sizeLines": 610,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/multi-nas-architecture.md",
+      "language": "markdown",
+      "sizeLines": 267,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/nas-manual.md",
+      "language": "markdown",
+      "sizeLines": 606,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/nas-mcp-gateway.md",
+      "language": "markdown",
+      "sizeLines": 223,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "docs/CODE-MAP.md": [],
+    "docs/PLAN-extends-common.md": [],
+    "docs/VS Code Remote.md": [],
+    "docs/architecture-consistency.md": [],
+    "docs/catalog-sync-pipeline.md": [],
+    "docs/cheatsheet.md": [],
+    "docs/dependency-map.md": [],
+    "docs/docker-boot-staged-guide.md": [],
+    "docs/docker-entorno.md": [],
+    "docs/esphome-meta-prompt.md": [],
+    "docs/framework-audit.md": [],
+    "docs/framework-knowledge-compilation.md": [],
+    "docs/github-cli.md": [],
+    "docs/ideas-decisions.md": [],
+    "docs/llm-context-bootstrap.md": [],
+    "docs/lobehub-mcp-gateway.md": [],
+    "docs/meta-prompt-unificar.md": [],
+    "docs/multi-nas-architecture.md": [],
+    "docs/nas-manual.md": [],
+    "docs/nas-mcp-gateway.md": []
+  }
+}

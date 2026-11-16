@@ -1,0 +1,35 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/openwa/n8n-flows/README.md",
+      "language": "markdown",
+      "sizeLines": 74,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/openwa/n8n-flows/auto-reply.json",
+      "language": "json",
+      "sizeLines": 100,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/openwa/n8n-flows/echo-simple.json",
+      "language": "json",
+      "sizeLines": 60,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/openwa/n8n-flows/pide-camara.json",
+      "language": "json",
+      "sizeLines": 131,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/openwa/n8n-flows/README.md": [],
+    "agent/catalog/services/openwa/n8n-flows/auto-reply.json": [],
+    "agent/catalog/services/openwa/n8n-flows/echo-simple.json": [],
+    "agent/catalog/services/openwa/n8n-flows/pide-camara.json": []
+  }
+}

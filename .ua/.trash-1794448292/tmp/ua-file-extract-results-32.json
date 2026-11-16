@@ -1,0 +1,2509 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 20,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 20,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 20
+    }
+  },
+  "results": [
+    {
+      "path": "docs/CODE-MAP.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 164,
+      "nonEmptyLines": 142,
+      "sections": [
+        {
+          "heading": "CODE-MAP — nas-dotfiles",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "`agent/`",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "`docker/`",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "`install.sh/`",
+          "level": 2,
+          "line": 78
+        },
+        {
+          "heading": "`setup/`",
+          "level": 2,
+          "line": 84
+        },
+        {
+          "heading": "`shell/`",
+          "level": 2,
+          "line": 90
+        },
+        {
+          "heading": "`svc_py/`",
+          "level": 2,
+          "line": 114
+        },
+        {
+          "heading": "`tests/`",
+          "level": 2,
+          "line": 138
+        },
+        {
+          "heading": "`ui/`",
+          "level": 2,
+          "line": 154
+        },
+        {
+          "heading": "`uninstall.sh/`",
+          "level": 2,
+          "line": 160
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": "docs/PLAN-extends-common.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 205,
+      "nonEmptyLines": 165,
+      "sections": [
+        {
+          "heading": "PLAN: Migrar a `extends` con `_common.yml`",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Qué se va a hacer",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Rutas relativas: catálogo versus NAS",
+          "level": 2,
+          "line": 16
+        },
+        {
+          "heading": "Estado ANTES (actual — para rollback)",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "Estado DESPUÉS (propuesto)",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "Archivos que se modifican",
+          "level": 2,
+          "line": 108
+        },
+        {
+          "heading": "Plan de ejecución",
+          "level": 2,
+          "line": 119
+        },
+        {
+          "heading": "Procedimiento seguro en el NAS",
+          "level": 2,
+          "line": 129
+        },
+        {
+          "heading": "Cómo revertir si falla",
+          "level": 2,
+          "line": 159
+        },
+        {
+          "heading": "Servicios y sus resources (para referencia)",
+          "level": 2,
+          "line": 176
+        },
+        {
+          "heading": "Reglas de extends (deep merge)",
+          "level": 2,
+          "line": 192
+        },
+        {
+          "heading": "Nota sobre compatibilidad",
+          "level": 2,
+          "line": 201
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "docs/VS Code Remote.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 236,
+      "nonEmptyLines": 160,
+      "sections": [
+        {
+          "heading": "Guía: VS Code Remote SSH con `aadm` y `root`",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "0. Antes de empezar: entiende las dos contraseñas",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "1. Preparar PowerShell en Windows **[Windows]**",
+          "level": 2,
+          "line": 16
+        },
+        {
+          "heading": "2. Crear las claves SSH **[Windows]**",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "3. Instalar la clave de `aadm` en el NAS **[Windows]**",
+          "level": 2,
+          "line": 52
+        },
+        {
+          "heading": "4. Instalar la clave de `root` en el NAS",
+          "level": 2,
+          "line": 68
+        },
+        {
+          "heading": "4.1 Consigue una sesión root en el NAS **[Windows → NAS]**",
+          "level": 3,
+          "line": 80
+        },
+        {
+          "heading": "4.2 Copia tu clave pública de root **[Windows]**",
+          "level": 3,
+          "line": 100
+        },
+        {
+          "heading": "4.3 Pega la clave dentro del NAS **[NAS]**",
+          "level": 3,
+          "line": 110
+        },
+        {
+          "heading": "4.4 Prueba desde Windows **[Windows]**",
+          "level": 3,
+          "line": 130
+        },
+        {
+          "heading": "5. Crear el archivo de configuración SSH de Windows **[Windows]**",
+          "level": 2,
+          "line": 138
+        },
+        {
+          "heading": "6. Probar los alias **[Windows]**",
+          "level": 2,
+          "line": 169
+        },
+        {
+          "heading": "7. Configurar VS Code **[Windows]**",
+          "level": 2,
+          "line": 183
+        },
+        {
+          "heading": "8. Abrir carpetas del NAS **[dentro de VS Code, terminal integrada]**",
+          "level": 2,
+          "line": 193
+        },
+        {
+          "heading": "9. Uso recomendado del día a día",
+          "level": 2,
+          "line": 213
+        },
+        {
+          "heading": "Apéndice: tabla de diagnóstico rápido",
+          "level": 2,
+          "line": 219
+        },
+        {
+          "heading": "Nota de seguridad",
+          "level": 2,
+          "line": 230
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 17
+      }
+    },
+    {
+      "path": "docs/architecture-consistency.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 97,
+      "nonEmptyLines": 67,
+      "sections": [
+        {
+          "heading": "Architecture Consistency Scanner",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Propósito",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Niveles de dependencia",
+          "level": 2,
+          "line": 26
+        },
+        {
+          "heading": "Contratos iniciales",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "Índice estructural",
+          "level": 2,
+          "line": 47
+        },
+        {
+          "heading": "Alcance de esta primera fase",
+          "level": 2,
+          "line": 66
+        },
+        {
+          "heading": "Regla de evolución",
+          "level": 2,
+          "line": 88
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "docs/catalog-sync-pipeline.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 334,
+      "nonEmptyLines": 251,
+      "sections": [
+        {
+          "heading": "Pipeline de Auto-Documentación en Cascada",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problema que resuelve",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Tres puntos de entrada",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "1. Desde el NAS: `svc catalog-sync`",
+          "level": 3,
+          "line": 35
+        },
+        {
+          "heading": "2. Desde DebMenux: `debmenu install <svc>`",
+          "level": 3,
+          "line": 58
+        },
+        {
+          "heading": "3. Desde Kiro Web: Hook automático al guardar compose.yml",
+          "level": 3,
+          "line": 87
+        },
+        {
+          "heading": "Qué se genera (detalle)",
+          "level": 2,
+          "line": 105
+        },
+        {
+          "heading": "ficha.md (catálogo del agente)",
+          "level": 3,
+          "line": 107
+        },
+        {
+          "heading": "compose.yml (copia en catálogo)",
+          "level": 3,
+          "line": 120
+        },
+        {
+          "heading": ".env.example",
+          "level": 3,
+          "line": 137
+        },
+        {
+          "heading": "Guía placeholder",
+          "level": 3,
+          "line": 146
+        },
+        {
+          "heading": "Script DebMenux placeholder",
+          "level": 3,
+          "line": 161
+        },
+        {
+          "heading": "SKILL.md (tabla actualizada)",
+          "level": 3,
+          "line": 175
+        },
+        {
+          "heading": "Flujo bidireccional",
+          "level": 2,
+          "line": 186
+        },
+        {
+          "heading": "Reglas del pipeline",
+          "level": 2,
+          "line": 219
+        },
+        {
+          "heading": "Verificar estado",
+          "level": 2,
+          "line": 230
+        },
+        {
+          "heading": "Ejemplo: Agregar un servicio nuevo completo",
+          "level": 2,
+          "line": 255
+        },
+        {
+          "heading": "Autoalimentación y límites reales",
+          "level": 2,
+          "line": 284
+        },
+        {
+          "heading": "Archivos del pipeline",
+          "level": 2,
+          "line": 326
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 19
+      }
+    },
+    {
+      "path": "docs/cheatsheet.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 426,
+      "nonEmptyLines": 331,
+      "sections": [
+        {
+          "heading": "Cheatsheet — operaciones manuales del NAS",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "📂 Navegar",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "➕ Crear",
+          "level": 2,
+          "line": 32
+        },
+        {
+          "heading": "🌐 Variables globales (.env)",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "🚚 Mover",
+          "level": 2,
+          "line": 75
+        },
+        {
+          "heading": "🗑️ Borrar",
+          "level": 2,
+          "line": 85
+        },
+        {
+          "heading": "✏️ Ver y editar",
+          "level": 2,
+          "line": 101
+        },
+        {
+          "heading": "📋 Listar",
+          "level": 2,
+          "line": 116
+        },
+        {
+          "heading": "🐳 Operar servicios Docker",
+          "level": 2,
+          "line": 128
+        },
+        {
+          "heading": "📦 Instalar paquetes",
+          "level": 2,
+          "line": 191
+        },
+        {
+          "heading": "🔍 Info del sistema",
+          "level": 2,
+          "line": 211
+        },
+        {
+          "heading": "📜 Logs del sistema",
+          "level": 2,
+          "line": 226
+        },
+        {
+          "heading": "🐋 Docker rápido (sin svc)",
+          "level": 2,
+          "line": 240
+        },
+        {
+          "heading": "📁 Archivos (con confirmación interactiva)",
+          "level": 2,
+          "line": 253
+        },
+        {
+          "heading": "🔎 Buscar y filtrar",
+          "level": 2,
+          "line": 266
+        },
+        {
+          "heading": "✍️ Editar",
+          "level": 2,
+          "line": 276
+        },
+        {
+          "heading": "🌿 Git",
+          "level": 2,
+          "line": 306
+        },
+        {
+          "heading": "🤖 Agente IA",
+          "level": 2,
+          "line": 345
+        },
+        {
+          "heading": "🖥️ Prompt — qué significa",
+          "level": 2,
+          "line": 359
+        },
+        {
+          "heading": "⌨️ Autocompletado TAB",
+          "level": 2,
+          "line": 377
+        },
+        {
+          "heading": "🔄 Recargar shell",
+          "level": 2,
+          "line": 392
+        },
+        {
+          "heading": "🧩 Extender — nuevo destino de navegación",
+          "level": 2,
+          "line": 400
+        },
+        {
+          "heading": "⚡ Regla de oro",
+          "level": 2,
+          "line": 412
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 23
+      }
+    },
+    {
+      "path": "docs/dependency-map.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 610,
+      "nonEmptyLines": 514,
+      "sections": [
+        {
+          "heading": "Mapa de Dependencias — Sistema Completo (nas-dotfiles + DebMenux)",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Vista general del sistema",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Grafos de dependencias por tipo de cambio",
+          "level": 2,
+          "line": 66
+        },
+        {
+          "heading": "A. Servicio Docker (compose.yml)",
+          "level": 3,
+          "line": 68
+        },
+        {
+          "heading": "B. Script/comando de svc",
+          "level": 3,
+          "line": 89
+        },
+        {
+          "heading": "C. Módulo de shell (aliases, navegación, prompt)",
+          "level": 3,
+          "line": 107
+        },
+        {
+          "heading": "D. Plugin del agente",
+          "level": 3,
+          "line": 123
+        },
+        {
+          "heading": "E. Tool del agente",
+          "level": 3,
+          "line": 138
+        },
+        {
+          "heading": "F. Gateway MCP",
+          "level": 3,
+          "line": 152
+        },
+        {
+          "heading": "G. Template de DebMenux (usb-automount, etc.)",
+          "level": 3,
+          "line": 184
+        },
+        {
+          "heading": "H. Script de servicio en DebMenux",
+          "level": 3,
+          "line": 200
+        },
+        {
+          "heading": "I. Documentación (docs/, guías, README)",
+          "level": 3,
+          "line": 221
+        },
+        {
+          "heading": "J. Variables globales ($dkco/.env)",
+          "level": 3,
+          "line": 232
+        },
+        {
+          "heading": "K. Contenido en _drafts/ (carpeta temporal de ideas)",
+          "level": 3,
+          "line": 245
+        },
+        {
+          "heading": "Tabla de impacto completa",
+          "level": 2,
+          "line": 277
+        },
+        {
+          "heading": "Archivos espejo entre repos",
+          "level": 2,
+          "line": 305
+        },
+        {
+          "heading": "Herramientas CLI — Estado de conexión",
+          "level": 2,
+          "line": 318
+        },
+        {
+          "heading": "Arquitectura dual del CLI",
+          "level": 3,
+          "line": 324
+        },
+        {
+          "heading": "Tabla de comandos y en cuál CLI están",
+          "level": 3,
+          "line": 346
+        },
+        {
+          "heading": "Al agregar comando nuevo, actualizar:",
+          "level": 3,
+          "line": 384
+        },
+        {
+          "heading": "Reglas del LLM al crear algo nuevo",
+          "level": 2,
+          "line": 404
+        },
+        {
+          "heading": "Si creo un SERVICIO:",
+          "level": 3,
+          "line": 406
+        },
+        {
+          "heading": "Si creo un SCRIPT para svc:",
+          "level": 3,
+          "line": 418
+        },
+        {
+          "heading": "Si creo un ALIAS de shell:",
+          "level": 3,
+          "line": 430
+        },
+        {
+          "heading": "Si creo un PLUGIN del agente:",
+          "level": 3,
+          "line": 440
+        },
+        {
+          "heading": "Si creo un SCRIPT de servicio en DebMenux:",
+          "level": 3,
+          "line": 449
+        },
+        {
+          "heading": "Si creo un DOCUMENTO nuevo:",
+          "level": 3,
+          "line": 458
+        },
+        {
+          "heading": "Si creo un TEMPLATE en DebMenux:",
+          "level": 3,
+          "line": 467
+        },
+        {
+          "heading": "Verificación rápida",
+          "level": 2,
+          "line": 478
+        },
+        {
+          "heading": "L. Consistencia arquitectónica verificable",
+          "level": 2,
+          "line": 511
+        },
+        {
+          "heading": "CODE-MAP: qué HACE cada archivo (complemento de este mapa)",
+          "level": 3,
+          "line": 553
+        },
+        {
+          "heading": "Arranque escalonado de contenedores",
+          "level": 2,
+          "line": 591
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 32
+      }
+    },
+    {
+      "path": "docs/docker-boot-staged-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 331,
+      "nonEmptyLines": 244,
+      "sections": [
+        {
+          "heading": "Arranque escalonado de contenedores Docker",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Diferencias importantes respecto al borrador original",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "`depends_on` interno: usar `service_started`, no `service_healthy`",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Mapa completo de archivos y rutas",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "Código del framework — `$NAS_DOTFILES` (repo, se actualiza con `gpl`)",
+          "level": 3,
+          "line": 36
+        },
+        {
+          "heading": "Configuración y estado runtime — `$dkco` (por-NAS, NO versionado)",
+          "level": 3,
+          "line": 55
+        },
+        {
+          "heading": "Instalado en el sistema (fuera de ambos)",
+          "level": 3,
+          "line": 67
+        },
+        {
+          "heading": "Instalación en el NAS",
+          "level": 2,
+          "line": 73
+        },
+        {
+          "heading": "1. Crear la carpeta runtime y copiar la configuración",
+          "level": 3,
+          "line": 77
+        },
+        {
+          "heading": "2. Confirmar Compose especiales",
+          "level": 3,
+          "line": 96
+        },
+        {
+          "heading": "3. Migrar contenedores existentes sin arranque masivo",
+          "level": 3,
+          "line": 104
+        },
+        {
+          "heading": "4. Probar el arranque manualmente",
+          "level": 3,
+          "line": 115
+        },
+        {
+          "heading": "5. Instalar y habilitar systemd",
+          "level": 3,
+          "line": 126
+        },
+        {
+          "heading": "Variables de entorno del arranque",
+          "level": 2,
+          "line": 166
+        },
+        {
+          "heading": "Cómo saber si el arranque ya terminó (no juzgar antes de tiempo)",
+          "level": 2,
+          "line": 182
+        },
+        {
+          "heading": "`boot-status` dice \"DESINCRONIZADO\" (systemd failed, pero el log completó)",
+          "level": 3,
+          "line": 213
+        },
+        {
+          "heading": "Reintentos ante fallos transitorios",
+          "level": 3,
+          "line": 233
+        },
+        {
+          "heading": "Apagado y reinicio ordenado",
+          "level": 2,
+          "line": 244
+        },
+        {
+          "heading": "Apagado desacoplado de la sesión SSH (inmune a SIGHUP)",
+          "level": 3,
+          "line": 265
+        },
+        {
+          "heading": "Operación",
+          "level": 2,
+          "line": 300
+        },
+        {
+          "heading": "Detener un servicio a propósito sin romper el boot",
+          "level": 3,
+          "line": 306
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 21
+      }
+    },
+    {
+      "path": "docs/docker-entorno.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 443,
+      "nonEmptyLines": 351,
+      "sections": [
+        {
+          "heading": "Entorno Docker del NAS — Guía de Referencia",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Estructura de directorios",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": ".env Global (`$dkco/.env`)",
+          "level": 2,
+          "line": 60
+        },
+        {
+          "heading": "Cómo se hereda",
+          "level": 3,
+          "line": 69
+        },
+        {
+          "heading": "Dónde se usa `${SERVER_IP}`",
+          "level": 3,
+          "line": 84
+        },
+        {
+          "heading": "Servicios que ya lo usan",
+          "level": 3,
+          "line": 89
+        },
+        {
+          "heading": "Convenciones de compose.yml",
+          "level": 2,
+          "line": 106
+        },
+        {
+          "heading": "Nombre del archivo",
+          "level": 3,
+          "line": 108
+        },
+        {
+          "heading": "Estructura mínima obligatoria",
+          "level": 3,
+          "line": 112
+        },
+        {
+          "heading": "Lo que NUNCA debe estar en un compose",
+          "level": 3,
+          "line": 148
+        },
+        {
+          "heading": "Seguridad y recursos (aplicar con criterio)",
+          "level": 3,
+          "line": 158
+        },
+        {
+          "heading": "Redes Docker",
+          "level": 2,
+          "line": 208
+        },
+        {
+          "heading": "Creadas manualmente",
+          "level": 3,
+          "line": 216
+        },
+        {
+          "heading": "Creadas automáticamente por compose",
+          "level": 3,
+          "line": 225
+        },
+        {
+          "heading": "Reglas de uso",
+          "level": 3,
+          "line": 232
+        },
+        {
+          "heading": "Conectar un servicio a una red existente (sin recrear)",
+          "level": 3,
+          "line": 242
+        },
+        {
+          "heading": "En el compose (persistente)",
+          "level": 3,
+          "line": 249
+        },
+        {
+          "heading": "Homepage Labels",
+          "level": 2,
+          "line": 266
+        },
+        {
+          "heading": "Filosofía: Labels en compose > services.yaml",
+          "level": 3,
+          "line": 268
+        },
+        {
+          "heading": "Labels estándar",
+          "level": 3,
+          "line": 274
+        },
+        {
+          "heading": "Grupos actuales",
+          "level": 3,
+          "line": 289
+        },
+        {
+          "heading": "Volúmenes y datos",
+          "level": 2,
+          "line": 301
+        },
+        {
+          "heading": "Convención de montaje",
+          "level": 3,
+          "line": 303
+        },
+        {
+          "heading": "Casos especiales documentados",
+          "level": 3,
+          "line": 312
+        },
+        {
+          "heading": "Carpetas que deben existir ANTES de levantar",
+          "level": 3,
+          "line": 321
+        },
+        {
+          "heading": "Orden de operaciones (SIEMPRE respetar)",
+          "level": 2,
+          "line": 337
+        },
+        {
+          "heading": "Arranque escalonado en cada boot",
+          "level": 2,
+          "line": 356
+        },
+        {
+          "heading": "Notificaciones desde servicios",
+          "level": 2,
+          "line": 384
+        },
+        {
+          "heading": "Función compartida (bash)",
+          "level": 3,
+          "line": 386
+        },
+        {
+          "heading": "Desde Home Assistant",
+          "level": 3,
+          "line": 393
+        },
+        {
+          "heading": "Priority en HA vs bash",
+          "level": 3,
+          "line": 401
+        },
+        {
+          "heading": "Errores comunes (lecciones de este NAS)",
+          "level": 2,
+          "line": 413
+        },
+        {
+          "heading": "Checklist antes de modificar un servicio",
+          "level": 2,
+          "line": 431
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 33
+      }
+    },
+    {
+      "path": "docs/esphome-meta-prompt.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 746,
+      "nonEmptyLines": 590,
+      "sections": [
+        {
+          "heading": "META-PROMPT MAESTRO — ESPHOME AVANZADO PARA ESP32",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "0. REGLAS CRÍTICAS (resumen — fuente única)",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "0.1 MODO DE TRABAJO (elegir antes de empezar)",
+          "level": 2,
+          "line": 35
+        },
+        {
+          "heading": "0.2 PROTOCOLO DE FUSIÓN NO-DESTRUCTIVA (R1)",
+          "level": 3,
+          "line": 53
+        },
+        {
+          "heading": "0.3 PROTOCOLO DE REVISIÓN (MODO REVISAR)",
+          "level": 3,
+          "line": 79
+        },
+        {
+          "heading": "1. ROL Y ESPECIALIZACIÓN",
+          "level": 2,
+          "line": 95
+        },
+        {
+          "heading": "2. CONFIGURACIÓN DEL PROYECTO",
+          "level": 2,
+          "line": 123
+        },
+        {
+          "heading": "3. TIPO DE PROYECTO",
+          "level": 2,
+          "line": 152
+        },
+        {
+          "heading": "4. NIVEL DE COMPLEJIDAD",
+          "level": 2,
+          "line": 181
+        },
+        {
+          "heading": "NIVEL 1 — PROFESIONAL (por defecto)",
+          "level": 3,
+          "line": 183
+        },
+        {
+          "heading": "NIVEL 2 — EXPERTO",
+          "level": 3,
+          "line": 198
+        },
+        {
+          "heading": "NIVEL 3 — EXTREMO",
+          "level": 3,
+          "line": 216
+        },
+        {
+          "heading": "5. ARQUITECTURA DEL FIRMWARE",
+          "level": 2,
+          "line": 245
+        },
+        {
+          "heading": "5.1 Modularización con `packages` (nombres + estructura por responsabilidad)",
+          "level": 3,
+          "line": 260
+        },
+        {
+          "heading": "5.2 Regla de fusión y mapas únicos (R3)",
+          "level": 3,
+          "line": 302
+        },
+        {
+          "heading": "5.3 `!extend` y `!remove` (ajuste entre packages, sin duplicar)",
+          "level": 3,
+          "line": 329
+        },
+        {
+          "heading": "5.4 `packages` como plantillas (`vars:` + `defaults:`) y git packages",
+          "level": 3,
+          "line": 355
+        },
+        {
+          "heading": "5.5 `substitutions` avanzadas (no solo texto)",
+          "level": 3,
+          "line": 372
+        },
+        {
+          "heading": "5.6 Convenciones de entidades y substitutions",
+          "level": 3,
+          "line": 384
+        },
+        {
+          "heading": "5.7 Sensores físicos: filtros, energía y lambdas (niveles Experto/Extremo)",
+          "level": 3,
+          "line": 407
+        },
+        {
+          "heading": "5.8 Biblioteca de plantillas `esphome-common` (fuente única + mejora continua)",
+          "level": 3,
+          "line": 422
+        },
+        {
+          "heading": "6. SEGURIDAD INFORMÁTICA",
+          "level": 2,
+          "line": 457
+        },
+        {
+          "heading": "7. SEGURIDAD FÍSICA (R7)",
+          "level": 2,
+          "line": 479
+        },
+        {
+          "heading": "8. REQUISITOS DE COMPATIBILIDAD Y VERIFICACIÓN",
+          "level": 2,
+          "line": 518
+        },
+        {
+          "heading": "8.1 Checklist de lint (lo que `esphome config` NO detecta)",
+          "level": 3,
+          "line": 541
+        },
+        {
+          "heading": "8.2 Checklist de Home Assistant y red",
+          "level": 3,
+          "line": 559
+        },
+        {
+          "heading": "8.3 Versión y deprecaciones (R10)",
+          "level": 3,
+          "line": 576
+        },
+        {
+          "heading": "9. ESTRUCTURA DE LA RESPUESTA (según el modo)",
+          "level": 2,
+          "line": 589
+        },
+        {
+          "heading": "Modo CREAR — A a I",
+          "level": 3,
+          "line": 591
+        },
+        {
+          "heading": "Modo REVISAR",
+          "level": 3,
+          "line": 619
+        },
+        {
+          "heading": "Modo MANTENER/MEJORAR — entrega ligera",
+          "level": 3,
+          "line": 628
+        },
+        {
+          "heading": "10. REGLAS ABSOLUTAS ADICIONALES",
+          "level": 2,
+          "line": 642
+        },
+        {
+          "heading": "11. ORDEN FINAL",
+          "level": 2,
+          "line": 665
+        },
+        {
+          "heading": "12. ENTORNO NAS (opcional — solo si se trabaja sobre este NAS)",
+          "level": 2,
+          "line": 686
+        },
+        {
+          "heading": "Ver también",
+          "level": 2,
+          "line": 719
+        },
+        {
+          "heading": "Fuentes oficiales (verificar contra ellas, no de memoria)",
+          "level": 3,
+          "line": 728
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 36
+      }
+    },
+    {
+      "path": "docs/framework-audit.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 324,
+      "nonEmptyLines": 273,
+      "sections": [
+        {
+          "heading": "Auditoría del Framework — nas-dotfiles + DebMenux",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Arquitectura (5 capas + 2 repos)",
+          "level": 2,
+          "line": 12
+        },
+        {
+          "heading": "Estado real del scanner incremental",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "Shell (`shell/`)",
+          "level": 3,
+          "line": 72
+        },
+        {
+          "heading": "Shell scripts (`shell/scripts/`) — arranque/apagado del NAS",
+          "level": 3,
+          "line": 87
+        },
+        {
+          "heading": "Docker CLI bash (`docker/cli/`)",
+          "level": 3,
+          "line": 106
+        },
+        {
+          "heading": "Docker CLI python (`svc_py/`)",
+          "level": 3,
+          "line": 122
+        },
+        {
+          "heading": "Agente (`agent/`)",
+          "level": 3,
+          "line": 139
+        },
+        {
+          "heading": "Gateways MCP",
+          "level": 3,
+          "line": 166
+        },
+        {
+          "heading": "Catálogo (`agent/catalog/services/`)",
+          "level": 3,
+          "line": 176
+        },
+        {
+          "heading": "Documentación (`docs/`)",
+          "level": 3,
+          "line": 194
+        },
+        {
+          "heading": "Skills del LLM (`.kiro/skills/`) — activar según el caso",
+          "level": 3,
+          "line": 217
+        },
+        {
+          "heading": "Skill Kiro (`docker-nas/references/`)",
+          "level": 3,
+          "line": 235
+        },
+        {
+          "heading": "DebMenux (`DebMenux-/`)",
+          "level": 3,
+          "line": 248
+        },
+        {
+          "heading": "Servicios activos en el NAS",
+          "level": 2,
+          "line": 264
+        },
+        {
+          "heading": "Comandos svc (22 globales + passthrough)",
+          "level": 2,
+          "line": 282
+        },
+        {
+          "heading": "Globales",
+          "level": 3,
+          "line": 284
+        },
+        {
+          "heading": "Con servicio",
+          "level": 3,
+          "line": 293
+        },
+        {
+          "heading": "Métricas",
+          "level": 2,
+          "line": 303
+        },
+        {
+          "heading": "Para el próximo LLM",
+          "level": 2,
+          "line": 318
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 20
+      }
+    },
+    {
+      "path": "docs/framework-knowledge-compilation.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 346,
+      "nonEmptyLines": 263,
+      "sections": [
+        {
+          "heading": "Compilación de conocimiento del framework",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. Problema original e intención del usuario",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Lo que se rechazó",
+          "level": 3,
+          "line": 30
+        },
+        {
+          "heading": "2. Evolución de las ideas",
+          "level": 2,
+          "line": 34
+        },
+        {
+          "heading": "3. Modelo arquitectónico",
+          "level": 2,
+          "line": 48
+        },
+        {
+          "heading": "3.1 Dos repositorios, un sistema",
+          "level": 3,
+          "line": 50
+        },
+        {
+          "heading": "3.2 Cinco clases de conocimiento",
+          "level": 3,
+          "line": 75
+        },
+        {
+          "heading": "3.3 Autoridad cuando hay contradicciones",
+          "level": 3,
+          "line": 85
+        },
+        {
+          "heading": "3.3 Superficies MCP separadas",
+          "level": 3,
+          "line": 99
+        },
+        {
+          "heading": "5. Flujos que deben permanecer conectados",
+          "level": 2,
+          "line": 135
+        },
+        {
+          "heading": "5.1 Flujo de operación y CLI dual",
+          "level": 3,
+          "line": 137
+        },
+        {
+          "heading": "5.2 Flujo de arquitectura verificable",
+          "level": 3,
+          "line": 152
+        },
+        {
+          "heading": "5.3 Flujo de servicio y documentación",
+          "level": 3,
+          "line": 176
+        },
+        {
+          "heading": "6. Decisiones y alternativas rechazadas",
+          "level": 2,
+          "line": 189
+        },
+        {
+          "heading": "7. Estado actual reconciliado",
+          "level": 2,
+          "line": 207
+        },
+        {
+          "heading": "7.1 Implementado o presente",
+          "level": 3,
+          "line": 209
+        },
+        {
+          "heading": "7.2 Estado del ecosistema",
+          "level": 3,
+          "line": 224
+        },
+        {
+          "heading": "7.3 Limitaciones del entorno de verificación",
+          "level": 3,
+          "line": 228
+        },
+        {
+          "heading": "8. Gaps confirmados",
+          "level": 2,
+          "line": 236
+        },
+        {
+          "heading": "9. Criterios de aceptación para comprobar las ideas del usuario",
+          "level": 2,
+          "line": 256
+        },
+        {
+          "heading": "Arquitectura y conexiones",
+          "level": 3,
+          "line": 260
+        },
+        {
+          "heading": "CLI",
+          "level": 3,
+          "line": 268
+        },
+        {
+          "heading": "Documentación y catálogo",
+          "level": 3,
+          "line": 274
+        },
+        {
+          "heading": "Continuidad y mejora",
+          "level": 3,
+          "line": 282
+        },
+        {
+          "heading": "Operación segura",
+          "level": 3,
+          "line": 289
+        },
+        {
+          "heading": "10. Roadmap recomendado",
+          "level": 2,
+          "line": 295
+        },
+        {
+          "heading": "Fase 1 — Reconciliación documental (siguiente)",
+          "level": 3,
+          "line": 297
+        },
+        {
+          "heading": "Fase 2 — Scanner verificable de extremo a extremo",
+          "level": 3,
+          "line": 304
+        },
+        {
+          "heading": "Fase 3 — Reducción de duplicación",
+          "level": 3,
+          "line": 311
+        },
+        {
+          "heading": "Fase 4 — Estandarización gradual",
+          "level": 3,
+          "line": 318
+        },
+        {
+          "heading": "11. Protocolo para futuras sesiones",
+          "level": 2,
+          "line": 324
+        },
+        {
+          "heading": "12. Referencias",
+          "level": 2,
+          "line": 334
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 32
+      }
+    },
+    {
+      "path": "docs/github-cli.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 141,
+      "nonEmptyLines": 95,
+      "sections": [
+        {
+          "heading": "GitHub CLI (`gh`) — Instalación y autenticación",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. Instalar GitHub CLI",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "2. Autenticarse",
+          "level": 2,
+          "line": 26
+        },
+        {
+          "heading": "Opción A — Login con navegador web (recomendada si tienes PC/teléfono a mano)",
+          "level": 3,
+          "line": 28
+        },
+        {
+          "heading": "Opción B — Login con Personal Access Token (para NAS sin navegador)",
+          "level": 3,
+          "line": 50
+        },
+        {
+          "heading": "Paso 1 — Crear token",
+          "level": 4,
+          "line": 52
+        },
+        {
+          "heading": "Paso 2 — Pegar en la NAS",
+          "level": 4,
+          "line": 65
+        },
+        {
+          "heading": "3. Verificar",
+          "level": 2,
+          "line": 81
+        },
+        {
+          "heading": "4. Usar",
+          "level": 2,
+          "line": 96
+        },
+        {
+          "heading": "Troubleshooting",
+          "level": 2,
+          "line": 109
+        },
+        {
+          "heading": "`error: token invalid` o `403 Permission denied`",
+          "level": 3,
+          "line": 111
+        },
+        {
+          "heading": "`missing required scope 'read:org'`",
+          "level": 3,
+          "line": 124
+        },
+        {
+          "heading": "El navegador de terminal se queda colgado",
+          "level": 3,
+          "line": 128
+        },
+        {
+          "heading": "Dónde se guarda",
+          "level": 2,
+          "line": 134
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "path": "docs/ideas-decisions.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 1534,
+      "nonEmptyLines": 1233,
+      "sections": [
+        {
+          "heading": "Ideas y Decisiones — Registro de Problemas → Soluciones",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Índice",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "1. ntfy reemplaza notify-send",
+          "level": 2,
+          "line": 44
+        },
+        {
+          "heading": "2. usb-api como systemd nativo",
+          "level": 2,
+          "line": 67
+        },
+        {
+          "heading": "3. USB monta con LABEL",
+          "level": 2,
+          "line": 90
+        },
+        {
+          "heading": "4. Homepage: labels > services.yaml",
+          "level": 2,
+          "line": 112
+        },
+        {
+          "heading": "5. Pipeline auto-docs en cascada",
+          "level": 2,
+          "line": 135
+        },
+        {
+          "heading": "6. Skill 2.0: nas-context.md compacto",
+          "level": 2,
+          "line": 159
+        },
+        {
+          "heading": "7. AGENTS.md formato abierto",
+          "level": 2,
+          "line": 185
+        },
+        {
+          "heading": "8. env_file global + ${SERVER_IP}",
+          "level": 2,
+          "line": 206
+        },
+        {
+          "heading": "9. HA config con !include",
+          "level": 2,
+          "line": 229
+        },
+        {
+          "heading": "10. ntfy.publish no soporta imágenes",
+          "level": 2,
+          "line": 253
+        },
+        {
+          "heading": "11. Dependency map para no olvidar cascadas",
+          "level": 2,
+          "line": 278
+        },
+        {
+          "heading": "12. Skill proactiva con progressive updates",
+          "level": 2,
+          "line": 301
+        },
+        {
+          "heading": "Plantilla para nuevas entradas",
+          "level": 2,
+          "line": 327
+        },
+        {
+          "heading": "13. Script creado pero no conectado al sistema",
+          "level": 2,
+          "line": 356
+        },
+        {
+          "heading": "14. Dual CLI: bash = verdad, Python = interfaz",
+          "level": 2,
+          "line": 387
+        },
+        {
+          "heading": "15. El LLM no auto-documenta lo que crea (validación cruzada)",
+          "level": 2,
+          "line": 444
+        },
+        {
+          "heading": "16. Centralizar defaults con `extends` + `_common.yml`",
+          "level": 2,
+          "line": 482
+        },
+        {
+          "heading": "17. Flowise como prueba de integración con DataSQL",
+          "level": 2,
+          "line": 534
+        },
+        {
+          "heading": "18. Arranque escalonado de Docker en el boot (saga completa)",
+          "level": 2,
+          "line": 566
+        },
+        {
+          "heading": "19. OpenWA: gateway WhatsApp desde chat LLM (saga de verificación)",
+          "level": 2,
+          "line": 604
+        },
+        {
+          "heading": "20. Servicio nuevo sin registrar en layers.conf rompe el boot",
+          "level": 2,
+          "line": 676
+        },
+        {
+          "heading": "21. Skill router: carga condicional de skills para no gastar tokens",
+          "level": 2,
+          "line": 707
+        },
+        {
+          "heading": "21. OpenWA → n8n: el guard anti-SSRF bloquea el webhook",
+          "level": 2,
+          "line": 737
+        },
+        {
+          "heading": "22. OpenWA: whatsapp-web.js rompe el media → cambiar a baileys",
+          "level": 2,
+          "line": 792
+        },
+        {
+          "heading": "23. Skill nueva `nas-diagnostics` — operar/diagnosticar servicios existentes",
+          "level": 2,
+          "line": 852
+        },
+        {
+          "heading": "24. Adoptar el estándar Agent Skills (frontmatter + skill-creator + auto-invoke manual)",
+          "level": 2,
+          "line": 911
+        },
+        {
+          "heading": "25. Consolidar `nas-dotfiles.md`: de tercer overview a puntero",
+          "level": 2,
+          "line": 975
+        },
+        {
+          "heading": "26. Evaluación de ideas de los videos SDD/Agent-Skills contra nas-dotfiles",
+          "level": 2,
+          "line": 1027
+        },
+        {
+          "heading": "23. .no-boot no salvaba el boot en la validación REQUIRE_ALL (kiro-cli)",
+          "level": 2,
+          "line": 1096
+        },
+        {
+          "heading": "24. Verificar la fuente real antes de entregar un Dockerfile (caso kiro-cli)",
+          "level": 2,
+          "line": 1148
+        },
+        {
+          "heading": "27. Servicio desplegado con `cp` manual no se registra en `layers.conf` real (recurrencia de #23)",
+          "level": 2,
+          "line": 1193
+        },
+        {
+          "heading": "28. El apagado (`off`/`stop-all.sh`) se queda a medias al cerrar la sesión SSH",
+          "level": 2,
+          "line": 1247
+        },
+        {
+          "heading": "29. El boot aborta por fallos transitorios y `boot-status` miente tras recuperar a mano",
+          "level": 2,
+          "line": 1304
+        },
+        {
+          "heading": "30. ESPHome `pueba` + Sonoff: control OK, estado inicial del indicador PENDIENTE (saga)",
+          "level": 2,
+          "line": 1364
+        },
+        {
+          "heading": "31. ESPHome: `common/` como remote packages en repo propio `esphome-common`",
+          "level": 2,
+          "line": 1424
+        },
+        {
+          "heading": "32. esphome-common v1.1.0: primera plantilla integrada por el flujo de mejora continua (buzzer C6)",
+          "level": 2,
+          "line": 1487
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 38
+      }
+    },
+    {
+      "path": "docs/llm-context-bootstrap.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 90,
+      "nonEmptyLines": 72,
+      "sections": [
+        {
+          "heading": "Bootstrap de contexto para cualquier chat LLM",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Prompt de arranque",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Qué se carga automáticamente según el entorno",
+          "level": 2,
+          "line": 76
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "docs/lobehub-mcp-gateway.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 958,
+      "nonEmptyLines": 786,
+      "sections": [
+        {
+          "heading": "Gateway MCP read-only: LobeHub ↔ nas-dotfiles",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Qué se construyó",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Resultado verificado en el NAS",
+          "level": 2,
+          "line": 30
+        },
+        {
+          "heading": "Requisitos",
+          "level": 2,
+          "line": 69
+        },
+        {
+          "heading": "Instalación en el NAS",
+          "level": 2,
+          "line": 88
+        },
+        {
+          "heading": "1. Preparar el helper host",
+          "level": 3,
+          "line": 94
+        },
+        {
+          "heading": "2. Preparar el compose, el token y comprobar el resultado",
+          "level": 3,
+          "line": 183
+        },
+        {
+          "heading": "3. Levantar en orden",
+          "level": 3,
+          "line": 367
+        },
+        {
+          "heading": "Configurar LobeHub Web",
+          "level": 2,
+          "line": 390
+        },
+        {
+          "heading": "Procedimiento UI verificado",
+          "level": 3,
+          "line": 397
+        },
+        {
+          "heading": "Alternativa: configuración manual en LobeHub",
+          "level": 3,
+          "line": 428
+        },
+        {
+          "heading": "Seguridad y límites",
+          "level": 2,
+          "line": 486
+        },
+        {
+          "heading": "Compatibilidad con el CLI `svc`",
+          "level": 2,
+          "line": 512
+        },
+        {
+          "heading": "Validación y troubleshooting",
+          "level": 2,
+          "line": 621
+        },
+        {
+          "heading": "Comprobación funcional",
+          "level": 3,
+          "line": 623
+        },
+        {
+          "heading": "Fallos frecuentes y causa real",
+          "level": 3,
+          "line": 637
+        },
+        {
+          "heading": "Pausar solo el contenedor MCP",
+          "level": 3,
+          "line": 665
+        },
+        {
+          "heading": "Reanudar solo el contenedor MCP",
+          "level": 3,
+          "line": 699
+        },
+        {
+          "heading": "Retirada completa del stack",
+          "level": 3,
+          "line": 743
+        },
+        {
+          "heading": "Archivos de esta integración",
+          "level": 2,
+          "line": 753
+        },
+        {
+          "heading": "Estado de pausa / handoff 2026-08-29",
+          "level": 2,
+          "line": 765
+        },
+        {
+          "heading": "Resultado MCP confirmado antes de la pausa",
+          "level": 3,
+          "line": 771
+        },
+        {
+          "heading": "Permisos y grupos corregidos",
+          "level": 3,
+          "line": 790
+        },
+        {
+          "heading": "Estado posterior al reinicio del helper",
+          "level": 3,
+          "line": 831
+        },
+        {
+          "heading": "Paso pendiente para reanudar",
+          "level": 3,
+          "line": 848
+        },
+        {
+          "heading": "Error de proveedor Google separado del MCP",
+          "level": 3,
+          "line": 879
+        },
+        {
+          "heading": "Errores de pegado observados",
+          "level": 3,
+          "line": 897
+        },
+        {
+          "heading": "Sintaxis CLI que debe conservarse",
+          "level": 3,
+          "line": 913
+        },
+        {
+          "heading": "Procedimiento de reanudación y criterio de cierre",
+          "level": 3,
+          "line": 933
+        },
+        {
+          "heading": "Auditoría de fuentes y variantes",
+          "level": 3,
+          "line": 946
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 30
+      }
+    },
+    {
+      "path": "docs/meta-prompt-unificar.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 610,
+      "nonEmptyLines": 475,
+      "sections": [
+        {
+          "heading": "Meta-prompt: Unificar diagnósticos dispersos sin perder contenido",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "El prompt (copiar desde aquí)",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Cómo usarlo",
+          "level": 2,
+          "line": 380
+        },
+        {
+          "heading": "Tips para que funcione mejor",
+          "level": 2,
+          "line": 389
+        },
+        {
+          "heading": "Variante: documentos largos (análisis por partes)",
+          "level": 2,
+          "line": 409
+        },
+        {
+          "heading": "Fase 1 — Análisis individual",
+          "level": 3,
+          "line": 414
+        },
+        {
+          "heading": "Fase 2 — Generación final",
+          "level": 3,
+          "line": 446
+        },
+        {
+          "heading": "Patrones frecuentes de orden (no universales)",
+          "level": 2,
+          "line": 468
+        },
+        {
+          "heading": "Feedback y evolución del contrato (separados de la unificación)",
+          "level": 2,
+          "line": 506
+        },
+        {
+          "heading": "El agente debe",
+          "level": 3,
+          "line": 520
+        },
+        {
+          "heading": "El usuario debe",
+          "level": 3,
+          "line": 528
+        },
+        {
+          "heading": "Registro de mejoras",
+          "level": 3,
+          "line": 534
+        },
+        {
+          "heading": "Deduplicación con equivalencia operacional",
+          "level": 3,
+          "line": 568
+        },
+        {
+          "heading": "Variables de entorno del proyecto (regla de optimización)",
+          "level": 3,
+          "line": 576
+        },
+        {
+          "heading": "Secciones estándar para guías de servicios Docker",
+          "level": 3,
+          "line": 584
+        },
+        {
+          "heading": "Integración con el entorno (regla de optimización/contexto)",
+          "level": 3,
+          "line": 599
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": "docs/multi-nas-architecture.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 267,
+      "nonEmptyLines": 199,
+      "sections": [
+        {
+          "heading": "Multi-NAS — Arquitectura Distribuida",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Objetivo",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Capas de la arquitectura",
+          "level": 2,
+          "line": 29
+        },
+        {
+          "heading": "1. Conectividad — VPN mesh",
+          "level": 3,
+          "line": 31
+        },
+        {
+          "heading": "2. Sincronización de datos",
+          "level": 3,
+          "line": 50
+        },
+        {
+          "heading": "3. Niveles de redundancia",
+          "level": 3,
+          "line": 63
+        },
+        {
+          "heading": "4. Catálogo de servicios por nodo",
+          "level": 3,
+          "line": 81
+        },
+        {
+          "heading": "5. rclone — Backup offsite automatizado",
+          "level": 3,
+          "line": 107
+        },
+        {
+          "heading": "6. Syncthing — Sincronización bidireccional",
+          "level": 3,
+          "line": 130
+        },
+        {
+          "heading": "7. PostgreSQL — Replicación streaming",
+          "level": 3,
+          "line": 155
+        },
+        {
+          "heading": "8. Failover (futuro avanzado)",
+          "level": 3,
+          "line": 176
+        },
+        {
+          "heading": "9. Seguridad",
+          "level": 3,
+          "line": 195
+        },
+        {
+          "heading": "10. Integración con nas-dotfiles",
+          "level": 3,
+          "line": 207
+        },
+        {
+          "heading": "Orden de implementación recomendado",
+          "level": 2,
+          "line": 222
+        },
+        {
+          "heading": "Decisiones pendientes (para cuando se implemente)",
+          "level": 2,
+          "line": 236
+        },
+        {
+          "heading": "Por qué NO blockchain",
+          "level": 2,
+          "line": 247
+        },
+        {
+          "heading": "Referencias",
+          "level": 2,
+          "line": 262
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 17
+      }
+    },
+    {
+      "path": "docs/nas-manual.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 606,
+      "nonEmptyLines": 477,
+      "sections": [
+        {
+          "heading": "Manual del NAS — Especificaciones, Configuración e Infraestructura",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Índice",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Hardware",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "Notas del hardware",
+          "level": 3,
+          "line": 42
+        },
+        {
+          "heading": "Sistema operativo",
+          "level": 2,
+          "line": 51
+        },
+        {
+          "heading": "Paquetes clave instalados",
+          "level": 3,
+          "line": 64
+        },
+        {
+          "heading": "Almacenamiento",
+          "level": 2,
+          "line": 76
+        },
+        {
+          "heading": "Rutas importantes",
+          "level": 3,
+          "line": 88
+        },
+        {
+          "heading": "Red del host",
+          "level": 2,
+          "line": 100
+        },
+        {
+          "heading": "Gateway y DNS",
+          "level": 3,
+          "line": 109
+        },
+        {
+          "heading": "Gestión de red",
+          "level": 3,
+          "line": 116
+        },
+        {
+          "heading": "Acceso remoto (SSH + mDNS)",
+          "level": 3,
+          "line": 126
+        },
+        {
+          "heading": "Redes Docker",
+          "level": 2,
+          "line": 185
+        },
+        {
+          "heading": "Diagrama de redes",
+          "level": 3,
+          "line": 202
+        },
+        {
+          "heading": "Verificar redes compartidas",
+          "level": 3,
+          "line": 234
+        },
+        {
+          "heading": "Reglas de uso",
+          "level": 3,
+          "line": 247
+        },
+        {
+          "heading": "Estructura de directorios",
+          "level": 2,
+          "line": 256
+        },
+        {
+          "heading": "Variables globales",
+          "level": 2,
+          "line": 303
+        },
+        {
+          "heading": "Servicios activos",
+          "level": 2,
+          "line": 322
+        },
+        {
+          "heading": "Puertos asignados",
+          "level": 2,
+          "line": 345
+        },
+        {
+          "heading": "Rangos reservados",
+          "level": 3,
+          "line": 371
+        },
+        {
+          "heading": "USB Automount",
+          "level": 2,
+          "line": 387
+        },
+        {
+          "heading": "Config activa (`/etc/usb-automount.conf`)",
+          "level": 3,
+          "line": 403
+        },
+        {
+          "heading": "Comandos útiles",
+          "level": 3,
+          "line": 414
+        },
+        {
+          "heading": "Notificaciones (ntfy)",
+          "level": 2,
+          "line": 425
+        },
+        {
+          "heading": "Topics",
+          "level": 3,
+          "line": 436
+        },
+        {
+          "heading": "Cómo usar desde scripts",
+          "level": 3,
+          "line": 447
+        },
+        {
+          "heading": "Backups",
+          "level": 2,
+          "line": 456
+        },
+        {
+          "heading": "Servicios con backup crítico",
+          "level": 3,
+          "line": 465
+        },
+        {
+          "heading": "Mantenimiento",
+          "level": 2,
+          "line": 475
+        },
+        {
+          "heading": "Tareas periódicas",
+          "level": 3,
+          "line": 477
+        },
+        {
+          "heading": "Aplicar cambios publicados desde GitHub en el NAS",
+          "level": 4,
+          "line": 489
+        },
+        {
+          "heading": "Monitoreo rápido",
+          "level": 2,
+          "line": 535
+        },
+        {
+          "heading": "Convenciones",
+          "level": 2,
+          "line": 548
+        },
+        {
+          "heading": "Nombres",
+          "level": 3,
+          "line": 550
+        },
+        {
+          "heading": "Redes",
+          "level": 3,
+          "line": 557
+        },
+        {
+          "heading": "Seguridad",
+          "level": 3,
+          "line": 563
+        },
+        {
+          "heading": "Orden de operaciones (para nuevos servicios)",
+          "level": 3,
+          "line": 571
+        },
+        {
+          "heading": "Documentación",
+          "level": 3,
+          "line": 579
+        },
+        {
+          "heading": "Historial de cambios del hardware",
+          "level": 2,
+          "line": 588
+        },
+        {
+          "heading": "Cómo actualizar este documento",
+          "level": 2,
+          "line": 597
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 41
+      }
+    },
+    {
+      "path": "docs/nas-mcp-gateway.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 223,
+      "nonEmptyLines": 172,
+      "sections": [
+        {
+          "heading": "nas-mcp-gateway",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Objetivo",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Qué está implementado",
+          "level": 2,
+          "line": 30
+        },
+        {
+          "heading": "Activación lazy",
+          "level": 2,
+          "line": 57
+        },
+        {
+          "heading": "Manifest canónico y Skill",
+          "level": 2,
+          "line": 72
+        },
+        {
+          "heading": "Transportes",
+          "level": 2,
+          "line": 86
+        },
+        {
+          "heading": "`stdio` — recomendado para Kiro/Claude locales o vía SSH",
+          "level": 3,
+          "line": 88
+        },
+        {
+          "heading": "HTTP — preparado para un adaptador/proxy posterior",
+          "level": 3,
+          "line": 105
+        },
+        {
+          "heading": "Helper host",
+          "level": 2,
+          "line": 119
+        },
+        {
+          "heading": "Compose independiente",
+          "level": 2,
+          "line": 156
+        },
+        {
+          "heading": "Seguridad y límites",
+          "level": 2,
+          "line": 186
+        },
+        {
+          "heading": "Compatibilidad con el gateway histórico",
+          "level": 2,
+          "line": 199
+        },
+        {
+          "heading": "Validación pendiente antes del despliegue",
+          "level": 2,
+          "line": 214
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 13
+      }
+    }
+  ]
+}

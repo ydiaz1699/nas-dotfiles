@@ -1,0 +1,145 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/core/_result.py",
+      "language": "python",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/core/backup_manager.py",
+      "language": "python",
+      "sizeLines": 179,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/core/compose_manager.py",
+      "language": "python",
+      "sizeLines": 287,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/core/memory.py",
+      "language": "python",
+      "sizeLines": 475,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/core/service_manager.py",
+      "language": "python",
+      "sizeLines": 183,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/_shell.py",
+      "language": "python",
+      "sizeLines": 291,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/compose_tools.py",
+      "language": "python",
+      "sizeLines": 316,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/diagnostic_tools.py",
+      "language": "python",
+      "sizeLines": 241,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/discovery_tools.py",
+      "language": "python",
+      "sizeLines": 750,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/search_tools.py",
+      "language": "python",
+      "sizeLines": 155,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_compose_generation.py",
+      "language": "python",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_memory.py",
+      "language": "python",
+      "sizeLines": 210,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_result.py",
+      "language": "python",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_tool_result.py",
+      "language": "python",
+      "sizeLines": 67,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_validation.py",
+      "language": "python",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "agent/core/_result.py": [],
+    "agent/core/backup_manager.py": [
+      "agent/core/_result.py",
+      "agent/tools/_shell.py"
+    ],
+    "agent/core/compose_manager.py": [
+      "agent/core/_result.py",
+      "agent/tools/_shell.py"
+    ],
+    "agent/core/memory.py": [
+      "agent/core/_result.py"
+    ],
+    "agent/core/service_manager.py": [
+      "agent/core/_result.py",
+      "agent/tools/_shell.py"
+    ],
+    "agent/tools/_shell.py": [],
+    "agent/tools/compose_tools.py": [
+      "agent/core/_result.py",
+      "agent/tools/_shell.py"
+    ],
+    "agent/tools/diagnostic_tools.py": [
+      "agent/tools/_shell.py"
+    ],
+    "agent/tools/discovery_tools.py": [
+      "agent/core/_result.py",
+      "agent/tools/_shell.py"
+    ],
+    "agent/tools/search_tools.py": [
+      "agent/tools/_shell.py"
+    ],
+    "tests/test_compose_generation.py": [
+      "agent/core/compose_manager.py",
+      "agent/tools/_shell.py"
+    ],
+    "tests/test_memory.py": [
+      "agent/core/_result.py",
+      "agent/core/memory.py"
+    ],
+    "tests/test_result.py": [
+      "agent/core/_result.py"
+    ],
+    "tests/test_tool_result.py": [
+      "agent/core/_result.py"
+    ],
+    "tests/test_validation.py": [
+      "agent/tools/_shell.py"
+    ]
+  }
+}

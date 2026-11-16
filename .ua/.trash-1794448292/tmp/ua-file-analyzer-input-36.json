@@ -1,0 +1,77 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "shell/scripts/apply-restart-policy.sh",
+      "language": "shell",
+      "sizeLines": 106,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/boot-order.sh",
+      "language": "shell",
+      "sizeLines": 404,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/find-no-extends.sh",
+      "language": "shell",
+      "sizeLines": 25,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/install-boot-service.sh",
+      "language": "shell",
+      "sizeLines": 73,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/install-shutdown-service.sh",
+      "language": "shell",
+      "sizeLines": 68,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/install_docker.sh",
+      "language": "shell",
+      "sizeLines": 484,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/restart-all.sh",
+      "language": "shell",
+      "sizeLines": 41,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/start-all.sh",
+      "language": "shell",
+      "sizeLines": 6,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/stop-all.sh",
+      "language": "shell",
+      "sizeLines": 44,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/stop-order.sh",
+      "language": "shell",
+      "sizeLines": 120,
+      "fileCategory": "script"
+    }
+  ],
+  "batchImportData": {
+    "shell/scripts/apply-restart-policy.sh": [],
+    "shell/scripts/boot-order.sh": [],
+    "shell/scripts/find-no-extends.sh": [],
+    "shell/scripts/install-boot-service.sh": [],
+    "shell/scripts/install-shutdown-service.sh": [],
+    "shell/scripts/install_docker.sh": [],
+    "shell/scripts/restart-all.sh": [],
+    "shell/scripts/start-all.sh": [],
+    "shell/scripts/stop-all.sh": [],
+    "shell/scripts/stop-order.sh": []
+  }
+}

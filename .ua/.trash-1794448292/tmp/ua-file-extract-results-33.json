@@ -1,0 +1,307 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 3
+    }
+  },
+  "results": [
+    {
+      "path": "docs/session-handoff.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 192,
+      "nonEmptyLines": 127,
+      "sections": [
+        {
+          "heading": "Session Handoff — Herramienta de Transferencia de Contexto entre Sesiones",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Proceso (para el LLM al cerrar sesión)",
+          "level": 2,
+          "line": 12
+        },
+        {
+          "heading": "Paso 1: Generar el handoff",
+          "level": 3,
+          "line": 14
+        },
+        {
+          "heading": "Paso 2: Llenar las secciones",
+          "level": 3,
+          "line": 19
+        },
+        {
+          "heading": "Paso 3: Verificar coherencia",
+          "level": 3,
+          "line": 25
+        },
+        {
+          "heading": "Paso 4: Commit y push",
+          "level": 3,
+          "line": 32
+        },
+        {
+          "heading": "Plantilla",
+          "level": 2,
+          "line": 40
+        },
+        {
+          "heading": "Ejemplo de uso",
+          "level": 2,
+          "line": 132
+        },
+        {
+          "heading": "Integración con la skill (nas-context.md)",
+          "level": 2,
+          "line": 147
+        },
+        {
+          "heading": "Integración con el hook de Kiro",
+          "level": 2,
+          "line": 160
+        },
+        {
+          "heading": "Cuándo NO generar handoff",
+          "level": 2,
+          "line": 180
+        },
+        {
+          "heading": "Cuándo SÍ generar handoff (obligatorio)",
+          "level": 2,
+          "line": 186
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "docs/tools-index.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 216,
+      "nonEmptyLines": 179,
+      "sections": [
+        {
+          "heading": "Índice de Herramientas — nas-dotfiles",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Cómo consultar (para un LLM sin el repo cargado)",
+          "level": 2,
+          "line": 18
+        },
+        {
+          "heading": "1. Aliases de archivos y visualización",
+          "level": 2,
+          "line": 34
+        },
+        {
+          "heading": "2. Aliases de listado (requieren `eza`)",
+          "level": 2,
+          "line": 50
+        },
+        {
+          "heading": "3. Docker rápido (sin `svc`)",
+          "level": 2,
+          "line": 60
+        },
+        {
+          "heading": "4. Navegación",
+          "level": 2,
+          "line": 71
+        },
+        {
+          "heading": "5. Sistema e info",
+          "level": 2,
+          "line": 83
+        },
+        {
+          "heading": "6. Instalación de paquetes (wrappers inteligentes)",
+          "level": 2,
+          "line": 97
+        },
+        {
+          "heading": "7. Git (aliases + helpers)",
+          "level": 2,
+          "line": 104
+        },
+        {
+          "heading": "8. CLI `svc` — globales (sin servicio)",
+          "level": 2,
+          "line": 119
+        },
+        {
+          "heading": "9. CLI `svc` — con servicio",
+          "level": 2,
+          "line": 151
+        },
+        {
+          "heading": "10. Agente IA",
+          "level": 2,
+          "line": 167
+        },
+        {
+          "heading": "11. Notificaciones",
+          "level": 2,
+          "line": 175
+        },
+        {
+          "heading": "12. Skills (Kiro) — artefactos de contexto",
+          "level": 2,
+          "line": 181
+        },
+        {
+          "heading": "13. Tools del agente (Python)",
+          "level": 2,
+          "line": 195
+        },
+        {
+          "heading": "Mantenimiento",
+          "level": 2,
+          "line": 206
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": "docs/troubleshooting.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 544,
+      "nonEmptyLines": 399,
+      "sections": [
+        {
+          "heading": "Troubleshooting — Diagnósticos resueltos",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "DataSQL — `failed to set up container networking: Address already in use`",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "`svc snapshot` — CLI Python sin el comando registrado",
+          "level": 2,
+          "line": 81
+        },
+        {
+          "heading": "Variables globales y locales — bucle de verificación correcto",
+          "level": 2,
+          "line": 126
+        },
+        {
+          "heading": "API/LLM — `Too many requests, please wait before trying again`",
+          "level": 2,
+          "line": 153
+        },
+        {
+          "heading": "auto_catalog() — NameError en stacks multi-servicio",
+          "level": 2,
+          "line": 211
+        },
+        {
+          "heading": "auto_catalog() — Solo leía el primer servicio del compose",
+          "level": 2,
+          "line": 230
+        },
+        {
+          "heading": "bulk_discover() — except duplicado inalcanzable",
+          "level": 2,
+          "line": 249
+        },
+        {
+          "heading": "bulk_discover() — return con variables inexistentes",
+          "level": 2,
+          "line": 264
+        },
+        {
+          "heading": "Agente recuerda sesiones viejas (contexto stale)",
+          "level": 2,
+          "line": 282
+        },
+        {
+          "heading": "Git — conflictos al hacer `gpl` (git pull)",
+          "level": 2,
+          "line": 300
+        },
+        {
+          "heading": "Probar tools del agente manualmente",
+          "level": 2,
+          "line": 324
+        },
+        {
+          "heading": "svc doctor — contadores siempre en 0 (subshell bug)",
+          "level": 2,
+          "line": 357
+        },
+        {
+          "heading": "pipins — PEP 668 (externally-managed-environment)",
+          "level": 2,
+          "line": 384
+        },
+        {
+          "heading": "svc create — genera docker-compose.yml en vez de compose.yml",
+          "level": 2,
+          "line": 405
+        },
+        {
+          "heading": "Daemon — no arranca con systemd",
+          "level": 2,
+          "line": 420
+        },
+        {
+          "heading": "Variables de datasql — confusión entre fijas y externas",
+          "level": 2,
+          "line": 451
+        },
+        {
+          "heading": "Principio general para depurar",
+          "level": 2,
+          "line": 470
+        },
+        {
+          "heading": "WARN \"variable is not set\" en svc up/down",
+          "level": 2,
+          "line": 492
+        },
+        {
+          "heading": "env_file en compose NO sirve para interpolar labels",
+          "level": 2,
+          "line": 530
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 20
+      }
+    }
+  ]
+}

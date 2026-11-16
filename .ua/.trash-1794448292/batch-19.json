@@ -1,0 +1,117 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/jdownloader/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/jdownloader/.env.example",
+      "filePath": "agent/catalog/services/jdownloader/.env.example",
+      "lineRange": [
+        1,
+        17
+      ],
+      "summary": "Plantilla de variables locales para JDownloader 2: JD_USER_ID, JD_GROUP_ID (1000:1000 por defecto) y credenciales comentadas opcionales para autenticar la GUI web noVNC en :5800.",
+      "tags": [
+        "variables-entorno",
+        "jdownloader",
+        "permisos-uid",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/jdownloader/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/jdownloader/compose.yml",
+      "filePath": "agent/catalog/services/jdownloader/compose.yml",
+      "lineRange": [
+        1,
+        62
+      ],
+      "summary": "Definición Docker Compose de JDownloader 2 (jlesage/jdownloader-2:v26.09.1) con GUI noVNC en :5800, destinos /NAS/Descargas:/output y /NAS/USB:/usb (con bind propagation rshared), healthcheck vía nc, límite de 2g RAM y labels de Homepage.",
+      "tags": [
+        "docker-compose",
+        "jdownloader",
+        "descargas-nas",
+        "bind-rshared"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo YAML de Docker Compose que extiende _defaults desde ../../_common.yml y sobreescribe el límite de memoria a 2g."
+    },
+    {
+      "id": "document:agent/catalog/services/jdownloader/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/jdownloader/ficha.md",
+      "filePath": "agent/catalog/services/jdownloader/ficha.md",
+      "lineRange": [
+        1,
+        123
+      ],
+      "summary": "Ficha técnica del catálogo para JDownloader 2 con metadatos YAML, arquitectura de control vía nube My.JDownloader con el MCP proyec_jdw2, destinos de descarga fijo/USB, setup inicial y referencia a jdownloader-guide.md.",
+      "tags": [
+        "ficha-servicio",
+        "jdownloader",
+        "catalogo-nas",
+        "control-mcp"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/jdownloader/.env.example",
+      "target": "service:agent/catalog/services/jdownloader/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Suministra JD_USER_ID, JD_GROUP_ID y credenciales opcionales de GUI web al compose de JDownloader."
+    },
+    {
+      "source": "service:agent/catalog/services/jdownloader/compose.yml",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Extiende la configuración base _defaults de ../../_common.yml."
+    },
+    {
+      "source": "service:agent/catalog/services/jdownloader/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde ../.env mediante env_file."
+    },
+    {
+      "source": "service:agent/catalog/services/jdownloader/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Declara labels homepage.* para aparecer en el grupo Descargas de Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/jdownloader/ficha.md",
+      "target": "service:agent/catalog/services/jdownloader/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el puerto 5800, healthcheck con nc, bind rshared en /NAS/USB y modo relay My.JDownloader."
+    },
+    {
+      "source": "document:agent/catalog/services/jdownloader/ficha.md",
+      "target": "config:agent/catalog/services/jdownloader/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Detalla las variables opcionales de UID/GID y autenticación web."
+    },
+    {
+      "source": "document:agent/catalog/services/jdownloader/ficha.md",
+      "target": "document:docs/services/jdownloader-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia en docs_url la guía operativa de JDownloader 2."
+    }
+  ]
+}

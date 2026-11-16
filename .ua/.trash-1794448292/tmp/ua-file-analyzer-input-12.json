@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/emqx/.env.example",
+      "language": "config",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/emqx/compose.yml",
+      "language": "yaml",
+      "sizeLines": 64,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/emqx/ficha.md",
+      "language": "markdown",
+      "sizeLines": 158,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/emqx/.env.example": [],
+    "agent/catalog/services/emqx/compose.yml": [],
+    "agent/catalog/services/emqx/ficha.md": []
+  }
+}

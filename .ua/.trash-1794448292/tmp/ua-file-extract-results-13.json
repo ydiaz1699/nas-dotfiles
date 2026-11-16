@@ -1,0 +1,125 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 3
+    }
+  },
+  "results": [
+    {
+      "path": "agent/catalog/services/esphome/.env.example",
+      "language": "config",
+      "fileCategory": "config",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "agent/catalog/services/esphome/compose.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 21,
+      "nonEmptyLines": 21,
+      "sections": [
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 1
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "agent/catalog/services/esphome/ficha.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 61,
+      "nonEmptyLines": 42,
+      "sections": [
+        {
+          "heading": "esphome",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Metadata",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Servicios",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Volúmenes",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "Dispositivos",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "Variables de entorno",
+          "level": 2,
+          "line": 34
+        },
+        {
+          "heading": "Globales ($dkco/.env)",
+          "level": 3,
+          "line": 36
+        },
+        {
+          "heading": "Locales (.env)",
+          "level": 3,
+          "line": 43
+        },
+        {
+          "heading": "Redes",
+          "level": 2,
+          "line": 47
+        },
+        {
+          "heading": "Notas",
+          "level": 2,
+          "line": 51
+        },
+        {
+          "heading": "docs_url",
+          "level": 2,
+          "line": 59
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    }
+  ]
+}

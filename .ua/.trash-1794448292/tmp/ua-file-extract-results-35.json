@@ -1,0 +1,350 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 9,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 9,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 9
+    }
+  },
+  "results": [
+    {
+      "path": "shell/lib/aliases.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 96,
+      "nonEmptyLines": 84,
+      "functions": [
+        {
+          "name": "reload",
+          "startLine": 20,
+          "endLine": 24,
+          "params": []
+        },
+        {
+          "name": "rm",
+          "startLine": 38,
+          "endLine": 44,
+          "params": []
+        },
+        {
+          "name": "cp",
+          "startLine": 46,
+          "endLine": 52,
+          "params": []
+        },
+        {
+          "name": "mv",
+          "startLine": 54,
+          "endLine": 60,
+          "params": []
+        },
+        {
+          "name": "batr",
+          "startLine": 82,
+          "endLine": 93,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/lib/completions.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 49,
+      "nonEmptyLines": 39,
+      "functions": [
+        {
+          "name": "_instal_complete",
+          "startLine": 5,
+          "endLine": 16,
+          "params": []
+        },
+        {
+          "name": "_logs_complete",
+          "startLine": 21,
+          "endLine": 39,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/lib/docker.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 77,
+      "nonEmptyLines": 65,
+      "functions": [
+        {
+          "name": "_svc_services",
+          "startLine": 16,
+          "endLine": 23,
+          "params": []
+        },
+        {
+          "name": "_lobe_actions",
+          "startLine": 25,
+          "endLine": 30,
+          "params": []
+        },
+        {
+          "name": "_svc_complete",
+          "startLine": 32,
+          "endLine": 75,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/lib/git.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 55,
+      "nonEmptyLines": 48,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/lib/instal.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 105,
+      "nonEmptyLines": 88,
+      "functions": [
+        {
+          "name": "_apt_cmd",
+          "startLine": 4,
+          "endLine": 10,
+          "params": []
+        },
+        {
+          "name": "_apt_cache_stale",
+          "startLine": 13,
+          "endLine": 27,
+          "params": []
+        },
+        {
+          "name": "instal",
+          "startLine": 29,
+          "endLine": 105,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/lib/nav.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 102,
+      "nonEmptyLines": 85,
+      "functions": [
+        {
+          "name": "up",
+          "startLine": 4,
+          "endLine": 10,
+          "params": []
+        },
+        {
+          "name": "_nav",
+          "startLine": 13,
+          "endLine": 42,
+          "params": []
+        },
+        {
+          "name": "_nav_complete",
+          "startLine": 45,
+          "endLine": 53,
+          "params": []
+        },
+        {
+          "name": "_nav_fzf",
+          "startLine": 56,
+          "endLine": 78,
+          "params": []
+        },
+        {
+          "name": "dk",
+          "startLine": 92,
+          "endLine": 92,
+          "params": []
+        },
+        {
+          "name": "dkf",
+          "startLine": 93,
+          "endLine": 93,
+          "params": []
+        },
+        {
+          "name": "_dk_completions",
+          "startLine": 95,
+          "endLine": 95,
+          "params": []
+        },
+        {
+          "name": "nasfk",
+          "startLine": 99,
+          "endLine": 99,
+          "params": []
+        },
+        {
+          "name": "nasfkf",
+          "startLine": 100,
+          "endLine": 100,
+          "params": []
+        },
+        {
+          "name": "_nasfk_completions",
+          "startLine": 101,
+          "endLine": 101,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 10,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/lib/pipins.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 120,
+      "nonEmptyLines": 105,
+      "functions": [
+        {
+          "name": "_pip_cmd",
+          "startLine": 16,
+          "endLine": 24,
+          "params": []
+        },
+        {
+          "name": "pipins",
+          "startLine": 26,
+          "endLine": 120,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/lib/prompt.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 87,
+      "nonEmptyLines": 71,
+      "functions": [
+        {
+          "name": "_prompt_cache_docker",
+          "startLine": 13,
+          "endLine": 19,
+          "params": []
+        },
+        {
+          "name": "_prompt_cache_disk",
+          "startLine": 22,
+          "endLine": 28,
+          "params": []
+        },
+        {
+          "name": "_prompt_git",
+          "startLine": 31,
+          "endLine": 42,
+          "params": []
+        },
+        {
+          "name": "_build_prompt",
+          "startLine": 45,
+          "endLine": 85,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/lib/system.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 148,
+      "nonEmptyLines": 132,
+      "functions": [
+        {
+          "name": "nas",
+          "startLine": 4,
+          "endLine": 76,
+          "params": []
+        },
+        {
+          "name": "disk",
+          "startLine": 79,
+          "endLine": 82,
+          "params": []
+        },
+        {
+          "name": "netinfo",
+          "startLine": 85,
+          "endLine": 95,
+          "params": []
+        },
+        {
+          "name": "logs",
+          "startLine": 102,
+          "endLine": 148,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    }
+  ]
+}

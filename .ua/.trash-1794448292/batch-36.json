@@ -1,0 +1,1011 @@
+{
+  "nodes": [
+    {
+      "id": "file:shell/scripts/apply-restart-policy.sh",
+      "type": "file",
+      "name": "apply-restart-policy.sh",
+      "filePath": "shell/scripts/apply-restart-policy.sh",
+      "summary": "Migra contenedores Docker existentes a la política de reinicio on-failure:5 conservando intactos los jobs one-shot con policy 'no', genera un reporte tabular y verifica el estado final.",
+      "tags": [
+        "restart-policy",
+        "migracion-docker",
+        "contenedores-nas",
+        "reporte-estado"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Script Bash estricto (set -Eeuo pipefail) que consulta contenedores vía docker/cli/svc.sh y aplica docker update --restart."
+    },
+    {
+      "id": "file:shell/scripts/boot-order.sh",
+      "type": "file",
+      "name": "boot-order.sh",
+      "filePath": "shell/scripts/boot-order.sh",
+      "summary": "Orquesta el arranque escalonado por capas de servicios Docker Compose según layers.conf, aplicando bloqueo con flock, validación de servicios, espera de healthchecks, reintentos limpios y exclusión por .no-boot.",
+      "tags": [
+        "arranque-escalonado",
+        "capas-compose",
+        "healthcheck-docker",
+        "orquestacion-boot"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Utiliza flock sobre descriptor 9 para exclusión mutua, arreglos asociativos Bash (declare -A) y ejecución serial o paralela controlada por BOOT_ORDER_SERIAL."
+    },
+    {
+      "id": "function:shell/scripts/boot-order.sh:compose_file",
+      "type": "function",
+      "name": "compose_file",
+      "filePath": "shell/scripts/boot-order.sh",
+      "lineRange": [
+        69,
+        79
+      ],
+      "summary": "Localiza el archivo Compose válido (compose.yml/yaml o docker-compose.yml/yaml) dentro del directorio de un servicio bajo DOCKER_BASE.",
+      "tags": [
+        "descubrimiento-compose",
+        "resolucion-rutas",
+        "docker-base"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/boot-order.sh:load_layers",
+      "type": "function",
+      "name": "load_layers",
+      "filePath": "shell/scripts/boot-order.sh",
+      "lineRange": [
+        106,
+        125
+      ],
+      "summary": "Lee y valida sintácticamente layers.conf agrupando servicios en capas separadas por líneas en blanco e ignorando comentarios.",
+      "tags": [
+        "parseo-configuracion",
+        "layers-conf",
+        "capas-servicio"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/boot-order.sh:validate_layers",
+      "type": "function",
+      "name": "validate_layers",
+      "filePath": "shell/scripts/boot-order.sh",
+      "lineRange": [
+        131,
+        180
+      ],
+      "summary": "Comprueba que no existan servicios duplicados entre capas, valida la existencia de sus archivos Compose y exige que todo servicio descubierto esté en layers.conf o marcado con .no-boot cuando REQUIRE_ALL=1.",
+      "tags": [
+        "validacion-capas",
+        "integridad-boot",
+        "marcador-noboot"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:shell/scripts/boot-order.sh:wait_service_ready",
+      "type": "function",
+      "name": "wait_service_ready",
+      "filePath": "shell/scripts/boot-order.sh",
+      "lineRange": [
+        192,
+        250
+      ],
+      "summary": "Inspecciona los contenedores de un servicio hasta que estén running sin healthcheck o healthy, o bien hayan terminado con código 0 si son jobs one-shot, respetando HEALTH_TIMEOUT.",
+      "tags": [
+        "espera-readiness",
+        "healthcheck-docker",
+        "jobs-oneshot"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:shell/scripts/boot-order.sh:start_service_ready_retrying",
+      "type": "function",
+      "name": "start_service_ready_retrying",
+      "filePath": "shell/scripts/boot-order.sh",
+      "lineRange": [
+        267,
+        284
+      ],
+      "summary": "Levanta un servicio y espera su estado ready, ejecutando down seguido de up limpio entre reintentos ante fallos transitorios de arranque.",
+      "tags": [
+        "reintentos-arranque",
+        "recuperacion-fallos",
+        "ciclo-compose"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:shell/scripts/boot-order.sh:run_layer_serial",
+      "type": "function",
+      "name": "run_layer_serial",
+      "filePath": "shell/scripts/boot-order.sh",
+      "lineRange": [
+        309,
+        324
+      ],
+      "summary": "Arranca secuencialmente cada servicio habilitado de una capa esperando su readiness e intercalando SETTLE_DELAY segundos para estabilizar la CPU.",
+      "tags": [
+        "arranque-serial",
+        "estabilizacion-cpu",
+        "capa-servicios"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/boot-order.sh:run_layer_parallel",
+      "type": "function",
+      "name": "run_layer_parallel",
+      "filePath": "shell/scripts/boot-order.sh",
+      "lineRange": [
+        329,
+        360
+      ],
+      "summary": "Lanza en segundo plano todos los servicios habilitados de una capa, espera la finalización de los procesos svc up y verifica su readiness con reintentos secuenciales si alguno falla.",
+      "tags": [
+        "arranque-paralelo",
+        "procesos-fondo",
+        "verificacion-readiness"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:shell/scripts/boot-order.sh:run_layer",
+      "type": "function",
+      "name": "run_layer",
+      "filePath": "shell/scripts/boot-order.sh",
+      "lineRange": [
+        362,
+        377
+      ],
+      "summary": "Despacha la ejecución de una capa de servicios en modo serial o paralelo según la variable BOOT_ORDER_SERIAL.",
+      "tags": [
+        "despacho-capas",
+        "orquestacion-boot",
+        "modo-ejecucion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:shell/scripts/find-no-extends.sh",
+      "type": "file",
+      "name": "find-no-extends.sh",
+      "filePath": "shell/scripts/find-no-extends.sh",
+      "summary": "Audita los archivos Docker Compose bajo DOCKER_BASE para listar aquellos que no declaran herencia extends desde _common.yml junto con su política restart.",
+      "tags": [
+        "auditoria-compose",
+        "herencia-extends",
+        "verificacion-nas"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Recorre el segundo nivel de directorios bajo DOCKER_BASE usando find y expresiones regulares con grep."
+    },
+    {
+      "id": "file:shell/scripts/install-boot-service.sh",
+      "type": "file",
+      "name": "install-boot-service.sh",
+      "filePath": "shell/scripts/install-boot-service.sh",
+      "summary": "Renderiza la plantilla docker-boot-staged.service.template con las rutas reales NAS_DOTFILES y DOCKER_BASE, instala la unidad en systemd y opcionalmente la habilita con --enable.",
+      "tags": [
+        "instalador-systemd",
+        "unidad-boot",
+        "plantilla-servicio"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Valida ejecución como root, sustituye placeholders con sed escapando '&' y recarga systemd con systemctl daemon-reload."
+    },
+    {
+      "id": "file:shell/scripts/install-shutdown-service.sh",
+      "type": "file",
+      "name": "install-shutdown-service.sh",
+      "filePath": "shell/scripts/install-shutdown-service.sh",
+      "summary": "Renderiza docker-shutdown-staged.service.template e instala la unidad oneshot bajo systemd para ejecutar stop-order.sh --down desacoplado de sesiones SSH.",
+      "tags": [
+        "instalador-systemd",
+        "unidad-apagado",
+        "servicio-oneshot"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Requiere privilegios de root, verifica la ausencia de placeholders sin sustituir y ejecuta systemctl daemon-reload sin habilitarla en el boot."
+    },
+    {
+      "id": "file:shell/scripts/install_docker.sh",
+      "type": "file",
+      "name": "install_docker.sh",
+      "filePath": "shell/scripts/install_docker.sh",
+      "summary": "Instalador completo e idempotente de Docker Engine para Debian (bullseye, bookworm, trixie) con modo --dry-run, logging en archivo, limpieza de repositorios legacy y configuración del grupo docker.",
+      "tags": [
+        "instalacion-docker",
+        "debian-apt",
+        "modo-dry-run",
+        "configuracion-repositorio"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Expone variables de entorno DOCKER_INSTALL_* para permitir simulación y pruebas automatizadas sin tocar /etc ni servicios reales."
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:usage",
+      "type": "function",
+      "name": "usage",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        29,
+        49
+      ],
+      "summary": "Imprime la ayuda de línea de comandos de install_docker.sh incluyendo flags disponibles y variables de entorno para simulación.",
+      "tags": [
+        "ayuda-cli",
+        "documentacion-uso",
+        "heredoc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:parse_args",
+      "type": "function",
+      "name": "parse_args",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        51,
+        81
+      ],
+      "summary": "Procesa las opciones --dry-run, --log-file y --help/-h, y activa el modo simulación si DOCKER_INSTALL_DRY_RUN=1.",
+      "tags": [
+        "parseo-argumentos",
+        "flags-cli",
+        "modo-simulacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:setup_logging",
+      "type": "function",
+      "name": "setup_logging",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        87,
+        106
+      ],
+      "summary": "Determina la ruta del archivo de log, crea el archivo con permisos 600 y redirige stdout y stderr hacia terminal y archivo mediante tee.",
+      "tags": [
+        "registro-logs",
+        "redireccion-salida",
+        "permisos-archivo"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:apt_update_once",
+      "type": "function",
+      "name": "apt_update_once",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        130,
+        140
+      ],
+      "summary": "Ejecuta apt update una sola vez por corrida salvo que se fuerce explícitamente tras añadir el repositorio oficial.",
+      "tags": [
+        "apt-update",
+        "idempotencia",
+        "gestion-apt"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:detect_docker_user",
+      "type": "function",
+      "name": "detect_docker_user",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        144,
+        159
+      ],
+      "summary": "Detecta el primer usuario no-root válido en el sistema evaluando SUDO_USER, logname y USER mediante getent passwd.",
+      "tags": [
+        "deteccion-usuario",
+        "privilegios-unix",
+        "grupo-docker"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:select_docker_user",
+      "type": "function",
+      "name": "select_docker_user",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        161,
+        220
+      ],
+      "summary": "Selecciona el usuario que recibirá acceso al grupo docker combinando configuración previa, detección automática y confirmación o entrada interactiva cuando hay TTY.",
+      "tags": [
+        "seleccion-usuario",
+        "modo-interactivo",
+        "validacion-usuario"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:validate_operating_system",
+      "type": "function",
+      "name": "validate_operating_system",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        237,
+        275
+      ],
+      "summary": "Lee OS_RELEASE_FILE y verifica que el sistema sea Debian con uno de los codenames soportados (bullseye, bookworm o trixie).",
+      "tags": [
+        "validacion-so",
+        "os-release",
+        "soporte-debian"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:check_connectivity",
+      "type": "function",
+      "name": "check_connectivity",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        287,
+        301
+      ],
+      "summary": "Asegura la disponibilidad de curl y comprueba conectividad HTTPS hacia download.docker.com/linux/debian/ antes de instalar.",
+      "tags": [
+        "conectividad-red",
+        "verificacion-https",
+        "curl"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:disable_legacy_repo",
+      "type": "function",
+      "name": "disable_legacy_repo",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        303,
+        323
+      ],
+      "summary": "Busca archivos docker*.list en sources.list.d que apunten al repositorio oficial antiguo y los renombra con sufijo .disabled.<timestamp>.",
+      "tags": [
+        "repositorios-legacy",
+        "limpieza-apt",
+        "sources-list"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:write_docker_repo",
+      "type": "function",
+      "name": "write_docker_repo",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        335,
+        345
+      ],
+      "summary": "Genera el archivo DEB822 docker.sources dentro de APT_SOURCES_DIR o imprime su contenido simulado en modo --dry-run.",
+      "tags": [
+        "repositorio-deb822",
+        "docker-sources",
+        "configuracion-apt"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:install_docker",
+      "type": "function",
+      "name": "install_docker",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        347,
+        395
+      ],
+      "summary": "Omite la instalación si docker-ce ya está presente; en caso contrario verifica red, desactiva repositorios legacy, remueve paquetes conflictivos, instala la clave GPG, escribe docker.sources e instala Docker Engine y plugins.",
+      "tags": [
+        "instalacion-paquetes",
+        "llave-gpg",
+        "docker-engine"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:configure_user_group",
+      "type": "function",
+      "name": "configure_user_group",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        406,
+        432
+      ],
+      "summary": "Agrega el usuario seleccionado al grupo docker mediante usermod -aG si aún no pertenece e informa advertencias de privilegios.",
+      "tags": [
+        "grupo-docker",
+        "usermod",
+        "permisos-usuario"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:print_summary",
+      "type": "function",
+      "name": "print_summary",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        434,
+        465
+      ],
+      "summary": "Presenta el resumen final validando si el servicio docker está activo, mostrando versiones instaladas, ruta de log y usuario configurado.",
+      "tags": [
+        "resumen-instalacion",
+        "verificacion-servicio",
+        "salida-cli"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/install_docker.sh:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "shell/scripts/install_docker.sh",
+      "lineRange": [
+        467,
+        482
+      ],
+      "summary": "Punto de entrada principal que coordina el parseo de argumentos, validación de root, logging, comprobación del SO, instalación, verificación y resumen.",
+      "tags": [
+        "punto-entrada",
+        "flujo-instalacion",
+        "orquestacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:shell/scripts/restart-all.sh",
+      "type": "file",
+      "name": "restart-all.sh",
+      "filePath": "shell/scripts/restart-all.sh",
+      "summary": "Solicita confirmación explícita ('reiniciar') y ejecuta el apagado escalonado de contenedores seguido de reboot desacoplado de la sesión SSH vía systemd-run/docker-shutdown-staged.service o setsid.",
+      "tags": [
+        "reinicio-nas",
+        "apagado-desacoplado",
+        "systemd-run",
+        "confirmacion-usuario"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Evita la interrupción por SIGHUP al cerrar la terminal delegando el proceso bajo PID 1 o una nueva sesión con setsid."
+    },
+    {
+      "id": "file:shell/scripts/start-all.sh",
+      "type": "file",
+      "name": "start-all.sh",
+      "filePath": "shell/scripts/start-all.sh",
+      "summary": "Wrapper de compatibilidad que delega directamente la ejecución en boot-order.sh mediante exec.",
+      "tags": [
+        "wrapper-compatibilidad",
+        "arranque-servicios",
+        "delegacion-exec"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Mantiene compatibilidad con invocaciones previas redirigiendo todos los argumentos con exec a boot-order.sh."
+    },
+    {
+      "id": "file:shell/scripts/stop-all.sh",
+      "type": "file",
+      "name": "stop-all.sh",
+      "filePath": "shell/scripts/stop-all.sh",
+      "summary": "Solicita confirmación explícita ('apagar') y ejecuta el apagado escalonado de servicios seguido de poweroff desacoplado de la sesión SSH mediante systemd-run o fallback con setsid.",
+      "tags": [
+        "apagado-nas",
+        "apagado-desacoplado",
+        "systemd-run",
+        "confirmacion-usuario"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Contraparte de restart-all.sh enfocada en apagado completo del host sin abortar por cierre de terminal."
+    },
+    {
+      "id": "file:shell/scripts/stop-order.sh",
+      "type": "file",
+      "name": "stop-order.sh",
+      "filePath": "shell/scripts/stop-order.sh",
+      "summary": "Detiene o da de baja los servicios Docker Compose leyendo layers.conf en orden inverso al arranque para proteger dependencias como bases de datos.",
+      "tags": [
+        "apagado-escalonado",
+        "orden-inverso",
+        "capas-compose",
+        "gestion-servicios"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Soporta --down (por defecto) y --stop; omite servicios no desplegados o detenidos sin abortar el resto de las capas."
+    },
+    {
+      "id": "function:shell/scripts/stop-order.sh:compose_file",
+      "type": "function",
+      "name": "compose_file",
+      "filePath": "shell/scripts/stop-order.sh",
+      "lineRange": [
+        50,
+        59
+      ],
+      "summary": "Localiza el archivo Compose válido de un servicio dentro de DOCKER_BASE.",
+      "tags": [
+        "descubrimiento-compose",
+        "resolucion-rutas",
+        "docker-base"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:shell/scripts/stop-order.sh:load_layers",
+      "type": "function",
+      "name": "load_layers",
+      "filePath": "shell/scripts/stop-order.sh",
+      "lineRange": [
+        83,
+        95
+      ],
+      "summary": "Parsea layers.conf en grupos de servicios separados por líneas en blanco respetando comentarios.",
+      "tags": [
+        "parseo-configuracion",
+        "layers-conf",
+        "capas-servicio"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:shell/scripts/apply-restart-policy.sh",
+      "target": "file:docker/cli/svc.sh",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Invoca svc.sh ps <svc> -q mediante svc_cli para obtener los IDs de contenedores de cada servicio."
+    },
+    {
+      "source": "file:shell/scripts/boot-order.sh",
+      "target": "function:shell/scripts/boot-order.sh:compose_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/boot-order.sh",
+      "target": "function:shell/scripts/boot-order.sh:load_layers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/boot-order.sh",
+      "target": "function:shell/scripts/boot-order.sh:validate_layers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/boot-order.sh",
+      "target": "function:shell/scripts/boot-order.sh:wait_service_ready",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/boot-order.sh",
+      "target": "function:shell/scripts/boot-order.sh:start_service_ready_retrying",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/boot-order.sh",
+      "target": "function:shell/scripts/boot-order.sh:run_layer_serial",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/boot-order.sh",
+      "target": "function:shell/scripts/boot-order.sh:run_layer_parallel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/boot-order.sh",
+      "target": "function:shell/scripts/boot-order.sh:run_layer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "function:shell/scripts/boot-order.sh:validate_layers",
+      "target": "function:shell/scripts/boot-order.sh:compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Verifica que cada servicio listado en layers.conf tenga un archivo Compose válido."
+    },
+    {
+      "source": "function:shell/scripts/boot-order.sh:start_service_ready_retrying",
+      "target": "function:shell/scripts/boot-order.sh:wait_service_ready",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Espera a que el servicio levantado alcance estado running/healthy antes de dar el intento por válido."
+    },
+    {
+      "source": "function:shell/scripts/boot-order.sh:run_layer_serial",
+      "target": "function:shell/scripts/boot-order.sh:start_service_ready_retrying",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Arranca cada servicio de la capa uno a uno con reintentos."
+    },
+    {
+      "source": "function:shell/scripts/boot-order.sh:run_layer_parallel",
+      "target": "function:shell/scripts/boot-order.sh:wait_service_ready",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Comprueba la readiness de cada servicio arrancado en paralelo."
+    },
+    {
+      "source": "function:shell/scripts/boot-order.sh:run_layer_parallel",
+      "target": "function:shell/scripts/boot-order.sh:start_service_ready_retrying",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Reintenta secuencialmente con down + up limpio si un servicio paralelo no queda ready."
+    },
+    {
+      "source": "function:shell/scripts/boot-order.sh:run_layer",
+      "target": "function:shell/scripts/boot-order.sh:run_layer_parallel",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Delega la capa al modo paralelo cuando BOOT_ORDER_SERIAL=0."
+    },
+    {
+      "source": "function:shell/scripts/boot-order.sh:run_layer",
+      "target": "function:shell/scripts/boot-order.sh:run_layer_serial",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Delega la capa al modo serial por defecto."
+    },
+    {
+      "source": "file:shell/scripts/boot-order.sh",
+      "target": "file:docker/cli/svc.sh",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta svc.sh up, down y ps mediante svc_cli para gestionar el ciclo de vida de cada servicio."
+    },
+    {
+      "source": "file:shell/scripts/boot-order.sh",
+      "target": "file:shell/scripts/layers.conf.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Requiere el archivo layers.conf en DOCKER_BASE/scripts cuya plantilla de referencia es layers.conf.example."
+    },
+    {
+      "source": "file:shell/scripts/find-no-extends.sh",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Detecta archivos Compose en DOCKER_BASE que no heredan la configuración base de _common.yml."
+    },
+    {
+      "source": "file:shell/scripts/install-boot-service.sh",
+      "target": "file:systemd/docker-boot-staged.service.template",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Sustituye placeholders en la plantilla para generar /etc/systemd/system/docker-boot-staged.service."
+    },
+    {
+      "source": "file:shell/scripts/install-boot-service.sh",
+      "target": "file:shell/scripts/boot-order.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Comprueba que boot-order.sh exista y sea ejecutable como script objetivo del servicio systemd."
+    },
+    {
+      "source": "file:shell/scripts/install-shutdown-service.sh",
+      "target": "file:systemd/docker-shutdown-staged.service.template",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Renderiza la plantilla para instalar /etc/systemd/system/docker-shutdown-staged.service."
+    },
+    {
+      "source": "file:shell/scripts/install-shutdown-service.sh",
+      "target": "file:shell/scripts/stop-order.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Verifica que stop-order.sh sea ejecutable como script invocado por la unidad de apagado."
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:usage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:parse_args",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:setup_logging",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:apt_update_once",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:detect_docker_user",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:select_docker_user",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:validate_operating_system",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:check_connectivity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:disable_legacy_repo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:write_docker_repo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:install_docker",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:configure_user_group",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:print_summary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "function:shell/scripts/install_docker.sh:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:parse_args",
+      "target": "function:shell/scripts/install_docker.sh:usage",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:select_docker_user",
+      "target": "function:shell/scripts/install_docker.sh:detect_docker_user",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:install_docker",
+      "target": "function:shell/scripts/install_docker.sh:check_connectivity",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:install_docker",
+      "target": "function:shell/scripts/install_docker.sh:disable_legacy_repo",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:install_docker",
+      "target": "function:shell/scripts/install_docker.sh:apt_update_once",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:install_docker",
+      "target": "function:shell/scripts/install_docker.sh:write_docker_repo",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:configure_user_group",
+      "target": "function:shell/scripts/install_docker.sh:select_docker_user",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:main",
+      "target": "function:shell/scripts/install_docker.sh:parse_args",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:main",
+      "target": "function:shell/scripts/install_docker.sh:setup_logging",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:main",
+      "target": "function:shell/scripts/install_docker.sh:validate_operating_system",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:main",
+      "target": "function:shell/scripts/install_docker.sh:install_docker",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:main",
+      "target": "function:shell/scripts/install_docker.sh:configure_user_group",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:shell/scripts/install_docker.sh:main",
+      "target": "function:shell/scripts/install_docker.sh:print_summary",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:shell/scripts/install_docker.sh",
+      "target": "file:tests/simulate_install_docker.sh",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Validado en modo simulación mediante el script de pruebas simulate_install_docker.sh."
+    },
+    {
+      "source": "file:shell/scripts/restart-all.sh",
+      "target": "file:shell/scripts/stop-order.sh",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta stop-order.sh --down mediante setsid como fallback si no está instalada la unidad systemd."
+    },
+    {
+      "source": "file:shell/scripts/restart-all.sh",
+      "target": "file:shell/scripts/install-shutdown-service.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Prefiere docker-shutdown-staged.service instalado por install-shutdown-service.sh para desacoplar el reinicio bajo PID 1."
+    },
+    {
+      "source": "file:shell/scripts/start-all.sh",
+      "target": "file:shell/scripts/boot-order.sh",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Transfiere el control de ejecución a boot-order.sh mediante exec."
+    },
+    {
+      "source": "file:shell/scripts/stop-all.sh",
+      "target": "file:shell/scripts/stop-order.sh",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Ejecuta stop-order.sh --down mediante setsid como fallback antes de ejecutar poweroff."
+    },
+    {
+      "source": "file:shell/scripts/stop-all.sh",
+      "target": "file:shell/scripts/install-shutdown-service.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Prefiere docker-shutdown-staged.service instalado por install-shutdown-service.sh para desacoplar el apagado bajo PID 1."
+    },
+    {
+      "source": "file:shell/scripts/stop-order.sh",
+      "target": "function:shell/scripts/stop-order.sh:compose_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/stop-order.sh",
+      "target": "function:shell/scripts/stop-order.sh:load_layers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:shell/scripts/stop-order.sh",
+      "target": "file:docker/cli/svc.sh",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8,
+      "description": "Invoca svc.sh ps, down o stop mediante svc_cli para detener cada servicio por capas."
+    },
+    {
+      "source": "file:shell/scripts/stop-order.sh",
+      "target": "file:shell/scripts/layers.conf.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Lee layers.conf en orden inverso tomando como plantilla layers.conf.example."
+    },
+    {
+      "source": "file:shell/scripts/stop-order.sh",
+      "target": "file:shell/scripts/boot-order.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Contraparte de apagado en orden inverso al arranque escalonado implementado en boot-order.sh."
+    }
+  ]
+}

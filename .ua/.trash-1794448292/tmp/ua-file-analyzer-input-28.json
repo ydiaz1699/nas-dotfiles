@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/vscode/.env.example",
+      "language": "config",
+      "sizeLines": 10,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/vscode/compose.yml",
+      "language": "yaml",
+      "sizeLines": 64,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/vscode/ficha.md",
+      "language": "markdown",
+      "sizeLines": 70,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/vscode/.env.example": [],
+    "agent/catalog/services/vscode/compose.yml": [],
+    "agent/catalog/services/vscode/ficha.md": []
+  }
+}

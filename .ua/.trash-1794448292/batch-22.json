@@ -1,0 +1,124 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/n8n/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/n8n/.env.example",
+      "filePath": "agent/catalog/services/n8n/.env.example",
+      "lineRange": [1, 5],
+      "summary": "Plantilla mínima de variables de entorno locales para n8n: define DB_PASSWORD para la conexión a PostgreSQL y N8N_ENCRYPTION_KEY para cifrar credenciales almacenadas.",
+      "tags": [
+        "variables-entorno",
+        "n8n",
+        "credenciales-bd",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/n8n/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/n8n/compose.yml",
+      "filePath": "agent/catalog/services/n8n/compose.yml",
+      "lineRange": [1, 63],
+      "summary": "Definición Docker Compose de n8n (n8nio/n8n:2.36.7) expuesto en el puerto 5678 sobre la red externa db_net, con persistencia en ./data, PostgreSQL dedicado en datapostgres:5432 (n8n_db), cap_drop ALL, healthcheck en /healthz y labels de Homepage.",
+      "tags": [
+        "docker-compose",
+        "n8n",
+        "workflows-automatizacion",
+        "red-db-net"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo YAML de Docker Compose que extiende _defaults desde ../../_common.yml y representa la configuración objetivo tras el hardening."
+    },
+    {
+      "id": "document:agent/catalog/services/n8n/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/n8n/ficha.md",
+      "filePath": "agent/catalog/services/n8n/ficha.md",
+      "lineRange": [1, 64],
+      "summary": "Ficha técnica del catálogo para n8n con frontmatter YAML de metadatos, resumen de arquitectura PostgreSQL sin Redis, distinción entre versión observada (2.23.4) y pin objetivo (2.36.7), y referencia a n8n-guide.md.",
+      "tags": [
+        "ficha-servicio",
+        "catalogo-nas",
+        "n8n",
+        "metadatos-yaml"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/n8n/.env.example",
+      "target": "service:agent/catalog/services/n8n/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Provee DB_PASSWORD y N8N_ENCRYPTION_KEY al servicio n8n en compose.yml."
+    },
+    {
+      "source": "service:agent/catalog/services/n8n/compose.yml",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "El servicio n8n hereda _defaults desde ../../_common.yml mediante extends."
+    },
+    {
+      "source": "service:agent/catalog/services/n8n/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde ../.env para configurar WEBHOOK_URL y labels de Homepage."
+    },
+    {
+      "source": "service:agent/catalog/services/n8n/compose.yml",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Utiliza la base de datos dedicada n8n_db con rol n8n_user en datapostgres:5432 a través de db_net."
+    },
+    {
+      "source": "service:agent/catalog/services/n8n/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Expone labels homepage.* para registrar n8n en el grupo IA y Automatización de Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/n8n/ficha.md",
+      "target": "service:agent/catalog/services/n8n/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe la arquitectura, puertos, límites de recursos y estado objetivo del servicio n8n."
+    },
+    {
+      "source": "document:agent/catalog/services/n8n/ficha.md",
+      "target": "config:agent/catalog/services/n8n/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enumera DB_PASSWORD y N8N_ENCRYPTION_KEY como variables requeridas de n8n."
+    },
+    {
+      "source": "document:agent/catalog/services/n8n/ficha.md",
+      "target": "document:docs/services/n8n-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Apunta mediante docs_url a la guía operativa y de continuidad de n8n."
+    },
+    {
+      "source": "document:agent/catalog/services/n8n/ficha.md",
+      "target": "config:agent/catalog/catalog.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Aporta los metadatos YAML del servicio n8n indexados en catalog.json."
+    }
+  ]
+}

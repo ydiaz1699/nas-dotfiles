@@ -1,0 +1,77 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "docker/cli/lib/backup.sh",
+      "language": "shell",
+      "sizeLines": 666,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/catalog-sync.sh",
+      "language": "shell",
+      "sizeLines": 682,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/discovery.sh",
+      "language": "shell",
+      "sizeLines": 41,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/docker.sh",
+      "language": "shell",
+      "sizeLines": 80,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/extras.sh",
+      "language": "shell",
+      "sizeLines": 1422,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/health.sh",
+      "language": "shell",
+      "sizeLines": 84,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/help.sh",
+      "language": "shell",
+      "sizeLines": 65,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/lobehub.sh",
+      "language": "shell",
+      "sizeLines": 471,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/menu.sh",
+      "language": "shell",
+      "sizeLines": 139,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/notifications.sh",
+      "language": "shell",
+      "sizeLines": 140,
+      "fileCategory": "script"
+    }
+  ],
+  "batchImportData": {
+    "docker/cli/lib/backup.sh": [],
+    "docker/cli/lib/catalog-sync.sh": [],
+    "docker/cli/lib/discovery.sh": [],
+    "docker/cli/lib/docker.sh": [],
+    "docker/cli/lib/extras.sh": [],
+    "docker/cli/lib/health.sh": [],
+    "docker/cli/lib/help.sh": [],
+    "docker/cli/lib/lobehub.sh": [],
+    "docker/cli/lib/menu.sh": [],
+    "docker/cli/lib/notifications.sh": []
+  }
+}

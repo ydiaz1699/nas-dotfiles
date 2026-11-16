@@ -1,0 +1,149 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/homeassistant/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/homeassistant/.env.example",
+      "filePath": "agent/catalog/services/homeassistant/.env.example",
+      "lineRange": [
+        1,
+        3
+      ],
+      "summary": "Plantilla de variable local para Home Assistant que define HOMEASSISTANT_TOKEN (Long-Lived Access Token) utilizado por el widget de Homepage.",
+      "tags": [
+        "variables-entorno",
+        "homeassistant",
+        "token-acceso",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/homeassistant/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/homeassistant/compose.yml",
+      "filePath": "agent/catalog/services/homeassistant/compose.yml",
+      "lineRange": [
+        1,
+        43
+      ],
+      "summary": "Definición Docker Compose de Home Assistant en modo privileged y network_mode: host con DNS explícitos, stop_grace_period de 60s, montaje de /run/dbus, healthcheck HTTP en :8123, límites de 2 CPU/2G RAM y widget de Homepage.",
+      "tags": [
+        "docker-compose",
+        "homeassistant",
+        "network-host",
+        "domotica-iot"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo YAML de Docker Compose sin extends de _common.yml porque requiere privileged: true y network_mode: host para mDNS, USB y Bluetooth."
+    },
+    {
+      "id": "document:agent/catalog/services/homeassistant/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/homeassistant/ficha.md",
+      "filePath": "agent/catalog/services/homeassistant/ficha.md",
+      "lineRange": [
+        1,
+        93
+      ],
+      "summary": "Ficha técnica de Home Assistant (servicio protegido y backup crítico) con metadatos YAML, estructura de configuración !include, integraciones con ntfy, TvOverlay, EMQX y ESPHome, entidades clave y referencia a guías.",
+      "tags": [
+        "ficha-servicio",
+        "homeassistant",
+        "catalogo-nas",
+        "servicio-protegido"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/homeassistant/.env.example",
+      "target": "service:agent/catalog/services/homeassistant/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Provee HOMEASSISTANT_TOKEN para autenticar el widget de Homepage en las labels del servicio."
+    },
+    {
+      "source": "service:agent/catalog/services/homeassistant/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde ../.env mediante env_file."
+    },
+    {
+      "source": "service:agent/catalog/services/homeassistant/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Configura labels homepage.* y widget de Home Assistant para el dashboard Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/homeassistant/ficha.md",
+      "target": "service:agent/catalog/services/homeassistant/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la configuración operativa, volúmenes, red host y límites de recursos de Home Assistant."
+    },
+    {
+      "source": "document:agent/catalog/services/homeassistant/ficha.md",
+      "target": "config:agent/catalog/services/homeassistant/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indica el uso de HOMEASSISTANT_TOKEN local y variables globales."
+    },
+    {
+      "source": "document:agent/catalog/services/homeassistant/ficha.md",
+      "target": "document:docs/services/homeassistant-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia en docs_url la guía principal de Home Assistant."
+    },
+    {
+      "source": "document:agent/catalog/services/homeassistant/ficha.md",
+      "target": "document:docs/services/homeassistant-datasql-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia la guía de integración opcional del Recorder de Home Assistant contra DataSQL en 127.0.0.1:5432."
+    },
+    {
+      "source": "document:agent/catalog/services/homeassistant/ficha.md",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la conexión opcional a PostgreSQL de DataSQL vía loopback."
+    },
+    {
+      "source": "document:agent/catalog/services/homeassistant/ficha.md",
+      "target": "service:agent/catalog/services/emqx/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la integración MQTT con el broker EMQX."
+    },
+    {
+      "source": "document:agent/catalog/services/homeassistant/ficha.md",
+      "target": "service:agent/catalog/services/esphome/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la integración de dispositivos ESP32/ESP8266 gestionados con ESPHome."
+    },
+    {
+      "source": "document:agent/catalog/services/homeassistant/ficha.md",
+      "target": "service:agent/catalog/services/ntfy/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta las notificaciones push y snapshots de cámara enviados mediante ntfy."
+    }
+  ]
+}

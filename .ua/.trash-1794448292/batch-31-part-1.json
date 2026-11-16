@@ -1,0 +1,1437 @@
+{
+  "nodes": [
+    {
+      "id": "file:docker/cli/lib/backup.sh",
+      "type": "file",
+      "name": "backup.sh",
+      "filePath": "docker/cli/lib/backup.sh",
+      "summary": "Módulo Bash del CLI svc para backups y restauración de volúmenes Docker con rotación, verificación tar, búsqueda global en logs y snapshots/rollbacks ligeros de configuración.",
+      "tags": [
+        "cli-svc",
+        "backup-docker",
+        "snapshot-rollback",
+        "rotacion-backups"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Script Bash modular cargado por docker/cli/svc.sh; invoca svc_list/svc_compose_file de discovery.sh y ntfy_send de notifications.sh."
+    },
+    {
+      "id": "function:docker/cli/lib/backup.sh:svc_backup",
+      "type": "function",
+      "name": "svc_backup",
+      "filePath": "docker/cli/lib/backup.sh",
+      "lineRange": [
+        7,
+        140
+      ],
+      "summary": "Realiza el backup de los volúmenes de un servicio deteniéndolo temporalmente si estaba activo, empaquetando en tar.gz y aplicando verificación y rotación.",
+      "tags": [
+        "backup-volumenes",
+        "docker-tar",
+        "cli-svc"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:docker/cli/lib/backup.sh:_svc_backup_rotate",
+      "type": "function",
+      "name": "_svc_backup_rotate",
+      "filePath": "docker/cli/lib/backup.sh",
+      "lineRange": [
+        143,
+        157
+      ],
+      "summary": "Elimina los archivos de backup antiguos de un servicio manteniendo únicamente los últimos BACKUP_KEEP respaldos.",
+      "tags": [
+        "rotacion-backups",
+        "limpieza-disco",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/backup.sh:svc_restore",
+      "type": "function",
+      "name": "svc_restore",
+      "filePath": "docker/cli/lib/backup.sh",
+      "lineRange": [
+        160,
+        284
+      ],
+      "summary": "Restaura un archivo tar.gz sobre los volúmenes de un servicio previa doble confirmación y parada controlada del servicio.",
+      "tags": [
+        "restauracion-backup",
+        "confirmacion-segura",
+        "docker-tar"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:docker/cli/lib/backup.sh:svc_backup_all",
+      "type": "function",
+      "name": "svc_backup_all",
+      "filePath": "docker/cli/lib/backup.sh",
+      "lineRange": [
+        289,
+        403
+      ],
+      "summary": "Ejecuta en secuencia el backup de todos los servicios detectados con svc_list, contabiliza resultados y envía resumen por ntfy.",
+      "tags": [
+        "backup-masivo",
+        "orquestacion-bash",
+        "notificaciones-ntfy"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:docker/cli/lib/backup.sh:_svc_backup_verify",
+      "type": "function",
+      "name": "_svc_backup_verify",
+      "filePath": "docker/cli/lib/backup.sh",
+      "lineRange": [
+        406,
+        420
+      ],
+      "summary": "Valida la integridad de un archivo de respaldo comprobando su existencia, tamaño no nulo y listado con tar -tzf.",
+      "tags": [
+        "verificacion-backup",
+        "integridad-tar",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/backup.sh:svc_logs_grep",
+      "type": "function",
+      "name": "svc_logs_grep",
+      "filePath": "docker/cli/lib/backup.sh",
+      "lineRange": [
+        423,
+        476
+      ],
+      "summary": "Busca un patrón de texto en los logs recientes de todos los servicios gestionados por Docker Compose.",
+      "tags": [
+        "busqueda-logs",
+        "diagnostico-docker",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/backup.sh:svc_snapshot",
+      "type": "function",
+      "name": "svc_snapshot",
+      "filePath": "docker/cli/lib/backup.sh",
+      "lineRange": [
+        489,
+        562
+      ],
+      "summary": "Guarda una instantánea ligera de compose.yml, .env y archivos de configuración en un directorio temporal o de snapshots.",
+      "tags": [
+        "snapshot-config",
+        "respaldo-ligero",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/backup.sh:svc_rollback",
+      "type": "function",
+      "name": "svc_rollback",
+      "filePath": "docker/cli/lib/backup.sh",
+      "lineRange": [
+        564,
+        666
+      ],
+      "summary": "Revierte la configuración de un servicio a un snapshot previo creando antes un snapshot de seguridad del estado actual.",
+      "tags": [
+        "rollback-config",
+        "recuperacion",
+        "cli-svc"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:docker/cli/lib/catalog-sync.sh",
+      "type": "file",
+      "name": "catalog-sync.sh",
+      "filePath": "docker/cli/lib/catalog-sync.sh",
+      "summary": "Pipeline en cascada que detecta servicios con compose.yml en DOCKER_BASE y sincroniza automáticamente fichas, compose del catálogo, .env.example sanitizados, guías, scripts DebMenux, SKILL.md y nas-context.md.",
+      "tags": [
+        "catalog-sync",
+        "autodocumentacion",
+        "cli-svc",
+        "pipeline-cascada"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Script Bash cargado bajo demanda por svc.sh para el subcomando catalog-sync; soporta dry-run, --status y --context."
+    },
+    {
+      "id": "function:docker/cli/lib/catalog-sync.sh:_extract_from_compose",
+      "type": "function",
+      "name": "_extract_from_compose",
+      "filePath": "docker/cli/lib/catalog-sync.sh",
+      "lineRange": [
+        65,
+        93
+      ],
+      "summary": "Extrae imagen principal, puertos y red de un archivo compose.yml usando grep y sed sin dependencias externas.",
+      "tags": [
+        "parsing-yaml",
+        "extraccion-compose",
+        "bash-regex"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/catalog-sync.sh:_generate_ficha_from_compose",
+      "type": "function",
+      "name": "_generate_ficha_from_compose",
+      "filePath": "docker/cli/lib/catalog-sync.sh",
+      "lineRange": [
+        100,
+        193
+      ],
+      "summary": "Genera el archivo ficha.md de un servicio dentro del catálogo a partir de los metadatos extraídos de su compose.yml.",
+      "tags": [
+        "generacion-ficha",
+        "catalogo-servicios",
+        "markdown"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/catalog-sync.sh:_sync_compose",
+      "type": "function",
+      "name": "_sync_compose",
+      "filePath": "docker/cli/lib/catalog-sync.sh",
+      "lineRange": [
+        206,
+        232
+      ],
+      "summary": "Copia y mantiene actualizado el archivo compose.yml del servicio dentro de agent/catalog/services/.",
+      "tags": [
+        "sincronizacion-compose",
+        "catalogo-servicios",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/catalog-sync.sh:_sync_env_example",
+      "type": "function",
+      "name": "_sync_env_example",
+      "filePath": "docker/cli/lib/catalog-sync.sh",
+      "lineRange": [
+        235,
+        274
+      ],
+      "summary": "Genera o actualiza .env.example en el catálogo sanitizando valores sensibles de secretos y contraseñas.",
+      "tags": [
+        "sanitizacion-env",
+        "seguridad-secretos",
+        "catalogo-servicios"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/catalog-sync.sh:_generate_guide_placeholder",
+      "type": "function",
+      "name": "_generate_guide_placeholder",
+      "filePath": "docker/cli/lib/catalog-sync.sh",
+      "lineRange": [
+        277,
+        351
+      ],
+      "summary": "Crea una guía Markdown inicial en docs/services/ cuando el servicio aún no cuenta con documentación propia.",
+      "tags": [
+        "documentacion-automatica",
+        "guia-servicio",
+        "markdown"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/catalog-sync.sh:_generate_debmenux_script",
+      "type": "function",
+      "name": "_generate_debmenux_script",
+      "filePath": "docker/cli/lib/catalog-sync.sh",
+      "lineRange": [
+        354,
+        453
+      ],
+      "summary": "Genera un script placeholder compatible con DebMenux para instalar o actualizar el servicio si la herramienta está presente.",
+      "tags": [
+        "debmenux",
+        "generacion-script",
+        "automatizacion"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/catalog-sync.sh:_update_skill_table",
+      "type": "function",
+      "name": "_update_skill_table",
+      "filePath": "docker/cli/lib/catalog-sync.sh",
+      "lineRange": [
+        456,
+        496
+      ],
+      "summary": "Actualiza la tabla de servicios documentados dentro de docker-nas/SKILL.md evitando duplicados.",
+      "tags": [
+        "skill-md",
+        "tabla-servicios",
+        "catalog-sync"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/catalog-sync.sh:catalog_sync",
+      "type": "function",
+      "name": "catalog_sync",
+      "filePath": "docker/cli/lib/catalog-sync.sh",
+      "lineRange": [
+        502,
+        573
+      ],
+      "summary": "Punto de entrada principal de catalog-sync: procesa flags (--dry-run, --status, --context) y orquesta la sincronización y notificación ntfy.",
+      "tags": [
+        "orquestacion-sync",
+        "cli-entrypoint",
+        "notificaciones-ntfy"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/catalog-sync.sh:_sync_service",
+      "type": "function",
+      "name": "_sync_service",
+      "filePath": "docker/cli/lib/catalog-sync.sh",
+      "lineRange": [
+        575,
+        598
+      ],
+      "summary": "Ejecuta los cinco pasos de sincronización de catálogo y documentación para un servicio específico.",
+      "tags": [
+        "sincronizacion-servicio",
+        "pipeline-cascada",
+        "catalog-sync"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/catalog-sync.sh:_catalog_status",
+      "type": "function",
+      "name": "_catalog_status",
+      "filePath": "docker/cli/lib/catalog-sync.sh",
+      "lineRange": [
+        604,
+        631
+      ],
+      "summary": "Imprime una tabla diagnóstica con la cobertura de compose, ficha, .env.example y guía para cada servicio.",
+      "tags": [
+        "estado-catalogo",
+        "reporte-cli",
+        "cobertura-docs"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/catalog-sync.sh:_regenerate_nas_context",
+      "type": "function",
+      "name": "_regenerate_nas_context",
+      "filePath": "docker/cli/lib/catalog-sync.sh",
+      "lineRange": [
+        639,
+        682
+      ],
+      "summary": "Regenera la sección de inventario y contexto operativo en docker-nas/references/nas-context.md.",
+      "tags": [
+        "nas-context",
+        "regeneracion-docs",
+        "skill-registry"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:docker/cli/lib/discovery.sh",
+      "type": "file",
+      "name": "discovery.sh",
+      "filePath": "docker/cli/lib/discovery.sh",
+      "summary": "Librería base de descubrimiento de servicios Docker Compose bajo DOCKER_BASE que localiza archivos compose.yml/docker-compose.yml y lista el estado de cada servicio.",
+      "tags": [
+        "descubrimiento-servicios",
+        "docker-compose",
+        "cli-svc",
+        "utilidades-bash"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Define svc_list, svc_compose_file y svc_lista usados transversalmente por el resto de módulos de docker/cli/lib/."
+    },
+    {
+      "id": "function:docker/cli/lib/discovery.sh:svc_lista",
+      "type": "function",
+      "name": "svc_lista",
+      "filePath": "docker/cli/lib/discovery.sh",
+      "lineRange": [
+        27,
+        41
+      ],
+      "summary": "Muestra en consola el listado de servicios descubiertos en DOCKER_BASE indicando si están activos o detenidos.",
+      "tags": [
+        "listado-servicios",
+        "estado-docker",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:docker/cli/lib/docker.sh",
+      "type": "file",
+      "name": "docker.sh",
+      "filePath": "docker/cli/lib/docker.sh",
+      "summary": "Módulo Bash encargado de la actualización masiva de imágenes y contenedores Docker Compose mediante pull y up -d con confirmación interactiva.",
+      "tags": [
+        "actualizacion-docker",
+        "docker-compose",
+        "cli-svc",
+        "mantenimiento"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Script Bash cargado por svc.sh que depende de svc_list y svc_compose_file."
+    },
+    {
+      "id": "function:docker/cli/lib/docker.sh:svc_update_all",
+      "type": "function",
+      "name": "svc_update_all",
+      "filePath": "docker/cli/lib/docker.sh",
+      "lineRange": [
+        4,
+        80
+      ],
+      "summary": "Descarga nuevas imágenes para todos los servicios activos o configurados y recrea contenedores previa confirmación o flag -y.",
+      "tags": [
+        "actualizacion-masiva",
+        "docker-pull",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:docker/cli/lib/extras.sh",
+      "type": "file",
+      "name": "extras.sh",
+      "filePath": "docker/cli/lib/extras.sh",
+      "summary": "Colección extensa de utilidades operativas del CLI svc: diagnóstico doctor e historial, creación y clonación de servicios, gestión de cron, locks, exclusiones de arranque, puertos, tamaños, redes y variables.",
+      "tags": [
+        "utilidades-svc",
+        "diagnostico-doctor",
+        "gestion-arranque",
+        "cli-svc"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Archivo Bash de 1422 líneas cargado por svc.sh; interactúa con discovery.sh, layers.conf y boot-order.sh."
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_depends",
+      "type": "function",
+      "name": "svc_depends",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        5,
+        27
+      ],
+      "summary": "Muestra los servicios internos definidos y sus dependencias dentro del archivo compose de un servicio.",
+      "tags": [
+        "dependencias-compose",
+        "inspeccion",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_open",
+      "type": "function",
+      "name": "svc_open",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        30,
+        86
+      ],
+      "summary": "Detecta los puertos expuestos de un servicio y construye o abre sus URLs de acceso en red local.",
+      "tags": [
+        "puertos-web",
+        "acceso-servicios",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_port_map",
+      "type": "function",
+      "name": "svc_port_map",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        89,
+        137
+      ],
+      "summary": "Genera un mapa global de puertos publicados por todos los servicios señalando posibles conflictos.",
+      "tags": [
+        "mapa-puertos",
+        "conflictos-red",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_size",
+      "type": "function",
+      "name": "svc_size",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        140,
+        192
+      ],
+      "summary": "Calcula y muestra el espacio en disco ocupado por los directorios de datos y volúmenes de cada servicio.",
+      "tags": [
+        "consumo-disco",
+        "metricas-almacenamiento",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_net",
+      "type": "function",
+      "name": "svc_net",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        195,
+        227
+      ],
+      "summary": "Lista las redes Docker existentes junto con los contenedores conectados a cada una.",
+      "tags": [
+        "redes-docker",
+        "inspeccion-red",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_env",
+      "type": "function",
+      "name": "svc_env",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        230,
+        277
+      ],
+      "summary": "Muestra las variables de entorno de un servicio enmascarando claves sensibles como tokens o contraseñas.",
+      "tags": [
+        "variables-entorno",
+        "enmascaramiento-secretos",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_create",
+      "type": "function",
+      "name": "svc_create",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        280,
+        379
+      ],
+      "summary": "Crea la estructura base de un nuevo servicio (directorios, compose.yml estándar con extends y .env) y recuerda configurarlo en layers.conf.",
+      "tags": [
+        "creacion-servicio",
+        "plantilla-compose",
+        "cli-svc"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:_svc_layers_reminder",
+      "type": "function",
+      "name": "_svc_layers_reminder",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        384,
+        399
+      ],
+      "summary": "Verifica si el servicio recién creado o clonado figura en layers.conf y muestra un recordatorio si falta.",
+      "tags": [
+        "layers-conf",
+        "boot-order",
+        "validacion-arranque"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_watch",
+      "type": "function",
+      "name": "svc_watch",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        402,
+        464
+      ],
+      "summary": "Supervisa periódicamente el estado y healthcheck de los servicios reiniciando contenedores caídos.",
+      "tags": [
+        "monitoreo-continuo",
+        "autorestart",
+        "healthcheck"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_doctor",
+      "type": "function",
+      "name": "svc_doctor",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        468,
+        671
+      ],
+      "summary": "Ejecuta una auditoría integral de salud del entorno Docker (disco, contenedores caídos, puertos, permisos y compose) y registra el resultado.",
+      "tags": [
+        "auditoria-salud",
+        "diagnostico-nas",
+        "cli-svc"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_diff",
+      "type": "function",
+      "name": "svc_diff",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        674,
+        761
+      ],
+      "summary": "Compara el estado actual de compose.yml o .env de un servicio contra su último snapshot o versión previa.",
+      "tags": [
+        "comparacion-config",
+        "diff",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_clone",
+      "type": "function",
+      "name": "svc_clone",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        766,
+        884
+      ],
+      "summary": "Clona la definición compose y configuración base de un servicio existente hacia un nuevo nombre de servicio.",
+      "tags": [
+        "clonacion-servicio",
+        "plantilla-compose",
+        "cli-svc"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_cron",
+      "type": "function",
+      "name": "svc_cron",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        887,
+        936
+      ],
+      "summary": "Subcomando para administrar tareas programadas de svc en crontab delegando en añadir, listar o eliminar.",
+      "tags": [
+        "cron-jobs",
+        "automatizacion",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:_svc_cron_add",
+      "type": "function",
+      "name": "_svc_cron_add",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        938,
+        997
+      ],
+      "summary": "Agrega una nueva tarea programada etiquetada con # svc-cron: al crontab del usuario.",
+      "tags": [
+        "crontab",
+        "programacion-tareas",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:_svc_cron_list",
+      "type": "function",
+      "name": "_svc_cron_list",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        999,
+        1024
+      ],
+      "summary": "Lista numerada las tareas de mantenimiento de svc registradas en crontab.",
+      "tags": [
+        "crontab",
+        "listado-tareas",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:_svc_cron_remove",
+      "type": "function",
+      "name": "_svc_cron_remove",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        1026,
+        1061
+      ],
+      "summary": "Elimina de crontab la tarea svc-cron identificada por su número de índice.",
+      "tags": [
+        "crontab",
+        "eliminacion-tareas",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:_svc_doctor_log",
+      "type": "function",
+      "name": "_svc_doctor_log",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        1068,
+        1087
+      ],
+      "summary": "Registra el conteo de fallos y advertencias de svc_doctor en doctor-history.log salvo en modo read-only MCP.",
+      "tags": [
+        "historial-diagnostico",
+        "logging",
+        "modo-readonly"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_doctor_history",
+      "type": "function",
+      "name": "svc_doctor_history",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        1090,
+        1127
+      ],
+      "summary": "Muestra las últimas entradas y tendencias del historial de ejecuciones de svc_doctor.",
+      "tags": [
+        "tendencias-salud",
+        "historial-diagnostico",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_lock",
+      "type": "function",
+      "name": "svc_lock",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        1134,
+        1172
+      ],
+      "summary": "Crea un archivo de bloqueo (.lock) en un servicio para prevenir actualizaciones o paradas accidentales.",
+      "tags": [
+        "bloqueo-servicio",
+        "proteccion-operativa",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_unlock",
+      "type": "function",
+      "name": "svc_unlock",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        1174,
+        1203
+      ],
+      "summary": "Elimina el archivo de bloqueo (.lock) de un servicio permitiendo nuevamente operaciones destructivas.",
+      "tags": [
+        "desbloqueo-servicio",
+        "proteccion-operativa",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:_svc_lock_guard",
+      "type": "function",
+      "name": "_svc_lock_guard",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        1217,
+        1249
+      ],
+      "summary": "Comprueba si existe un bloqueo activo en el servicio antes de ejecutar una acción y solicita confirmación o aborta.",
+      "tags": [
+        "guardia-bloqueo",
+        "seguridad-operativa",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_no_boot",
+      "type": "function",
+      "name": "svc_no_boot",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        1259,
+        1297
+      ],
+      "summary": "Marca un servicio con .no-boot para excluirlo del arranque escalonado ejecutado por boot-order.sh.",
+      "tags": [
+        "exclusion-arranque",
+        "boot-order",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_boot_enable",
+      "type": "function",
+      "name": "svc_boot_enable",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        1299,
+        1325
+      ],
+      "summary": "Retira la marca .no-boot de un servicio para reincorporarlo al arranque escalonado.",
+      "tags": [
+        "habilitar-arranque",
+        "boot-order",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:_svc_no_boot_list",
+      "type": "function",
+      "name": "_svc_no_boot_list",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        1327,
+        1338
+      ],
+      "summary": "Lista todos los servicios actualmente excluidos del arranque automático mediante archivos .no-boot.",
+      "tags": [
+        "exclusion-arranque",
+        "listado-servicios",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/extras.sh:svc_boot_status",
+      "type": "function",
+      "name": "svc_boot_status",
+      "filePath": "docker/cli/lib/extras.sh",
+      "lineRange": [
+        1345,
+        1422
+      ],
+      "summary": "Resume el estado del servicio systemd docker-boot-staged y las últimas líneas de boot-order.log.",
+      "tags": [
+        "estado-arranque",
+        "systemd-boot",
+        "boot-order"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:docker/cli/lib/backup.sh",
+      "target": "function:docker/cli/lib/backup.sh:svc_backup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/backup.sh",
+      "target": "function:docker/cli/lib/backup.sh:_svc_backup_rotate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/backup.sh",
+      "target": "function:docker/cli/lib/backup.sh:svc_restore",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/backup.sh",
+      "target": "function:docker/cli/lib/backup.sh:svc_backup_all",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/backup.sh",
+      "target": "function:docker/cli/lib/backup.sh:_svc_backup_verify",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/backup.sh",
+      "target": "function:docker/cli/lib/backup.sh:svc_logs_grep",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/backup.sh",
+      "target": "function:docker/cli/lib/backup.sh:svc_snapshot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/backup.sh",
+      "target": "function:docker/cli/lib/backup.sh:svc_rollback",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_extract_from_compose",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_generate_ficha_from_compose",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_sync_compose",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_sync_env_example",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_generate_guide_placeholder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_generate_debmenux_script",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_update_skill_table",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "function:docker/cli/lib/catalog-sync.sh:catalog_sync",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_sync_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_catalog_status",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_regenerate_nas_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/discovery.sh",
+      "target": "function:docker/cli/lib/discovery.sh:svc_lista",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/docker.sh",
+      "target": "function:docker/cli/lib/docker.sh:svc_update_all",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_depends",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_open",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_port_map",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_size",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_net",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_env",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_create",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:_svc_layers_reminder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_watch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_doctor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_diff",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_clone",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_cron",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:_svc_cron_add",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:_svc_cron_list",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:_svc_cron_remove",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:_svc_doctor_log",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_doctor_history",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_lock",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_unlock",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:_svc_lock_guard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_no_boot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_boot_enable",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:_svc_no_boot_list",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "function:docker/cli/lib/extras.sh:svc_boot_status",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/backup.sh",
+      "target": "file:docker/cli/lib/discovery.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/lib/backup.sh",
+      "target": "file:docker/cli/lib/notifications.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "function:docker/cli/lib/backup.sh:svc_backup",
+      "target": "function:docker/cli/lib/backup.sh:_svc_backup_rotate",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/backup.sh:svc_backup",
+      "target": "function:docker/cli/lib/backup.sh:_svc_backup_verify",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/backup.sh:svc_backup_all",
+      "target": "function:docker/cli/lib/backup.sh:svc_backup",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/backup.sh:svc_backup_all",
+      "target": "function:docker/cli/lib/backup.sh:_svc_backup_verify",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/backup.sh:svc_backup_all",
+      "target": "function:docker/cli/lib/notifications.sh:ntfy_send",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/backup.sh:svc_rollback",
+      "target": "function:docker/cli/lib/backup.sh:svc_snapshot",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "file:docker/cli/lib/discovery.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "file:docker/cli/lib/notifications.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "document:docker-nas/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:docker/cli/lib/catalog-sync.sh",
+      "target": "document:docker-nas/references/nas-context.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "function:docker/cli/lib/catalog-sync.sh:_generate_ficha_from_compose",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_extract_from_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/catalog-sync.sh:_generate_guide_placeholder",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_extract_from_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/catalog-sync.sh:_generate_debmenux_script",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_extract_from_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/catalog-sync.sh:catalog_sync",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_update_skill_table",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/catalog-sync.sh:catalog_sync",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_sync_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/catalog-sync.sh:catalog_sync",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_catalog_status",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/catalog-sync.sh:catalog_sync",
+      "target": "function:docker/cli/lib/notifications.sh:ntfy_send",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/catalog-sync.sh:_sync_service",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_generate_ficha_from_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/catalog-sync.sh:_sync_service",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_sync_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/catalog-sync.sh:_sync_service",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_sync_env_example",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/catalog-sync.sh:_sync_service",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_generate_guide_placeholder",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/catalog-sync.sh:_sync_service",
+      "target": "function:docker/cli/lib/catalog-sync.sh:_generate_debmenux_script",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:docker/cli/lib/docker.sh",
+      "target": "file:docker/cli/lib/discovery.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "file:docker/cli/lib/discovery.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "file:shell/scripts/layers.conf.example",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:docker/cli/lib/extras.sh",
+      "target": "file:shell/scripts/boot-order.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "function:docker/cli/lib/extras.sh:svc_create",
+      "target": "function:docker/cli/lib/extras.sh:_svc_layers_reminder",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/extras.sh:svc_clone",
+      "target": "function:docker/cli/lib/extras.sh:_svc_layers_reminder",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/extras.sh:svc_doctor",
+      "target": "function:docker/cli/lib/extras.sh:_svc_doctor_log",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/extras.sh:svc_cron",
+      "target": "function:docker/cli/lib/extras.sh:_svc_cron_add",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/extras.sh:svc_cron",
+      "target": "function:docker/cli/lib/extras.sh:_svc_cron_list",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/extras.sh:svc_cron",
+      "target": "function:docker/cli/lib/extras.sh:_svc_cron_remove",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/extras.sh:svc_no_boot",
+      "target": "function:docker/cli/lib/extras.sh:_svc_no_boot_list",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/extras.sh:svc_boot_enable",
+      "target": "function:docker/cli/lib/extras.sh:_svc_no_boot_list",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

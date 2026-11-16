@@ -1,0 +1,574 @@
+{
+  "nodes": [
+    {
+      "id": "file:docker/cli/lib/health.sh",
+      "type": "file",
+      "name": "health.sh",
+      "filePath": "docker/cli/lib/health.sh",
+      "summary": "Módulo de dashboard de salud para el CLI svc que inspecciona estado, healthcheck, uptime y conteo de reinicios de cada servicio Docker.",
+      "tags": [
+        "healthcheck",
+        "dashboard-estado",
+        "monitoreo-docker",
+        "cli-svc"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Script Bash cargado por svc.sh; consulta docker ps/inspect para cada servicio descubierto vía discovery.sh."
+    },
+    {
+      "id": "function:docker/cli/lib/health.sh:svc_health",
+      "type": "function",
+      "name": "svc_health",
+      "filePath": "docker/cli/lib/health.sh",
+      "lineRange": [
+        4,
+        84
+      ],
+      "summary": "Imprime una tabla formateada con estado, health, uptime, reinicios y detalles de todos los servicios en DOCKER_BASE.",
+      "tags": [
+        "dashboard-salud",
+        "docker-inspect",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:docker/cli/lib/help.sh",
+      "type": "file",
+      "name": "help.sh",
+      "filePath": "docker/cli/lib/help.sh",
+      "summary": "Define el texto de ayuda del CLI svc listando comandos globales, por servicio, backups, operaciones LobeHub y passthrough de Docker Compose.",
+      "tags": [
+        "ayuda-cli",
+        "documentacion-uso",
+        "cli-svc",
+        "bash"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Script Bash cargado por docker/cli/svc.sh para responder a help/-h/--help."
+    },
+    {
+      "id": "function:docker/cli/lib/help.sh:_svc_ayuda",
+      "type": "function",
+      "name": "_svc_ayuda",
+      "filePath": "docker/cli/lib/help.sh",
+      "lineRange": [
+        1,
+        65
+      ],
+      "summary": "Imprime la referencia rápida de uso, comandos disponibles y ejemplos del gestor svc.",
+      "tags": [
+        "ayuda-cli",
+        "referencia-comandos",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:docker/cli/lib/lobehub.sh",
+      "type": "file",
+      "name": "lobehub.sh",
+      "filePath": "docker/cli/lib/lobehub.sh",
+      "summary": "Librería de operaciones seguras y repetibles para el stack LobeHub: validación preflight, verificación runtime (HTTP, Redis, PostgreSQL), diagnóstico de providers, reparación de storage RustFS, reconciliación de DB y dump lógico.",
+      "tags": [
+        "lobehub",
+        "operaciones-seguras",
+        "preflight-verify",
+        "postgresql-rustfs"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Cargada desde svc.sh; exige --confirm en acciones mutadoras e invoca svc_snapshot de backup.sh antes de reparar almacenamiento."
+    },
+    {
+      "id": "function:docker/cli/lib/lobehub.sh:_lobe_usage",
+      "type": "function",
+      "name": "_lobe_usage",
+      "filePath": "docker/cli/lib/lobehub.sh",
+      "lineRange": [
+        5,
+        22
+      ],
+      "summary": "Muestra las subacciones de solo lectura y mutadoras soportadas por svc lobehub.",
+      "tags": [
+        "ayuda-cli",
+        "lobehub",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/lobehub.sh:_lobe_context_report",
+      "type": "function",
+      "name": "_lobe_context_report",
+      "filePath": "docker/cli/lib/lobehub.sh",
+      "lineRange": [
+        42,
+        63
+      ],
+      "summary": "Evalúa la presencia de .env global, compose.yml, _common.yml, .env de LobeHub y DataSQL, binario docker y acceso al daemon.",
+      "tags": [
+        "preflight",
+        "validacion-entorno",
+        "lobehub"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/lobehub.sh:_lobe_compose_resolve_hint",
+      "type": "function",
+      "name": "_lobe_compose_resolve_hint",
+      "filePath": "docker/cli/lib/lobehub.sh",
+      "lineRange": [
+        69,
+        93
+      ],
+      "summary": "Ejecuta docker compose config --quiet para LobeHub y clasifica errores típicos de variables o archivos faltantes.",
+      "tags": [
+        "diagnostico-compose",
+        "lobehub",
+        "validacion-config"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/lobehub.sh:_lobe_secret_bytes",
+      "type": "function",
+      "name": "_lobe_secret_bytes",
+      "filePath": "docker/cli/lib/lobehub.sh",
+      "lineRange": [
+        113,
+        129
+      ],
+      "summary": "Decodifica en Python una clave base64 sin exponerla para verificar la longitud válida en bytes del secreto.",
+      "tags": [
+        "validacion-secretos",
+        "criptografia-base64",
+        "lobehub"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/lobehub.sh:_lobe_preflight",
+      "type": "function",
+      "name": "_lobe_preflight",
+      "filePath": "docker/cli/lib/lobehub.sh",
+      "lineRange": [
+        131,
+        203
+      ],
+      "summary": "Comprueba archivos, secretos base64, resolución de Compose, red compartida y almacenamiento antes de levantar LobeHub.",
+      "tags": [
+        "preflight",
+        "validacion-previa",
+        "lobehub"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:docker/cli/lib/lobehub.sh:_lobe_verify",
+      "type": "function",
+      "name": "_lobe_verify",
+      "filePath": "docker/cli/lib/lobehub.sh",
+      "lineRange": [
+        230,
+        286
+      ],
+      "summary": "Verifica en ejecución el contenedor LobeHub, respuesta HTTP, Redis, extensiones PostgreSQL, privilegios de rol y logs.",
+      "tags": [
+        "verificacion-runtime",
+        "postgresql-redis",
+        "lobehub"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:docker/cli/lib/lobehub.sh:_lobe_providers",
+      "type": "function",
+      "name": "_lobe_providers",
+      "filePath": "docker/cli/lib/lobehub.sh",
+      "lineRange": [
+        293,
+        312
+      ],
+      "summary": "Inspecciona los últimos logs de LobeHub para diagnosticar proveedores de IA sin imprimir claves sensibles.",
+      "tags": [
+        "diagnostico-providers",
+        "logs-seguros",
+        "lobehub"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:docker/cli/lib/lobehub.sh:_lobe_repair_storage",
+      "type": "function",
+      "name": "_lobe_repair_storage",
+      "filePath": "docker/cli/lib/lobehub.sh",
+      "lineRange": [
+        320,
+        363
+      ],
+      "summary": "Crea snapshot previo, detiene temporalmente LobeHub/RustFS y repara permisos del directorio de almacenamiento local.",
+      "tags": [
+        "reparacion-storage",
+        "rustfs",
+        "lobehub"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/lobehub.sh:_lobe_reconcile_db",
+      "type": "function",
+      "name": "_lobe_reconcile_db",
+      "filePath": "docker/cli/lib/lobehub.sh",
+      "lineRange": [
+        365,
+        402
+      ],
+      "summary": "Reconcilia el rol lobehub_user y la base lobehub_db en PostgreSQL asegurando mínimo privilegio y extensiones requeridas.",
+      "tags": [
+        "reconciliacion-db",
+        "postgresql",
+        "lobehub"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/lobehub.sh:_lobe_backup_db",
+      "type": "function",
+      "name": "_lobe_backup_db",
+      "filePath": "docker/cli/lib/lobehub.sh",
+      "lineRange": [
+        404,
+        455
+      ],
+      "summary": "Genera un dump lógico consistente de lobehub_db usando pg_dump con escritura atómica a archivo temporal.",
+      "tags": [
+        "backup-postgresql",
+        "pg-dump",
+        "lobehub"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:docker/cli/lib/lobehub.sh:svc_lobehub",
+      "type": "function",
+      "name": "svc_lobehub",
+      "filePath": "docker/cli/lib/lobehub.sh",
+      "lineRange": [
+        457,
+        471
+      ],
+      "summary": "Dispatcher de subcomandos para svc lobehub (preflight, verify, status, providers, repair-storage, reconcile-db, backup-db).",
+      "tags": [
+        "cli-dispatcher",
+        "lobehub",
+        "cli-svc"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:docker/cli/lib/menu.sh",
+      "type": "file",
+      "name": "menu.sh",
+      "filePath": "docker/cli/lib/menu.sh",
+      "summary": "Interfaz TUI interactiva basada en fzf para explorar servicios Docker, previsualizar su estado en tiempo real y lanzar acciones del CLI svc.",
+      "tags": [
+        "tui-fzf",
+        "menu-interactivo",
+        "cli-svc",
+        "bash"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Script Bash cargado por svc.sh; requiere fzf instalado y consulta discovery.sh."
+    },
+    {
+      "id": "function:docker/cli/lib/menu.sh:svc_menu",
+      "type": "function",
+      "name": "svc_menu",
+      "filePath": "docker/cli/lib/menu.sh",
+      "lineRange": [
+        1,
+        139
+      ],
+      "summary": "Presenta un selector interactivo con fzf sobre los servicios descubiertos y ejecuta acciones como logs, restart, backup o shell.",
+      "tags": [
+        "selector-fzf",
+        "menu-interactivo",
+        "cli-svc"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:docker/cli/lib/notifications.sh",
+      "type": "file",
+      "name": "notifications.sh",
+      "filePath": "docker/cli/lib/notifications.sh",
+      "summary": "Librería compartida de notificaciones push mediante servidor ntfy local con funciones especializadas para eventos de Docker, backups, healthchecks y alertas del sistema.",
+      "tags": [
+        "notificaciones-ntfy",
+        "alertas-push",
+        "monitoreo-nas",
+        "bash"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Cargada via source por svc.sh, backup.sh y catalog-sync.sh; expone ntfy_send y helpers de dominio."
+    },
+    {
+      "id": "function:docker/cli/lib/notifications.sh:ntfy_send",
+      "type": "function",
+      "name": "ntfy_send",
+      "filePath": "docker/cli/lib/notifications.sh",
+      "lineRange": [
+        53,
+        76
+      ],
+      "summary": "Envía una notificación HTTP POST al topic configurado del servidor ntfy local con título, mensaje, prioridad y etiquetas.",
+      "tags": [
+        "ntfy-http",
+        "envio-alertas",
+        "notificaciones-push"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:docker/cli/lib/health.sh",
+      "target": "function:docker/cli/lib/health.sh:svc_health",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/help.sh",
+      "target": "function:docker/cli/lib/help.sh:_svc_ayuda",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_usage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_context_report",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_compose_resolve_hint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_secret_bytes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_preflight",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_verify",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_providers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_repair_storage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_reconcile_db",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_backup_db",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "function:docker/cli/lib/lobehub.sh:svc_lobehub",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/menu.sh",
+      "target": "function:docker/cli/lib/menu.sh:svc_menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/notifications.sh",
+      "target": "function:docker/cli/lib/notifications.sh:ntfy_send",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:docker/cli/lib/health.sh",
+      "target": "file:docker/cli/lib/discovery.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/lib/help.sh",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "service:agent/catalog/services/lobehub/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:docker/cli/lib/lobehub.sh",
+      "target": "file:docker/cli/lib/backup.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "function:docker/cli/lib/lobehub.sh:_lobe_preflight",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_context_report",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/lobehub.sh:_lobe_preflight",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_compose_resolve_hint",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/lobehub.sh:_lobe_preflight",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_secret_bytes",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/lobehub.sh:_lobe_verify",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_context_report",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/lobehub.sh:_lobe_repair_storage",
+      "target": "function:docker/cli/lib/backup.sh:svc_snapshot",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/lobehub.sh:svc_lobehub",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_usage",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/lobehub.sh:svc_lobehub",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_preflight",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/lobehub.sh:svc_lobehub",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_verify",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/lobehub.sh:svc_lobehub",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_providers",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/lobehub.sh:svc_lobehub",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_repair_storage",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/lobehub.sh:svc_lobehub",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_reconcile_db",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:docker/cli/lib/lobehub.sh:svc_lobehub",
+      "target": "function:docker/cli/lib/lobehub.sh:_lobe_backup_db",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:docker/cli/lib/menu.sh",
+      "target": "file:docker/cli/lib/discovery.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/lib/menu.sh",
+      "target": "file:docker/cli/svc.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:docker/cli/lib/notifications.sh",
+      "target": "file:docker/cli/svc.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

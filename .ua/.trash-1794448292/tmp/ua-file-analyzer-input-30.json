@@ -1,0 +1,84 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "docker-nas/references/agent.md",
+      "language": "markdown",
+      "sizeLines": 336,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/diagnostic.md",
+      "language": "markdown",
+      "sizeLines": 181,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/entorno.md",
+      "language": "markdown",
+      "sizeLines": 323,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/extend.md",
+      "language": "markdown",
+      "sizeLines": 86,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/nas-context.md",
+      "language": "markdown",
+      "sizeLines": 570,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/networking-install.md",
+      "language": "markdown",
+      "sizeLines": 319,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/networking-migration.md",
+      "language": "markdown",
+      "sizeLines": 300,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/networking-recovery.md",
+      "language": "markdown",
+      "sizeLines": 589,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/networking.md",
+      "language": "markdown",
+      "sizeLines": 757,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/seguridad.md",
+      "language": "markdown",
+      "sizeLines": 273,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/svc.md",
+      "language": "markdown",
+      "sizeLines": 504,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "docker-nas/references/agent.md": [],
+    "docker-nas/references/diagnostic.md": [],
+    "docker-nas/references/entorno.md": [],
+    "docker-nas/references/extend.md": [],
+    "docker-nas/references/nas-context.md": [],
+    "docker-nas/references/networking-install.md": [],
+    "docker-nas/references/networking-migration.md": [],
+    "docker-nas/references/networking-recovery.md": [],
+    "docker-nas/references/networking.md": [],
+    "docker-nas/references/seguridad.md": [],
+    "docker-nas/references/svc.md": []
+  }
+}

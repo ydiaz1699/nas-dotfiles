@@ -1,0 +1,1756 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 6,
+  "filesSkipped": [
+    "systemd/docker-boot-staged.service.template",
+    "systemd/docker-shutdown-staged.service.template",
+    "systemd/lobehub-mcp-helper.env.example",
+    "systemd/lobehub-mcp-helper.service",
+    "systemd/nas-agent.service",
+    "systemd/nas-mcp-helper.env.example",
+    "systemd/nas-mcp-helper.service",
+    "ui/requirements-setup.txt"
+  ],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 6,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 4,
+      "failed": 0,
+      "skipped": 2
+    }
+  },
+  "results": [
+    {
+      "path": "systemd/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 87,
+      "nonEmptyLines": 65,
+      "sections": [
+        {
+          "heading": "Systemd — NAS Agent Daemon",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Qué hace el daemon",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Instalación",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Arranque escalonado de Docker",
+          "level": 2,
+          "line": 26
+        },
+        {
+          "heading": "Comandos",
+          "level": 2,
+          "line": 50
+        },
+        {
+          "heading": "Variables de entorno",
+          "level": 2,
+          "line": 69
+        },
+        {
+          "heading": "Notas",
+          "level": 2,
+          "line": 81
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "tests/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "tests/conftest.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 135,
+      "nonEmptyLines": 115,
+      "functions": [
+        {
+          "name": "isolate_memory",
+          "startLine": 42,
+          "endLine": 62,
+          "params": [
+            "tmp_path",
+            "monkeypatch"
+          ]
+        },
+        {
+          "name": "mock_safe_run",
+          "startLine": 66,
+          "endLine": 76,
+          "params": [
+            "monkeypatch"
+          ]
+        },
+        {
+          "name": "populated_memory",
+          "startLine": 80,
+          "endLine": 135,
+          "params": [
+            "isolate_memory"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "isolate_memory",
+          "line": 41,
+          "isDefault": false
+        },
+        {
+          "name": "mock_safe_run",
+          "line": 65,
+          "isDefault": false
+        },
+        {
+          "name": "populated_memory",
+          "line": 79,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isolate_memory",
+          "callee": "memory_dir.mkdir",
+          "lineNumber": 49
+        },
+        {
+          "caller": "isolate_memory",
+          "callee": "(memory_dir / \"sessions\").mkdir",
+          "lineNumber": 50
+        },
+        {
+          "caller": "isolate_memory",
+          "callee": "monkeypatch.setenv",
+          "lineNumber": 52
+        },
+        {
+          "caller": "isolate_memory",
+          "callee": "str",
+          "lineNumber": 52
+        },
+        {
+          "caller": "isolate_memory",
+          "callee": "monkeypatch.setattr",
+          "lineNumber": 56
+        },
+        {
+          "caller": "isolate_memory",
+          "callee": "monkeypatch.setattr",
+          "lineNumber": 57
+        },
+        {
+          "caller": "isolate_memory",
+          "callee": "monkeypatch.setattr",
+          "lineNumber": 58
+        },
+        {
+          "caller": "isolate_memory",
+          "callee": "monkeypatch.setattr",
+          "lineNumber": 59
+        },
+        {
+          "caller": "isolate_memory",
+          "callee": "monkeypatch.setattr",
+          "lineNumber": 60
+        },
+        {
+          "caller": "mock_safe_run",
+          "callee": "monkeypatch.setattr",
+          "lineNumber": 71
+        },
+        {
+          "caller": "populated_memory",
+          "callee": "(memory_dir / \"MEMORY.md\").write_text",
+          "lineNumber": 84
+        },
+        {
+          "caller": "populated_memory",
+          "callee": "(memory_dir / \"USER.md\").write_text",
+          "lineNumber": 99
+        },
+        {
+          "caller": "populated_memory",
+          "callee": "(memory_dir / \"SKILLS.md\").write_text",
+          "lineNumber": 110
+        },
+        {
+          "caller": "populated_memory",
+          "callee": "(memory_dir / \"sessions\" / \"2026-07-20_emqx-oom-fix.md\").write_text",
+          "lineNumber": 127
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "tests/simulate_install_docker.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 243,
+      "nonEmptyLines": 201,
+      "functions": [
+        {
+          "name": "cleanup",
+          "startLine": 13,
+          "endLine": 15,
+          "params": []
+        },
+        {
+          "name": "fail",
+          "startLine": 18,
+          "endLine": 21,
+          "params": []
+        },
+        {
+          "name": "pass",
+          "startLine": 23,
+          "endLine": 26,
+          "params": []
+        },
+        {
+          "name": "assert_contains",
+          "startLine": 28,
+          "endLine": 38,
+          "params": []
+        },
+        {
+          "name": "assert_status",
+          "startLine": 40,
+          "endLine": 50,
+          "params": []
+        },
+        {
+          "name": "write_os_release",
+          "startLine": 52,
+          "endLine": 59,
+          "params": []
+        },
+        {
+          "name": "run_installer",
+          "startLine": 61,
+          "endLine": 75,
+          "params": []
+        },
+        {
+          "name": "run_installer_from_env",
+          "startLine": 77,
+          "endLine": 91,
+          "params": []
+        },
+        {
+          "name": "test_help",
+          "startLine": 93,
+          "endLine": 98,
+          "params": []
+        },
+        {
+          "name": "test_valid_debian",
+          "startLine": 100,
+          "endLine": 154,
+          "params": []
+        },
+        {
+          "name": "test_dry_run_env",
+          "startLine": 156,
+          "endLine": 172,
+          "params": []
+        },
+        {
+          "name": "test_invalid_os",
+          "startLine": 174,
+          "endLine": 187,
+          "params": []
+        },
+        {
+          "name": "test_invalid_codename",
+          "startLine": 189,
+          "endLine": 202,
+          "params": []
+        },
+        {
+          "name": "test_explicit_user",
+          "startLine": 204,
+          "endLine": 229,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 14,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "tests/test_daemon.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 74,
+      "nonEmptyLines": 54,
+      "classes": [
+        {
+          "name": "TestScheduler",
+          "startLine": 11,
+          "endLine": 74,
+          "methods": [
+            "test_task_executes",
+            "test_stop_is_graceful",
+            "test_error_in_task_doesnt_crash",
+            "test_multiple_tasks"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TestScheduler",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "task_fn",
+          "callee": "results.append",
+          "lineNumber": 17
+        },
+        {
+          "caller": "test_task_executes",
+          "callee": "Scheduler",
+          "lineNumber": 19
+        },
+        {
+          "caller": "test_task_executes",
+          "callee": "sched.add_task",
+          "lineNumber": 20
+        },
+        {
+          "caller": "test_task_executes",
+          "callee": "sched.start",
+          "lineNumber": 21
+        },
+        {
+          "caller": "test_task_executes",
+          "callee": "time.sleep",
+          "lineNumber": 24
+        },
+        {
+          "caller": "test_task_executes",
+          "callee": "sched.stop",
+          "lineNumber": 25
+        },
+        {
+          "caller": "test_stop_is_graceful",
+          "callee": "Scheduler",
+          "lineNumber": 31
+        },
+        {
+          "caller": "test_stop_is_graceful",
+          "callee": "sched.add_task",
+          "lineNumber": 32
+        },
+        {
+          "caller": "test_stop_is_graceful",
+          "callee": "sched.start",
+          "lineNumber": 33
+        },
+        {
+          "caller": "test_stop_is_graceful",
+          "callee": "time.time",
+          "lineNumber": 35
+        },
+        {
+          "caller": "test_stop_is_graceful",
+          "callee": "sched.stop",
+          "lineNumber": 36
+        },
+        {
+          "caller": "test_stop_is_graceful",
+          "callee": "time.time",
+          "lineNumber": 37
+        },
+        {
+          "caller": "failing_task",
+          "callee": "call_count.append",
+          "lineNumber": 47
+        },
+        {
+          "caller": "failing_task",
+          "callee": "RuntimeError",
+          "lineNumber": 48
+        },
+        {
+          "caller": "test_error_in_task_doesnt_crash",
+          "callee": "Scheduler",
+          "lineNumber": 50
+        },
+        {
+          "caller": "test_error_in_task_doesnt_crash",
+          "callee": "sched.add_task",
+          "lineNumber": 51
+        },
+        {
+          "caller": "test_error_in_task_doesnt_crash",
+          "callee": "sched.start",
+          "lineNumber": 52
+        },
+        {
+          "caller": "test_error_in_task_doesnt_crash",
+          "callee": "time.sleep",
+          "lineNumber": 54
+        },
+        {
+          "caller": "test_error_in_task_doesnt_crash",
+          "callee": "sched.stop",
+          "lineNumber": 55
+        },
+        {
+          "caller": "test_error_in_task_doesnt_crash",
+          "callee": "len",
+          "lineNumber": 58
+        },
+        {
+          "caller": "test_multiple_tasks",
+          "callee": "Scheduler",
+          "lineNumber": 65
+        },
+        {
+          "caller": "test_multiple_tasks",
+          "callee": "sched.add_task",
+          "lineNumber": 66
+        },
+        {
+          "caller": "test_multiple_tasks",
+          "callee": "results_a.append",
+          "lineNumber": 66
+        },
+        {
+          "caller": "test_multiple_tasks",
+          "callee": "sched.add_task",
+          "lineNumber": 67
+        },
+        {
+          "caller": "test_multiple_tasks",
+          "callee": "results_b.append",
+          "lineNumber": 67
+        },
+        {
+          "caller": "test_multiple_tasks",
+          "callee": "sched.start",
+          "lineNumber": 68
+        },
+        {
+          "caller": "test_multiple_tasks",
+          "callee": "time.sleep",
+          "lineNumber": 70
+        },
+        {
+          "caller": "test_multiple_tasks",
+          "callee": "sched.stop",
+          "lineNumber": 71
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "ui/setup.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 601,
+      "nonEmptyLines": 491,
+      "functions": [
+        {
+          "name": "run_cmd",
+          "startLine": 57,
+          "endLine": 65,
+          "params": [
+            "cmd",
+            "timeout"
+          ]
+        },
+        {
+          "name": "detect_system",
+          "startLine": 68,
+          "endLine": 116,
+          "params": []
+        },
+        {
+          "name": "check_mark",
+          "startLine": 119,
+          "endLine": 121,
+          "params": [
+            "condition"
+          ]
+        },
+        {
+          "name": "show_header",
+          "startLine": 129,
+          "endLine": 142,
+          "params": []
+        },
+        {
+          "name": "show_system_info",
+          "startLine": 145,
+          "endLine": 175,
+          "params": [
+            "info"
+          ]
+        },
+        {
+          "name": "ask_configuration",
+          "startLine": 178,
+          "endLine": 297,
+          "params": [
+            "info"
+          ]
+        },
+        {
+          "name": "show_summary",
+          "startLine": 300,
+          "endLine": 325,
+          "params": [
+            "config",
+            "info"
+          ]
+        },
+        {
+          "name": "execute_installation",
+          "startLine": 328,
+          "endLine": 363,
+          "params": [
+            "config",
+            "info"
+          ]
+        },
+        {
+          "name": "_step_copy",
+          "startLine": 371,
+          "endLine": 388,
+          "params": [
+            "config",
+            "info"
+          ]
+        },
+        {
+          "name": "_step_bashrc_user",
+          "startLine": 391,
+          "endLine": 393,
+          "params": [
+            "config",
+            "info"
+          ]
+        },
+        {
+          "name": "_step_user_conf",
+          "startLine": 396,
+          "endLine": 415,
+          "params": [
+            "config",
+            "info"
+          ]
+        },
+        {
+          "name": "_step_bashrc_root",
+          "startLine": 418,
+          "endLine": 422,
+          "params": [
+            "config",
+            "info"
+          ]
+        },
+        {
+          "name": "_configure_bashrc",
+          "startLine": 425,
+          "endLine": 460,
+          "params": [
+            "bashrc_path",
+            "config"
+          ]
+        },
+        {
+          "name": "_step_env_vars",
+          "startLine": 463,
+          "endLine": 491,
+          "params": [
+            "config",
+            "info"
+          ]
+        },
+        {
+          "name": "_step_permissions",
+          "startLine": 494,
+          "endLine": 502,
+          "params": [
+            "config",
+            "info"
+          ]
+        },
+        {
+          "name": "_step_python_deps",
+          "startLine": 505,
+          "endLine": 514,
+          "params": [
+            "config",
+            "info"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 522,
+          "endLine": 597,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "run_cmd",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "detect_system",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "check_mark",
+          "line": 119,
+          "isDefault": false
+        },
+        {
+          "name": "show_header",
+          "line": 129,
+          "isDefault": false
+        },
+        {
+          "name": "show_system_info",
+          "line": 145,
+          "isDefault": false
+        },
+        {
+          "name": "ask_configuration",
+          "line": 178,
+          "isDefault": false
+        },
+        {
+          "name": "show_summary",
+          "line": 300,
+          "isDefault": false
+        },
+        {
+          "name": "execute_installation",
+          "line": 328,
+          "isDefault": false
+        },
+        {
+          "name": "_step_copy",
+          "line": 371,
+          "isDefault": false
+        },
+        {
+          "name": "_step_bashrc_user",
+          "line": 391,
+          "isDefault": false
+        },
+        {
+          "name": "_step_user_conf",
+          "line": 396,
+          "isDefault": false
+        },
+        {
+          "name": "_step_bashrc_root",
+          "line": 418,
+          "isDefault": false
+        },
+        {
+          "name": "_configure_bashrc",
+          "line": 425,
+          "isDefault": false
+        },
+        {
+          "name": "_step_env_vars",
+          "line": 463,
+          "isDefault": false
+        },
+        {
+          "name": "_step_permissions",
+          "line": 494,
+          "isDefault": false
+        },
+        {
+          "name": "_step_python_deps",
+          "line": 505,
+          "isDefault": false
+        },
+        {
+          "name": "main",
+          "line": 522,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "run_cmd",
+          "callee": "subprocess.run",
+          "lineNumber": 60
+        },
+        {
+          "caller": "run_cmd",
+          "callee": "result.stdout.strip",
+          "lineNumber": 63
+        },
+        {
+          "caller": "run_cmd",
+          "callee": "str",
+          "lineNumber": 65
+        },
+        {
+          "caller": "detect_system",
+          "callee": "os.environ.get",
+          "lineNumber": 71
+        },
+        {
+          "caller": "detect_system",
+          "callee": "run_cmd",
+          "lineNumber": 81
+        },
+        {
+          "caller": "detect_system",
+          "callee": "Path(\"/etc/os-release\").exists",
+          "lineNumber": 85
+        },
+        {
+          "caller": "detect_system",
+          "callee": "Path",
+          "lineNumber": 85
+        },
+        {
+          "caller": "detect_system",
+          "callee": "Path(\"/etc/os-release\").read_text().splitlines",
+          "lineNumber": 86
+        },
+        {
+          "caller": "detect_system",
+          "callee": "Path(\"/etc/os-release\").read_text",
+          "lineNumber": 86
+        },
+        {
+          "caller": "detect_system",
+          "callee": "Path",
+          "lineNumber": 86
+        },
+        {
+          "caller": "detect_system",
+          "callee": "line.startswith",
+          "lineNumber": 87
+        },
+        {
+          "caller": "detect_system",
+          "callee": "line.split(\"=\", 1)[1].strip",
+          "lineNumber": 88
+        },
+        {
+          "caller": "detect_system",
+          "callee": "line.split",
+          "lineNumber": 88
+        },
+        {
+          "caller": "detect_system",
+          "callee": "run_cmd",
+          "lineNumber": 92
+        },
+        {
+          "caller": "detect_system",
+          "callee": "out.split(\",\")[0].replace",
+          "lineNumber": 95
+        },
+        {
+          "caller": "detect_system",
+          "callee": "out.split",
+          "lineNumber": 95
+        },
+        {
+          "caller": "detect_system",
+          "callee": "run_cmd",
+          "lineNumber": 100
+        },
+        {
+          "caller": "detect_system",
+          "callee": "out.splitlines",
+          "lineNumber": 103
+        },
+        {
+          "caller": "detect_system",
+          "callee": "parts.split(\"version \")[1].split(\"(\")[0].strip",
+          "lineNumber": 105
+        },
+        {
+          "caller": "detect_system",
+          "callee": "parts.split(\"version \")[1].split",
+          "lineNumber": 105
+        },
+        {
+          "caller": "detect_system",
+          "callee": "parts.split",
+          "lineNumber": 105
+        },
+        {
+          "caller": "detect_system",
+          "callee": "run_cmd",
+          "lineNumber": 108
+        },
+        {
+          "caller": "detect_system",
+          "callee": "Path(\"/etc/timezone\").exists",
+          "lineNumber": 111
+        },
+        {
+          "caller": "detect_system",
+          "callee": "Path",
+          "lineNumber": 111
+        },
+        {
+          "caller": "detect_system",
+          "callee": "Path(\"/etc/timezone\").read_text().strip",
+          "lineNumber": 112
+        },
+        {
+          "caller": "detect_system",
+          "callee": "Path(\"/etc/timezone\").read_text",
+          "lineNumber": 112
+        },
+        {
+          "caller": "detect_system",
+          "callee": "Path",
+          "lineNumber": 112
+        },
+        {
+          "caller": "show_header",
+          "callee": "console.clear",
+          "lineNumber": 131
+        },
+        {
+          "caller": "show_header",
+          "callee": "console.print",
+          "lineNumber": 132
+        },
+        {
+          "caller": "show_header",
+          "callee": "console.print",
+          "lineNumber": 133
+        },
+        {
+          "caller": "show_header",
+          "callee": "Panel.fit",
+          "lineNumber": 134
+        },
+        {
+          "caller": "show_header",
+          "callee": "console.print",
+          "lineNumber": 142
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "Table",
+          "lineNumber": 147
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "table.add_column",
+          "lineNumber": 154
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "table.add_column",
+          "lineNumber": 155
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "table.add_column",
+          "lineNumber": 156
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "table.add_row",
+          "lineNumber": 158
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "check_mark",
+          "lineNumber": 158
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "bool",
+          "lineNumber": 158
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "table.add_row",
+          "lineNumber": 159
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "check_mark",
+          "lineNumber": 159
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "table.add_row",
+          "lineNumber": 160
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "check_mark",
+          "lineNumber": 160
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "table.add_row",
+          "lineNumber": 161
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "check_mark",
+          "lineNumber": 164
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "bool",
+          "lineNumber": 164
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "table.add_row",
+          "lineNumber": 166
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "check_mark",
+          "lineNumber": 166
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "table.add_row",
+          "lineNumber": 167
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "check_mark",
+          "lineNumber": 170
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "bool",
+          "lineNumber": 170
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "table.add_row",
+          "lineNumber": 172
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "check_mark",
+          "lineNumber": 172
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "bool",
+          "lineNumber": 172
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "console.print",
+          "lineNumber": 174
+        },
+        {
+          "caller": "show_system_info",
+          "callee": "console.print",
+          "lineNumber": 175
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "str",
+          "lineNumber": 183
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "Path.home",
+          "lineNumber": 183
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "len",
+          "lineNumber": 193
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "len",
+          "lineNumber": 194
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "console.print",
+          "lineNumber": 196
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text(\r\n        message=\"¿A qué carpeta quieres navegar rápido?\",\r\n        default=default_home,\r\n        long_instruction=\"Ruta absoluta (tu home o carpeta de trabajo)\",\r\n        validate=lambda x: Path(x).is_absolute() or \"Debe ser ruta absoluta\",\r\n    ).execute",
+          "lineNumber": 203
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text",
+          "lineNumber": 203
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "Path(x).is_absolute",
+          "lineNumber": 207
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "Path",
+          "lineNumber": 207
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text(\r\n        message=\"Nombre de la variable (sin $):\",\r\n        default=default_var,\r\n        long_instruction=f\"Se exporta como ${default_var}=\\\"{config['nav_home']}\\\" — solo letras/números\",\r\n        validate=lambda x: x.isidentifier() and \"/\" not in x or \"Solo letras, números y _ (sin / ni espacios)\",\r\n    ).execute",
+          "lineNumber": 210
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text",
+          "lineNumber": 210
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "x.isidentifier",
+          "lineNumber": 214
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "len",
+          "lineNumber": 218
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text(\r\n        message=\"Nombre del comando:\",\r\n        default=default_cmd_recalc,\r\n        long_instruction=f\"Escribes '{default_cmd_recalc}' en la terminal → cd {config['nav_home']}\",\r\n        validate=lambda x: x.isidentifier() and \"/\" not in x or \"Solo letras, números y _ (sin / ni espacios)\",\r\n    ).execute",
+          "lineNumber": 219
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text",
+          "lineNumber": 219
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "x.isidentifier",
+          "lineNumber": 223
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "console.print",
+          "lineNumber": 226
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text(\r\n        message=\"Ruta datos Docker:\",\r\n        default=DOCKER_BASE_DEFAULT,\r\n        validate=lambda x: Path(x).is_absolute() or \"Debe ser ruta absoluta\",\r\n    ).execute",
+          "lineNumber": 233
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text",
+          "lineNumber": 233
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "Path(x).is_absolute",
+          "lineNumber": 236
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "Path",
+          "lineNumber": 236
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text(\r\n        message=\"Timezone:\",\r\n        default=info[\"timezone\"] or \"UTC\",\r\n    ).execute",
+          "lineNumber": 240
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text",
+          "lineNumber": 240
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.select(\r\n        message=\"Provider de IA para el agente:\",\r\n        choices=[\r\n            {\"name\": \"🟢 Gemini (recomendado — barato, solo API key)\", \"value\": \"gemini\"},\r\n            {\"name\": \"🔵 Bedrock / Claude (mejor razonamiento, requiere AWS)\", \"value\": \"bedrock\"},\r\n            {\"name\": \"⚪ Ollama (local, gratis, sin internet)\", \"value\": \"ollama\"},\r\n            {\"name\": \"⏭️  Saltar (configurar después)\", \"value\": \"skip\"},\r\n        ],\r\n        default=\"gemini\",\r\n    ).execute",
+          "lineNumber": 246
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.select",
+          "lineNumber": 246
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "console.print",
+          "lineNumber": 259
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.secret(\r\n            message=\"GOOGLE_API_KEY:\",\r\n            validate=lambda x: len(x) > 10 or \"Key demasiado corta\",\r\n            transformer=lambda x: \"•\" * min(len(x), 20) + f\" ({len(x)} chars)\",\r\n        ).execute",
+          "lineNumber": 262
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.secret",
+          "lineNumber": 262
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "len",
+          "lineNumber": 264
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "min",
+          "lineNumber": 265
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "len",
+          "lineNumber": 265
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "len",
+          "lineNumber": 265
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "console.print",
+          "lineNumber": 268
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text(\r\n            message=\"AWS Region:\",\r\n            default=\"us-east-1\",\r\n        ).execute",
+          "lineNumber": 271
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text",
+          "lineNumber": 271
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text(\r\n            message=\"Ollama host:\",\r\n            default=\"http://localhost:11434\",\r\n        ).execute",
+          "lineNumber": 277
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.text",
+          "lineNumber": 277
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.confirm(\r\n        message=\"¿Configurar también para root?\",\r\n        default=True,\r\n    ).execute",
+          "lineNumber": 286
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.confirm",
+          "lineNumber": 286
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.confirm(\r\n        message=\"¿Instalar dependencias Python del agente?\",\r\n        default=True,\r\n    ).execute",
+          "lineNumber": 292
+        },
+        {
+          "caller": "ask_configuration",
+          "callee": "inquirer.confirm",
+          "lineNumber": 292
+        },
+        {
+          "caller": "show_summary",
+          "callee": "console.print",
+          "lineNumber": 302
+        },
+        {
+          "caller": "show_summary",
+          "callee": "Table",
+          "lineNumber": 304
+        },
+        {
+          "caller": "show_summary",
+          "callee": "table.add_column",
+          "lineNumber": 310
+        },
+        {
+          "caller": "show_summary",
+          "callee": "table.add_column",
+          "lineNumber": 311
+        },
+        {
+          "caller": "show_summary",
+          "callee": "table.add_row",
+          "lineNumber": 313
+        },
+        {
+          "caller": "show_summary",
+          "callee": "str",
+          "lineNumber": 313
+        },
+        {
+          "caller": "show_summary",
+          "callee": "table.add_row",
+          "lineNumber": 314
+        },
+        {
+          "caller": "show_summary",
+          "callee": "table.add_row",
+          "lineNumber": 315
+        },
+        {
+          "caller": "show_summary",
+          "callee": "table.add_row",
+          "lineNumber": 316
+        },
+        {
+          "caller": "show_summary",
+          "callee": "table.add_row",
+          "lineNumber": 317
+        },
+        {
+          "caller": "show_summary",
+          "callee": "config.get",
+          "lineNumber": 318
+        },
+        {
+          "caller": "show_summary",
+          "callee": "table.add_row",
+          "lineNumber": 319
+        },
+        {
+          "caller": "show_summary",
+          "callee": "table.add_row",
+          "lineNumber": 320
+        },
+        {
+          "caller": "show_summary",
+          "callee": "table.add_row",
+          "lineNumber": 321
+        },
+        {
+          "caller": "show_summary",
+          "callee": "table.add_row",
+          "lineNumber": 322
+        },
+        {
+          "caller": "show_summary",
+          "callee": "console.print",
+          "lineNumber": 324
+        },
+        {
+          "caller": "show_summary",
+          "callee": "console.print",
+          "lineNumber": 325
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "steps.append",
+          "lineNumber": 332
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "steps.append",
+          "lineNumber": 333
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "steps.append",
+          "lineNumber": 334
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "steps.append",
+          "lineNumber": 336
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "steps.append",
+          "lineNumber": 337
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "steps.append",
+          "lineNumber": 338
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "steps.append",
+          "lineNumber": 340
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "console.print",
+          "lineNumber": 342
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "Progress",
+          "lineNumber": 344
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "SpinnerColumn",
+          "lineNumber": 345
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "TextColumn",
+          "lineNumber": 346
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "BarColumn",
+          "lineNumber": 347
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "TextColumn",
+          "lineNumber": 348
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "progress.add_task",
+          "lineNumber": 351
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "len",
+          "lineNumber": 351
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "progress.update",
+          "lineNumber": 354
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "step_func",
+          "lineNumber": 356
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "time.sleep",
+          "lineNumber": 357
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "console.print",
+          "lineNumber": 359
+        },
+        {
+          "caller": "execute_installation",
+          "callee": "progress.advance",
+          "lineNumber": 361
+        },
+        {
+          "caller": "_step_copy",
+          "callee": "INSTALL_DIR.exists",
+          "lineNumber": 376
+        },
+        {
+          "caller": "_step_copy",
+          "callee": "shutil.copytree",
+          "lineNumber": 378
+        },
+        {
+          "caller": "_step_copy",
+          "callee": "shutil.copytree",
+          "lineNumber": 381
+        },
+        {
+          "caller": "_step_copy",
+          "callee": "subprocess.run",
+          "lineNumber": 385
+        },
+        {
+          "caller": "_step_copy",
+          "callee": "str",
+          "lineNumber": 386
+        },
+        {
+          "caller": "_step_bashrc_user",
+          "callee": "_configure_bashrc",
+          "lineNumber": 393
+        },
+        {
+          "caller": "_step_bashrc_user",
+          "callee": "Path.home",
+          "lineNumber": 393
+        },
+        {
+          "caller": "_step_user_conf",
+          "callee": "conf_dir.mkdir",
+          "lineNumber": 399
+        },
+        {
+          "caller": "_step_user_conf",
+          "callee": "time.strftime",
+          "lineNumber": 404
+        },
+        {
+          "caller": "_step_user_conf",
+          "callee": "conf_file.write_text",
+          "lineNumber": 415
+        },
+        {
+          "caller": "_step_user_conf",
+          "callee": "\"\\n\".join",
+          "lineNumber": 415
+        },
+        {
+          "caller": "_step_bashrc_root",
+          "callee": "Path",
+          "lineNumber": 420
+        },
+        {
+          "caller": "_step_bashrc_root",
+          "callee": "root_bashrc.exists",
+          "lineNumber": 421
+        },
+        {
+          "caller": "_step_bashrc_root",
+          "callee": "os.geteuid",
+          "lineNumber": 421
+        },
+        {
+          "caller": "_step_bashrc_root",
+          "callee": "_configure_bashrc",
+          "lineNumber": 422
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "bashrc_path.exists",
+          "lineNumber": 431
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "bashrc_path.touch",
+          "lineNumber": 432
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "bashrc_path.read_text",
+          "lineNumber": 434
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "bashrc_path.with_suffix",
+          "lineNumber": 441
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "int",
+          "lineNumber": 441
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "time.time",
+          "lineNumber": 441
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "shutil.copy2",
+          "lineNumber": 442
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "content.splitlines",
+          "lineNumber": 445
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "lines.append",
+          "lineNumber": 455
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "lines.append",
+          "lineNumber": 456
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "lines.append",
+          "lineNumber": 457
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "lines.append",
+          "lineNumber": 458
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "bashrc_path.write_text",
+          "lineNumber": 460
+        },
+        {
+          "caller": "_configure_bashrc",
+          "callee": "\"\\n\".join",
+          "lineNumber": 460
+        },
+        {
+          "caller": "_step_env_vars",
+          "callee": "time.strftime",
+          "lineNumber": 468
+        },
+        {
+          "caller": "_step_env_vars",
+          "callee": "config.get",
+          "lineNumber": 473
+        },
+        {
+          "caller": "_step_env_vars",
+          "callee": "env_lines.append",
+          "lineNumber": 474
+        },
+        {
+          "caller": "_step_env_vars",
+          "callee": "config.get",
+          "lineNumber": 475
+        },
+        {
+          "caller": "_step_env_vars",
+          "callee": "env_lines.append",
+          "lineNumber": 476
+        },
+        {
+          "caller": "_step_env_vars",
+          "callee": "config.get",
+          "lineNumber": 477
+        },
+        {
+          "caller": "_step_env_vars",
+          "callee": "env_lines.append",
+          "lineNumber": 478
+        },
+        {
+          "caller": "_step_env_vars",
+          "callee": "env_lines.extend",
+          "lineNumber": 480
+        },
+        {
+          "caller": "_step_env_vars",
+          "callee": "env_file.write_text",
+          "lineNumber": 490
+        },
+        {
+          "caller": "_step_env_vars",
+          "callee": "\"\\n\".join",
+          "lineNumber": 490
+        },
+        {
+          "caller": "_step_env_vars",
+          "callee": "os.chmod",
+          "lineNumber": 491
+        },
+        {
+          "caller": "_step_permissions",
+          "callee": "svc_path.exists",
+          "lineNumber": 497
+        },
+        {
+          "caller": "_step_permissions",
+          "callee": "svc_path.chmod",
+          "lineNumber": 498
+        },
+        {
+          "caller": "_step_permissions",
+          "callee": "setup_path.exists",
+          "lineNumber": 501
+        },
+        {
+          "caller": "_step_permissions",
+          "callee": "setup_path.chmod",
+          "lineNumber": 502
+        },
+        {
+          "caller": "_step_python_deps",
+          "callee": "req_file.exists",
+          "lineNumber": 508
+        },
+        {
+          "caller": "_step_python_deps",
+          "callee": "subprocess.run",
+          "lineNumber": 509
+        },
+        {
+          "caller": "_step_python_deps",
+          "callee": "str",
+          "lineNumber": 511
+        },
+        {
+          "caller": "main",
+          "callee": "show_header",
+          "lineNumber": 523
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 526
+        },
+        {
+          "caller": "main",
+          "callee": "detect_system",
+          "lineNumber": 527
+        },
+        {
+          "caller": "main",
+          "callee": "show_system_info",
+          "lineNumber": 528
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 532
+        },
+        {
+          "caller": "main",
+          "callee": "inquirer.confirm(\r\n        message=\"¿Continuar con la configuración?\",\r\n        default=True,\r\n    ).execute",
+          "lineNumber": 538
+        },
+        {
+          "caller": "main",
+          "callee": "inquirer.confirm",
+          "lineNumber": 538
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 544
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 548
+        },
+        {
+          "caller": "main",
+          "callee": "ask_configuration",
+          "lineNumber": 549
+        },
+        {
+          "caller": "main",
+          "callee": "show_header",
+          "lineNumber": 552
+        },
+        {
+          "caller": "main",
+          "callee": "show_summary",
+          "lineNumber": 553
+        },
+        {
+          "caller": "main",
+          "callee": "inquirer.confirm(\r\n        message=\"¿Instalar con esta configuración?\",\r\n        default=True,\r\n    ).execute",
+          "lineNumber": 556
+        },
+        {
+          "caller": "main",
+          "callee": "inquirer.confirm",
+          "lineNumber": 556
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 562
+        },
+        {
+          "caller": "main",
+          "callee": "execute_installation",
+          "lineNumber": 566
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 569
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 571
+        },
+        {
+          "caller": "main",
+          "callee": "Panel",
+          "lineNumber": 572
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 586
+        },
+        {
+          "caller": "main",
+          "callee": "Panel",
+          "lineNumber": 587
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 597
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 17,
+        "functionCount": 17,
+        "classCount": 0
+      }
+    }
+  ]
+}

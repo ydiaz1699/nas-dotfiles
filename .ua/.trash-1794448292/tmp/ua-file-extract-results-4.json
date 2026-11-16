@@ -1,0 +1,7037 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 11,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 11,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 11,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "agent/nas_agent.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1399,
+      "nonEmptyLines": 1173,
+      "functions": [
+        {
+          "name": "_load_env_agent",
+          "startLine": 51,
+          "endLine": 68,
+          "params": []
+        },
+        {
+          "name": "_get_session_metadata_path",
+          "startLine": 97,
+          "endLine": 99,
+          "params": []
+        },
+        {
+          "name": "_read_session_metadata",
+          "startLine": 102,
+          "endLine": 110,
+          "params": []
+        },
+        {
+          "name": "_write_session_metadata",
+          "startLine": 113,
+          "endLine": 117,
+          "params": [
+            "meta"
+          ]
+        },
+        {
+          "name": "_session_is_expired",
+          "startLine": 120,
+          "endLine": 126,
+          "params": [
+            "meta"
+          ]
+        },
+        {
+          "name": "_clear_session",
+          "startLine": 129,
+          "endLine": 133,
+          "params": []
+        },
+        {
+          "name": "_get_session_manager",
+          "startLine": 136,
+          "endLine": 161,
+          "params": [
+            "force_new"
+          ]
+        },
+        {
+          "name": "_load_catalog_summary",
+          "startLine": 537,
+          "endLine": 589,
+          "params": []
+        },
+        {
+          "name": "_get_catalog_block",
+          "startLine": 596,
+          "endLine": 610,
+          "params": []
+        },
+        {
+          "name": "_classify_query",
+          "startLine": 617,
+          "endLine": 682,
+          "params": [
+            "query"
+          ]
+        },
+        {
+          "name": "_assemble_prompt",
+          "startLine": 685,
+          "endLine": 709,
+          "params": [
+            "blocks",
+            "model_info",
+            "provider"
+          ]
+        },
+        {
+          "name": "get_model",
+          "startLine": 715,
+          "endLine": 789,
+          "params": []
+        },
+        {
+          "name": "create_nas_agent",
+          "startLine": 797,
+          "endLine": 854,
+          "params": [
+            "session_manager",
+            "query"
+          ]
+        },
+        {
+          "name": "_switch_model",
+          "startLine": 873,
+          "endLine": 937,
+          "params": [
+            "args",
+            "use_rich",
+            "console"
+          ]
+        },
+        {
+          "name": "_persist_model",
+          "startLine": 940,
+          "endLine": 970,
+          "params": [
+            "env_file",
+            "provider",
+            "model_id"
+          ]
+        },
+        {
+          "name": "_repl_mode",
+          "startLine": 978,
+          "endLine": 1154,
+          "params": [
+            "use_rich",
+            "console",
+            "force_new_session"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 1162,
+          "endLine": 1395,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_load_env_agent",
+          "line": 51,
+          "isDefault": false
+        },
+        {
+          "name": "_get_session_metadata_path",
+          "line": 97,
+          "isDefault": false
+        },
+        {
+          "name": "_read_session_metadata",
+          "line": 102,
+          "isDefault": false
+        },
+        {
+          "name": "_write_session_metadata",
+          "line": 113,
+          "isDefault": false
+        },
+        {
+          "name": "_session_is_expired",
+          "line": 120,
+          "isDefault": false
+        },
+        {
+          "name": "_clear_session",
+          "line": 129,
+          "isDefault": false
+        },
+        {
+          "name": "_get_session_manager",
+          "line": 136,
+          "isDefault": false
+        },
+        {
+          "name": "_load_catalog_summary",
+          "line": 537,
+          "isDefault": false
+        },
+        {
+          "name": "_get_catalog_block",
+          "line": 596,
+          "isDefault": false
+        },
+        {
+          "name": "_classify_query",
+          "line": 617,
+          "isDefault": false
+        },
+        {
+          "name": "_assemble_prompt",
+          "line": 685,
+          "isDefault": false
+        },
+        {
+          "name": "get_model",
+          "line": 715,
+          "isDefault": false
+        },
+        {
+          "name": "create_nas_agent",
+          "line": 797,
+          "isDefault": false
+        },
+        {
+          "name": "_switch_model",
+          "line": 873,
+          "isDefault": false
+        },
+        {
+          "name": "_persist_model",
+          "line": 940,
+          "isDefault": false
+        },
+        {
+          "name": "_repl_mode",
+          "line": 978,
+          "isDefault": false
+        },
+        {
+          "name": "main",
+          "line": 1162,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_load_env_agent",
+          "callee": "Path(__file__).resolve",
+          "lineNumber": 53
+        },
+        {
+          "caller": "_load_env_agent",
+          "callee": "Path",
+          "lineNumber": 53
+        },
+        {
+          "caller": "_load_env_agent",
+          "callee": "env_file.exists",
+          "lineNumber": 54
+        },
+        {
+          "caller": "_load_env_agent",
+          "callee": "env_file.read_text(encoding=\"utf-8\").splitlines",
+          "lineNumber": 57
+        },
+        {
+          "caller": "_load_env_agent",
+          "callee": "env_file.read_text",
+          "lineNumber": 57
+        },
+        {
+          "caller": "_load_env_agent",
+          "callee": "line.strip",
+          "lineNumber": 58
+        },
+        {
+          "caller": "_load_env_agent",
+          "callee": "line.startswith",
+          "lineNumber": 60
+        },
+        {
+          "caller": "_load_env_agent",
+          "callee": "line.partition",
+          "lineNumber": 63
+        },
+        {
+          "caller": "_load_env_agent",
+          "callee": "key.strip",
+          "lineNumber": 64
+        },
+        {
+          "caller": "_load_env_agent",
+          "callee": "value.strip",
+          "lineNumber": 65
+        },
+        {
+          "caller": "_read_session_metadata",
+          "callee": "_get_session_metadata_path",
+          "lineNumber": 104
+        },
+        {
+          "caller": "_read_session_metadata",
+          "callee": "meta_path.exists",
+          "lineNumber": 105
+        },
+        {
+          "caller": "_read_session_metadata",
+          "callee": "json.loads",
+          "lineNumber": 107
+        },
+        {
+          "caller": "_read_session_metadata",
+          "callee": "meta_path.read_text",
+          "lineNumber": 107
+        },
+        {
+          "caller": "_write_session_metadata",
+          "callee": "_get_session_metadata_path",
+          "lineNumber": 115
+        },
+        {
+          "caller": "_write_session_metadata",
+          "callee": "meta_path.parent.mkdir",
+          "lineNumber": 116
+        },
+        {
+          "caller": "_write_session_metadata",
+          "callee": "meta_path.write_text",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_write_session_metadata",
+          "callee": "json.dumps",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_session_is_expired",
+          "callee": "meta.get",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_session_is_expired",
+          "callee": "time.time",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_clear_session",
+          "callee": "SESSIONS_DIR.exists",
+          "lineNumber": 131
+        },
+        {
+          "caller": "_clear_session",
+          "callee": "shutil.rmtree",
+          "lineNumber": 132
+        },
+        {
+          "caller": "_clear_session",
+          "callee": "SESSIONS_DIR.mkdir",
+          "lineNumber": 133
+        },
+        {
+          "caller": "_get_session_manager",
+          "callee": "_read_session_metadata",
+          "lineNumber": 145
+        },
+        {
+          "caller": "_get_session_manager",
+          "callee": "_session_is_expired",
+          "lineNumber": 148
+        },
+        {
+          "caller": "_get_session_manager",
+          "callee": "_clear_session",
+          "lineNumber": 149
+        },
+        {
+          "caller": "_get_session_manager",
+          "callee": "time.time",
+          "lineNumber": 153
+        },
+        {
+          "caller": "_get_session_manager",
+          "callee": "meta.get",
+          "lineNumber": 155
+        },
+        {
+          "caller": "_get_session_manager",
+          "callee": "_write_session_metadata",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_get_session_manager",
+          "callee": "FileSessionManager",
+          "lineNumber": 158
+        },
+        {
+          "caller": "_get_session_manager",
+          "callee": "str",
+          "lineNumber": 160
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "catalog_services.exists",
+          "lineNumber": 544
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "sorted",
+          "lineNumber": 548
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "catalog_services.iterdir",
+          "lineNumber": 548
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "svc_dir.is_dir",
+          "lineNumber": 549
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "ficha.exists",
+          "lineNumber": 552
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "ficha.read_text",
+          "lineNumber": 556
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "content.splitlines",
+          "lineNumber": 559
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "line.strip",
+          "lineNumber": 560
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "line.partition",
+          "lineNumber": 567
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "key.strip",
+          "lineNumber": 568
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "val.strip().strip('\"').strip",
+          "lineNumber": 569
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "val.strip().strip",
+          "lineNumber": 569
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "val.strip",
+          "lineNumber": 569
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "meta.get",
+          "lineNumber": 575
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "meta.get",
+          "lineNumber": 576
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "meta.get",
+          "lineNumber": 577
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "meta.get",
+          "lineNumber": 578
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "meta.get",
+          "lineNumber": 579
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "meta.get",
+          "lineNumber": 580
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "lines.append",
+          "lineNumber": 582
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "lines.append",
+          "lineNumber": 584
+        },
+        {
+          "caller": "_load_catalog_summary",
+          "callee": "\"\\n\".join",
+          "lineNumber": 589
+        },
+        {
+          "caller": "_get_catalog_block",
+          "callee": "_load_catalog_summary",
+          "lineNumber": 600
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "query.lower",
+          "lineNumber": 623
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "any",
+          "lineNumber": 627
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "blocks.extend",
+          "lineNumber": 632
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "any",
+          "lineNumber": 636
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "blocks.extend",
+          "lineNumber": 640
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "any",
+          "lineNumber": 644
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "blocks.extend",
+          "lineNumber": 647
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "any",
+          "lineNumber": 651
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "blocks.extend",
+          "lineNumber": 655
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "any",
+          "lineNumber": 659
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "blocks.extend",
+          "lineNumber": 663
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "any",
+          "lineNumber": 667
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "any",
+          "lineNumber": 673
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "blocks.extend",
+          "lineNumber": 677
+        },
+        {
+          "caller": "_classify_query",
+          "callee": "blocks.extend",
+          "lineNumber": 681
+        },
+        {
+          "caller": "_assemble_prompt",
+          "callee": "BLOCK_IDENTIDAD.format",
+          "lineNumber": 688
+        },
+        {
+          "caller": "_assemble_prompt",
+          "callee": "_get_catalog_block",
+          "lineNumber": 699
+        },
+        {
+          "caller": "_assemble_prompt",
+          "callee": "parts.append",
+          "lineNumber": 704
+        },
+        {
+          "caller": "_assemble_prompt",
+          "callee": "', '.join",
+          "lineNumber": 704
+        },
+        {
+          "caller": "_assemble_prompt",
+          "callee": "parts.append",
+          "lineNumber": 707
+        },
+        {
+          "caller": "_assemble_prompt",
+          "callee": "\"\\n\".join",
+          "lineNumber": 709
+        },
+        {
+          "caller": "get_model",
+          "callee": "os.environ.get(\"NAS_AGENT_MODEL\", \"gemini\").lower",
+          "lineNumber": 733
+        },
+        {
+          "caller": "get_model",
+          "callee": "os.environ.get",
+          "lineNumber": 733
+        },
+        {
+          "caller": "get_model",
+          "callee": "os.environ.get",
+          "lineNumber": 734
+        },
+        {
+          "caller": "get_model",
+          "callee": "os.environ.get",
+          "lineNumber": 742
+        },
+        {
+          "caller": "get_model",
+          "callee": "GeminiModel",
+          "lineNumber": 747
+        },
+        {
+          "caller": "get_model",
+          "callee": "int",
+          "lineNumber": 763
+        },
+        {
+          "caller": "get_model",
+          "callee": "os.environ.get",
+          "lineNumber": 763
+        },
+        {
+          "caller": "get_model",
+          "callee": "BedrockModel",
+          "lineNumber": 765
+        },
+        {
+          "caller": "get_model",
+          "callee": "os.environ.get",
+          "lineNumber": 767
+        },
+        {
+          "caller": "get_model",
+          "callee": "os.environ.get",
+          "lineNumber": 781
+        },
+        {
+          "caller": "get_model",
+          "callee": "OllamaModel",
+          "lineNumber": 782
+        },
+        {
+          "caller": "get_model",
+          "callee": "ValueError",
+          "lineNumber": 785
+        },
+        {
+          "caller": "create_nas_agent",
+          "callee": "get_model",
+          "lineNumber": 806
+        },
+        {
+          "caller": "create_nas_agent",
+          "callee": "os.environ.get(\"NAS_AGENT_MODEL\", \"gemini\").lower",
+          "lineNumber": 809
+        },
+        {
+          "caller": "create_nas_agent",
+          "callee": "os.environ.get",
+          "lineNumber": 809
+        },
+        {
+          "caller": "create_nas_agent",
+          "callee": "os.environ.get",
+          "lineNumber": 810
+        },
+        {
+          "caller": "create_nas_agent",
+          "callee": "_classify_query",
+          "lineNumber": 825
+        },
+        {
+          "caller": "create_nas_agent",
+          "callee": "_assemble_prompt",
+          "lineNumber": 826
+        },
+        {
+          "caller": "create_nas_agent",
+          "callee": "os.environ.get(\"NAS_AGENT_DRYRUN\", \"0\").strip",
+          "lineNumber": 829
+        },
+        {
+          "caller": "create_nas_agent",
+          "callee": "os.environ.get",
+          "lineNumber": 829
+        },
+        {
+          "caller": "create_nas_agent",
+          "callee": "dict",
+          "lineNumber": 841
+        },
+        {
+          "caller": "create_nas_agent",
+          "callee": "Agent",
+          "lineNumber": 852
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "list",
+          "lineNumber": 875
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "args_copy.remove",
+          "lineNumber": 877
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "Path(__file__).resolve",
+          "lineNumber": 879
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "Path",
+          "lineNumber": 879
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "model_id.startswith",
+          "lineNumber": 885
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "model_id.startswith",
+          "lineNumber": 885
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "_persist_model",
+          "lineNumber": 891
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 893
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 894
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "print",
+          "lineNumber": 896
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 901
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 902
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "_AVAILABLE_MODELS.items",
+          "lineNumber": 903
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 904
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 905
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 906
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 907
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 908
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "print",
+          "lineNumber": 910
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "_AVAILABLE_MODELS.items",
+          "lineNumber": 911
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "print",
+          "lineNumber": 912
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "print",
+          "lineNumber": 913
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "print",
+          "lineNumber": 914
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "input(\"  Selecciona [1-7]: \").strip",
+          "lineNumber": 916
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "input",
+          "lineNumber": 916
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "_persist_model",
+          "lineNumber": 920
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 922
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 923
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "print",
+          "lineNumber": 925
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "_persist_model",
+          "lineNumber": 928
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 930
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "print",
+          "lineNumber": 932
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "console.print",
+          "lineNumber": 935
+        },
+        {
+          "caller": "_switch_model",
+          "callee": "print",
+          "lineNumber": 937
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "env_file.exists",
+          "lineNumber": 942
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "env_file.read_text(encoding=\"utf-8\").splitlines",
+          "lineNumber": 943
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "env_file.read_text",
+          "lineNumber": 943
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "line.startswith",
+          "lineNumber": 953
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "line.startswith",
+          "lineNumber": 953
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "new_lines.append",
+          "lineNumber": 954
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "line.startswith",
+          "lineNumber": 956
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "new_lines.append",
+          "lineNumber": 957
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "line.startswith",
+          "lineNumber": 959
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "new_lines.append",
+          "lineNumber": 960
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "new_lines.append",
+          "lineNumber": 963
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "new_lines.append",
+          "lineNumber": 966
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "new_lines.append",
+          "lineNumber": 968
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "env_file.write_text",
+          "lineNumber": 970
+        },
+        {
+          "caller": "_persist_model",
+          "callee": "\"\\n\".join",
+          "lineNumber": 970
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 997
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 998
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "Panel",
+          "lineNumber": 998
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1007
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1009
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1010
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1011
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1012
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1016
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1018
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "_get_session_manager",
+          "lineNumber": 1021
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "create_nas_agent",
+          "lineNumber": 1023
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1026
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1028
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1032
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1034
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "os.environ.get(\"NAS_AGENT_DRYRUN\", \"0\").strip",
+          "lineNumber": 1037
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "os.environ.get",
+          "lineNumber": 1037
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1039
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1041
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "input",
+          "lineNumber": 1050
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "input",
+          "lineNumber": 1052
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1056
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1058
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "query.strip",
+          "lineNumber": 1061
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "query.lower",
+          "lineNumber": 1067
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1069
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1071
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "query.lower",
+          "lineNumber": 1074
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "_clear_session",
+          "lineNumber": 1075
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "_get_session_manager",
+          "lineNumber": 1076
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "create_nas_agent",
+          "lineNumber": 1077
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1080
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1082
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "query.lower",
+          "lineNumber": 1085
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "_read_session_metadata",
+          "lineNumber": 1086
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "meta.get",
+          "lineNumber": 1087
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1089
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1090
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1092
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "query.lower",
+          "lineNumber": 1095
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1097
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1098
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1099
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1100
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1101
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1102
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1104
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1105
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1106
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1107
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "agent",
+          "lineNumber": 1114
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "str",
+          "lineNumber": 1116
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "error_msg.lower",
+          "lineNumber": 1117
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1119
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1121
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1124
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1126
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1133
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "str(result).strip",
+          "lineNumber": 1134
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "str",
+          "lineNumber": 1134
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "Markdown",
+          "lineNumber": 1137
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1138
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "Panel",
+          "lineNumber": 1138
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1146
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1147
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1149
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "str(result).strip",
+          "lineNumber": 1149
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "str",
+          "lineNumber": 1149
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "console.print",
+          "lineNumber": 1152
+        },
+        {
+          "caller": "_repl_mode",
+          "callee": "print",
+          "lineNumber": 1154
+        },
+        {
+          "caller": "main",
+          "callee": "Console",
+          "lineNumber": 1171
+        },
+        {
+          "caller": "main",
+          "callee": "args.remove",
+          "lineNumber": 1184
+        },
+        {
+          "caller": "main",
+          "callee": "_switch_model",
+          "lineNumber": 1188
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 1189
+        },
+        {
+          "caller": "main",
+          "callee": "_clear_session",
+          "lineNumber": 1193
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1195
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1197
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 1198
+        },
+        {
+          "caller": "main",
+          "callee": "_read_session_metadata",
+          "lineNumber": 1202
+        },
+        {
+          "caller": "main",
+          "callee": "meta.get",
+          "lineNumber": 1206
+        },
+        {
+          "caller": "main",
+          "callee": "time.time",
+          "lineNumber": 1207
+        },
+        {
+          "caller": "main",
+          "callee": "meta.get",
+          "lineNumber": 1208
+        },
+        {
+          "caller": "main",
+          "callee": "_session_is_expired",
+          "lineNumber": 1209
+        },
+        {
+          "caller": "main",
+          "callee": "meta.get",
+          "lineNumber": 1212
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1219
+        },
+        {
+          "caller": "main",
+          "callee": "Panel",
+          "lineNumber": 1219
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1221
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 1222
+        },
+        {
+          "caller": "main",
+          "callee": "args.remove",
+          "lineNumber": 1227
+        },
+        {
+          "caller": "main",
+          "callee": "args.pop",
+          "lineNumber": 1229
+        },
+        {
+          "caller": "main",
+          "callee": "_repl_mode",
+          "lineNumber": 1230
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 1231
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1235
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1236
+        },
+        {
+          "caller": "main",
+          "callee": "Panel",
+          "lineNumber": 1236
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1246
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1247
+        },
+        {
+          "caller": "main",
+          "callee": "\" \".join",
+          "lineNumber": 1251
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1253
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1255
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1258
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1259
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1261
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1262
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1263
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1264
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1265
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1266
+        },
+        {
+          "caller": "main",
+          "callee": "input",
+          "lineNumber": 1267
+        },
+        {
+          "caller": "main",
+          "callee": "query.strip",
+          "lineNumber": 1268
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1269
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 1270
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1274
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1276
+        },
+        {
+          "caller": "main",
+          "callee": "_get_session_manager",
+          "lineNumber": 1279
+        },
+        {
+          "caller": "main",
+          "callee": "create_nas_agent",
+          "lineNumber": 1280
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1283
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1285
+        },
+        {
+          "caller": "main",
+          "callee": "os.environ.get(\"NAS_AGENT_MODEL\", \"gemini\").lower",
+          "lineNumber": 1286
+        },
+        {
+          "caller": "main",
+          "callee": "os.environ.get",
+          "lineNumber": 1286
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1288
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1289
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1291
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1292
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1294
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1295
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1296
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1297
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 1298
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1301
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1303
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1308
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1310
+        },
+        {
+          "caller": "main",
+          "callee": "os.environ.get(\"NAS_AGENT_DRYRUN\", \"0\").strip",
+          "lineNumber": 1312
+        },
+        {
+          "caller": "main",
+          "callee": "os.environ.get",
+          "lineNumber": 1312
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1314
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1316
+        },
+        {
+          "caller": "main",
+          "callee": "os.environ.get(\"NAS_AGENT_READONLY\", \"0\").strip",
+          "lineNumber": 1317
+        },
+        {
+          "caller": "main",
+          "callee": "os.environ.get",
+          "lineNumber": 1317
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1319
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1321
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1325
+        },
+        {
+          "caller": "main",
+          "callee": "agent",
+          "lineNumber": 1328
+        },
+        {
+          "caller": "main",
+          "callee": "str",
+          "lineNumber": 1330
+        },
+        {
+          "caller": "main",
+          "callee": "error_msg.lower",
+          "lineNumber": 1331
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1333
+        },
+        {
+          "caller": "main",
+          "callee": "Panel",
+          "lineNumber": 1333
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1346
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1347
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1348
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1351
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1353
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1355
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1360
+        },
+        {
+          "caller": "main",
+          "callee": "str(result).strip",
+          "lineNumber": 1362
+        },
+        {
+          "caller": "main",
+          "callee": "str",
+          "lineNumber": 1362
+        },
+        {
+          "caller": "main",
+          "callee": "Markdown",
+          "lineNumber": 1366
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1367
+        },
+        {
+          "caller": "main",
+          "callee": "Panel",
+          "lineNumber": 1367
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1376
+        },
+        {
+          "caller": "main",
+          "callee": "Panel",
+          "lineNumber": 1376
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1384
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1388
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1389
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1390
+        },
+        {
+          "caller": "main",
+          "callee": "console.print",
+          "lineNumber": 1391
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1393
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 17,
+        "functionCount": 17,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/tools/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 110,
+      "nonEmptyLines": 106,
+      "metrics": {
+        "importCount": 11,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/tools/backup_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 54,
+      "nonEmptyLines": 38,
+      "functions": [
+        {
+          "name": "_get_backup_manager",
+          "startLine": 10,
+          "endLine": 13,
+          "params": []
+        },
+        {
+          "name": "backup_service",
+          "startLine": 17,
+          "endLine": 27,
+          "params": [
+            "service_name"
+          ]
+        },
+        {
+          "name": "restore_service",
+          "startLine": 31,
+          "endLine": 42,
+          "params": [
+            "service_name",
+            "confirm"
+          ]
+        },
+        {
+          "name": "list_backups",
+          "startLine": 46,
+          "endLine": 54,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_get_backup_manager",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "backup_service",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "restore_service",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "list_backups",
+          "line": 45,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "backup_service",
+          "callee": "str",
+          "lineNumber": 27
+        },
+        {
+          "caller": "backup_service",
+          "callee": "_get_backup_manager().backup",
+          "lineNumber": 27
+        },
+        {
+          "caller": "backup_service",
+          "callee": "_get_backup_manager",
+          "lineNumber": 27
+        },
+        {
+          "caller": "restore_service",
+          "callee": "str",
+          "lineNumber": 42
+        },
+        {
+          "caller": "restore_service",
+          "callee": "_get_backup_manager().restore",
+          "lineNumber": 42
+        },
+        {
+          "caller": "restore_service",
+          "callee": "_get_backup_manager",
+          "lineNumber": 42
+        },
+        {
+          "caller": "list_backups",
+          "callee": "str",
+          "lineNumber": 54
+        },
+        {
+          "caller": "list_backups",
+          "callee": "_get_backup_manager().list_all",
+          "lineNumber": 54
+        },
+        {
+          "caller": "list_backups",
+          "callee": "_get_backup_manager",
+          "lineNumber": 54
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/tools/capabilities.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 124,
+      "nonEmptyLines": 108,
+      "functions": [
+        {
+          "name": "_manifests",
+          "startLine": 20,
+          "endLine": 27,
+          "params": []
+        },
+        {
+          "name": "_index",
+          "startLine": 30,
+          "endLine": 48,
+          "params": []
+        },
+        {
+          "name": "_operations",
+          "startLine": 51,
+          "endLine": 81,
+          "params": []
+        },
+        {
+          "name": "main",
+          "startLine": 84,
+          "endLine": 120,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_manifests",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "_index",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "_operations",
+          "line": 51,
+          "isDefault": false
+        },
+        {
+          "name": "main",
+          "line": 84,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_manifests",
+          "callee": "sorted",
+          "lineNumber": 21
+        },
+        {
+          "caller": "_manifests",
+          "callee": "CAPABILITIES_DIR.glob",
+          "lineNumber": 21
+        },
+        {
+          "caller": "_manifests",
+          "callee": "json.loads",
+          "lineNumber": 23
+        },
+        {
+          "caller": "_manifests",
+          "callee": "path.read_text",
+          "lineNumber": 23
+        },
+        {
+          "caller": "_manifests",
+          "callee": "str",
+          "lineNumber": 26
+        },
+        {
+          "caller": "_manifests",
+          "callee": "path.relative_to",
+          "lineNumber": 26
+        },
+        {
+          "caller": "_index",
+          "callee": "importlib.util.spec_from_file_location",
+          "lineNumber": 34
+        },
+        {
+          "caller": "_index",
+          "callee": "ImportError",
+          "lineNumber": 36
+        },
+        {
+          "caller": "_index",
+          "callee": "importlib.util.module_from_spec",
+          "lineNumber": 37
+        },
+        {
+          "caller": "_index",
+          "callee": "spec.loader.exec_module",
+          "lineNumber": 38
+        },
+        {
+          "caller": "_index",
+          "callee": "module.build_index",
+          "lineNumber": 39
+        },
+        {
+          "caller": "_index",
+          "callee": "INDEX_FILE.exists",
+          "lineNumber": 43
+        },
+        {
+          "caller": "_index",
+          "callee": "json.loads",
+          "lineNumber": 45
+        },
+        {
+          "caller": "_index",
+          "callee": "INDEX_FILE.read_text",
+          "lineNumber": 45
+        },
+        {
+          "caller": "_operations",
+          "callee": "_index",
+          "lineNumber": 53
+        },
+        {
+          "caller": "_operations",
+          "callee": "index.get",
+          "lineNumber": 54
+        },
+        {
+          "caller": "_operations",
+          "callee": "bool",
+          "lineNumber": 55
+        },
+        {
+          "caller": "_operations",
+          "callee": "item.get",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_operations",
+          "callee": "indexed.get",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_operations",
+          "callee": "item.get",
+          "lineNumber": 58
+        },
+        {
+          "caller": "_operations",
+          "callee": "item.get",
+          "lineNumber": 58
+        },
+        {
+          "caller": "_operations",
+          "callee": "indexed.get",
+          "lineNumber": 59
+        },
+        {
+          "caller": "_operations",
+          "callee": "_manifests",
+          "lineNumber": 61
+        },
+        {
+          "caller": "_operations",
+          "callee": "manifest.get",
+          "lineNumber": 62
+        },
+        {
+          "caller": "_operations",
+          "callee": "(NAS_DOTFILES / source).exists",
+          "lineNumber": 63
+        },
+        {
+          "caller": "_operations",
+          "callee": "manifest.get",
+          "lineNumber": 64
+        },
+        {
+          "caller": "_operations",
+          "callee": "dict",
+          "lineNumber": 65
+        },
+        {
+          "caller": "_operations",
+          "callee": "manifest.get",
+          "lineNumber": 66
+        },
+        {
+          "caller": "_operations",
+          "callee": "indexed_operations.get",
+          "lineNumber": 71
+        },
+        {
+          "caller": "_operations",
+          "callee": "item.get",
+          "lineNumber": 71
+        },
+        {
+          "caller": "_operations",
+          "callee": "indexed_item.get",
+          "lineNumber": 73
+        },
+        {
+          "caller": "_operations",
+          "callee": "indexed_item.get",
+          "lineNumber": 74
+        },
+        {
+          "caller": "_operations",
+          "callee": "result.append",
+          "lineNumber": 80
+        },
+        {
+          "caller": "main",
+          "callee": "argparse.ArgumentParser",
+          "lineNumber": 85
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 86
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 87
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 88
+        },
+        {
+          "caller": "main",
+          "callee": "parser.parse_args",
+          "lineNumber": 89
+        },
+        {
+          "caller": "main",
+          "callee": "(args.query or \"\").lower",
+          "lineNumber": 91
+        },
+        {
+          "caller": "main",
+          "callee": "_operations",
+          "lineNumber": 93
+        },
+        {
+          "caller": "main",
+          "callee": "\" \".join",
+          "lineNumber": 94
+        },
+        {
+          "caller": "main",
+          "callee": "str",
+          "lineNumber": 94
+        },
+        {
+          "caller": "main",
+          "callee": "item.get",
+          "lineNumber": 94
+        },
+        {
+          "caller": "main",
+          "callee": "item.get",
+          "lineNumber": 95
+        },
+        {
+          "caller": "main",
+          "callee": "haystack.lower",
+          "lineNumber": 97
+        },
+        {
+          "caller": "main",
+          "callee": "operations.append",
+          "lineNumber": 99
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 102
+        },
+        {
+          "caller": "main",
+          "callee": "json.dumps",
+          "lineNumber": 102
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 106
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 108
+        },
+        {
+          "caller": "main",
+          "callee": "item.get",
+          "lineNumber": 110
+        },
+        {
+          "caller": "main",
+          "callee": "item.get",
+          "lineNumber": 113
+        },
+        {
+          "caller": "main",
+          "callee": "item.get",
+          "lineNumber": 114
+        },
+        {
+          "caller": "main",
+          "callee": "item.get",
+          "lineNumber": 115
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 118
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 119
+        },
+        {
+          "caller": "main",
+          "callee": "item.get",
+          "lineNumber": 119
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/tools/capability_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 47,
+      "nonEmptyLines": 41,
+      "functions": [
+        {
+          "name": "discover_capabilities",
+          "startLine": 13,
+          "endLine": 47,
+          "params": [
+            "query",
+            "service"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "discover_capabilities",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "discover_capabilities",
+          "callee": "query.lower().strip",
+          "lineNumber": 20
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "query.lower",
+          "lineNumber": 20
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "_operations",
+          "lineNumber": 22
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 23
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "\" \".join(\r\n            str(item.get(key, \"\"))\r\n            for key in (\"id\", \"command\", \"service\", \"description\")\r\n        ).lower",
+          "lineNumber": 25
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "\" \".join",
+          "lineNumber": 25
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "str",
+          "lineNumber": 26
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 26
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "matches.append",
+          "lineNumber": 31
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 33
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 34
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 35
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 36
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 37
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 38
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 39
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 40
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 41
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 42
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 43
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "item.get",
+          "lineNumber": 44
+        },
+        {
+          "caller": "discover_capabilities",
+          "callee": "json.dumps",
+          "lineNumber": 47
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/tools/compare_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 415,
+      "nonEmptyLines": 339,
+      "functions": [
+        {
+          "name": "_compose_candidates",
+          "startLine": 53,
+          "endLine": 59,
+          "params": [
+            "base",
+            "service"
+          ]
+        },
+        {
+          "name": "_find_compose",
+          "startLine": 62,
+          "endLine": 65,
+          "params": [
+            "base",
+            "service"
+          ]
+        },
+        {
+          "name": "_discover_services",
+          "startLine": 68,
+          "endLine": 81,
+          "params": [
+            "base",
+            "include_ficha"
+          ]
+        },
+        {
+          "name": "_extract_ports",
+          "startLine": 84,
+          "endLine": 101,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "_extract_networks",
+          "startLine": 104,
+          "endLine": 127,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "_extract_volumes",
+          "startLine": 130,
+          "endLine": 146,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "_extract_env_vars",
+          "startLine": 149,
+          "endLine": 151,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "_extract_image",
+          "startLine": 154,
+          "endLine": 157,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "_has_env_file_global",
+          "startLine": 160,
+          "endLine": 162,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "_has_healthcheck",
+          "startLine": 165,
+          "endLine": 167,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "_has_security_opt",
+          "startLine": 170,
+          "endLine": 172,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "_has_resource_limits",
+          "startLine": 175,
+          "endLine": 177,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "_parse_ficha_frontmatter",
+          "startLine": 180,
+          "endLine": 200,
+          "params": [
+            "ficha_path"
+          ]
+        },
+        {
+          "name": "_compare",
+          "startLine": 208,
+          "endLine": 365,
+          "params": [
+            "service"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_compose_candidates",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "_find_compose",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "_discover_services",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_ports",
+          "line": 84,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_networks",
+          "line": 104,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_volumes",
+          "line": 130,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_env_vars",
+          "line": 149,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_image",
+          "line": 154,
+          "isDefault": false
+        },
+        {
+          "name": "_has_env_file_global",
+          "line": 160,
+          "isDefault": false
+        },
+        {
+          "name": "_has_healthcheck",
+          "line": 165,
+          "isDefault": false
+        },
+        {
+          "name": "_has_security_opt",
+          "line": 170,
+          "isDefault": false
+        },
+        {
+          "name": "_has_resource_limits",
+          "line": 175,
+          "isDefault": false
+        },
+        {
+          "name": "_parse_ficha_frontmatter",
+          "line": 180,
+          "isDefault": false
+        },
+        {
+          "name": "_compare",
+          "line": 208,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_compose_candidates",
+          "callee": "service_dir.is_dir",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_compose_candidates",
+          "callee": "(service_dir / name).is_file",
+          "lineNumber": 59
+        },
+        {
+          "caller": "_find_compose",
+          "callee": "_compose_candidates",
+          "lineNumber": 64
+        },
+        {
+          "caller": "_discover_services",
+          "callee": "base.is_dir",
+          "lineNumber": 70
+        },
+        {
+          "caller": "_discover_services",
+          "callee": "set",
+          "lineNumber": 71
+        },
+        {
+          "caller": "_discover_services",
+          "callee": "set",
+          "lineNumber": 73
+        },
+        {
+          "caller": "_discover_services",
+          "callee": "base.iterdir",
+          "lineNumber": 74
+        },
+        {
+          "caller": "_discover_services",
+          "callee": "service_dir.is_dir",
+          "lineNumber": 75
+        },
+        {
+          "caller": "_discover_services",
+          "callee": "service_dir.name.startswith",
+          "lineNumber": 75
+        },
+        {
+          "caller": "_discover_services",
+          "callee": "_compose_candidates",
+          "lineNumber": 77
+        },
+        {
+          "caller": "_discover_services",
+          "callee": "(service_dir / \"ficha.md\").is_file",
+          "lineNumber": 78
+        },
+        {
+          "caller": "_discover_services",
+          "callee": "services.add",
+          "lineNumber": 80
+        },
+        {
+          "caller": "_extract_ports",
+          "callee": "set",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_extract_ports",
+          "callee": "content.splitlines",
+          "lineNumber": 88
+        },
+        {
+          "caller": "_extract_ports",
+          "callee": "line.strip",
+          "lineNumber": 89
+        },
+        {
+          "caller": "_extract_ports",
+          "callee": "stripped.startswith",
+          "lineNumber": 90
+        },
+        {
+          "caller": "_extract_ports",
+          "callee": "stripped.startswith",
+          "lineNumber": 94
+        },
+        {
+          "caller": "_extract_ports",
+          "callee": "re.search",
+          "lineNumber": 96
+        },
+        {
+          "caller": "_extract_ports",
+          "callee": "ports.add",
+          "lineNumber": 98
+        },
+        {
+          "caller": "_extract_ports",
+          "callee": "port_match.group(1).strip",
+          "lineNumber": 98
+        },
+        {
+          "caller": "_extract_ports",
+          "callee": "port_match.group",
+          "lineNumber": 98
+        },
+        {
+          "caller": "_extract_ports",
+          "callee": "stripped.startswith",
+          "lineNumber": 99
+        },
+        {
+          "caller": "_extract_ports",
+          "callee": "stripped.startswith",
+          "lineNumber": 99
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "set",
+          "lineNumber": 106
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "content.splitlines",
+          "lineNumber": 110
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "line.strip",
+          "lineNumber": 111
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "len",
+          "lineNumber": 113
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "len",
+          "lineNumber": 113
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "line.lstrip",
+          "lineNumber": 113
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "len",
+          "lineNumber": 115
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "len",
+          "lineNumber": 115
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "line.lstrip",
+          "lineNumber": 115
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "len",
+          "lineNumber": 118
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "len",
+          "lineNumber": 118
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "line.lstrip",
+          "lineNumber": 118
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "line.strip",
+          "lineNumber": 118
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "stripped.startswith",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "stripped.startswith",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "stripped[2:].strip",
+          "lineNumber": 123
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "net_name.startswith",
+          "lineNumber": 124
+        },
+        {
+          "caller": "_extract_networks",
+          "callee": "networks.add",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "set",
+          "lineNumber": 132
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "content.splitlines",
+          "lineNumber": 134
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "line.strip",
+          "lineNumber": 135
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "len",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "len",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "line.lstrip",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "stripped.startswith",
+          "lineNumber": 140
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "stripped[2:].strip().strip('\"').strip",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "stripped[2:].strip().strip",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "stripped[2:].strip",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "volumes.add",
+          "lineNumber": 143
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "stripped.startswith",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_extract_volumes",
+          "callee": "stripped.startswith",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_extract_env_vars",
+          "callee": "set",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_extract_env_vars",
+          "callee": "re.findall",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_extract_image",
+          "callee": "re.search",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_extract_image",
+          "callee": "match.group",
+          "lineNumber": 157
+        },
+        {
+          "caller": "_parse_ficha_frontmatter",
+          "callee": "ficha_path.exists",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_parse_ficha_frontmatter",
+          "callee": "ficha_path.read_text",
+          "lineNumber": 186
+        },
+        {
+          "caller": "_parse_ficha_frontmatter",
+          "callee": "content.splitlines",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_parse_ficha_frontmatter",
+          "callee": "line.strip",
+          "lineNumber": 189
+        },
+        {
+          "caller": "_parse_ficha_frontmatter",
+          "callee": "line.partition",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_parse_ficha_frontmatter",
+          "callee": "key.strip",
+          "lineNumber": 197
+        },
+        {
+          "caller": "_parse_ficha_frontmatter",
+          "callee": "val.strip().strip('\"').strip",
+          "lineNumber": 198
+        },
+        {
+          "caller": "_parse_ficha_frontmatter",
+          "callee": "val.strip().strip",
+          "lineNumber": 198
+        },
+        {
+          "caller": "_parse_ficha_frontmatter",
+          "callee": "val.strip",
+          "lineNumber": 198
+        },
+        {
+          "caller": "_compare",
+          "callee": "_find_compose",
+          "lineNumber": 214
+        },
+        {
+          "caller": "_compare",
+          "callee": "_find_compose",
+          "lineNumber": 215
+        },
+        {
+          "caller": "_compare",
+          "callee": "ficha_path.exists",
+          "lineNumber": 218
+        },
+        {
+          "caller": "_compare",
+          "callee": "real_compose.read_text",
+          "lineNumber": 226
+        },
+        {
+          "caller": "_compare",
+          "callee": "catalog_compose.read_text",
+          "lineNumber": 227
+        },
+        {
+          "caller": "_compare",
+          "callee": "_parse_ficha_frontmatter",
+          "lineNumber": 229
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 231
+        },
+        {
+          "caller": "_compare",
+          "callee": "len",
+          "lineNumber": 239
+        },
+        {
+          "caller": "_compare",
+          "callee": "\", \".join",
+          "lineNumber": 240
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 241
+        },
+        {
+          "caller": "_compare",
+          "callee": "any",
+          "lineNumber": 246
+        },
+        {
+          "caller": "_compare",
+          "callee": "len",
+          "lineNumber": 246
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 251
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 252
+        },
+        {
+          "caller": "_compare",
+          "callee": "_extract_image",
+          "lineNumber": 255
+        },
+        {
+          "caller": "_compare",
+          "callee": "_extract_image",
+          "lineNumber": 256
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 258
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 259
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 260
+        },
+        {
+          "caller": "_compare",
+          "callee": "_extract_ports",
+          "lineNumber": 264
+        },
+        {
+          "caller": "_compare",
+          "callee": "_extract_ports",
+          "lineNumber": 265
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 270
+        },
+        {
+          "caller": "_compare",
+          "callee": "', '.join",
+          "lineNumber": 270
+        },
+        {
+          "caller": "_compare",
+          "callee": "sorted",
+          "lineNumber": 270
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 273
+        },
+        {
+          "caller": "_compare",
+          "callee": "', '.join",
+          "lineNumber": 273
+        },
+        {
+          "caller": "_compare",
+          "callee": "sorted",
+          "lineNumber": 273
+        },
+        {
+          "caller": "_compare",
+          "callee": "_extract_networks",
+          "lineNumber": 277
+        },
+        {
+          "caller": "_compare",
+          "callee": "_extract_networks",
+          "lineNumber": 278
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 283
+        },
+        {
+          "caller": "_compare",
+          "callee": "', '.join",
+          "lineNumber": 283
+        },
+        {
+          "caller": "_compare",
+          "callee": "sorted",
+          "lineNumber": 283
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 286
+        },
+        {
+          "caller": "_compare",
+          "callee": "', '.join",
+          "lineNumber": 286
+        },
+        {
+          "caller": "_compare",
+          "callee": "sorted",
+          "lineNumber": 286
+        },
+        {
+          "caller": "_compare",
+          "callee": "_extract_volumes",
+          "lineNumber": 290
+        },
+        {
+          "caller": "_compare",
+          "callee": "_extract_volumes",
+          "lineNumber": 291
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 296
+        },
+        {
+          "caller": "_compare",
+          "callee": "', '.join",
+          "lineNumber": 296
+        },
+        {
+          "caller": "_compare",
+          "callee": "sorted",
+          "lineNumber": 296
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 299
+        },
+        {
+          "caller": "_compare",
+          "callee": "', '.join",
+          "lineNumber": 299
+        },
+        {
+          "caller": "_compare",
+          "callee": "sorted",
+          "lineNumber": 299
+        },
+        {
+          "caller": "_compare",
+          "callee": "_has_env_file_global",
+          "lineNumber": 303
+        },
+        {
+          "caller": "_compare",
+          "callee": "_has_env_file_global",
+          "lineNumber": 304
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 306
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 309
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 313
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 314
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 315
+        },
+        {
+          "caller": "_compare",
+          "callee": "ficha_path.exists",
+          "lineNumber": 318
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 320
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 321
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 322
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 324
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 325
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 326
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 332
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 333
+        },
+        {
+          "caller": "_compare",
+          "callee": "_has_healthcheck",
+          "lineNumber": 336
+        },
+        {
+          "caller": "_compare",
+          "callee": "_has_security_opt",
+          "lineNumber": 337
+        },
+        {
+          "caller": "_compare",
+          "callee": "_has_resource_limits",
+          "lineNumber": 338
+        },
+        {
+          "caller": "_compare",
+          "callee": "_has_env_file_global",
+          "lineNumber": 339
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 343
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 348
+        },
+        {
+          "caller": "_compare",
+          "callee": "ficha_path.exists",
+          "lineNumber": 349
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 351
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 353
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 355
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 356
+        },
+        {
+          "caller": "_compare",
+          "callee": "\"     → Para documentarlo: svc catalog-sync {}\".format",
+          "lineNumber": 356
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 358
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 360
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 362
+        },
+        {
+          "caller": "_compare",
+          "callee": "lines.append",
+          "lineNumber": 363
+        },
+        {
+          "caller": "_compare",
+          "callee": "\"\\n\".join",
+          "lineNumber": 365
+        },
+        {
+          "caller": "compare_catalog",
+          "callee": "_compare",
+          "lineNumber": 388
+        },
+        {
+          "caller": "compare_catalog",
+          "callee": "_compare",
+          "lineNumber": 393
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 14,
+        "functionCount": 14,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/tools/docker_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 80,
+      "nonEmptyLines": 56,
+      "functions": [
+        {
+          "name": "_get_service_manager",
+          "startLine": 10,
+          "endLine": 13,
+          "params": []
+        },
+        {
+          "name": "service_start",
+          "startLine": 17,
+          "endLine": 27,
+          "params": [
+            "service_name"
+          ]
+        },
+        {
+          "name": "service_stop",
+          "startLine": 31,
+          "endLine": 42,
+          "params": [
+            "service_name",
+            "confirm"
+          ]
+        },
+        {
+          "name": "service_restart",
+          "startLine": 46,
+          "endLine": 54,
+          "params": [
+            "service_name"
+          ]
+        },
+        {
+          "name": "service_update",
+          "startLine": 58,
+          "endLine": 67,
+          "params": [
+            "service_name"
+          ]
+        },
+        {
+          "name": "service_logs",
+          "startLine": 71,
+          "endLine": 80,
+          "params": [
+            "service_name",
+            "lines"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_get_service_manager",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "service_start",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "service_stop",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "service_restart",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "service_update",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "service_logs",
+          "line": 70,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "service_start",
+          "callee": "str",
+          "lineNumber": 27
+        },
+        {
+          "caller": "service_start",
+          "callee": "_get_service_manager().start",
+          "lineNumber": 27
+        },
+        {
+          "caller": "service_start",
+          "callee": "_get_service_manager",
+          "lineNumber": 27
+        },
+        {
+          "caller": "service_stop",
+          "callee": "str",
+          "lineNumber": 42
+        },
+        {
+          "caller": "service_stop",
+          "callee": "_get_service_manager().stop",
+          "lineNumber": 42
+        },
+        {
+          "caller": "service_stop",
+          "callee": "_get_service_manager",
+          "lineNumber": 42
+        },
+        {
+          "caller": "service_restart",
+          "callee": "str",
+          "lineNumber": 54
+        },
+        {
+          "caller": "service_restart",
+          "callee": "_get_service_manager().restart",
+          "lineNumber": 54
+        },
+        {
+          "caller": "service_restart",
+          "callee": "_get_service_manager",
+          "lineNumber": 54
+        },
+        {
+          "caller": "service_update",
+          "callee": "str",
+          "lineNumber": 67
+        },
+        {
+          "caller": "service_update",
+          "callee": "_get_service_manager().update",
+          "lineNumber": 67
+        },
+        {
+          "caller": "service_update",
+          "callee": "_get_service_manager",
+          "lineNumber": 67
+        },
+        {
+          "caller": "service_logs",
+          "callee": "str",
+          "lineNumber": 80
+        },
+        {
+          "caller": "service_logs",
+          "callee": "_get_service_manager().logs",
+          "lineNumber": 80
+        },
+        {
+          "caller": "service_logs",
+          "callee": "_get_service_manager",
+          "lineNumber": 80
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/tools/memory_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 107,
+      "nonEmptyLines": 79,
+      "functions": [
+        {
+          "name": "_mgr",
+          "startLine": 13,
+          "endLine": 16,
+          "params": []
+        },
+        {
+          "name": "_now",
+          "startLine": 19,
+          "endLine": 20,
+          "params": []
+        },
+        {
+          "name": "remember",
+          "startLine": 24,
+          "endLine": 38,
+          "params": [
+            "fact",
+            "category"
+          ]
+        },
+        {
+          "name": "recall",
+          "startLine": 42,
+          "endLine": 54,
+          "params": [
+            "query"
+          ]
+        },
+        {
+          "name": "learn_skill",
+          "startLine": 58,
+          "endLine": 70,
+          "params": [
+            "skill_name",
+            "procedure",
+            "trigger"
+          ]
+        },
+        {
+          "name": "update_user_model",
+          "startLine": 74,
+          "endLine": 85,
+          "params": [
+            "key",
+            "value"
+          ]
+        },
+        {
+          "name": "memory_stats",
+          "startLine": 89,
+          "endLine": 107,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_mgr",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "_now",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "remember",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "recall",
+          "line": 41,
+          "isDefault": false
+        },
+        {
+          "name": "learn_skill",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "update_user_model",
+          "line": 73,
+          "isDefault": false
+        },
+        {
+          "name": "memory_stats",
+          "line": 88,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_now",
+          "callee": "datetime.now().isoformat",
+          "lineNumber": 20
+        },
+        {
+          "caller": "_now",
+          "callee": "datetime.now",
+          "lineNumber": 20
+        },
+        {
+          "caller": "remember",
+          "callee": "str",
+          "lineNumber": 38
+        },
+        {
+          "caller": "remember",
+          "callee": "_mgr().add_to_memory",
+          "lineNumber": 38
+        },
+        {
+          "caller": "remember",
+          "callee": "_mgr",
+          "lineNumber": 38
+        },
+        {
+          "caller": "remember",
+          "callee": "_now",
+          "lineNumber": 38
+        },
+        {
+          "caller": "recall",
+          "callee": "str",
+          "lineNumber": 54
+        },
+        {
+          "caller": "recall",
+          "callee": "_mgr().recall",
+          "lineNumber": 54
+        },
+        {
+          "caller": "recall",
+          "callee": "_mgr",
+          "lineNumber": 54
+        },
+        {
+          "caller": "learn_skill",
+          "callee": "str",
+          "lineNumber": 70
+        },
+        {
+          "caller": "learn_skill",
+          "callee": "_mgr().add_skill",
+          "lineNumber": 70
+        },
+        {
+          "caller": "learn_skill",
+          "callee": "_mgr",
+          "lineNumber": 70
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "str",
+          "lineNumber": 85
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "_mgr().update_user_model",
+          "lineNumber": 85
+        },
+        {
+          "caller": "update_user_model",
+          "callee": "_mgr",
+          "lineNumber": 85
+        },
+        {
+          "caller": "memory_stats",
+          "callee": "_mgr().get_memory_stats",
+          "lineNumber": 96
+        },
+        {
+          "caller": "memory_stats",
+          "callee": "_mgr",
+          "lineNumber": 96
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "agent/tools/project_scanner.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1201,
+      "nonEmptyLines": 1020,
+      "functions": [
+        {
+          "name": "_get_current_commit",
+          "startLine": 124,
+          "endLine": 134,
+          "params": []
+        },
+        {
+          "name": "_get_changed_files",
+          "startLine": 137,
+          "endLine": 183,
+          "params": [
+            "since_commit"
+          ]
+        },
+        {
+          "name": "_hash_file",
+          "startLine": 186,
+          "endLine": 192,
+          "params": [
+            "path"
+          ]
+        },
+        {
+          "name": "_classify_changed_file",
+          "startLine": 195,
+          "endLine": 261,
+          "params": [
+            "filepath"
+          ]
+        },
+        {
+          "name": "_build_snapshot_from_scan",
+          "startLine": 264,
+          "endLine": 295,
+          "params": [
+            "result"
+          ]
+        },
+        {
+          "name": "incremental_scan",
+          "startLine": 298,
+          "endLine": 360,
+          "params": [
+            "verbose"
+          ]
+        },
+        {
+          "name": "_detect_services",
+          "startLine": 436,
+          "endLine": 458,
+          "params": []
+        },
+        {
+          "name": "_get_debmenux_scripts_dir",
+          "startLine": 461,
+          "endLine": 467,
+          "params": []
+        },
+        {
+          "name": "_check_services",
+          "startLine": 470,
+          "endLine": 551,
+          "params": [
+            "result"
+          ]
+        },
+        {
+          "name": "_check_compose_hygiene",
+          "startLine": 554,
+          "endLine": 625,
+          "params": [
+            "result"
+          ]
+        },
+        {
+          "name": "_check_cli_parity",
+          "startLine": 628,
+          "endLine": 680,
+          "params": [
+            "result"
+          ]
+        },
+        {
+          "name": "_check_agent_prompt",
+          "startLine": 683,
+          "endLine": 730,
+          "params": [
+            "result"
+          ]
+        },
+        {
+          "name": "_check_architecture_contracts",
+          "startLine": 733,
+          "endLine": 941,
+          "params": [
+            "result"
+          ]
+        },
+        {
+          "name": "_check_docs_references",
+          "startLine": 949,
+          "endLine": 980,
+          "params": [
+            "result"
+          ]
+        },
+        {
+          "name": "scan",
+          "startLine": 988,
+          "endLine": 999,
+          "params": [
+            "verbose"
+          ]
+        },
+        {
+          "name": "format_report",
+          "startLine": 1002,
+          "endLine": 1081,
+          "params": [
+            "result",
+            "verbose"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 1143,
+          "endLine": 1197,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "Snapshot",
+          "startLine": 87,
+          "endLine": 121,
+          "methods": [
+            "save",
+            "load"
+          ],
+          "properties": [
+            "last_scan",
+            "last_commit",
+            "services",
+            "file_hashes"
+          ]
+        },
+        {
+          "name": "Issue",
+          "startLine": 369,
+          "endLine": 382,
+          "methods": [
+            "__str__"
+          ],
+          "properties": [
+            "severity",
+            "category",
+            "service",
+            "message",
+            "fix_hint"
+          ]
+        },
+        {
+          "name": "ScanResult",
+          "startLine": 386,
+          "endLine": 428,
+          "methods": [
+            "errors",
+            "warnings",
+            "summary",
+            "to_dict"
+          ],
+          "properties": [
+            "services_scanned",
+            "services_complete",
+            "issues",
+            "services_status",
+            "architecture"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Snapshot",
+          "line": 86,
+          "isDefault": false
+        },
+        {
+          "name": "_get_current_commit",
+          "line": 124,
+          "isDefault": false
+        },
+        {
+          "name": "_get_changed_files",
+          "line": 137,
+          "isDefault": false
+        },
+        {
+          "name": "_hash_file",
+          "line": 186,
+          "isDefault": false
+        },
+        {
+          "name": "_classify_changed_file",
+          "line": 195,
+          "isDefault": false
+        },
+        {
+          "name": "_build_snapshot_from_scan",
+          "line": 264,
+          "isDefault": false
+        },
+        {
+          "name": "incremental_scan",
+          "line": 298,
+          "isDefault": false
+        },
+        {
+          "name": "Issue",
+          "line": 368,
+          "isDefault": false
+        },
+        {
+          "name": "ScanResult",
+          "line": 385,
+          "isDefault": false
+        },
+        {
+          "name": "_detect_services",
+          "line": 436,
+          "isDefault": false
+        },
+        {
+          "name": "_get_debmenux_scripts_dir",
+          "line": 461,
+          "isDefault": false
+        },
+        {
+          "name": "_check_services",
+          "line": 470,
+          "isDefault": false
+        },
+        {
+          "name": "_check_compose_hygiene",
+          "line": 554,
+          "isDefault": false
+        },
+        {
+          "name": "_check_cli_parity",
+          "line": 628,
+          "isDefault": false
+        },
+        {
+          "name": "_check_agent_prompt",
+          "line": 683,
+          "isDefault": false
+        },
+        {
+          "name": "_check_architecture_contracts",
+          "line": 733,
+          "isDefault": false
+        },
+        {
+          "name": "_check_docs_references",
+          "line": 949,
+          "isDefault": false
+        },
+        {
+          "name": "scan",
+          "line": 988,
+          "isDefault": false
+        },
+        {
+          "name": "format_report",
+          "line": 1002,
+          "isDefault": false
+        },
+        {
+          "name": "main",
+          "line": 1143,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "save",
+          "callee": "path.parent.mkdir",
+          "lineNumber": 97
+        },
+        {
+          "caller": "save",
+          "callee": "path.write_text",
+          "lineNumber": 104
+        },
+        {
+          "caller": "save",
+          "callee": "json.dumps",
+          "lineNumber": 104
+        },
+        {
+          "caller": "load",
+          "callee": "path.exists",
+          "lineNumber": 109
+        },
+        {
+          "caller": "load",
+          "callee": "json.loads",
+          "lineNumber": 112
+        },
+        {
+          "caller": "load",
+          "callee": "path.read_text",
+          "lineNumber": 112
+        },
+        {
+          "caller": "load",
+          "callee": "cls",
+          "lineNumber": 113
+        },
+        {
+          "caller": "load",
+          "callee": "data.get",
+          "lineNumber": 114
+        },
+        {
+          "caller": "load",
+          "callee": "data.get",
+          "lineNumber": 115
+        },
+        {
+          "caller": "load",
+          "callee": "data.get",
+          "lineNumber": 116
+        },
+        {
+          "caller": "load",
+          "callee": "data.get",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_get_current_commit",
+          "callee": "subprocess.run",
+          "lineNumber": 127
+        },
+        {
+          "caller": "_get_current_commit",
+          "callee": "str",
+          "lineNumber": 130
+        },
+        {
+          "caller": "_get_current_commit",
+          "callee": "result.stdout.strip",
+          "lineNumber": 132
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "commands.append",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "commands.extend",
+          "lineNumber": 150
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "subprocess.run",
+          "lineNumber": 155
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "str",
+          "lineNumber": 158
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "changed.extend",
+          "lineNumber": 161
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "line.strip",
+          "lineNumber": 162
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "result.stdout.splitlines",
+          "lineNumber": 163
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "line.strip",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "subprocess.run",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "str",
+          "lineNumber": 171
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "changed.extend",
+          "lineNumber": 174
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "line.strip",
+          "lineNumber": 175
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "result.stdout.splitlines",
+          "lineNumber": 176
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "line.strip",
+          "lineNumber": 177
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "list",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_get_changed_files",
+          "callee": "dict.fromkeys",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_hash_file",
+          "callee": "path.read_bytes",
+          "lineNumber": 189
+        },
+        {
+          "caller": "_hash_file",
+          "callee": "hashlib.md5(content).hexdigest",
+          "lineNumber": 190
+        },
+        {
+          "caller": "_hash_file",
+          "callee": "hashlib.md5",
+          "lineNumber": 190
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "re.match",
+          "lineNumber": 204
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "m.group",
+          "lineNumber": 206
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "re.match",
+          "lineNumber": 209
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "m.group",
+          "lineNumber": 211
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "re.match",
+          "lineNumber": 214
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "m.group",
+          "lineNumber": 216
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "re.match",
+          "lineNumber": 219
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "re.match",
+          "lineNumber": 224
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "m.group",
+          "lineNumber": 226
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "re.match",
+          "lineNumber": 229
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "m.group",
+          "lineNumber": 231
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "re.match",
+          "lineNumber": 234
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "m.group",
+          "lineNumber": 236
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "re.match",
+          "lineNumber": 239
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "m.group",
+          "lineNumber": 241
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "re.match",
+          "lineNumber": 244
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "m.group",
+          "lineNumber": 246
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "re.match",
+          "lineNumber": 249
+        },
+        {
+          "caller": "_classify_changed_file",
+          "callee": "filepath.endswith",
+          "lineNumber": 254
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "Snapshot",
+          "lineNumber": 266
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "datetime.now(timezone.utc).isoformat",
+          "lineNumber": 267
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "datetime.now",
+          "lineNumber": 267
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "_get_current_commit",
+          "lineNumber": 268
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "result.services_status.items",
+          "lineNumber": 272
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "CATALOG_DIR.glob",
+          "lineNumber": 277
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "CATALOG_DIR.glob",
+          "lineNumber": 278
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "DOCS_DIR.glob",
+          "lineNumber": 279
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "str",
+          "lineNumber": 283
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "path.relative_to",
+          "lineNumber": 283
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "_hash_file",
+          "lineNumber": 284
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "SVC_SH.exists",
+          "lineNumber": 287
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "_hash_file",
+          "lineNumber": 288
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "agents_md.exists",
+          "lineNumber": 292
+        },
+        {
+          "caller": "_build_snapshot_from_scan",
+          "callee": "_hash_file",
+          "lineNumber": 293
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "Snapshot.load",
+          "lineNumber": 305
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "scan",
+          "lineNumber": 309
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "_build_snapshot_from_scan",
+          "lineNumber": 310
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "snapshot.save",
+          "lineNumber": 311
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "_get_changed_files",
+          "lineNumber": 315
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "ScanResult",
+          "lineNumber": 319
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "len",
+          "lineNumber": 320
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "sum",
+          "lineNumber": 321
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "prev_snapshot.services.values",
+          "lineNumber": 322
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "all",
+          "lineNumber": 323
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "s.get",
+          "lineNumber": 323
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "s.get",
+          "lineNumber": 324
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "set",
+          "lineNumber": 329
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "_classify_changed_file",
+          "lineNumber": 333
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "classifications.append",
+          "lineNumber": 334
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "affected_services.add",
+          "lineNumber": 338
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "affected_services.add",
+          "lineNumber": 341
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "affected_services.add",
+          "lineNumber": 343
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "scan",
+          "lineNumber": 346
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "_build_snapshot_from_scan",
+          "lineNumber": 357
+        },
+        {
+          "caller": "incremental_scan",
+          "callee": "snapshot.save",
+          "lineNumber": 358
+        },
+        {
+          "caller": "__str__",
+          "callee": "icons.get",
+          "lineNumber": 380
+        },
+        {
+          "caller": "summary",
+          "callee": "len",
+          "lineNumber": 407
+        },
+        {
+          "caller": "summary",
+          "callee": "len",
+          "lineNumber": 408
+        },
+        {
+          "caller": "summary",
+          "callee": "\"\\n\".join",
+          "lineNumber": 410
+        },
+        {
+          "caller": "_detect_services",
+          "callee": "set",
+          "lineNumber": 438
+        },
+        {
+          "caller": "_detect_services",
+          "callee": "DOCKER_BASE.exists",
+          "lineNumber": 441
+        },
+        {
+          "caller": "_detect_services",
+          "callee": "DOCKER_BASE.iterdir",
+          "lineNumber": 442
+        },
+        {
+          "caller": "_detect_services",
+          "callee": "item.is_dir",
+          "lineNumber": 443
+        },
+        {
+          "caller": "_detect_services",
+          "callee": "item.name.startswith",
+          "lineNumber": 443
+        },
+        {
+          "caller": "_detect_services",
+          "callee": "(item / name).exists",
+          "lineNumber": 448
+        },
+        {
+          "caller": "_detect_services",
+          "callee": "services.add",
+          "lineNumber": 449
+        },
+        {
+          "caller": "_detect_services",
+          "callee": "CATALOG_DIR.exists",
+          "lineNumber": 453
+        },
+        {
+          "caller": "_detect_services",
+          "callee": "CATALOG_DIR.iterdir",
+          "lineNumber": 454
+        },
+        {
+          "caller": "_detect_services",
+          "callee": "item.is_dir",
+          "lineNumber": 455
+        },
+        {
+          "caller": "_detect_services",
+          "callee": "(item / \"compose.yml\").exists",
+          "lineNumber": 455
+        },
+        {
+          "caller": "_detect_services",
+          "callee": "services.add",
+          "lineNumber": 456
+        },
+        {
+          "caller": "_get_debmenux_scripts_dir",
+          "callee": "DEBMENUX_SCRIPTS.exists",
+          "lineNumber": 463
+        },
+        {
+          "caller": "_get_debmenux_scripts_dir",
+          "callee": "DEBMENUX_ALT.exists",
+          "lineNumber": 465
+        },
+        {
+          "caller": "_check_services",
+          "callee": "_detect_services",
+          "lineNumber": 472
+        },
+        {
+          "caller": "_check_services",
+          "callee": "_get_debmenux_scripts_dir",
+          "lineNumber": 473
+        },
+        {
+          "caller": "_check_services",
+          "callee": "sorted",
+          "lineNumber": 475
+        },
+        {
+          "caller": "_check_services",
+          "callee": "catalog_compose.exists",
+          "lineNumber": 480
+        },
+        {
+          "caller": "_check_services",
+          "callee": "ficha.exists",
+          "lineNumber": 484
+        },
+        {
+          "caller": "_check_services",
+          "callee": "guide.exists",
+          "lineNumber": 488
+        },
+        {
+          "caller": "_check_services",
+          "callee": "(debmenux_dir / f\"{svc}.sh\").exists",
+          "lineNumber": 493
+        },
+        {
+          "caller": "_check_services",
+          "callee": "catalog_compose.exists",
+          "lineNumber": 498
+        },
+        {
+          "caller": "_check_services",
+          "callee": "DOCKER_BASE.exists",
+          "lineNumber": 499
+        },
+        {
+          "caller": "_check_services",
+          "callee": "candidate.exists",
+          "lineNumber": 501
+        },
+        {
+          "caller": "_check_services",
+          "callee": "compose_path.exists",
+          "lineNumber": 503
+        },
+        {
+          "caller": "_check_services",
+          "callee": "compose_path.read_text",
+          "lineNumber": 504
+        },
+        {
+          "caller": "_check_services",
+          "callee": "result.issues.append",
+          "lineNumber": 513
+        },
+        {
+          "caller": "_check_services",
+          "callee": "Issue",
+          "lineNumber": 513
+        },
+        {
+          "caller": "_check_services",
+          "callee": "result.issues.append",
+          "lineNumber": 522
+        },
+        {
+          "caller": "_check_services",
+          "callee": "Issue",
+          "lineNumber": 522
+        },
+        {
+          "caller": "_check_services",
+          "callee": "result.issues.append",
+          "lineNumber": 531
+        },
+        {
+          "caller": "_check_services",
+          "callee": "Issue",
+          "lineNumber": 531
+        },
+        {
+          "caller": "_check_services",
+          "callee": "result.issues.append",
+          "lineNumber": 540
+        },
+        {
+          "caller": "_check_services",
+          "callee": "Issue",
+          "lineNumber": 540
+        },
+        {
+          "caller": "_check_services",
+          "callee": "all",
+          "lineNumber": 550
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "CATALOG_DIR.exists",
+          "lineNumber": 558
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "CATALOG_DIR.iterdir",
+          "lineNumber": 559
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "item.is_dir",
+          "lineNumber": 560
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "(item / \"compose.yml\").exists",
+          "lineNumber": 560
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "dirs_to_check.append",
+          "lineNumber": 561
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "DOCKER_BASE.exists",
+          "lineNumber": 563
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "DOCKER_BASE.iterdir",
+          "lineNumber": 564
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "item.is_dir",
+          "lineNumber": 565
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "compose.exists",
+          "lineNumber": 568
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "dirs_to_check.append",
+          "lineNumber": 569
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "set",
+          "lineNumber": 571
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "seen.add",
+          "lineNumber": 577
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "compose_path.read_text",
+          "lineNumber": 580
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "re.findall",
+          "lineNumber": 585
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "content.splitlines",
+          "lineNumber": 588
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "line.strip",
+          "lineNumber": 589
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "stripped.startswith",
+          "lineNumber": 590
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "re.search",
+          "lineNumber": 592
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "stripped.lower",
+          "lineNumber": 593
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "result.issues.append",
+          "lineNumber": 594
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "Issue",
+          "lineNumber": 594
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "re.search",
+          "lineNumber": 604
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "result.issues.append",
+          "lineNumber": 607
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "Issue",
+          "lineNumber": 607
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "result.issues.append",
+          "lineNumber": 619
+        },
+        {
+          "caller": "_check_compose_hygiene",
+          "callee": "Issue",
+          "lineNumber": 619
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "set",
+          "lineNumber": 630
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "set",
+          "lineNumber": 631
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "SVC_SH.exists",
+          "lineNumber": 634
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "SVC_SH.read_text",
+          "lineNumber": 635
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "re.finditer",
+          "lineNumber": 637
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "m.group",
+          "lineNumber": 638
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "bash_commands.add",
+          "lineNumber": 640
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "app_py.exists",
+          "lineNumber": 644
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "app_py.read_text",
+          "lineNumber": 645
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "re.finditer",
+          "lineNumber": 646
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "python_commands.add",
+          "lineNumber": 647
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "m.group",
+          "lineNumber": 647
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "re.finditer",
+          "lineNumber": 649
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "python_commands.add",
+          "lineNumber": 650
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "m.group",
+          "lineNumber": 650
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "sorted",
+          "lineNumber": 660
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "result.issues.append",
+          "lineNumber": 663
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "Issue",
+          "lineNumber": 663
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "sorted",
+          "lineNumber": 673
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "result.issues.append",
+          "lineNumber": 674
+        },
+        {
+          "caller": "_check_cli_parity",
+          "callee": "Issue",
+          "lineNumber": 674
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "AGENT_FILE.exists",
+          "lineNumber": 685
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "AGENT_FILE.read_text",
+          "lineNumber": 688
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "set",
+          "lineNumber": 692
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "content.splitlines",
+          "lineNumber": 694
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "line.strip",
+          "lineNumber": 699
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "re.findall",
+          "lineNumber": 702
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "prompt_commands.add",
+          "lineNumber": 704
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "set",
+          "lineNumber": 707
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "SVC_SH.exists",
+          "lineNumber": 708
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "SVC_SH.read_text",
+          "lineNumber": 709
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "re.finditer",
+          "lineNumber": 710
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "m.group",
+          "lineNumber": 711
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "bash_commands.add",
+          "lineNumber": 713
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "sorted",
+          "lineNumber": 723
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "result.issues.append",
+          "lineNumber": 724
+        },
+        {
+          "caller": "_check_agent_prompt",
+          "callee": "Issue",
+          "lineNumber": 724
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 742
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 742
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "build_index",
+          "lineNumber": 752
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 754
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 754
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "write_index",
+          "lineNumber": 765
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 767
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 767
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get",
+          "lineNumber": 775
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "capabilities.get",
+          "lineNumber": 776
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "manifest.get",
+          "lineNumber": 777
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 778
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 778
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "manifest.get",
+          "lineNumber": 781
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "manifest.get",
+          "lineNumber": 782
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "capabilities.get",
+          "lineNumber": 785
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "operation.get",
+          "lineNumber": 786
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 787
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 787
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "operation.get",
+          "lineNumber": 790
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "operation.get",
+          "lineNumber": 791
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "operation.get",
+          "lineNumber": 794
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 795
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 795
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "operation.get",
+          "lineNumber": 798
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "operation.get",
+          "lineNumber": 799
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "operation.get",
+          "lineNumber": 802
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 803
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 803
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "operation.get",
+          "lineNumber": 806
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "operation.get",
+          "lineNumber": 807
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "json.loads",
+          "lineNumber": 813
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "contracts_path.read_text",
+          "lineNumber": 813
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 815
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 815
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get",
+          "lineNumber": 833
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "connection.get",
+          "lineNumber": 834
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "severity_by_level.get",
+          "lineNumber": 836
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "connection.get",
+          "lineNumber": 836
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "connection.get",
+          "lineNumber": 839
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "item.get",
+          "lineNumber": 840
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 842
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 842
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "connection.get",
+          "lineNumber": 845
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "connection.get",
+          "lineNumber": 847
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "\", \".join",
+          "lineNumber": 848
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get",
+          "lineNumber": 853
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "set",
+          "lineNumber": 854
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli.get(\"bash\", {}).get",
+          "lineNumber": 854
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli.get",
+          "lineNumber": 854
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "set",
+          "lineNumber": 855
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli.get(\"python\", {}).get",
+          "lineNumber": 855
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli.get",
+          "lineNumber": 855
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "set",
+          "lineNumber": 856
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli.get(\"completion\", {}).get",
+          "lineNumber": 856
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli.get",
+          "lineNumber": 856
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "completion.update",
+          "lineNumber": 857
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli.get(\"completion\", {}).get",
+          "lineNumber": 857
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli.get",
+          "lineNumber": 857
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "set",
+          "lineNumber": 858
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli.get(\"agent_prompt\", {}).get",
+          "lineNumber": 858
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli.get",
+          "lineNumber": 858
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "contracts.get",
+          "lineNumber": 859
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli_contract.get",
+          "lineNumber": 862
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "missing_in.append",
+          "lineNumber": 866
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "missing_in.append",
+          "lineNumber": 868
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 869
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 869
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "', '.join",
+          "lineNumber": 873
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 877
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 877
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 885
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 885
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "set",
+          "lineNumber": 893
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli_contract.get",
+          "lineNumber": 893
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "set",
+          "lineNumber": 894
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "cli_contract.get",
+          "lineNumber": 894
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "sorted",
+          "lineNumber": 896
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 897
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 897
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "sorted",
+          "lineNumber": 905
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 906
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 906
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get",
+          "lineNumber": 915
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "service.get",
+          "lineNumber": 916
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "service.get",
+          "lineNumber": 917
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "service.get",
+          "lineNumber": 917
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 918
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 918
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "service.get",
+          "lineNumber": 925
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "service.get",
+          "lineNumber": 925
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "result.issues.append",
+          "lineNumber": 926
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "Issue",
+          "lineNumber": 926
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get(\"summary\", {}).get",
+          "lineNumber": 935
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get",
+          "lineNumber": 935
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get(\"summary\", {}).get",
+          "lineNumber": 936
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get",
+          "lineNumber": 936
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get(\"summary\", {}).get",
+          "lineNumber": 937
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get",
+          "lineNumber": 937
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get(\"summary\", {}).get",
+          "lineNumber": 938
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get",
+          "lineNumber": 938
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get(\"summary\", {}).get",
+          "lineNumber": 939
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get",
+          "lineNumber": 939
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get(\"cli\", {}).get",
+          "lineNumber": 940
+        },
+        {
+          "caller": "_check_architecture_contracts",
+          "callee": "index.get",
+          "lineNumber": 940
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "CATALOG_DIR.exists",
+          "lineNumber": 951
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "sorted",
+          "lineNumber": 954
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "CATALOG_DIR.iterdir",
+          "lineNumber": 954
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "svc_dir.is_dir",
+          "lineNumber": 955
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "ficha.exists",
+          "lineNumber": 958
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "ficha.read_text",
+          "lineNumber": 961
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "re.search",
+          "lineNumber": 963
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "m.group(1).strip",
+          "lineNumber": 967
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "m.group",
+          "lineNumber": 967
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "docs_url.startswith",
+          "lineNumber": 969
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "target.exists",
+          "lineNumber": 973
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "result.issues.append",
+          "lineNumber": 974
+        },
+        {
+          "caller": "_check_docs_references",
+          "callee": "Issue",
+          "lineNumber": 974
+        },
+        {
+          "caller": "scan",
+          "callee": "ScanResult",
+          "lineNumber": 990
+        },
+        {
+          "caller": "scan",
+          "callee": "_check_services",
+          "lineNumber": 992
+        },
+        {
+          "caller": "scan",
+          "callee": "_check_compose_hygiene",
+          "lineNumber": 993
+        },
+        {
+          "caller": "scan",
+          "callee": "_check_cli_parity",
+          "lineNumber": 994
+        },
+        {
+          "caller": "scan",
+          "callee": "_check_agent_prompt",
+          "lineNumber": 995
+        },
+        {
+          "caller": "scan",
+          "callee": "_check_docs_references",
+          "lineNumber": 996
+        },
+        {
+          "caller": "scan",
+          "callee": "_check_architecture_contracts",
+          "lineNumber": 997
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1005
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1006
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1007
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1010
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1011
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1012
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1013
+        },
+        {
+          "caller": "format_report",
+          "callee": "sorted",
+          "lineNumber": 1015
+        },
+        {
+          "caller": "format_report",
+          "callee": "result.services_status.items",
+          "lineNumber": 1015
+        },
+        {
+          "caller": "format_report",
+          "callee": "status.get",
+          "lineNumber": 1016
+        },
+        {
+          "caller": "format_report",
+          "callee": "status.get",
+          "lineNumber": 1017
+        },
+        {
+          "caller": "format_report",
+          "callee": "status.get",
+          "lineNumber": 1018
+        },
+        {
+          "caller": "format_report",
+          "callee": "status.get",
+          "lineNumber": 1019
+        },
+        {
+          "caller": "format_report",
+          "callee": "status.get",
+          "lineNumber": 1020
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1021
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1023
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1024
+        },
+        {
+          "caller": "format_report",
+          "callee": "result.architecture.get",
+          "lineNumber": 1028
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1029
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1030
+        },
+        {
+          "caller": "format_report",
+          "callee": "result.architecture.get",
+          "lineNumber": 1032
+        },
+        {
+          "caller": "format_report",
+          "callee": "result.architecture.get",
+          "lineNumber": 1033
+        },
+        {
+          "caller": "format_report",
+          "callee": "result.architecture.get",
+          "lineNumber": 1034
+        },
+        {
+          "caller": "format_report",
+          "callee": "result.architecture.get",
+          "lineNumber": 1035
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1037
+        },
+        {
+          "caller": "format_report",
+          "callee": "result.architecture.get",
+          "lineNumber": 1039
+        },
+        {
+          "caller": "format_report",
+          "callee": "parity.get",
+          "lineNumber": 1041
+        },
+        {
+          "caller": "format_report",
+          "callee": "parity.get",
+          "lineNumber": 1042
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1043
+        },
+        {
+          "caller": "format_report",
+          "callee": "', '.join",
+          "lineNumber": 1043
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1044
+        },
+        {
+          "caller": "format_report",
+          "callee": "', '.join",
+          "lineNumber": 1044
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1045
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1052
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1054
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1055
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1060
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1062
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1063
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1069
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1071
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1072
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1074
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1075
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1078
+        },
+        {
+          "caller": "format_report",
+          "callee": "result.summary",
+          "lineNumber": 1078
+        },
+        {
+          "caller": "format_report",
+          "callee": "lines.append",
+          "lineNumber": 1079
+        },
+        {
+          "caller": "format_report",
+          "callee": "\"\\n\".join",
+          "lineNumber": 1081
+        },
+        {
+          "caller": "project_scan",
+          "callee": "Snapshot.load",
+          "lineNumber": 1108
+        },
+        {
+          "caller": "project_scan",
+          "callee": "scan",
+          "lineNumber": 1109
+        },
+        {
+          "caller": "project_scan",
+          "callee": "_build_snapshot_from_scan",
+          "lineNumber": 1110
+        },
+        {
+          "caller": "project_scan",
+          "callee": "snapshot.save",
+          "lineNumber": 1111
+        },
+        {
+          "caller": "project_scan",
+          "callee": "format_report",
+          "lineNumber": 1112
+        },
+        {
+          "caller": "project_scan",
+          "callee": "incremental_scan",
+          "lineNumber": 1114
+        },
+        {
+          "caller": "project_scan",
+          "callee": "format_report",
+          "lineNumber": 1115
+        },
+        {
+          "caller": "project_scan",
+          "callee": "len",
+          "lineNumber": 1117
+        },
+        {
+          "caller": "project_scan",
+          "callee": "Snapshot.load",
+          "lineNumber": 1125
+        },
+        {
+          "caller": "project_scan",
+          "callee": "scan",
+          "lineNumber": 1126
+        },
+        {
+          "caller": "project_scan",
+          "callee": "_build_snapshot_from_scan",
+          "lineNumber": 1127
+        },
+        {
+          "caller": "project_scan",
+          "callee": "snapshot.save",
+          "lineNumber": 1128
+        },
+        {
+          "caller": "project_scan",
+          "callee": "format_report",
+          "lineNumber": 1129
+        },
+        {
+          "caller": "project_scan",
+          "callee": "incremental_scan",
+          "lineNumber": 1131
+        },
+        {
+          "caller": "project_scan",
+          "callee": "format_report",
+          "lineNumber": 1132
+        },
+        {
+          "caller": "project_scan",
+          "callee": "len",
+          "lineNumber": 1134
+        },
+        {
+          "caller": "main",
+          "callee": "Snapshot.load",
+          "lineNumber": 1152
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1154
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 1155
+        },
+        {
+          "caller": "main",
+          "callee": "_get_changed_files",
+          "lineNumber": 1156
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1158
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 1159
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1160
+        },
+        {
+          "caller": "main",
+          "callee": "len",
+          "lineNumber": 1160
+        },
+        {
+          "caller": "main",
+          "callee": "_classify_changed_file",
+          "lineNumber": 1162
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1163
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1164
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 1165
+        },
+        {
+          "caller": "main",
+          "callee": "Snapshot.load",
+          "lineNumber": 1168
+        },
+        {
+          "caller": "main",
+          "callee": "scan",
+          "lineNumber": 1170
+        },
+        {
+          "caller": "main",
+          "callee": "_build_snapshot_from_scan",
+          "lineNumber": 1172
+        },
+        {
+          "caller": "main",
+          "callee": "snapshot.save",
+          "lineNumber": 1173
+        },
+        {
+          "caller": "main",
+          "callee": "incremental_scan",
+          "lineNumber": 1177
+        },
+        {
+          "caller": "main",
+          "callee": "result.to_dict",
+          "lineNumber": 1180
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1183
+        },
+        {
+          "caller": "main",
+          "callee": "json.dumps",
+          "lineNumber": 1183
+        },
+        {
+          "caller": "main",
+          "callee": "format_report",
+          "lineNumber": 1185
+        },
+        {
+          "caller": "main",
+          "callee": "len",
+          "lineNumber": 1187
+        },
+        {
+          "caller": "main",
+          "callee": "len",
+          "lineNumber": 1190
+        },
+        {
+          "caller": "main",
+          "callee": "len",
+          "lineNumber": 1191
+        },
+        {
+          "caller": "main",
+          "callee": "print",
+          "lineNumber": 1194
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 1197
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 20,
+        "functionCount": 17,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "agent/tools/system_tools.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 391,
+      "nonEmptyLines": 317,
+      "functions": [
+        {
+          "name": "scan_ports",
+          "startLine": 14,
+          "endLine": 45,
+          "params": []
+        },
+        {
+          "name": "_parse_ports",
+          "startLine": 48,
+          "endLine": 61,
+          "params": [
+            "ss_output"
+          ]
+        },
+        {
+          "name": "disk_usage",
+          "startLine": 65,
+          "endLine": 105,
+          "params": []
+        },
+        {
+          "name": "memory_info",
+          "startLine": 109,
+          "endLine": 151,
+          "params": []
+        },
+        {
+          "name": "_calc_mem_pct",
+          "startLine": 154,
+          "endLine": 171,
+          "params": [
+            "free_raw"
+          ]
+        },
+        {
+          "name": "network_info",
+          "startLine": 175,
+          "endLine": 223,
+          "params": []
+        },
+        {
+          "name": "list_files",
+          "startLine": 228,
+          "endLine": 306,
+          "params": [
+            "path",
+            "max_depth"
+          ]
+        },
+        {
+          "name": "read_file_content",
+          "startLine": 310,
+          "endLine": 391,
+          "params": [
+            "path",
+            "lines"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "scan_ports",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "_parse_ports",
+          "line": 48,
+          "isDefault": false
+        },
+        {
+          "name": "disk_usage",
+          "line": 64,
+          "isDefault": false
+        },
+        {
+          "name": "memory_info",
+          "line": 108,
+          "isDefault": false
+        },
+        {
+          "name": "_calc_mem_pct",
+          "line": 154,
+          "isDefault": false
+        },
+        {
+          "name": "network_info",
+          "line": 174,
+          "isDefault": false
+        },
+        {
+          "name": "list_files",
+          "line": 227,
+          "isDefault": false
+        },
+        {
+          "name": "read_file_content",
+          "line": 309,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "scan_ports",
+          "callee": "safe_run",
+          "lineNumber": 22
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "safe_run",
+          "lineNumber": 23
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "_parse_ports",
+          "lineNumber": 26
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "_parse_ports",
+          "lineNumber": 27
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "set",
+          "lineNumber": 30
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "range",
+          "lineNumber": 32
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "libres.append",
+          "lineNumber": 34
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "len",
+          "lineNumber": 35
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "len",
+          "lineNumber": 40
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "', '.join",
+          "lineNumber": 40
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "str",
+          "lineNumber": 40
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "sorted",
+          "lineNumber": 40
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "len",
+          "lineNumber": 41
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "', '.join",
+          "lineNumber": 41
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "str",
+          "lineNumber": 41
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "sorted",
+          "lineNumber": 41
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "', '.join",
+          "lineNumber": 43
+        },
+        {
+          "caller": "scan_ports",
+          "callee": "str",
+          "lineNumber": 43
+        },
+        {
+          "caller": "_parse_ports",
+          "callee": "ss_output.splitlines",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_parse_ports",
+          "callee": "line.split",
+          "lineNumber": 52
+        },
+        {
+          "caller": "_parse_ports",
+          "callee": "len",
+          "lineNumber": 53
+        },
+        {
+          "caller": "_parse_ports",
+          "callee": "addr.rsplit",
+          "lineNumber": 56
+        },
+        {
+          "caller": "_parse_ports",
+          "callee": "ports.append",
+          "lineNumber": 58
+        },
+        {
+          "caller": "_parse_ports",
+          "callee": "int",
+          "lineNumber": 58
+        },
+        {
+          "caller": "disk_usage",
+          "callee": "safe_run",
+          "lineNumber": 73
+        },
+        {
+          "caller": "disk_usage",
+          "callee": "output.strip().splitlines",
+          "lineNumber": 82
+        },
+        {
+          "caller": "disk_usage",
+          "callee": "output.strip",
+          "lineNumber": 82
+        },
+        {
+          "caller": "disk_usage",
+          "callee": "linea.split",
+          "lineNumber": 86
+        },
+        {
+          "caller": "disk_usage",
+          "callee": "len",
+          "lineNumber": 87
+        },
+        {
+          "caller": "disk_usage",
+          "callee": "partes[4].replace",
+          "lineNumber": 88
+        },
+        {
+          "caller": "disk_usage",
+          "callee": "int",
+          "lineNumber": 90
+        },
+        {
+          "caller": "disk_usage",
+          "callee": "len",
+          "lineNumber": 91
+        },
+        {
+          "caller": "disk_usage",
+          "callee": "alertas.append",
+          "lineNumber": 93
+        },
+        {
+          "caller": "disk_usage",
+          "callee": "alertas.append",
+          "lineNumber": 95
+        },
+        {
+          "caller": "disk_usage",
+          "callee": "\"\\n\".join",
+          "lineNumber": 99
+        },
+        {
+          "caller": "memory_info",
+          "callee": "safe_run",
+          "lineNumber": 117
+        },
+        {
+          "caller": "memory_info",
+          "callee": "safe_run",
+          "lineNumber": 122
+        },
+        {
+          "caller": "memory_info",
+          "callee": "_calc_mem_pct",
+          "lineNumber": 123
+        },
+        {
+          "caller": "memory_info",
+          "callee": "safe_run",
+          "lineNumber": 126
+        },
+        {
+          "caller": "memory_info",
+          "callee": "top_mem.splitlines",
+          "lineNumber": 131
+        },
+        {
+          "caller": "memory_info",
+          "callee": "\"\\n\".join",
+          "lineNumber": 132
+        },
+        {
+          "caller": "memory_info",
+          "callee": "int",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_calc_mem_pct",
+          "callee": "free_raw.splitlines",
+          "lineNumber": 161
+        },
+        {
+          "caller": "_calc_mem_pct",
+          "callee": "line.startswith",
+          "lineNumber": 162
+        },
+        {
+          "caller": "_calc_mem_pct",
+          "callee": "line.split",
+          "lineNumber": 163
+        },
+        {
+          "caller": "_calc_mem_pct",
+          "callee": "len",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_calc_mem_pct",
+          "callee": "int",
+          "lineNumber": 165
+        },
+        {
+          "caller": "_calc_mem_pct",
+          "callee": "int",
+          "lineNumber": 166
+        },
+        {
+          "caller": "_calc_mem_pct",
+          "callee": "str",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_calc_mem_pct",
+          "callee": "round",
+          "lineNumber": 168
+        },
+        {
+          "caller": "network_info",
+          "callee": "safe_run",
+          "lineNumber": 184
+        },
+        {
+          "caller": "network_info",
+          "callee": "ip_output.split",
+          "lineNumber": 185
+        },
+        {
+          "caller": "network_info",
+          "callee": "ip_output.startswith",
+          "lineNumber": 185
+        },
+        {
+          "caller": "network_info",
+          "callee": "safe_run",
+          "lineNumber": 188
+        },
+        {
+          "caller": "network_info",
+          "callee": "safe_run",
+          "lineNumber": 191
+        },
+        {
+          "caller": "network_info",
+          "callee": "docker_nets.strip().splitlines",
+          "lineNumber": 200
+        },
+        {
+          "caller": "network_info",
+          "callee": "docker_nets.strip",
+          "lineNumber": 200
+        },
+        {
+          "caller": "network_info",
+          "callee": "safe_run",
+          "lineNumber": 205
+        },
+        {
+          "caller": "network_info",
+          "callee": "containers.strip",
+          "lineNumber": 210
+        },
+        {
+          "caller": "network_info",
+          "callee": "parts.append",
+          "lineNumber": 211
+        },
+        {
+          "caller": "network_info",
+          "callee": "containers.strip",
+          "lineNumber": 211
+        },
+        {
+          "caller": "network_info",
+          "callee": "parts.append",
+          "lineNumber": 213
+        },
+        {
+          "caller": "network_info",
+          "callee": "\"\\n\".join",
+          "lineNumber": 214
+        },
+        {
+          "caller": "list_files",
+          "callee": "path.strip",
+          "lineNumber": 245
+        },
+        {
+          "caller": "list_files",
+          "callee": "path.startswith",
+          "lineNumber": 246
+        },
+        {
+          "caller": "list_files",
+          "callee": "P(path).resolve",
+          "lineNumber": 251
+        },
+        {
+          "caller": "list_files",
+          "callee": "P",
+          "lineNumber": 251
+        },
+        {
+          "caller": "list_files",
+          "callee": "str",
+          "lineNumber": 255
+        },
+        {
+          "caller": "list_files",
+          "callee": "any",
+          "lineNumber": 268
+        },
+        {
+          "caller": "list_files",
+          "callee": "resolved_str.startswith",
+          "lineNumber": 268
+        },
+        {
+          "caller": "list_files",
+          "callee": "', '.join",
+          "lineNumber": 271
+        },
+        {
+          "caller": "list_files",
+          "callee": "any",
+          "lineNumber": 276
+        },
+        {
+          "caller": "list_files",
+          "callee": "resolved_str.startswith",
+          "lineNumber": 276
+        },
+        {
+          "caller": "list_files",
+          "callee": "min",
+          "lineNumber": 280
+        },
+        {
+          "caller": "list_files",
+          "callee": "max",
+          "lineNumber": 280
+        },
+        {
+          "caller": "list_files",
+          "callee": "safe_run",
+          "lineNumber": 283
+        },
+        {
+          "caller": "list_files",
+          "callee": "str",
+          "lineNumber": 285
+        },
+        {
+          "caller": "list_files",
+          "callee": "P(resolved_str).exists",
+          "lineNumber": 292
+        },
+        {
+          "caller": "list_files",
+          "callee": "P",
+          "lineNumber": 292
+        },
+        {
+          "caller": "list_files",
+          "callee": "output.strip().splitlines",
+          "lineNumber": 297
+        },
+        {
+          "caller": "list_files",
+          "callee": "output.strip",
+          "lineNumber": 297
+        },
+        {
+          "caller": "list_files",
+          "callee": "len",
+          "lineNumber": 298
+        },
+        {
+          "caller": "list_files",
+          "callee": "lines.append",
+          "lineNumber": 300
+        },
+        {
+          "caller": "list_files",
+          "callee": "len",
+          "lineNumber": 300
+        },
+        {
+          "caller": "list_files",
+          "callee": "output.splitlines",
+          "lineNumber": 300
+        },
+        {
+          "caller": "list_files",
+          "callee": "len",
+          "lineNumber": 304
+        },
+        {
+          "caller": "list_files",
+          "callee": "\"\\n\".join",
+          "lineNumber": 305
+        },
+        {
+          "caller": "list_files",
+          "callee": "l.replace",
+          "lineNumber": 305
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "path.strip",
+          "lineNumber": 322
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "path.startswith",
+          "lineNumber": 323
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "P(path).resolve",
+          "lineNumber": 327
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "P",
+          "lineNumber": 327
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "str",
+          "lineNumber": 331
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "any",
+          "lineNumber": 343
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "resolved_str.startswith",
+          "lineNumber": 343
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "', '.join",
+          "lineNumber": 346
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "resolved.exists",
+          "lineNumber": 349
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "resolved.is_file",
+          "lineNumber": 352
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "resolved.stat",
+          "lineNumber": 356
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "min",
+          "lineNumber": 360
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "max",
+          "lineNumber": 360
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "safe_run",
+          "lineNumber": 362
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "str",
+          "lineNumber": 363
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "resolved.name.endswith",
+          "lineNumber": 371
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "output.splitlines",
+          "lineNumber": 379
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "line.strip().startswith",
+          "lineNumber": 380
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "line.strip",
+          "lineNumber": 380
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "line.partition",
+          "lineNumber": 381
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "key.strip().lower",
+          "lineNumber": 382
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "key.strip",
+          "lineNumber": 382
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "any",
+          "lineNumber": 383
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "value.strip",
+          "lineNumber": 383
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "any",
+          "lineNumber": 384
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "sanitized_lines.append",
+          "lineNumber": 385
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "key.strip",
+          "lineNumber": 385
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "sanitized_lines.append",
+          "lineNumber": 387
+        },
+        {
+          "caller": "read_file_content",
+          "callee": "\"\\n\".join",
+          "lineNumber": 388
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 8,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "tests/test_classify.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 132,
+      "nonEmptyLines": 96,
+      "classes": [
+        {
+          "name": "TestDiagnostico",
+          "startLine": 11,
+          "endLine": 31,
+          "methods": [
+            "test_revisar",
+            "test_error",
+            "test_no_funciona",
+            "test_502",
+            "test_por_que"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestCreacion",
+          "startLine": 34,
+          "endLine": 46,
+          "methods": [
+            "test_instalar",
+            "test_crear",
+            "test_quiero"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestBackup",
+          "startLine": 49,
+          "endLine": 60,
+          "methods": [
+            "test_backup",
+            "test_restaurar",
+            "test_respaldo"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestAdmin",
+          "startLine": 63,
+          "endLine": 78,
+          "methods": [
+            "test_restart",
+            "test_detener",
+            "test_actualizar",
+            "test_start"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestSistema",
+          "startLine": 81,
+          "endLine": 92,
+          "methods": [
+            "test_servicios",
+            "test_disco",
+            "test_puertos"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestIdentidad",
+          "startLine": 95,
+          "endLine": 103,
+          "methods": [
+            "test_modelo",
+            "test_quien_eres"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestMemoria",
+          "startLine": 106,
+          "endLine": 117,
+          "methods": [
+            "test_recuerda",
+            "test_skill",
+            "test_que_sabes"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TestGeneral",
+          "startLine": 120,
+          "endLine": 132,
+          "methods": [
+            "test_hola",
+            "test_siempre_tiene_identidad",
+            "test_general_tiene_formato"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TestDiagnostico",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "TestCreacion",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "TestBackup",
+          "line": 49,
+          "isDefault": false
+        },
+        {
+          "name": "TestAdmin",
+          "line": 63,
+          "isDefault": false
+        },
+        {
+          "name": "TestSistema",
+          "line": 81,
+          "isDefault": false
+        },
+        {
+          "name": "TestIdentidad",
+          "line": 95,
+          "isDefault": false
+        },
+        {
+          "name": "TestMemoria",
+          "line": 106,
+          "isDefault": false
+        },
+        {
+          "name": "TestGeneral",
+          "line": 120,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_revisar",
+          "callee": "_classify_query",
+          "lineNumber": 13
+        },
+        {
+          "caller": "test_error",
+          "callee": "_classify_query",
+          "lineNumber": 18
+        },
+        {
+          "caller": "test_no_funciona",
+          "callee": "_classify_query",
+          "lineNumber": 22
+        },
+        {
+          "caller": "test_502",
+          "callee": "_classify_query",
+          "lineNumber": 26
+        },
+        {
+          "caller": "test_por_que",
+          "callee": "_classify_query",
+          "lineNumber": 30
+        },
+        {
+          "caller": "test_instalar",
+          "callee": "_classify_query",
+          "lineNumber": 36
+        },
+        {
+          "caller": "test_crear",
+          "callee": "_classify_query",
+          "lineNumber": 41
+        },
+        {
+          "caller": "test_quiero",
+          "callee": "_classify_query",
+          "lineNumber": 45
+        },
+        {
+          "caller": "test_backup",
+          "callee": "_classify_query",
+          "lineNumber": 51
+        },
+        {
+          "caller": "test_restaurar",
+          "callee": "_classify_query",
+          "lineNumber": 55
+        },
+        {
+          "caller": "test_respaldo",
+          "callee": "_classify_query",
+          "lineNumber": 59
+        },
+        {
+          "caller": "test_restart",
+          "callee": "_classify_query",
+          "lineNumber": 65
+        },
+        {
+          "caller": "test_detener",
+          "callee": "_classify_query",
+          "lineNumber": 69
+        },
+        {
+          "caller": "test_actualizar",
+          "callee": "_classify_query",
+          "lineNumber": 73
+        },
+        {
+          "caller": "test_start",
+          "callee": "_classify_query",
+          "lineNumber": 77
+        },
+        {
+          "caller": "test_servicios",
+          "callee": "_classify_query",
+          "lineNumber": 83
+        },
+        {
+          "caller": "test_disco",
+          "callee": "_classify_query",
+          "lineNumber": 87
+        },
+        {
+          "caller": "test_puertos",
+          "callee": "_classify_query",
+          "lineNumber": 91
+        },
+        {
+          "caller": "test_modelo",
+          "callee": "_classify_query",
+          "lineNumber": 97
+        },
+        {
+          "caller": "test_quien_eres",
+          "callee": "_classify_query",
+          "lineNumber": 102
+        },
+        {
+          "caller": "test_recuerda",
+          "callee": "_classify_query",
+          "lineNumber": 108
+        },
+        {
+          "caller": "test_skill",
+          "callee": "_classify_query",
+          "lineNumber": 112
+        },
+        {
+          "caller": "test_que_sabes",
+          "callee": "_classify_query",
+          "lineNumber": 116
+        },
+        {
+          "caller": "test_hola",
+          "callee": "_classify_query",
+          "lineNumber": 122
+        },
+        {
+          "caller": "test_siempre_tiene_identidad",
+          "callee": "_classify_query",
+          "lineNumber": 127
+        },
+        {
+          "caller": "test_general_tiene_formato",
+          "callee": "_classify_query",
+          "lineNumber": 131
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 8,
+        "functionCount": 0,
+        "classCount": 8
+      }
+    }
+  ]
+}

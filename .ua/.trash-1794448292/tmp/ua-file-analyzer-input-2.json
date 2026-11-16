@@ -1,0 +1,176 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "svc_py/__main__.py",
+      "language": "python",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/app.py",
+      "language": "python",
+      "sizeLines": 333,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/backup.py",
+      "language": "python",
+      "sizeLines": 269,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/catalog.py",
+      "language": "python",
+      "sizeLines": 263,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/codemap.py",
+      "language": "python",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/compose.py",
+      "language": "python",
+      "sizeLines": 190,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/docker.py",
+      "language": "python",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/health.py",
+      "language": "python",
+      "sizeLines": 347,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/info.py",
+      "language": "python",
+      "sizeLines": 273,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/menu.py",
+      "language": "python",
+      "sizeLines": 375,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/scanner.py",
+      "language": "python",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/config.py",
+      "language": "python",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/core/bash_bridge.py",
+      "language": "python",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/core/discovery.py",
+      "language": "python",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/core/docker.py",
+      "language": "python",
+      "sizeLines": 218,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/ui.py",
+      "language": "python",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "svc_py/__main__.py": [
+      "svc_py/app.py"
+    ],
+    "svc_py/app.py": [
+      "svc_py/commands/__init__.py",
+      "svc_py/core/bash_bridge.py",
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/__init__.py": [],
+    "svc_py/commands/backup.py": [
+      "svc_py/config.py",
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/catalog.py": [
+      "svc_py/config.py",
+      "svc_py/core/discovery.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/codemap.py": [
+      "svc_py/config.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/compose.py": [
+      "svc_py/config.py",
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/docker.py": [
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/health.py": [
+      "svc_py/config.py",
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/info.py": [
+      "svc_py/config.py",
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/menu.py": [
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/scanner.py": [
+      "svc_py/config.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/config.py": [],
+    "svc_py/core/bash_bridge.py": [
+      "svc_py/config.py"
+    ],
+    "svc_py/core/discovery.py": [
+      "svc_py/config.py"
+    ],
+    "svc_py/core/docker.py": [],
+    "svc_py/ui.py": []
+  }
+}

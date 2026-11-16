@@ -1,0 +1,85 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 1,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 1,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "results": [
+    {
+      "path": "agent/mcp/nas_mcp_gateway/Dockerfile",
+      "language": "dockerfile",
+      "fileCategory": "infra",
+      "totalLines": 13,
+      "nonEmptyLines": 10,
+      "services": [
+        {
+          "name": "python",
+          "image": "python:3.11-slim-bookworm",
+          "ports": [],
+          "startLine": 1,
+          "endLine": 14
+        }
+      ],
+      "steps": [
+        {
+          "name": "FROM python:3.11-slim-bookworm",
+          "startLine": 1,
+          "endLine": 1
+        },
+        {
+          "name": "WORKDIR /app",
+          "startLine": 3,
+          "endLine": 3
+        },
+        {
+          "name": "COPY mcp/nas_mcp_gateway/nas_mcp_gateway.py /app/nas_mcp_gateway.",
+          "startLine": 4,
+          "endLine": 4
+        },
+        {
+          "name": "COPY mcp/nas_mcp_gateway/nas_mcp_worker.py /app/nas_mcp_worker.py",
+          "startLine": 5,
+          "endLine": 5
+        },
+        {
+          "name": "COPY mcp/nas_mcp_gateway/nas_mcp_manifest.json /app/nas_mcp_manif",
+          "startLine": 6,
+          "endLine": 6
+        },
+        {
+          "name": "ENV PYTHONUNBUFFERED=1",
+          "startLine": 8,
+          "endLine": 8
+        },
+        {
+          "name": "ENV NAS_MCP_MODE=http",
+          "startLine": 9,
+          "endLine": 9
+        },
+        {
+          "name": "ENTRYPOINT [\"python\", \"/app/nas_mcp_gateway.py\"]",
+          "startLine": 13,
+          "endLine": 13
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "serviceCount": 1,
+        "stepCount": 8
+      }
+    }
+  ]
+}

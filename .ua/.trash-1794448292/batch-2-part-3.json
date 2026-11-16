@@ -1,0 +1,978 @@
+{
+  "nodes": [
+    {
+      "id": "file:svc_py/commands/menu.py",
+      "type": "file",
+      "name": "menu.py",
+      "filePath": "svc_py/commands/menu.py",
+      "summary": "Menú TUI interactivo con búsqueda fuzzy mediante InquirerPy, vista previa de contenedores, confirmación de acciones destructivas y ejecución en lote multi-select.",
+      "tags": [
+        "tui",
+        "menu",
+        "interactivo",
+        "inquirerpy",
+        "cli"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Emplea importaciones diferidas dentro de _execute_action para reutilizar comandos de backup e info y evitar dependencias circulares."
+    },
+    {
+      "id": "function:svc_py/commands/menu.py:_service_preview",
+      "type": "function",
+      "name": "_service_preview",
+      "filePath": "svc_py/commands/menu.py",
+      "lineRange": [
+        58,
+        91
+      ],
+      "summary": "Construye un resumen textual con ruta compose, estado, imagen, health, reinicios y puertos de un servicio.",
+      "tags": [
+        "helper",
+        "preview",
+        "tui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/commands/menu.py:_execute_action",
+      "type": "function",
+      "name": "_execute_action",
+      "filePath": "svc_py/commands/menu.py",
+      "lineRange": [
+        94,
+        154
+      ],
+      "summary": "Despacha acciones individuales o de lote (up, update, logs, backup, depends, etc.) sobre un servicio específico.",
+      "tags": [
+        "helper",
+        "despacho",
+        "acciones"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/commands/menu.py:_multi_select_flow",
+      "type": "function",
+      "name": "_multi_select_flow",
+      "filePath": "svc_py/commands/menu.py",
+      "lineRange": [
+        157,
+        239
+      ],
+      "summary": "Guía la selección múltiple de servicios, la elección de una acción batch, la confirmación destructiva y la ejecución secuencial.",
+      "tags": [
+        "helper",
+        "multi-select",
+        "inquirerpy"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/commands/menu.py:menu",
+      "type": "function",
+      "name": "menu",
+      "filePath": "svc_py/commands/menu.py",
+      "lineRange": [
+        243,
+        375
+      ],
+      "summary": "Bucle principal del menú TUI con búsqueda fuzzy de servicios, panel de preview y selección de acciones individuales o multi-select.",
+      "tags": [
+        "cli-command",
+        "tui",
+        "menu",
+        "inquirerpy"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:svc_py/commands/scanner.py",
+      "type": "file",
+      "name": "scanner.py",
+      "filePath": "svc_py/commands/scanner.py",
+      "summary": "Implementa el comando scan del CLI Python invocando el script agent/tools/project_scanner.py con soporte para --verbose y --json.",
+      "tags": [
+        "auditoria",
+        "scanner",
+        "cli",
+        "inconsistencias"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/commands/scanner.py:scan",
+      "type": "function",
+      "name": "scan",
+      "filePath": "svc_py/commands/scanner.py",
+      "lineRange": [
+        24,
+        62
+      ],
+      "summary": "Configura variables de entorno y ejecuta project_scanner.py como subproceso aislado mostrando su salida en consola.",
+      "tags": [
+        "cli-command",
+        "scanner",
+        "subproceso"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:svc_py/config.py",
+      "type": "file",
+      "name": "config.py",
+      "filePath": "svc_py/config.py",
+      "summary": "Configuración centralizada del CLI Python que lee variables de entorno (DOCKER_BASE, BACKUP_DIR, BACKUP_KEEP, SVC_WATCH_INTERVAL, NAS_DOTFILES) y define los nombres válidos de compose.",
+      "tags": [
+        "configuracion",
+        "constantes",
+        "variables-entorno"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:svc_py/core/bash_bridge.py",
+      "type": "file",
+      "name": "bash_bridge.py",
+      "filePath": "svc_py/core/bash_bridge.py",
+      "summary": "Capa puente entre el CLI Python y el CLI Bash svc.sh (fuente de verdad), exponiendo funciones de ejecución directa, captura, passthrough y verificación de estado.",
+      "tags": [
+        "bridge",
+        "bash",
+        "subprocesos",
+        "core",
+        "interoperabilidad"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Establece NAS_CLI=bash en _build_env() para prevenir recursión infinita cuando el CLI Python delega comandos en svc.sh."
+    },
+    {
+      "id": "function:svc_py/core/bash_bridge.py:_svc_sh_path",
+      "type": "function",
+      "name": "_svc_sh_path",
+      "filePath": "svc_py/core/bash_bridge.py",
+      "lineRange": [
+        40,
+        59
+      ],
+      "summary": "Localiza svc.sh en NAS_DOTFILES, en el PATH del sistema o en /nas-dotfiles/docker/cli/svc.sh.",
+      "tags": [
+        "helper",
+        "rutas",
+        "validacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/bash_bridge.py:_build_env",
+      "type": "function",
+      "name": "_build_env",
+      "filePath": "svc_py/core/bash_bridge.py",
+      "lineRange": [
+        62,
+        69
+      ],
+      "summary": "Prepara el diccionario de entorno con DOCKER_BASE, NAS_DOTFILES y NAS_CLI=bash.",
+      "tags": [
+        "helper",
+        "entorno",
+        "configuracion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/bash_bridge.py:svc",
+      "type": "function",
+      "name": "svc",
+      "filePath": "svc_py/core/bash_bridge.py",
+      "lineRange": [
+        77,
+        96
+      ],
+      "summary": "Ejecuta un subcomando de svc.sh enviando la salida directamente a la terminal.",
+      "tags": [
+        "bridge",
+        "subproceso",
+        "ejecucion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/bash_bridge.py:svc_output",
+      "type": "function",
+      "name": "svc_output",
+      "filePath": "svc_py/core/bash_bridge.py",
+      "lineRange": [
+        99,
+        120
+      ],
+      "summary": "Ejecuta un subcomando de svc.sh capturando stdout y su código de salida.",
+      "tags": [
+        "bridge",
+        "subproceso",
+        "captura"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/bash_bridge.py:svc_passthrough",
+      "type": "function",
+      "name": "svc_passthrough",
+      "filePath": "svc_py/core/bash_bridge.py",
+      "lineRange": [
+        123,
+        142
+      ],
+      "summary": "Ejecuta svc.sh heredando stdin, stdout y stderr para comandos interactivos o en streaming.",
+      "tags": [
+        "bridge",
+        "passthrough",
+        "streaming"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/bash_bridge.py:svc_check",
+      "type": "function",
+      "name": "svc_check",
+      "filePath": "svc_py/core/bash_bridge.py",
+      "lineRange": [
+        145,
+        160
+      ],
+      "summary": "Ejecuta un comando de svc.sh silenciosamente y devuelve True si el código de salida es cero.",
+      "tags": [
+        "bridge",
+        "verificacion",
+        "estado"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/bash_bridge.py:svc_list_services",
+      "type": "function",
+      "name": "svc_list_services",
+      "filePath": "svc_py/core/bash_bridge.py",
+      "lineRange": [
+        168,
+        196
+      ],
+      "summary": "Obtiene y parsea la lista de servicios desde svc lista, con fallback a svc_py.core.discovery.svc_list.",
+      "tags": [
+        "bridge",
+        "descubrimiento",
+        "parsing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/core/bash_bridge.py:is_svc_sh_available",
+      "type": "function",
+      "name": "is_svc_sh_available",
+      "filePath": "svc_py/core/bash_bridge.py",
+      "lineRange": [
+        199,
+        205
+      ],
+      "summary": "Comprueba si el script svc.sh es localizable en el sistema.",
+      "tags": [
+        "helper",
+        "verificacion",
+        "disponibilidad"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:svc_py/core/discovery.py",
+      "type": "file",
+      "name": "discovery.py",
+      "filePath": "svc_py/core/discovery.py",
+      "summary": "Módulo de descubrimiento de servicios Docker Compose bajo DOCKER_BASE, equivalente en Python a docker/cli/lib/discovery.sh.",
+      "tags": [
+        "descubrimiento",
+        "docker-compose",
+        "core",
+        "sistema-archivos"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/core/discovery.py:svc_list",
+      "type": "function",
+      "name": "svc_list",
+      "filePath": "svc_py/core/discovery.py",
+      "lineRange": [
+        13,
+        34
+      ],
+      "summary": "Recorre DOCKER_BASE omitiendo directorios ocultos y backups para devolver los nombres ordenados de servicios con compose file.",
+      "tags": [
+        "descubrimiento",
+        "listado",
+        "servicios"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "function",
+      "name": "svc_compose_file",
+      "filePath": "svc_py/core/discovery.py",
+      "lineRange": [
+        37,
+        55
+      ],
+      "summary": "Busca el primer archivo compose válido en el directorio de un servicio según la prioridad de COMPOSE_FILENAMES.",
+      "tags": [
+        "descubrimiento",
+        "rutas",
+        "docker-compose"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/discovery.py:svc_dir",
+      "type": "function",
+      "name": "svc_dir",
+      "filePath": "svc_py/core/discovery.py",
+      "lineRange": [
+        58,
+        61
+      ],
+      "summary": "Devuelve el Path al directorio de un servicio si existe.",
+      "tags": [
+        "descubrimiento",
+        "rutas",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/core/discovery.py:service_exists",
+      "type": "function",
+      "name": "service_exists",
+      "filePath": "svc_py/core/discovery.py",
+      "lineRange": [
+        64,
+        66
+      ],
+      "summary": "Indica si un servicio existe verificando que posea un archivo compose válido.",
+      "tags": [
+        "descubrimiento",
+        "validacion",
+        "servicios"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "function:svc_py/commands/menu.py:_service_preview",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "function:svc_py/commands/menu.py:_service_preview",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "function:svc_py/commands/menu.py:_execute_action",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "function:svc_py/commands/menu.py:_execute_action",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "function:svc_py/commands/menu.py:_multi_select_flow",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "function:svc_py/commands/menu.py:_multi_select_flow",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "function:svc_py/commands/menu.py:menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "function:svc_py/commands/menu.py:menu",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "file:svc_py/core/discovery.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "file:svc_py/core/docker.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "file:svc_py/ui.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_service_preview",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_service_preview",
+      "target": "function:svc_py/core/docker.py:is_service_running",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_service_preview",
+      "target": "function:svc_py/core/docker.py:get_container_ids",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_service_preview",
+      "target": "function:svc_py/core/docker.py:get_container_info",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_service_preview",
+      "target": "function:svc_py/core/docker.py:container_inspect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_service_preview",
+      "target": "function:svc_py/core/docker.py:compose_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_execute_action",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_execute_action",
+      "target": "function:svc_py/ui.py:error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_execute_action",
+      "target": "function:svc_py/core/docker.py:compose_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_execute_action",
+      "target": "function:svc_py/core/docker.py:compose_passthrough",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_execute_action",
+      "target": "function:svc_py/core/docker.py:compose_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_multi_select_flow",
+      "target": "function:svc_py/core/discovery.py:svc_list",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_multi_select_flow",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_multi_select_flow",
+      "target": "function:svc_py/core/docker.py:is_service_running",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_multi_select_flow",
+      "target": "function:svc_py/commands/menu.py:_execute_action",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_multi_select_flow",
+      "target": "function:svc_py/ui.py:success",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_multi_select_flow",
+      "target": "function:svc_py/ui.py:error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:menu",
+      "target": "function:svc_py/ui.py:error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:menu",
+      "target": "function:svc_py/core/discovery.py:svc_list",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:menu",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:menu",
+      "target": "function:svc_py/core/docker.py:is_service_running",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:menu",
+      "target": "function:svc_py/commands/menu.py:_multi_select_flow",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:menu",
+      "target": "function:svc_py/commands/menu.py:_service_preview",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:menu",
+      "target": "function:svc_py/commands/menu.py:_execute_action",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_execute_action",
+      "target": "function:svc_py/commands/backup.py:backup",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "file:svc_py/commands/backup.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_execute_action",
+      "target": "function:svc_py/commands/backup.py:restore",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_execute_action",
+      "target": "function:svc_py/commands/info.py:depends",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/menu.py",
+      "target": "file:svc_py/commands/info.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_execute_action",
+      "target": "function:svc_py/commands/info.py:env_cmd",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/menu.py:_execute_action",
+      "target": "function:svc_py/commands/info.py:open_cmd",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/scanner.py",
+      "target": "function:svc_py/commands/scanner.py:scan",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/scanner.py",
+      "target": "function:svc_py/commands/scanner.py:scan",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/scanner.py",
+      "target": "file:svc_py/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/scanner.py",
+      "target": "file:svc_py/ui.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/scanner.py",
+      "target": "file:agent/tools/project_scanner.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:_svc_sh_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:_svc_sh_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:_build_env",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:_build_env",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:svc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:svc",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:svc_output",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:svc_output",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:svc_passthrough",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:svc_passthrough",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:svc_check",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:svc_check",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:svc_list_services",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:svc_list_services",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:is_svc_sh_available",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "function:svc_py/core/bash_bridge.py:is_svc_sh_available",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "file:svc_py/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:svc_py/core/bash_bridge.py:svc",
+      "target": "function:svc_py/core/bash_bridge.py:_svc_sh_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/bash_bridge.py:svc",
+      "target": "function:svc_py/core/bash_bridge.py:_build_env",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/bash_bridge.py:svc_output",
+      "target": "function:svc_py/core/bash_bridge.py:_svc_sh_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/bash_bridge.py:svc_output",
+      "target": "function:svc_py/core/bash_bridge.py:_build_env",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/bash_bridge.py:svc_passthrough",
+      "target": "function:svc_py/core/bash_bridge.py:_svc_sh_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/bash_bridge.py:svc_passthrough",
+      "target": "function:svc_py/core/bash_bridge.py:_build_env",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/bash_bridge.py:svc_check",
+      "target": "function:svc_py/core/bash_bridge.py:_svc_sh_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/bash_bridge.py:svc_check",
+      "target": "function:svc_py/core/bash_bridge.py:_build_env",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/bash_bridge.py:svc_list_services",
+      "target": "function:svc_py/core/bash_bridge.py:svc_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/bash_bridge.py:is_svc_sh_available",
+      "target": "function:svc_py/core/bash_bridge.py:_svc_sh_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/core/bash_bridge.py:svc_list_services",
+      "target": "function:svc_py/core/discovery.py:svc_list",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "file:svc_py/core/discovery.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:svc_py/core/bash_bridge.py",
+      "target": "file:docker/cli/svc.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:svc_py/core/discovery.py",
+      "target": "function:svc_py/core/discovery.py:svc_list",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/discovery.py",
+      "target": "function:svc_py/core/discovery.py:svc_list",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/discovery.py",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/discovery.py",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/discovery.py",
+      "target": "function:svc_py/core/discovery.py:svc_dir",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/discovery.py",
+      "target": "function:svc_py/core/discovery.py:svc_dir",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/discovery.py",
+      "target": "function:svc_py/core/discovery.py:service_exists",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/core/discovery.py",
+      "target": "function:svc_py/core/discovery.py:service_exists",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/core/discovery.py",
+      "target": "file:svc_py/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:svc_py/core/discovery.py:service_exists",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

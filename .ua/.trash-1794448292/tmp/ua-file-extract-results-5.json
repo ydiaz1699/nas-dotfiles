@@ -1,0 +1,75 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 1,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 1,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 1
+    }
+  },
+  "results": [
+    {
+      "path": "agent/mcp/Dockerfile",
+      "language": "dockerfile",
+      "fileCategory": "infra",
+      "totalLines": 12,
+      "nonEmptyLines": 9,
+      "services": [
+        {
+          "name": "python",
+          "image": "python:3.11-slim-bookworm",
+          "ports": [],
+          "startLine": 2,
+          "endLine": 13
+        }
+      ],
+      "steps": [
+        {
+          "name": "FROM python:3.11-slim-bookworm",
+          "startLine": 2,
+          "endLine": 2
+        },
+        {
+          "name": "WORKDIR /app",
+          "startLine": 4,
+          "endLine": 4
+        },
+        {
+          "name": "COPY lobehub_mcp.py /app/lobehub_mcp.py",
+          "startLine": 5,
+          "endLine": 5
+        },
+        {
+          "name": "ENV PYTHONUNBUFFERED=1",
+          "startLine": 7,
+          "endLine": 7
+        },
+        {
+          "name": "ENV MCP_MODE=http",
+          "startLine": 8,
+          "endLine": 8
+        },
+        {
+          "name": "ENTRYPOINT [\"python\", \"/app/lobehub_mcp.py\"]",
+          "startLine": 12,
+          "endLine": 12
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "serviceCount": 1,
+        "stepCount": 6
+      }
+    }
+  ]
+}

@@ -1,0 +1,1438 @@
+{
+  "nodes": [
+    {
+      "id": "file:agent/tools/project_index.py",
+      "type": "file",
+      "name": "project_index.py",
+      "filePath": "agent/tools/project_index.py",
+      "summary": "Generador del índice estructural JSON del ecosistema nas-dotfiles + DebMenux y del mapa legible docs/CODE-MAP.md mediante análisis AST de Python y parsing de scripts Bash.",
+      "tags": [
+        "indice-proyecto",
+        "ast-python",
+        "code-map",
+        "contratos",
+        "herramienta-cli"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Combina hashlib, ast y expresiones regulares para inspeccionar paridad de comandos CLI, capacidades, gateways MCP y contratos arquitectónicos."
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_relative",
+      "type": "function",
+      "name": "_relative",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        53,
+        54
+      ],
+      "summary": "Convierte una ruta Path en cadena POSIX relativa a la raíz indicada.",
+      "tags": [
+        "rutas",
+        "helper",
+        "posix"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_iter_repo_files",
+      "type": "function",
+      "name": "_iter_repo_files",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        57,
+        75
+      ],
+      "summary": "Recorre archivos de un repositorio excluyendo directorios ignorados, archivos de entorno y cachés.",
+      "tags": [
+        "descubrimiento-archivos",
+        "recorrido-repo",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_classify_path",
+      "type": "function",
+      "name": "_classify_path",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        78,
+        135
+      ],
+      "summary": "Clasifica cada ruta relativa de nas-dotfiles o DebMenux según su rol arquitectónico (CLI, tool, gateway MCP, guía, ficha o hook).",
+      "tags": [
+        "clasificacion",
+        "arquitectura",
+        "inventario"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_sha256",
+      "type": "function",
+      "name": "_sha256",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        138,
+        146
+      ],
+      "summary": "Calcula el hash SHA-256 en lectura por bloques de un archivo del repositorio.",
+      "tags": [
+        "hashing",
+        "sha256",
+        "integridad"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_read_text",
+      "type": "function",
+      "name": "_read_text",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        149,
+        153
+      ],
+      "summary": "Lee el contenido UTF-8 de un archivo devolviendo cadena vacía si ocurre un OSError.",
+      "tags": [
+        "lectura-archivo",
+        "helper",
+        "utf8"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_file_records",
+      "type": "function",
+      "name": "_file_records",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        156,
+        170
+      ],
+      "summary": "Construye los registros indexados de todos los archivos de nas-dotfiles y DebMenux con tamaño, tipo y hash SHA-256.",
+      "tags": [
+        "inventario-archivos",
+        "metadatos",
+        "indice-proyecto"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_extract_bash_commands",
+      "type": "function",
+      "name": "_extract_bash_commands",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        178,
+        180
+      ],
+      "summary": "Extrae los subcomandos declarados en las sentencias case de docker/cli/svc.sh.",
+      "tags": [
+        "parsing-bash",
+        "cli-svc",
+        "paridad"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_extract_python_commands",
+      "type": "function",
+      "name": "_extract_python_commands",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        183,
+        220
+      ],
+      "summary": "Analiza el AST de svc_py/app.py para extraer los comandos registrados mediante decoradores de Typer.",
+      "tags": [
+        "ast-python",
+        "svc-py",
+        "paridad"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_extract_completion_commands",
+      "type": "function",
+      "name": "_extract_completion_commands",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        223,
+        232
+      ],
+      "summary": "Extrae los comandos globales y de servicio definidos en el script de autocompletado shell/lib/docker.sh.",
+      "tags": [
+        "parsing-bash",
+        "autocompletado",
+        "paridad"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_extract_prompt_commands",
+      "type": "function",
+      "name": "_extract_prompt_commands",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        235,
+        239
+      ],
+      "summary": "Detecta los comandos svc documentados dentro del prompt del sistema en agent/nas_agent.py.",
+      "tags": [
+        "prompt-agente",
+        "paridad",
+        "parsing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_extract_registered_tools",
+      "type": "function",
+      "name": "_extract_registered_tools",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        242,
+        262
+      ],
+      "summary": "Inspecciona el AST de agent/tools/__init__.py para listar las herramientas registradas en ALL_TOOLS.",
+      "tags": [
+        "ast-python",
+        "tools-agente",
+        "inventario"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_extract_capabilities",
+      "type": "function",
+      "name": "_extract_capabilities",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        265,
+        321
+      ],
+      "summary": "Recopila las operaciones declaradas en los manifests JSON de agent/capabilities/.",
+      "tags": [
+        "capacidades",
+        "manifests-json",
+        "inventario"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_extract_mcp_gateways",
+      "type": "function",
+      "name": "_extract_mcp_gateways",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        324,
+        452
+      ],
+      "summary": "Inspecciona mediante AST y manifests los gateways MCP (lobehub_mcp.py y nas_mcp_gateway) validando coherencia entre herramientas y operaciones.",
+      "tags": [
+        "gateway-mcp",
+        "ast-python",
+        "validacion"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_extract_service_ids",
+      "type": "function",
+      "name": "_extract_service_ids",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        455,
+        517
+      ],
+      "summary": "Consolida los servicios conocidos cruzando fichas, compose de catálogo, guías y el registro services.json de DebMenux.",
+      "tags": [
+        "catalogo-servicios",
+        "debmenux",
+        "inventario"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_load_contracts",
+      "type": "function",
+      "name": "_load_contracts",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        525,
+        529
+      ],
+      "summary": "Carga el archivo agent/architecture/contracts.json con los contratos de conexión arquitectónica.",
+      "tags": [
+        "contratos",
+        "arquitectura",
+        "json"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_resolve_contract_path",
+      "type": "function",
+      "name": "_resolve_contract_path",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        532,
+        535
+      ],
+      "summary": "Resuelve rutas relativas de contratos tanto dentro de nas-dotfiles como hacia el repositorio hermano DebMenux-.",
+      "tags": [
+        "contratos",
+        "resolucion-rutas",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_contract_connections",
+      "type": "function",
+      "name": "_contract_connections",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        538,
+        562
+      ],
+      "summary": "Verifica la existencia de todos los artefactos requeridos por cada contrato de conexión en contracts.json.",
+      "tags": [
+        "contratos",
+        "validacion-arquitectura",
+        "conexiones"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_cli_index",
+      "type": "function",
+      "name": "_cli_index",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        565,
+        607
+      ],
+      "summary": "Calcula la matriz de paridad de comandos entre svc.sh, svc_py, autocompletado Bash, prompt del agente y ALL_TOOLS.",
+      "tags": [
+        "paridad-cli",
+        "svc",
+        "indice-proyecto"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:build_index",
+      "type": "function",
+      "name": "build_index",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        610,
+        647
+      ],
+      "summary": "Construye el índice estructural completo combinando archivos, CLI, servicios, capacidades, gateways MCP y contratos.",
+      "tags": [
+        "indice-proyecto",
+        "orquestacion",
+        "json"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:write_index",
+      "type": "function",
+      "name": "write_index",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        650,
+        654
+      ],
+      "summary": "Serializa y escribe el índice estructural JSON en disco creando los directorios padres si es necesario.",
+      "tags": [
+        "escritura-json",
+        "indice-proyecto",
+        "persistencia"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_cm_is_code_file",
+      "type": "function",
+      "name": "_cm_is_code_file",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        676,
+        684
+      ],
+      "summary": "Determina si un archivo pertenece al código ejecutable (.py, .sh o script con shebang) para incluirlo en CODE-MAP.",
+      "tags": [
+        "code-map",
+        "filtro-archivos",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_cm_iter_files",
+      "type": "function",
+      "name": "_cm_iter_files",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        687,
+        704
+      ],
+      "summary": "Lista ordenadamente los archivos de código de los directorios principales y scripts raíz para generar CODE-MAP.",
+      "tags": [
+        "code-map",
+        "descubrimiento-archivos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_cm_py_purpose",
+      "type": "function",
+      "name": "_cm_py_purpose",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        707,
+        716
+      ],
+      "summary": "Extrae la primera línea descriptiva del docstring de un módulo Python para CODE-MAP.",
+      "tags": [
+        "code-map",
+        "ast-python",
+        "docstring"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_cm_py_symbols",
+      "type": "function",
+      "name": "_cm_py_symbols",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        719,
+        740
+      ],
+      "summary": "Extrae clases con sus métodos públicos y funciones de nivel superior (marcando decoradores @tool) de un módulo Python.",
+      "tags": [
+        "code-map",
+        "ast-python",
+        "simbolos"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_cm_py_imports",
+      "type": "function",
+      "name": "_cm_py_imports",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        743,
+        748
+      ],
+      "summary": "Identifica importaciones internas hacia los paquetes agent y svc_py mediante recorrido del AST.",
+      "tags": [
+        "code-map",
+        "ast-python",
+        "dependencias"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_cm_sh_purpose",
+      "type": "function",
+      "name": "_cm_sh_purpose",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        751,
+        769
+      ],
+      "summary": "Extrae el primer comentario descriptivo tras el shebang de un script Bash omitiendo separadores decorativos.",
+      "tags": [
+        "code-map",
+        "parsing-bash",
+        "comentarios"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_cm_sh_symbols",
+      "type": "function",
+      "name": "_cm_sh_symbols",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        772,
+        781
+      ],
+      "summary": "Lista los nombres de funciones definidas en un script Bash evitando duplicados.",
+      "tags": [
+        "code-map",
+        "parsing-bash",
+        "simbolos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_cm_sh_sources",
+      "type": "function",
+      "name": "_cm_sh_sources",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        784,
+        791
+      ],
+      "summary": "Detecta las rutas cargadas con source o punto en scripts Bash normalizando variables de entorno.",
+      "tags": [
+        "code-map",
+        "parsing-bash",
+        "dependencias"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_cm_analyze",
+      "type": "function",
+      "name": "_cm_analyze",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        794,
+        802
+      ],
+      "summary": "Analiza un archivo Python o Bash devolviendo su propósito, símbolos y conexiones internas.",
+      "tags": [
+        "code-map",
+        "analisis-estatico"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_cm_module_name",
+      "type": "function",
+      "name": "_cm_module_name",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        805,
+        812
+      ],
+      "summary": "Convierte la ruta de un archivo Python al nombre de módulo importable para construir el grafo inverso de uso.",
+      "tags": [
+        "code-map",
+        "modulos-python",
+        "grafo-inverso"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:_cm_fmt_syms",
+      "type": "function",
+      "name": "_cm_fmt_syms",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        815,
+        820
+      ],
+      "summary": "Formatea la lista de símbolos truncando al máximo configurado para las tablas Markdown de CODE-MAP.",
+      "tags": [
+        "code-map",
+        "formato-markdown",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:build_code_map",
+      "type": "function",
+      "name": "build_code_map",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        823,
+        893
+      ],
+      "summary": "Genera el documento Markdown docs/CODE-MAP.md agrupado por directorio con propósito, símbolos, conexiones y grafo inverso de uso.",
+      "tags": [
+        "code-map",
+        "generacion-docs",
+        "grafo-inverso"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:write_code_map",
+      "type": "function",
+      "name": "write_code_map",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        896,
+        899
+      ],
+      "summary": "Escribe el contenido generado por build_code_map en docs/CODE-MAP.md.",
+      "tags": [
+        "code-map",
+        "escritura-archivo",
+        "documentacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/project_index.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "agent/tools/project_index.py",
+      "lineRange": [
+        902,
+        938
+      ],
+      "summary": "CLI principal que soporta --code-map, --check, --json y --output para generar o validar los índices del proyecto.",
+      "tags": [
+        "entrypoint",
+        "cli",
+        "indice-proyecto"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_relative",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_relative",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_iter_repo_files",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_iter_repo_files",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_classify_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_classify_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_sha256",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_sha256",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_read_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_read_text",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_file_records",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_file_records",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_bash_commands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_bash_commands",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_python_commands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_python_commands",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_completion_commands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_completion_commands",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_prompt_commands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_prompt_commands",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_registered_tools",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_registered_tools",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_capabilities",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_capabilities",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_mcp_gateways",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_mcp_gateways",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_service_ids",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_extract_service_ids",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_load_contracts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_load_contracts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_resolve_contract_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_resolve_contract_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_contract_connections",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_contract_connections",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cli_index",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cli_index",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:build_index",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:build_index",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:write_index",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:write_index",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_is_code_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_is_code_file",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_iter_files",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_iter_files",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_py_purpose",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_py_purpose",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_py_symbols",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_py_symbols",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_py_imports",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_py_imports",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_sh_purpose",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_sh_purpose",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_sh_symbols",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_sh_symbols",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_sh_sources",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_sh_sources",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_analyze",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_analyze",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_module_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_module_name",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_fmt_syms",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:_cm_fmt_syms",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:build_code_map",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:build_code_map",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:write_code_map",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:write_code_map",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "function:agent/tools/project_index.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_iter_repo_files",
+      "target": "function:agent/tools/project_index.py:_relative",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_file_records",
+      "target": "function:agent/tools/project_index.py:_iter_repo_files",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_file_records",
+      "target": "function:agent/tools/project_index.py:_classify_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_file_records",
+      "target": "function:agent/tools/project_index.py:_sha256",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_extract_bash_commands",
+      "target": "function:agent/tools/project_index.py:_read_text",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_extract_python_commands",
+      "target": "function:agent/tools/project_index.py:_read_text",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_extract_completion_commands",
+      "target": "function:agent/tools/project_index.py:_read_text",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_extract_prompt_commands",
+      "target": "function:agent/tools/project_index.py:_read_text",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_extract_registered_tools",
+      "target": "function:agent/tools/project_index.py:_read_text",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_extract_capabilities",
+      "target": "function:agent/tools/project_index.py:_read_text",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_extract_capabilities",
+      "target": "function:agent/tools/project_index.py:_relative",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_extract_mcp_gateways",
+      "target": "function:agent/tools/project_index.py:_read_text",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_extract_mcp_gateways",
+      "target": "function:agent/tools/project_index.py:_relative",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_extract_service_ids",
+      "target": "function:agent/tools/project_index.py:_read_text",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_extract_service_ids",
+      "target": "function:agent/tools/project_index.py:_relative",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_contract_connections",
+      "target": "function:agent/tools/project_index.py:_resolve_contract_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_contract_connections",
+      "target": "function:agent/tools/project_index.py:_classify_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cli_index",
+      "target": "function:agent/tools/project_index.py:_extract_bash_commands",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cli_index",
+      "target": "function:agent/tools/project_index.py:_extract_python_commands",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cli_index",
+      "target": "function:agent/tools/project_index.py:_extract_completion_commands",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cli_index",
+      "target": "function:agent/tools/project_index.py:_extract_prompt_commands",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cli_index",
+      "target": "function:agent/tools/project_index.py:_extract_registered_tools",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:build_index",
+      "target": "function:agent/tools/project_index.py:_load_contracts",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:build_index",
+      "target": "function:agent/tools/project_index.py:_file_records",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:build_index",
+      "target": "function:agent/tools/project_index.py:_extract_service_ids",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:build_index",
+      "target": "function:agent/tools/project_index.py:_extract_capabilities",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:build_index",
+      "target": "function:agent/tools/project_index.py:_extract_mcp_gateways",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:build_index",
+      "target": "function:agent/tools/project_index.py:_cli_index",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:build_index",
+      "target": "function:agent/tools/project_index.py:_contract_connections",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cm_iter_files",
+      "target": "function:agent/tools/project_index.py:_cm_is_code_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cm_analyze",
+      "target": "function:agent/tools/project_index.py:_read_text",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cm_analyze",
+      "target": "function:agent/tools/project_index.py:_cm_py_purpose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cm_analyze",
+      "target": "function:agent/tools/project_index.py:_cm_py_symbols",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cm_analyze",
+      "target": "function:agent/tools/project_index.py:_cm_py_imports",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cm_analyze",
+      "target": "function:agent/tools/project_index.py:_cm_sh_purpose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cm_analyze",
+      "target": "function:agent/tools/project_index.py:_cm_sh_symbols",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:_cm_analyze",
+      "target": "function:agent/tools/project_index.py:_cm_sh_sources",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:build_code_map",
+      "target": "function:agent/tools/project_index.py:_cm_iter_files",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:build_code_map",
+      "target": "function:agent/tools/project_index.py:_cm_analyze",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:build_code_map",
+      "target": "function:agent/tools/project_index.py:_cm_module_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:build_code_map",
+      "target": "function:agent/tools/project_index.py:_cm_fmt_syms",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:write_code_map",
+      "target": "function:agent/tools/project_index.py:build_code_map",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:main",
+      "target": "function:agent/tools/project_index.py:write_code_map",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:main",
+      "target": "function:agent/tools/project_index.py:build_index",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/project_index.py:main",
+      "target": "function:agent/tools/project_index.py:write_index",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "config:agent/architecture/contracts.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "file:docker/cli/svc.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "file:svc_py/app.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "file:shell/lib/docker.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "file:agent/nas_agent.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "file:agent/tools/__init__.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:agent/tools/project_index.py",
+      "target": "document:docs/CODE-MAP.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

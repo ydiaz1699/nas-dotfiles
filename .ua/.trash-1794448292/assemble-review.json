@@ -1,0 +1,15 @@
+{
+  "fixedSectionOk": true,
+  "nodesRecovered": 0,
+  "edgesRestored": 1,
+  "crossBatchEdgesAdded": 0,
+  "typesRemapped": 0,
+  "complexityRemapped": 0,
+  "notes": [
+    "Merge report Fixed section had 0 node ID corrections (well below 30% threshold) and 2 tested_by edges dropped out of 2430 input edges.",
+    "No 'Could not fix' items were present in the merge report; all 794 nodes use valid node types and complexity values with 0 duplicates and 0 dangling edges.",
+    "Restored 1 falsely-dropped tested_by edge from batch-36.json (file:shell/scripts/install_docker.sh -> file:tests/simulate_install_docker.sh) and tagged file:shell/scripts/install_docker.sh as 'tested'; the other dropped edge was a duplicate file:agent/daemon.py -> file:tests/test_daemon.py already present from batch-38-part-1.json/batch-39.json.",
+    "Verified importMap coverage: all 91 src -> tgt import pairs across 45 non-empty entries have both file:<src> and file:<tgt> nodes and corresponding imports edges.",
+    "Verified scan-result.json files[] inventory: all 297 files have corresponding file-level nodes in assembled-graph.json (126 file:, 114 document:, 37 config:, 20 service:)."
+  ]
+}

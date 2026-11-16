@@ -1,0 +1,70 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "shell/lib/aliases.sh",
+      "language": "shell",
+      "sizeLines": 96,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/completions.sh",
+      "language": "shell",
+      "sizeLines": 49,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/docker.sh",
+      "language": "shell",
+      "sizeLines": 77,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/git.sh",
+      "language": "shell",
+      "sizeLines": 55,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/instal.sh",
+      "language": "shell",
+      "sizeLines": 105,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/nav.sh",
+      "language": "shell",
+      "sizeLines": 102,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/pipins.sh",
+      "language": "shell",
+      "sizeLines": 120,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/prompt.sh",
+      "language": "shell",
+      "sizeLines": 87,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/system.sh",
+      "language": "shell",
+      "sizeLines": 148,
+      "fileCategory": "script"
+    }
+  ],
+  "batchImportData": {
+    "shell/lib/aliases.sh": [],
+    "shell/lib/completions.sh": [],
+    "shell/lib/docker.sh": [],
+    "shell/lib/git.sh": [],
+    "shell/lib/instal.sh": [],
+    "shell/lib/nav.sh": [],
+    "shell/lib/pipins.sh": [],
+    "shell/lib/prompt.sh": [],
+    "shell/lib/system.sh": []
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "nodes": [
+    {
+      "id": "document:agent/memory/MEMORY.md",
+      "type": "document",
+      "name": "agent/memory/MEMORY.md",
+      "filePath": "agent/memory/MEMORY.md",
+      "lineRange": [1, 10],
+      "summary": "Plantilla base de memoria persistente del Agente NAS estructurada en secciones de entorno, lecciones aprendidas, patrones efectivos y estado pendiente.",
+      "tags": [
+        "memoria-agente",
+        "base-conocimiento",
+        "plantilla-markdown",
+        "contexto-persistente"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:agent/memory/SKILLS.md",
+      "type": "document",
+      "name": "agent/memory/SKILLS.md",
+      "filePath": "agent/memory/SKILLS.md",
+      "lineRange": [1, 2],
+      "summary": "Archivo de registro de procedimientos y habilidades reutilizables del Agente NAS, inicializado con contador en 0 skills.",
+      "tags": [
+        "memoria-agente",
+        "skills-agente",
+        "registro-markdown",
+        "procedimientos"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:agent/memory/USER.md",
+      "type": "document",
+      "name": "agent/memory/USER.md",
+      "filePath": "agent/memory/USER.md",
+      "lineRange": [1, 8],
+      "summary": "Plantilla base de perfil del usuario para el Agente NAS con secciones para preferencias de interacción, decisiones técnicas y proyectos activos.",
+      "tags": [
+        "memoria-agente",
+        "perfil-usuario",
+        "preferencias",
+        "plantilla-markdown"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:agent/memory/MEMORY.md",
+      "target": "file:agent/core/memory.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Es leído, inicializado y actualizado por MemoryManager en agent/core/memory.py."
+    },
+    {
+      "source": "document:agent/memory/SKILLS.md",
+      "target": "file:agent/core/memory.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Es gestionado por MemoryManager como archivo SKILLS_FILE para almacenar procedimientos aprendidos."
+    },
+    {
+      "source": "document:agent/memory/USER.md",
+      "target": "file:agent/core/memory.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Es gestionado por MemoryManager como archivo USER_FILE para persistir preferencias y decisiones del usuario."
+    },
+    {
+      "source": "document:agent/memory/MEMORY.md",
+      "target": "document:agent/memory/USER.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Forma parte junto con USER.md de la arquitectura de memoria persistente del agente."
+    },
+    {
+      "source": "document:agent/memory/MEMORY.md",
+      "target": "document:agent/memory/SKILLS.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa el almacenamiento de hechos y lecciones con el catálogo de skills reutilizables."
+    }
+  ]
+}

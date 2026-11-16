@@ -1,0 +1,1284 @@
+{
+  "nodes": [
+    {
+      "id": "file:.config/debmenux.conf.example",
+      "type": "file",
+      "name": ".config/debmenux.conf.example",
+      "filePath": ".config/debmenux.conf.example",
+      "lineRange": [1, 82],
+      "summary": "Plantilla de configuración opcional para integrar DebMenux con nas-dotfiles. Define variables clave como DOTFILES_DIR, DOCKER_DIR, CATALOG_DIR, GLOBAL_ENV, SERVER_IP y TZ para el registro automático de servicios.",
+      "tags": [
+        "configuracion-debmenux",
+        "plantilla-conf",
+        "integracion-servicios",
+        "variables-entorno"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Archivo INI/shell de ejemplo con valores comentados para copiar a ~/.config/debmenux/debmenux.conf."
+    },
+    {
+      "id": "file:.config/user.conf.example",
+      "type": "file",
+      "name": ".config/user.conf.example",
+      "filePath": ".config/user.conf.example",
+      "lineRange": [1, 11],
+      "summary": "Plantilla de configuración de usuario generada por install.sh para personalizar la navegación rápida en shell. Define NAV_HOME, NAV_VAR y NAV_CMD para crear alias y variables de entorno hacia el directorio personal.",
+      "tags": [
+        "configuracion-usuario",
+        "plantilla-conf",
+        "navegacion-shell",
+        "instalacion"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Define tres variables de shell que install.sh genera en user.conf durante la primera instalación."
+    },
+    {
+      "id": "document:.kiro/skills/datasql/SKILL.md",
+      "type": "document",
+      "name": ".kiro/skills/datasql/SKILL.md",
+      "filePath": ".kiro/skills/datasql/SKILL.md",
+      "lineRange": [1, 106],
+      "summary": "Skill que define el procedimiento canónico para conectar consumidores al stack compartido DataSQL (ParadeDB PostgreSQL 17, pgAdmin y Redis 7 en db_net). Establece reglas de creación de roles/bases en llamadas separadas y enlace con la guía operativa.",
+      "tags": [
+        "skill-kiro",
+        "datasql",
+        "postgresql-redis",
+        "reglas-consumidores"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Markdown con frontmatter YAML (scope data y auto_invoke) que enlaza a docs/services/datasql-guide.md y nas-runtime-secrets."
+    },
+    {
+      "id": "document:.kiro/skills/dependency-cascade/SKILL.md",
+      "type": "document",
+      "name": ".kiro/skills/dependency-cascade/SKILL.md",
+      "filePath": ".kiro/skills/dependency-cascade/SKILL.md",
+      "lineRange": [1, 153],
+      "summary": "Skill que obliga a completar la cascada de archivos derivados tras editar código, comandos svc, servicios o skills del framework antes de entregar cambios. Enlaza con dependency-map.md, contracts.json y los auditores project_index.py y project_scanner.py.",
+      "tags": [
+        "skill-kiro",
+        "cascada-dependencias",
+        "paridad-cli",
+        "validacion-framework"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Markdown con frontmatter YAML (scope docs) y tabla de derivados según el tipo de archivo modificado."
+    },
+    {
+      "id": "document:.kiro/skills/docker-boot-order/SKILL.md",
+      "type": "document",
+      "name": ".kiro/skills/docker-boot-order/SKILL.md",
+      "filePath": ".kiro/skills/docker-boot-order/SKILL.md",
+      "lineRange": [1, 120],
+      "summary": "Skill para gestionar el arranque escalonado por capas de contenedores mediante docker-boot-staged.service y boot-order.sh. Define el registro obligatorio en layers.conf, el uso de service_started en depends_on internos y la exclusión temporal con no-boot.",
+      "tags": [
+        "skill-kiro",
+        "arranque-escalonado",
+        "layers-conf",
+        "ciclo-servicios"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Markdown con frontmatter YAML (scope services) que referencia docs/docker-boot-staged-guide.md y comandos svc/NAS_CLI=bash."
+    },
+    {
+      "id": "document:.kiro/skills/documentation-evolution/SKILL.md",
+      "type": "document",
+      "name": ".kiro/skills/documentation-evolution/SKILL.md",
+      "filePath": ".kiro/skills/documentation-evolution/SKILL.md",
+      "lineRange": [1, 429],
+      "summary": "Skill para unificar borradores de _drafts/, auditar variantes operacionales sin perder comandos y evolucionar herramientas o contratos del framework. Integra protocolos de reconstrucción, validación, handoff y actualización documental desde evidencia runtime.",
+      "tags": [
+        "skill-kiro",
+        "evolucion-documental",
+        "unificacion-drafts",
+        "auditoria-fuentes"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Documento extenso en Markdown con frontmatter YAML (scope docs), matrices de clasificación y protocolo de auditoría en cuatro capas."
+    },
+    {
+      "id": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "type": "document",
+      "name": ".kiro/skills/dotfile-skill/SKILL.md",
+      "filePath": ".kiro/skills/dotfile-skill/SKILL.md",
+      "lineRange": [1, 308],
+      "summary": "Skill de entrada y router principal de nas-dotfiles que enruta cada tarea del NAS hacia la skill específica evitando saturar el contexto. Resume rutas del servidor, reglas estrictas de comandos (dk, svc, safe_run) y flujo para crear servicios Docker.",
+      "tags": [
+        "skill-kiro",
+        "router-skills",
+        "administracion-nas",
+        "convenciones-framework"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Markdown con frontmatter YAML (scope root), tabla de enrutamiento condicional y reglas de uso de wrappers."
+    },
+    {
+      "id": "document:.kiro/skills/nas-diagnostics/SKILL.md",
+      "type": "document",
+      "name": ".kiro/skills/nas-diagnostics/SKILL.md",
+      "filePath": ".kiro/skills/nas-diagnostics/SKILL.md",
+      "lineRange": [1, 121],
+      "summary": "Skill para diagnosticar servicios Docker existentes con fallos, estados unhealthy, crash loops, OOM o conflictos de red y puertos. Establece comprobar primero svc boot-status para no confundir arranque en frío con fallo y enlaza a recetas de troubleshooting.",
+      "tags": [
+        "skill-kiro",
+        "diagnostico-nas",
+        "troubleshooting",
+        "operacion-segura"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Markdown con frontmatter YAML (scope services) y árbol de decisión hacia diagnostic.md y docs/troubleshooting.md."
+    },
+    {
+      "id": "document:.kiro/skills/nas-dotfiles.md",
+      "type": "document",
+      "name": ".kiro/skills/nas-dotfiles.md",
+      "filePath": ".kiro/skills/nas-dotfiles.md",
+      "lineRange": [1, 42],
+      "summary": "Archivo índice puntero sin frontmatter que orienta a lectores o chats nuevos hacia las fuentes dueñas del framework (AGENTS.md, framework-audit.md, CONTRIBUTING.md y dotfile-skill). Resume el listado de skills disponibles sin duplicar contenido.",
+      "tags": [
+        "indice-entrada",
+        "navegacion-docs",
+        "mapa-skills",
+        "puntero-canonico"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Markdown breve diseñado como punto de aterrizaje rápido con enlaces relativos a documentación raíz."
+    },
+    {
+      "id": "document:.kiro/skills/nas-mcp-gateway/SKILL.md",
+      "type": "document",
+      "name": ".kiro/skills/nas-mcp-gateway/SKILL.md",
+      "filePath": ".kiro/skills/nas-mcp-gateway/SKILL.md",
+      "lineRange": [1, 80],
+      "summary": "Skill que gobierna cuándo activar el gateway MCP read-only del NAS y cómo diagnosticar sus errores de disponibilidad. Exige consultar nas_mcp_manifest.json como fuente canónica, prohíbe mutaciones y describe la activación lazy del worker.",
+      "tags": [
+        "skill-kiro",
+        "mcp-gateway",
+        "solo-lectura",
+        "activacion-lazy"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Markdown con frontmatter YAML (scope mcp) que referencia directamente agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json."
+    },
+    {
+      "id": "document:.kiro/skills/nas-runtime-secrets/SKILL.md",
+      "type": "document",
+      "name": ".kiro/skills/nas-runtime-secrets/SKILL.md",
+      "filePath": ".kiro/skills/nas-runtime-secrets/SKILL.md",
+      "lineRange": [1, 661],
+      "summary": "Skill que define el patrón seguro para leer, generar y transportar credenciales locales (.env y secrets.yaml de ESPHome) sin exponer valores al LLM ni a Git. Distingue instalación nueva de existente y detalla verificación con evidencia sanitizada.",
+      "tags": [
+        "skill-kiro",
+        "gestion-secretos",
+        "seguridad-env",
+        "esphome-secrets"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Documento extenso en Markdown con frontmatter YAML (scope data), flujos Bash seguros con awk/unset y criterios de parada."
+    },
+    {
+      "id": "document:.kiro/skills/skill-creator/SKILL.md",
+      "type": "document",
+      "name": ".kiro/skills/skill-creator/SKILL.md",
+      "filePath": ".kiro/skills/skill-creator/SKILL.md",
+      "lineRange": [1, 157],
+      "summary": "Meta-skill que estandariza cómo crear o modificar skills en nas-dotfiles respetando el principio de enlazar y no duplicar. Define frontmatter obligatorio con scope y auto_invoke, excepciones en .gitignore y conexión manual en router, framework-audit y AGENTS.md.",
+      "tags": [
+        "meta-skill",
+        "creacion-skills",
+        "estandar-framework",
+        "auto-invoke"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Markdown con frontmatter YAML (scope root) que utiliza assets/SKILL-TEMPLATE.md como plantilla base."
+    },
+    {
+      "id": "document:.kiro/skills/skill-creator/assets/SKILL-TEMPLATE.md",
+      "type": "document",
+      "name": ".kiro/skills/skill-creator/assets/SKILL-TEMPLATE.md",
+      "filePath": ".kiro/skills/skill-creator/assets/SKILL-TEMPLATE.md",
+      "lineRange": [1, 59],
+      "summary": "Plantilla base para nuevas skills de nas-dotfiles con estructura estándar de frontmatter YAML, enlaces a fuentes dueñas, fronteras de alcance y checklist de integración en comentarios.",
+      "tags": [
+        "plantilla-skill",
+        "frontmatter-yaml",
+        "estandar-docs",
+        "checklist"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Plantilla Markdown con placeholders y checklist HTML al pie para verificar registro en router, índice y AGENTS.md."
+    },
+    {
+      "id": "document:.kiro/steering/svc-cli-runtime.md",
+      "type": "document",
+      "name": ".kiro/steering/svc-cli-runtime.md",
+      "filePath": ".kiro/steering/svc-cli-runtime.md",
+      "lineRange": [1, 73],
+      "summary": "Regla de steering obligatoria sobre la compatibilidad dual de svc (NAS_CLI=bash y NAS_CLI=python), sintaxis de svc exec con separador --, manejo de contexto/secretos y diagnóstico del gateway MCP y helper systemd de LobeHub.",
+      "tags": [
+        "steering-kiro",
+        "cli-dual-svc",
+        "mcp-lobehub",
+        "reglas-runtime"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Documento Markdown de instrucciones persistentes que previene errores de mezcla gramatical entre Bash y Typer/Python."
+    },
+    {
+      "id": "document:.kiro/steering/verificar-antes-de-entregar.md",
+      "type": "document",
+      "name": ".kiro/steering/verificar-antes-de-entregar.md",
+      "filePath": ".kiro/steering/verificar-antes-de-entregar.md",
+      "lineRange": [1, 71],
+      "summary": "Regla de steering que exige consultar primero la documentación interna del proyecto y verificar registros reales (PyPI, npm, Docker, rutas de volúmenes y UID) antes de entregar Dockerfiles, compose o comandos ejecutables.",
+      "tags": [
+        "steering-kiro",
+        "verificacion-previa",
+        "checklist-docker",
+        "calidad-entregables"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Markdown con tabla de consulta obligatoria (Paso 0) y checklist derivado de incidentes previos con kiro-cli y JDownloader."
+    },
+    {
+      "id": "service:agent/.dockerignore",
+      "type": "service",
+      "name": "agent/.dockerignore",
+      "filePath": "agent/.dockerignore",
+      "lineRange": [1, 7],
+      "summary": "Archivo de exclusiones de build Docker para el contexto del sidecar MCP. Bloquea todo el árbol agent/ por defecto y habilita únicamente lobehub_mcp.py, mcp/Dockerfile y el directorio mcp/nas_mcp_gateway/.",
+      "tags": [
+        "dockerignore",
+        "contexto-build",
+        "sidecar-mcp",
+        "seguridad-imagen"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Sintaxis .dockerignore con patrón denegar-todo (*) seguido de inclusiones explícitas (!)."
+    },
+    {
+      "id": "document:agent/README.md",
+      "type": "document",
+      "name": "agent/README.md",
+      "filePath": "agent/README.md",
+      "lineRange": [1, 475],
+      "summary": "Documentación técnica principal de nas-agent, el agente IA basado en Strands Agents SDK. Detalla requisitos de proveedores (Gemini, Bedrock, Ollama), modos de uso CLI/Python, árbol de arquitectura, tools, gateways MCP, plugins, EventBus/MQTT, scheduler, cache y catálogo.",
+      "tags": [
+        "documentacion-agente",
+        "strands-sdk",
+        "arquitectura-agent",
+        "herramientas-mcp"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Markdown técnico de 26 secciones que documenta de extremo a extremo el paquete agent/ y sus variables de entorno."
+    },
+    {
+      "id": "file:agent/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "agent/__init__.py",
+      "lineRange": [1, 13],
+      "summary": "Inicializador del paquete Python nas-agent que documenta el propósito del agente inteligente de administración NAS y expone la versión __version__.",
+      "tags": [
+        "paquete-python",
+        "nas-agent",
+        "inicializador",
+        "metadatos-version"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Módulo mínimo Python con docstring de paquete y constante __version__ = '1.0.0'."
+    },
+    {
+      "id": "config:agent/architecture/contracts.json",
+      "type": "config",
+      "name": "agent/architecture/contracts.json",
+      "filePath": "agent/architecture/contracts.json",
+      "lineRange": [1, 269],
+      "summary": "Contrato arquitectónico verificable del ecosistema nas-dotfiles + DebMenux. Define niveles de severidad de dependencias, superficies de descubrimiento de entidades (svc_command, service, agent_tool, gateways MCP, draft), paridad CLI dual y contratos de conexión.",
+      "tags": [
+        "contratos-arquitectura",
+        "paridad-cli",
+        "verificacion-estructural",
+        "esquema-json"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Archivo JSON consumido por project_index.py y project_scanner.py para detectar huecos funcionales, de interfaz y de conocimiento."
+    },
+    {
+      "id": "config:agent/capabilities/lobehub.json",
+      "type": "config",
+      "name": "agent/capabilities/lobehub.json",
+      "filePath": "agent/capabilities/lobehub.json",
+      "lineRange": [1, 63],
+      "summary": "Manifiesto de capacidades operativas para el servicio LobeHub respaldado por docker/cli/lib/lobehub.sh. Declara siete operaciones clasificadas por modo (read_only, mutating con confirmación, backup) y sus evidencias documentales.",
+      "tags": [
+        "manifiesto-capacidades",
+        "lobehub",
+        "operaciones-seguras",
+        "guardas-confirmacion"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "JSON estructurado descubierto por capability_tools.py para exponer operaciones verificadas de LobeHub al agente."
+    },
+    {
+      "id": "file:agent/catalog/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "agent/catalog/__init__.py",
+      "lineRange": [1, 1],
+      "summary": "Marcador de paquete Python para agent.catalog que agrupa reglas, plantillas, servicios exportados y el generador del índice del catálogo.",
+      "tags": [
+        "paquete-python",
+        "catalogo-servicios",
+        "inicializador"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Archivo __init__.py mínimo con una línea de comentario."
+    },
+    {
+      "id": "file:agent/catalog/_index.py",
+      "type": "file",
+      "name": "_index.py",
+      "filePath": "agent/catalog/_index.py",
+      "lineRange": [1, 253],
+      "summary": "Generador y lector del índice catalog.json a partir del frontmatter YAML de las fichas en agent/catalog/services/. Provee funciones de construcción, escritura, carga y consulta por servicio, categoría o red, además de un CLI con modo --check.",
+      "tags": [
+        "indice-catalogo",
+        "frontmatter-yaml",
+        "generador-json",
+        "cli-python"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Usa pathlib, json y python-frontmatter/PyYAML con fallback manual para parsear encabezados --- de archivos Markdown."
+    },
+    {
+      "id": "function:agent/catalog/_index.py:_parse_frontmatter",
+      "type": "function",
+      "name": "_parse_frontmatter",
+      "filePath": "agent/catalog/_index.py",
+      "lineRange": [38, 65],
+      "summary": "Extrae el diccionario de metadatos YAML del frontmatter de una ficha Markdown usando python-frontmatter si está disponible o mediante separación manual de delimitadores --- y yaml.safe_load.",
+      "tags": [
+        "parseo-yaml",
+        "frontmatter",
+        "fichas-markdown"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/catalog/_index.py:build_index",
+      "type": "function",
+      "name": "build_index",
+      "filePath": "agent/catalog/_index.py",
+      "lineRange": [68, 137],
+      "summary": "Recorre las fichas planas y de subdirectorio en agent/catalog/services/, parsea su frontmatter e indexa los servicios por ID, categoría y red Docker en una estructura unificada.",
+      "tags": [
+        "construccion-indice",
+        "catalogo-servicios",
+        "agrupacion-redes"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/catalog/_index.py:write_index",
+      "type": "function",
+      "name": "write_index",
+      "filePath": "agent/catalog/_index.py",
+      "lineRange": [140, 156],
+      "summary": "Serializa el índice del catálogo en agent/catalog/catalog.json en formato UTF-8 legible, invocando build_index() si no se pasa un diccionario preconstruido.",
+      "tags": [
+        "escritura-json",
+        "persistencia-indice",
+        "catalogo"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/catalog/_index.py:load_index",
+      "type": "function",
+      "name": "load_index",
+      "filePath": "agent/catalog/_index.py",
+      "lineRange": [159, 176],
+      "summary": "Carga catalog.json desde disco y lo regenera automáticamente mediante write_index() o build_index() si el archivo no existe o presenta JSON corrupto.",
+      "tags": [
+        "carga-indice",
+        "recuperacion-errores",
+        "catalogo-json"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/catalog/_index.py:lookup_service",
+      "type": "function",
+      "name": "lookup_service",
+      "filePath": "agent/catalog/_index.py",
+      "lineRange": [179, 189],
+      "summary": "Consulta la metadata de un servicio específico en el índice cargado a partir de su identificador único.",
+      "tags": [
+        "consulta-servicio",
+        "catalogo",
+        "busqueda-id"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/catalog/_index.py:services_by_category",
+      "type": "function",
+      "name": "services_by_category",
+      "filePath": "agent/catalog/_index.py",
+      "lineRange": [192, 202],
+      "summary": "Devuelve la lista de identificadores de servicios pertenecientes a una categoría determinada dentro de by_category.",
+      "tags": [
+        "filtro-categoria",
+        "consulta-catalogo",
+        "servicios-nas"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/catalog/_index.py:services_by_network",
+      "type": "function",
+      "name": "services_by_network",
+      "filePath": "agent/catalog/_index.py",
+      "lineRange": [205, 215],
+      "summary": "Devuelve la lista de identificadores de servicios conectados a una red Docker concreta consultando by_network.",
+      "tags": [
+        "filtro-red",
+        "redes-docker",
+        "consulta-catalogo"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/catalog/_index.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "agent/catalog/_index.py",
+      "lineRange": [222, 249],
+      "summary": "Punto de entrada CLI del generador de catálogo; soporta --check para previsualizar el conteo sin escribir y por defecto regenera catalog.json imprimiendo categorías y redes.",
+      "tags": [
+        "cli-entrypoint",
+        "generacion-catalogo",
+        "modo-check"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/homepage/compose.yml",
+      "filePath": "agent/catalog/services/homepage/compose.yml",
+      "lineRange": [1, 35],
+      "summary": "Definición Docker Compose de Homepage (ghcr.io/gethomepage/homepage:latest) en el puerto 3000 con restart on-failure:5, acceso de solo lectura al socket Docker, límites de recursos, no-new-privileges, healthcheck HTTP y red dedicada homepage_net.",
+      "tags": [
+        "docker-compose",
+        "homepage-dashboard",
+        "servicio-sistema",
+        "docker-socket-ro"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Archivo YAML de Docker Compose que hereda variables globales mediante env_file [../.env, .env] y define la red bridge homepage_net."
+    },
+    {
+      "id": "document:agent/catalog/services/homepage/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/homepage/ficha.md",
+      "filePath": "agent/catalog/services/homepage/ficha.md",
+      "lineRange": [1, 72],
+      "summary": "Ficha de catálogo del servicio Homepage con metadatos YAML (puerto 3000, backup crítico de ./config, red homepage_net, límites de memoria) y resumen de su estructura de archivos YAML y auto-descubrimiento por labels.",
+      "tags": [
+        "ficha-servicio",
+        "homepage",
+        "catalogo-nas",
+        "metadatos-yaml"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Ficha Markdown con frontmatter YAML indexable por _index.py y referencia docs_url hacia docs/services/homepage-guide.md."
+    },
+    {
+      "id": "document:agent/catalog/services/kiro-cli/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/kiro-cli/ficha.md",
+      "filePath": "agent/catalog/services/kiro-cli/ficha.md",
+      "lineRange": [1, 102],
+      "summary": "Ficha de catálogo de Kiro CLI como contenedor interactivo bajo demanda excluido del arranque automático (.no-boot). Documenta su ejecución en network_mode host, transporte stdio para MCPs de rclone, NextDNS y n8n, archivos .env y permisos V3.",
+      "tags": [
+        "ficha-servicio",
+        "kiro-cli",
+        "contenedor-bajo-demanda",
+        "mcp-stdio"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Ficha Markdown con frontmatter YAML y notas operativas sobre UID 1000, /opt/kiro, guard SSRF de n8n-mcp y relación con rclone-rcd."
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:_parse_frontmatter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:_parse_frontmatter",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:build_index",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:build_index",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:write_index",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:write_index",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:load_index",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:load_index",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:lookup_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:lookup_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:services_by_category",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:services_by_category",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:services_by_network",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:services_by_network",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "function:agent/catalog/_index.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/catalog/_index.py:build_index",
+      "target": "function:agent/catalog/_index.py:_parse_frontmatter",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/catalog/_index.py:write_index",
+      "target": "function:agent/catalog/_index.py:build_index",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/catalog/_index.py:load_index",
+      "target": "function:agent/catalog/_index.py:write_index",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/catalog/_index.py:load_index",
+      "target": "function:agent/catalog/_index.py:build_index",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/catalog/_index.py:lookup_service",
+      "target": "function:agent/catalog/_index.py:load_index",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/catalog/_index.py:services_by_category",
+      "target": "function:agent/catalog/_index.py:load_index",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/catalog/_index.py:services_by_network",
+      "target": "function:agent/catalog/_index.py:load_index",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/catalog/_index.py:main",
+      "target": "function:agent/catalog/_index.py:build_index",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/catalog/_index.py:main",
+      "target": "function:agent/catalog/_index.py:write_index",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "config:agent/catalog/catalog.json",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Genera y actualiza el archivo catalog.json a partir de las fichas del catálogo."
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "document:agent/catalog/services/homepage/ficha.md",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Lee el frontmatter YAML de las fichas de servicios como homepage/ficha.md para indexar el catálogo."
+    },
+    {
+      "source": "file:agent/catalog/_index.py",
+      "target": "document:agent/catalog/services/kiro-cli/ficha.md",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Lee el frontmatter YAML de kiro-cli/ficha.md al construir catalog.json."
+    },
+    {
+      "source": "file:.config/user.conf.example",
+      "target": "file:install.sh",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Plantilla base usada por install.sh para generar user.conf con rutas y alias de navegación."
+    },
+    {
+      "source": "file:.config/debmenux.conf.example",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Comparte la configuración de DOCKER_DIR, SERVER_IP y TZ para integrar DebMenux con el catálogo."
+    },
+    {
+      "source": "service:agent/.dockerignore",
+      "target": "service:agent/mcp/Dockerfile",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Restringe el contexto de build Docker del sidecar LobeHub MCP a lobehub_mcp.py y mcp/Dockerfile."
+    },
+    {
+      "source": "service:agent/.dockerignore",
+      "target": "service:agent/mcp/nas_mcp_gateway/Dockerfile",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Habilita exclusivamente el directorio mcp/nas_mcp_gateway/ en el contexto de build del gateway MCP."
+    },
+    {
+      "source": "service:agent/catalog/services/homepage/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda variables globales como TZ y SERVER_IP desde ../.env mediante env_file."
+    },
+    {
+      "source": "document:agent/catalog/services/homepage/ficha.md",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la configuración, volúmenes, puerto 3000 y red homepage_net del servicio Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/homepage/ficha.md",
+      "target": "document:docs/services/homepage-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza mediante docs_url con la guía operativa completa de Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/homepage/ficha.md",
+      "target": "config:agent/catalog/services/homepage/config/services.yaml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe los archivos YAML editables en caliente bajo ./config/ de Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/kiro-cli/ficha.md",
+      "target": "file:shell/scripts/boot-order.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el marcador .no-boot que excluye a kiro-cli de layers.conf en boot-order.sh."
+    },
+    {
+      "source": "document:agent/catalog/services/kiro-cli/ficha.md",
+      "target": "document:docs/ideas-decisions.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia la entrada #23 sobre la exclusión de contenedores bajo demanda en el arranque escalonado."
+    },
+    {
+      "source": "document:agent/catalog/services/kiro-cli/ficha.md",
+      "target": "service:agent/catalog/services/n8n/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la conexión del MCP n8n-mcp hacia la API REST de n8n mediante IP privada."
+    },
+    {
+      "source": "config:agent/architecture/contracts.json",
+      "target": "file:docker/cli/svc.sh",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define los comandos requeridos y exclusivos de Bash en el contrato dual del CLI svc."
+    },
+    {
+      "source": "config:agent/architecture/contracts.json",
+      "target": "file:svc_py/app.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Establece la superficie funcional Python del CLI svc y sus contratos de paridad."
+    },
+    {
+      "source": "config:agent/architecture/contracts.json",
+      "target": "file:agent/nas_agent.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Registra agent/nas_agent.py como superficie de conocimiento obligatoria para comandos y tools."
+    },
+    {
+      "source": "config:agent/architecture/contracts.json",
+      "target": "file:agent/tools/project_index.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Provee el esquema de entidades y contratos de conexión evaluado por project_index.py."
+    },
+    {
+      "source": "config:agent/architecture/contracts.json",
+      "target": "file:agent/tools/project_scanner.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define las reglas de verificación que project_scanner.py compara contra el código real."
+    },
+    {
+      "source": "config:agent/architecture/contracts.json",
+      "target": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Incluye los componentes obligatorios del contrato nas-mcp-gateway-lazy-frontdoor."
+    },
+    {
+      "source": "config:agent/architecture/contracts.json",
+      "target": "file:agent/lobehub_mcp.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Declara el contrato funcional del gateway MCP histórico de LobeHub."
+    },
+    {
+      "source": "config:agent/capabilities/lobehub.json",
+      "target": "file:docker/cli/lib/lobehub.sh",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Mapea las operaciones preflight, verify, status, providers, repair-storage, reconcile-db y backup-db al módulo lobehub.sh."
+    },
+    {
+      "source": "config:agent/capabilities/lobehub.json",
+      "target": "document:docs/services/lobehub-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Cita docs/services/lobehub-guide.md como evidencia documental de las operaciones de LobeHub."
+    },
+    {
+      "source": "document:agent/README.md",
+      "target": "file:agent/nas_agent.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la invocación CLI, creación programática create_nas_agent y diseño de prompt de nas_agent.py."
+    },
+    {
+      "source": "document:agent/README.md",
+      "target": "config:agent/config/defaults.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe la configuración centralizada de plugins, MQTT, cache y scheduler en defaults.yml."
+    },
+    {
+      "source": "document:agent/README.md",
+      "target": "file:agent/tools/__init__.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta las herramientas registradas en ALL_TOOLS y la capa de capacidades descubiertas."
+    },
+    {
+      "source": "document:agent/README.md",
+      "target": "file:agent/plugins/loader.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica el sistema de plugins dinámicos, auto-discovery y ciclos de vida."
+    },
+    {
+      "source": "document:agent/README.md",
+      "target": "file:agent/events/bus.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el bus pub/sub de eventos y su integración con mqtt_listener.py."
+    },
+    {
+      "source": "document:agent/README.md",
+      "target": "file:agent/scheduler/runner.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el planificador de tareas periódicas basado en hilos."
+    },
+    {
+      "source": "document:agent/README.md",
+      "target": "file:agent/cache/store.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe la caché clave-valor con TTL y persistencia en disco del agente."
+    },
+    {
+      "source": "document:agent/README.md",
+      "target": "file:agent/catalog/_index.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la generación de catalog.json y el flujo de catálogo local más búsqueda web."
+    },
+    {
+      "source": "document:agent/README.md",
+      "target": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe los gateways MCP integrados en la arquitectura de nas-agent."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "target": "document:.kiro/skills/docker-boot-order/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enruta tareas de creación, eliminación o arranque escalonado de servicios hacia docker-boot-order."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "target": "document:.kiro/skills/nas-diagnostics/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enruta fallos y diagnóstico de servicios existentes hacia nas-diagnostics."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "target": "document:.kiro/skills/datasql/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enruta la provisión de bases PostgreSQL y Redis hacia la skill datasql."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "target": "document:.kiro/skills/nas-runtime-secrets/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enruta la lectura y transporte seguro de secretos hacia nas-runtime-secrets."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "target": "document:.kiro/skills/nas-mcp-gateway/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enruta solicitudes de activación del gateway MCP read-only hacia nas-mcp-gateway."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "target": "document:.kiro/skills/documentation-evolution/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enruta la unificación de drafts y auditoría documental hacia documentation-evolution."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "target": "document:.kiro/skills/dependency-cascade/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enruta la verificación de derivados tras editar el framework hacia dependency-cascade."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "target": "document:.kiro/skills/skill-creator/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enruta la creación o estandarización de skills hacia skill-creator."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "target": "document:docs/framework-audit.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia docs/framework-audit.md como inventario completo de componentes del proyecto."
+    },
+    {
+      "source": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "target": "document:.kiro/skills/dotfile-skill/references/svc.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Delega plantillas de compose y detalles del CLI svc en references/svc.md."
+    },
+    {
+      "source": "document:.kiro/skills/datasql/SKILL.md",
+      "target": "document:docs/services/datasql-guide.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza a docs/services/datasql-guide.md como guía operativa única de PostgreSQL, pgAdmin y Redis."
+    },
+    {
+      "source": "document:.kiro/skills/datasql/SKILL.md",
+      "target": "document:.kiro/skills/nas-runtime-secrets/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Requiere cargar nas-runtime-secrets antes de transportar credenciales entre DataSQL y un consumidor."
+    },
+    {
+      "source": "document:.kiro/skills/datasql/SKILL.md",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Define las reglas de conexión de consumidores hacia datapostgres y dataredis del stack datasql."
+    },
+    {
+      "source": "document:.kiro/skills/dependency-cascade/SKILL.md",
+      "target": "document:docs/dependency-map.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza a docs/dependency-map.md como fuente dueña de los grafos de cascada por tipo de cambio."
+    },
+    {
+      "source": "document:.kiro/skills/dependency-cascade/SKILL.md",
+      "target": "config:agent/architecture/contracts.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Utiliza contracts.json como contrato ejecutable de conexiones mínimas obligatorias."
+    },
+    {
+      "source": "document:.kiro/skills/dependency-cascade/SKILL.md",
+      "target": "file:agent/tools/project_index.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Prescribe ejecutar project_index.py --check antes de cerrar un cambio."
+    },
+    {
+      "source": "document:.kiro/skills/dependency-cascade/SKILL.md",
+      "target": "file:agent/tools/project_scanner.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Prescribe ejecutar project_scanner.py --full para verificar paridad y contratos."
+    },
+    {
+      "source": "document:.kiro/skills/docker-boot-order/SKILL.md",
+      "target": "document:docs/docker-boot-staged-guide.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza a la guía canónica del arranque escalonado por capas."
+    },
+    {
+      "source": "document:.kiro/skills/docker-boot-order/SKILL.md",
+      "target": "file:shell/scripts/boot-order.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la ejecución secuencial por capas y la regla service_started en boot-order.sh."
+    },
+    {
+      "source": "document:.kiro/skills/docker-boot-order/SKILL.md",
+      "target": "file:shell/scripts/stop-order.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el apagado en orden inverso mediante stop-order.sh."
+    },
+    {
+      "source": "document:.kiro/skills/docker-boot-order/SKILL.md",
+      "target": "file:shell/scripts/install-boot-service.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Menciona el instalador de la unidad systemd docker-boot-staged.service."
+    },
+    {
+      "source": "document:.kiro/skills/documentation-evolution/SKILL.md",
+      "target": "document:docs/meta-prompt-unificar.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza al meta-prompt obligatorio para unificar borradores de _drafts/ sin perder variantes."
+    },
+    {
+      "source": "document:.kiro/skills/documentation-evolution/SKILL.md",
+      "target": "document:docs/architecture-consistency.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Consulta los criterios de ownership y consistencia arquitectónica del framework."
+    },
+    {
+      "source": "document:.kiro/skills/documentation-evolution/SKILL.md",
+      "target": "document:docs/llm-context-bootstrap.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia el bootstrap portable para proveedores LLM externos que no cargan .kiro/."
+    },
+    {
+      "source": "document:.kiro/skills/documentation-evolution/SKILL.md",
+      "target": "file:agent/tools/project_scanner.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Indica auditar project_scanner.py cuando falten detecciones o conexiones en el framework."
+    },
+    {
+      "source": "document:.kiro/skills/nas-diagnostics/SKILL.md",
+      "target": "document:.kiro/skills/dotfile-skill/references/diagnostic.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Delega las recetas por síntoma (OOM, crash loop, puertos, healthcheck) en diagnostic.md."
+    },
+    {
+      "source": "document:.kiro/skills/nas-diagnostics/SKILL.md",
+      "target": "document:docs/troubleshooting.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza al registro de incidentes resueltos del NAS en docs/troubleshooting.md."
+    },
+    {
+      "source": "document:.kiro/skills/nas-dotfiles.md",
+      "target": "document:.kiro/skills/dotfile-skill/SKILL.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Señala a dotfile-skill como el router activable real de entrada al framework."
+    },
+    {
+      "source": "document:.kiro/skills/nas-dotfiles.md",
+      "target": "document:AGENTS.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Apunta a AGENTS.md como fuente dueña de comandos, reglas estrictas y tabla Auto-invoke."
+    },
+    {
+      "source": "document:.kiro/skills/nas-dotfiles.md",
+      "target": "document:CONTRIBUTING.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Apunta a CONTRIBUTING.md para extender el framework con nuevos comandos, tools o plugins."
+    },
+    {
+      "source": "document:.kiro/skills/nas-mcp-gateway/SKILL.md",
+      "target": "config:agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Define nas_mcp_manifest.json como fuente canónica única de herramientas MCP disponibles."
+    },
+    {
+      "source": "document:.kiro/skills/nas-mcp-gateway/SKILL.md",
+      "target": "file:agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la activación lazy del front-door y la gestión de errores del worker MCP."
+    },
+    {
+      "source": "document:.kiro/skills/nas-runtime-secrets/SKILL.md",
+      "target": "service:agent/catalog/services/esphome/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el manejo seguro de secrets.yaml y !secret para dispositivos ESPHome."
+    },
+    {
+      "source": "document:.kiro/skills/nas-runtime-secrets/SKILL.md",
+      "target": "service:agent/catalog/services/flowise/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Integra decisiones de preservación de secretos en instalaciones existentes como Flowise."
+    },
+    {
+      "source": "document:.kiro/skills/skill-creator/SKILL.md",
+      "target": "document:.kiro/skills/skill-creator/assets/SKILL-TEMPLATE.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Usa SKILL-TEMPLATE.md como plantilla base obligatoria al crear nuevas skills."
+    },
+    {
+      "source": "document:.kiro/skills/skill-creator/SKILL.md",
+      "target": "document:AGENTS.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Exige registrar manualmente cada entrada auto_invoke de una skill nueva en AGENTS.md."
+    },
+    {
+      "source": "document:.kiro/steering/svc-cli-runtime.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la sintaxis y comportamiento de la implementación Bash del CLI svc."
+    },
+    {
+      "source": "document:.kiro/steering/svc-cli-runtime.md",
+      "target": "file:svc_py/app.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta las diferencias de argumentos (--) en svc exec dentro del CLI Python/Typer."
+    },
+    {
+      "source": "document:.kiro/steering/svc-cli-runtime.md",
+      "target": "file:systemd/lobehub-mcp-helper.service",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Registra reglas de permisos nas-mcp, pausa selectiva y diagnóstico del socket del helper LobeHub MCP."
+    },
+    {
+      "source": "document:.kiro/steering/verificar-antes-de-entregar.md",
+      "target": "document:agent/catalog/_compose_base.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Exige consultar _compose_base.md antes de generar cualquier compose.yml nuevo."
+    },
+    {
+      "source": "document:.kiro/steering/verificar-antes-de-entregar.md",
+      "target": "document:docs/docker-entorno.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Exige consultar docs/docker-entorno.md como Paso 0 previo a editar servicios Docker."
+    },
+    {
+      "source": "document:.kiro/steering/verificar-antes-de-entregar.md",
+      "target": "document:docs/ideas-decisions.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia la entrada #24 sobre verificación de paquetes PyPI/npm/Docker y volúmenes antes de entregar."
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/datasql/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/datasql/.env.example",
+      "filePath": "agent/catalog/services/datasql/.env.example",
+      "lineRange": [
+        1,
+        18
+      ],
+      "summary": "Plantilla de variables de entorno locales para el stack datasql: credenciales de PostgreSQL 17 (ParadeDB), pgAdmin 9.17, Redis 7 y puertos de exposición en loopback/LAN.",
+      "tags": [
+        "variables-entorno",
+        "credenciales-bd",
+        "datasql",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/datasql/compose.yml",
+      "filePath": "agent/catalog/services/datasql/compose.yml",
+      "lineRange": [
+        1,
+        133
+      ],
+      "summary": "Definición Docker Compose del stack datasql con tres contenedores en la red externa db_net: ParadeDB PostgreSQL 17 (datapostgres, con pg_search, pg_cron y pgvector en 127.0.0.1:5432), pgAdmin 9.17 (datapgadmin en :5050 con labels de Homepage) y Redis 7 Alpine (dataredis interno).",
+      "tags": [
+        "docker-compose",
+        "postgresql-paradedb",
+        "redis-pgadmin",
+        "red-db-net"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo YAML de Docker Compose; postgres y redis heredan defaults de ../../_common.yml mediante extends mientras pgadmin define su propia política por requerir sudo interno."
+    },
+    {
+      "id": "document:agent/catalog/services/datasql/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/datasql/ficha.md",
+      "filePath": "agent/catalog/services/datasql/ficha.md",
+      "lineRange": [
+        1,
+        109
+      ],
+      "summary": "Ficha técnica del catálogo para datasql con frontmatter YAML de metadatos (imágenes, puertos, volúmenes, healthchecks, recursos y rutas de backup críticas) y referencia a la guía operativa datasql-guide.md.",
+      "tags": [
+        "ficha-servicio",
+        "catalogo-nas",
+        "datasql",
+        "metadatos-yaml"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/datasql/.env.example",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define las variables locales de base de datos, credenciales y puertos consumidas por el compose de datasql."
+    },
+    {
+      "source": "service:agent/catalog/services/datasql/compose.yml",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Los servicios postgres y redis extienden la plantilla _defaults de ../../_common.yml."
+    },
+    {
+      "source": "service:agent/catalog/services/datasql/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde el archivo global ../.env declarado en env_file."
+    },
+    {
+      "source": "service:agent/catalog/services/datasql/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "El servicio pgadmin expone labels homepage.* para su autodescubrimiento en el dashboard Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/datasql/ficha.md",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe los tres contenedores, puertos, volúmenes, recursos y políticas de seguridad del stack datasql."
+    },
+    {
+      "source": "document:agent/catalog/services/datasql/ficha.md",
+      "target": "config:agent/catalog/services/datasql/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Lista las variables requeridas y opcionales del archivo .env local de datasql."
+    },
+    {
+      "source": "document:agent/catalog/services/datasql/ficha.md",
+      "target": "document:docs/services/datasql-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Apunta mediante docs_url a la guía operativa única del stack datasql."
+    },
+    {
+      "source": "document:agent/catalog/services/datasql/ficha.md",
+      "target": "config:agent/catalog/catalog.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Proporciona los metadatos YAML indexados en catalog.json para la categoría base-datos."
+    }
+  ]
+}

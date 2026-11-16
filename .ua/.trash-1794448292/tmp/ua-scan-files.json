@@ -1,0 +1,1817 @@
+{
+  "scriptCompleted": true,
+  "contentDigest": "ce06d6efeef0b88c19e36988fba88346ca619358a69a573cf268798f425256b2",
+  "files": [
+    {
+      "path": ".config/debmenux.conf.example",
+      "language": "example",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".config/user.conf.example",
+      "language": "example",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".kiro/hooks/catalog-sync-on-compose.json",
+      "language": "json",
+      "sizeLines": 15,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".kiro/hooks/code-map-regen-on-file-change.json",
+      "language": "json",
+      "sizeLines": 27,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".kiro/hooks/dependency-cascade-on-save.json",
+      "language": "json",
+      "sizeLines": 14,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".kiro/hooks/documentation-evolution-on-prompt.json",
+      "language": "json",
+      "sizeLines": 14,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".kiro/hooks/session-continuity.json",
+      "language": "json",
+      "sizeLines": 14,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".kiro/skills/datasql/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 106,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dependency-cascade/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 153,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/docker-boot-order/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 120,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/documentation-evolution/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 429,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 308,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/agent.md",
+      "language": "markdown",
+      "sizeLines": 124,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/diagnostic.md",
+      "language": "markdown",
+      "sizeLines": 140,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/extend.md",
+      "language": "markdown",
+      "sizeLines": 86,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/security.md",
+      "language": "markdown",
+      "sizeLines": 65,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/shell.md",
+      "language": "markdown",
+      "sizeLines": 137,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/dotfile-skill/references/svc.md",
+      "language": "markdown",
+      "sizeLines": 226,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/nas-diagnostics/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 121,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/nas-dotfiles.md",
+      "language": "markdown",
+      "sizeLines": 42,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/nas-mcp-gateway/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 80,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/nas-runtime-secrets/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 661,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/skill-creator/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 157,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/skills/skill-creator/assets/SKILL-TEMPLATE.md",
+      "language": "markdown",
+      "sizeLines": 59,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/steering/svc-cli-runtime.md",
+      "language": "markdown",
+      "sizeLines": 73,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".kiro/steering/verificar-antes-de-entregar.md",
+      "language": "markdown",
+      "sizeLines": 71,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 310,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "language": "markdown",
+      "sizeLines": 478,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "GUIDE.md",
+      "language": "markdown",
+      "sizeLines": 874,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "INSTALL.md",
+      "language": "markdown",
+      "sizeLines": 408,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "sizeLines": 210,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "TODO.md",
+      "language": "markdown",
+      "sizeLines": 172,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/.dockerignore",
+      "language": "unknown",
+      "sizeLines": 7,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/README.md",
+      "language": "markdown",
+      "sizeLines": 475,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/__init__.py",
+      "language": "python",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/architecture/contracts.json",
+      "language": "json",
+      "sizeLines": 269,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/cache/__init__.py",
+      "language": "python",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/cache/store.py",
+      "language": "python",
+      "sizeLines": 147,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/capabilities/lobehub.json",
+      "language": "json",
+      "sizeLines": 63,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/.env.global.example",
+      "language": "config",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/catalog/_common.yml",
+      "language": "yaml",
+      "sizeLines": 51,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/_compose_base.md",
+      "language": "markdown",
+      "sizeLines": 256,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/_index.py",
+      "language": "python",
+      "sizeLines": 253,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/catalog/_rules.md",
+      "language": "markdown",
+      "sizeLines": 167,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/_template.md",
+      "language": "markdown",
+      "sizeLines": 78,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/catalog.json",
+      "language": "json",
+      "sizeLines": 1007,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/datasql/.env.example",
+      "language": "config",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/datasql/compose.yml",
+      "language": "yaml",
+      "sizeLines": 133,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/datasql/ficha.md",
+      "language": "markdown",
+      "sizeLines": 109,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/emqx/.env.example",
+      "language": "config",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/emqx/compose.yml",
+      "language": "yaml",
+      "sizeLines": 64,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/emqx/ficha.md",
+      "language": "markdown",
+      "sizeLines": 158,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/esphome/.env.example",
+      "language": "config",
+      "sizeLines": 2,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/esphome/compose.yml",
+      "language": "yaml",
+      "sizeLines": 21,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/esphome/ficha.md",
+      "language": "markdown",
+      "sizeLines": 61,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/filebrowser/.env.example",
+      "language": "config",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/filebrowser/compose.yml",
+      "language": "yaml",
+      "sizeLines": 38,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/filebrowser/ficha.md",
+      "language": "markdown",
+      "sizeLines": 60,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/flowise/.env.example",
+      "language": "config",
+      "sizeLines": 28,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/flowise/compose.yml",
+      "language": "yaml",
+      "sizeLines": 158,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/flowise/ficha.md",
+      "language": "markdown",
+      "sizeLines": 84,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/homeassistant/.env.example",
+      "language": "config",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/homeassistant/compose.yml",
+      "language": "yaml",
+      "sizeLines": 43,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/homeassistant/ficha.md",
+      "language": "markdown",
+      "sizeLines": 93,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/homepage/compose.yml",
+      "language": "yaml",
+      "sizeLines": 35,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/homepage/config/docker.yaml",
+      "language": "yaml",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/homepage/config/services.yaml",
+      "language": "yaml",
+      "sizeLines": 33,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/homepage/config/settings.yaml",
+      "language": "yaml",
+      "sizeLines": 31,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/homepage/config/widgets.yaml",
+      "language": "yaml",
+      "sizeLines": 19,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/homepage/ficha.md",
+      "language": "markdown",
+      "sizeLines": 72,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/iobroker/.env.example",
+      "language": "config",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/iobroker/compose.yml",
+      "language": "yaml",
+      "sizeLines": 49,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/iobroker/ficha.md",
+      "language": "markdown",
+      "sizeLines": 49,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/jdownloader/.env.example",
+      "language": "config",
+      "sizeLines": 17,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/jdownloader/compose.yml",
+      "language": "yaml",
+      "sizeLines": 62,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/jdownloader/ficha.md",
+      "language": "markdown",
+      "sizeLines": 123,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/karakeep/.env.example",
+      "language": "config",
+      "sizeLines": 35,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/karakeep/compose.yml",
+      "language": "yaml",
+      "sizeLines": 106,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/karakeep/ficha.md",
+      "language": "markdown",
+      "sizeLines": 88,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/kiro-cli/ficha.md",
+      "language": "markdown",
+      "sizeLines": 102,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/lobehub/.env.example",
+      "language": "config",
+      "sizeLines": 28,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/lobehub/bucket.config.json",
+      "language": "json",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/lobehub/compose.yml",
+      "language": "yaml",
+      "sizeLines": 221,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/lobehub/ficha.md",
+      "language": "markdown",
+      "sizeLines": 82,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/n8n/.env.example",
+      "language": "config",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/n8n/compose.yml",
+      "language": "yaml",
+      "sizeLines": 63,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/n8n/ficha.md",
+      "language": "markdown",
+      "sizeLines": 64,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/nas-mcp-gateway/.env.example",
+      "language": "config",
+      "sizeLines": 13,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/nas-mcp-gateway/compose.yml",
+      "language": "yaml",
+      "sizeLines": 72,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/nas-mcp-gateway/ficha.md",
+      "language": "markdown",
+      "sizeLines": 63,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/node-red/.env.example",
+      "language": "config",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/node-red/compose.yml",
+      "language": "yaml",
+      "sizeLines": 33,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/node-red/ficha.md",
+      "language": "markdown",
+      "sizeLines": 63,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/ntfy/.env.example",
+      "language": "config",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/ntfy/compose.yml",
+      "language": "yaml",
+      "sizeLines": 47,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/ntfy/ficha.md",
+      "language": "markdown",
+      "sizeLines": 104,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/openwa/.env.example",
+      "language": "config",
+      "sizeLines": 20,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/openwa/compose.yml",
+      "language": "yaml",
+      "sizeLines": 114,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/openwa/ficha.md",
+      "language": "markdown",
+      "sizeLines": 87,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/openwa/n8n-flows/README.md",
+      "language": "markdown",
+      "sizeLines": 74,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/openwa/n8n-flows/auto-reply.json",
+      "language": "json",
+      "sizeLines": 100,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/openwa/n8n-flows/echo-simple.json",
+      "language": "json",
+      "sizeLines": 60,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/openwa/n8n-flows/pide-camara.json",
+      "language": "json",
+      "sizeLines": 131,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/openwa/wa-send.sh",
+      "language": "shell",
+      "sizeLines": 69,
+      "fileCategory": "script"
+    },
+    {
+      "path": "agent/catalog/services/usb-api/ficha.md",
+      "language": "markdown",
+      "sizeLines": 128,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/catalog/services/vscode/.env.example",
+      "language": "config",
+      "sizeLines": 10,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/vscode/compose.yml",
+      "language": "yaml",
+      "sizeLines": 64,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/vscode/ficha.md",
+      "language": "markdown",
+      "sizeLines": 70,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/config/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/config/defaults.yml",
+      "language": "yaml",
+      "sizeLines": 59,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/core/__init__.py",
+      "language": "python",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/core/_result.py",
+      "language": "python",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/core/backup_manager.py",
+      "language": "python",
+      "sizeLines": 179,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/core/compose_manager.py",
+      "language": "python",
+      "sizeLines": 287,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/core/memory.py",
+      "language": "python",
+      "sizeLines": 475,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/core/service_manager.py",
+      "language": "python",
+      "sizeLines": 183,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/daemon.py",
+      "language": "python",
+      "sizeLines": 247,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/events/__init__.py",
+      "language": "python",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/events/bus.py",
+      "language": "python",
+      "sizeLines": 170,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/events/mqtt_listener.py",
+      "language": "python",
+      "sizeLines": 229,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/lobehub_mcp.py",
+      "language": "python",
+      "sizeLines": 718,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/mcp/Dockerfile",
+      "language": "dockerfile",
+      "sizeLines": 12,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/mcp/nas_mcp_gateway/Dockerfile",
+      "language": "dockerfile",
+      "sizeLines": 13,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py",
+      "language": "python",
+      "sizeLines": 417,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json",
+      "language": "json",
+      "sizeLines": 59,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py",
+      "language": "python",
+      "sizeLines": 284,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/memory/MEMORY.md",
+      "language": "markdown",
+      "sizeLines": 10,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/memory/SKILLS.md",
+      "language": "markdown",
+      "sizeLines": 2,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/memory/USER.md",
+      "language": "markdown",
+      "sizeLines": 8,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "agent/memory/sessions/.gitkeep",
+      "language": "unknown",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/nas_agent.py",
+      "language": "python",
+      "sizeLines": 1399,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/__init__.py",
+      "language": "python",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/backup_plugin.py",
+      "language": "python",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/base.py",
+      "language": "python",
+      "sizeLines": 160,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/docker_plugin.py",
+      "language": "python",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/ha_discovery_plugin.py",
+      "language": "python",
+      "sizeLines": 527,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/loader.py",
+      "language": "python",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/memory_plugin.py",
+      "language": "python",
+      "sizeLines": 153,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/network_plugin.py",
+      "language": "python",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/plugins/notification_plugin.py",
+      "language": "python",
+      "sizeLines": 277,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/scheduler/__init__.py",
+      "language": "python",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/scheduler/runner.py",
+      "language": "python",
+      "sizeLines": 210,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/__init__.py",
+      "language": "python",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/_audit.py",
+      "language": "python",
+      "sizeLines": 223,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/_result.py",
+      "language": "python",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/_shell.py",
+      "language": "python",
+      "sizeLines": 291,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/backup_tools.py",
+      "language": "python",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/capabilities.py",
+      "language": "python",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/capability_tools.py",
+      "language": "python",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/compare_tools.py",
+      "language": "python",
+      "sizeLines": 415,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/compose_tools.py",
+      "language": "python",
+      "sizeLines": 316,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/diagnostic_tools.py",
+      "language": "python",
+      "sizeLines": 241,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/discovery_tools.py",
+      "language": "python",
+      "sizeLines": 750,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/docker_tools.py",
+      "language": "python",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/memory_tools.py",
+      "language": "python",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/project_index.py",
+      "language": "python",
+      "sizeLines": 942,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/project_scanner.py",
+      "language": "python",
+      "sizeLines": 1201,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/search_tools.py",
+      "language": "python",
+      "sizeLines": 155,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/system_tools.py",
+      "language": "python",
+      "sizeLines": 391,
+      "fileCategory": "code"
+    },
+    {
+      "path": "docker-nas/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 459,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/agent.md",
+      "language": "markdown",
+      "sizeLines": 336,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/diagnostic.md",
+      "language": "markdown",
+      "sizeLines": 181,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/entorno.md",
+      "language": "markdown",
+      "sizeLines": 323,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/extend.md",
+      "language": "markdown",
+      "sizeLines": 86,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/nas-context.md",
+      "language": "markdown",
+      "sizeLines": 570,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/networking-install.md",
+      "language": "markdown",
+      "sizeLines": 319,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/networking-migration.md",
+      "language": "markdown",
+      "sizeLines": 300,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/networking-recovery.md",
+      "language": "markdown",
+      "sizeLines": 589,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/networking.md",
+      "language": "markdown",
+      "sizeLines": 757,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/seguridad.md",
+      "language": "markdown",
+      "sizeLines": 273,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-nas/references/svc.md",
+      "language": "markdown",
+      "sizeLines": 504,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker/cli/lib/backup.sh",
+      "language": "shell",
+      "sizeLines": 666,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/catalog-sync.sh",
+      "language": "shell",
+      "sizeLines": 682,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/discovery.sh",
+      "language": "shell",
+      "sizeLines": 41,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/docker.sh",
+      "language": "shell",
+      "sizeLines": 80,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/extras.sh",
+      "language": "shell",
+      "sizeLines": 1422,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/health.sh",
+      "language": "shell",
+      "sizeLines": 84,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/help.sh",
+      "language": "shell",
+      "sizeLines": 65,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/lobehub.sh",
+      "language": "shell",
+      "sizeLines": 471,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/menu.sh",
+      "language": "shell",
+      "sizeLines": 139,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/lib/notifications.sh",
+      "language": "shell",
+      "sizeLines": 140,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docker/cli/svc.sh",
+      "language": "shell",
+      "sizeLines": 162,
+      "fileCategory": "script"
+    },
+    {
+      "path": "docs/CODE-MAP.md",
+      "language": "markdown",
+      "sizeLines": 164,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/PLAN-extends-common.md",
+      "language": "markdown",
+      "sizeLines": 205,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/VS Code Remote.md",
+      "language": "markdown",
+      "sizeLines": 236,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/architecture-consistency.md",
+      "language": "markdown",
+      "sizeLines": 97,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/catalog-sync-pipeline.md",
+      "language": "markdown",
+      "sizeLines": 334,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/cheatsheet.md",
+      "language": "markdown",
+      "sizeLines": 426,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/dependency-map.md",
+      "language": "markdown",
+      "sizeLines": 610,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/docker-boot-staged-guide.md",
+      "language": "markdown",
+      "sizeLines": 331,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/docker-entorno.md",
+      "language": "markdown",
+      "sizeLines": 443,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/esphome-meta-prompt.md",
+      "language": "markdown",
+      "sizeLines": 746,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/framework-audit.md",
+      "language": "markdown",
+      "sizeLines": 324,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/framework-knowledge-compilation.md",
+      "language": "markdown",
+      "sizeLines": 346,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/github-cli.md",
+      "language": "markdown",
+      "sizeLines": 141,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/ideas-decisions.md",
+      "language": "markdown",
+      "sizeLines": 1534,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/llm-context-bootstrap.md",
+      "language": "markdown",
+      "sizeLines": 90,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/lobehub-mcp-gateway.md",
+      "language": "markdown",
+      "sizeLines": 958,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/meta-prompt-unificar.md",
+      "language": "markdown",
+      "sizeLines": 610,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/multi-nas-architecture.md",
+      "language": "markdown",
+      "sizeLines": 267,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/nas-manual.md",
+      "language": "markdown",
+      "sizeLines": 606,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/nas-mcp-gateway.md",
+      "language": "markdown",
+      "sizeLines": 223,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/datasql-guide.md",
+      "language": "markdown",
+      "sizeLines": 1140,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/emqx-guide.md",
+      "language": "markdown",
+      "sizeLines": 525,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/esphome-device-config.md",
+      "language": "markdown",
+      "sizeLines": 1310,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/esphome-guide.md",
+      "language": "markdown",
+      "sizeLines": 689,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/esphome-pueba-handoff.md",
+      "language": "markdown",
+      "sizeLines": 422,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/filebrowser-guide.md",
+      "language": "markdown",
+      "sizeLines": 347,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/flowise-guide.md",
+      "language": "markdown",
+      "sizeLines": 973,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/homeassistant-datasql-guide.md",
+      "language": "markdown",
+      "sizeLines": 755,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/homeassistant-guide.md",
+      "language": "markdown",
+      "sizeLines": 825,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/homepage-guide.md",
+      "language": "markdown",
+      "sizeLines": 272,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/iobroker-guide.md",
+      "language": "markdown",
+      "sizeLines": 288,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/jdownloader-guide.md",
+      "language": "markdown",
+      "sizeLines": 198,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/karakeep-floccus-architecture.md",
+      "language": "markdown",
+      "sizeLines": 181,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/karakeep-guide.md",
+      "language": "markdown",
+      "sizeLines": 374,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/lobehub-guide.md",
+      "language": "markdown",
+      "sizeLines": 1436,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/n8n-guide.md",
+      "language": "markdown",
+      "sizeLines": 538,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/nas-mcp-gateway-guide.md",
+      "language": "markdown",
+      "sizeLines": 18,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/node-red-guide.md",
+      "language": "markdown",
+      "sizeLines": 71,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/ntfy-guide.md",
+      "language": "markdown",
+      "sizeLines": 863,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/openwa-guide.md",
+      "language": "markdown",
+      "sizeLines": 676,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/services/vscode-guide.md",
+      "language": "markdown",
+      "sizeLines": 542,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/session-handoff.md",
+      "language": "markdown",
+      "sizeLines": 192,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/tools-index.md",
+      "language": "markdown",
+      "sizeLines": 216,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/troubleshooting.md",
+      "language": "markdown",
+      "sizeLines": 544,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "install.sh",
+      "language": "shell",
+      "sizeLines": 418,
+      "fileCategory": "script"
+    },
+    {
+      "path": "pyproject.toml",
+      "language": "toml",
+      "sizeLines": 19,
+      "fileCategory": "config"
+    },
+    {
+      "path": "requirements.txt",
+      "language": "txt",
+      "sizeLines": 18,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "setup",
+      "language": "unknown",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "shell/init.sh",
+      "language": "shell",
+      "sizeLines": 103,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/aliases.sh",
+      "language": "shell",
+      "sizeLines": 96,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/completions.sh",
+      "language": "shell",
+      "sizeLines": 49,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/docker.sh",
+      "language": "shell",
+      "sizeLines": 77,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/git.sh",
+      "language": "shell",
+      "sizeLines": 55,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/instal.sh",
+      "language": "shell",
+      "sizeLines": 105,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/nav.sh",
+      "language": "shell",
+      "sizeLines": 102,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/pipins.sh",
+      "language": "shell",
+      "sizeLines": 120,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/prompt.sh",
+      "language": "shell",
+      "sizeLines": 87,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/lib/system.sh",
+      "language": "shell",
+      "sizeLines": 148,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/apply-restart-policy.sh",
+      "language": "shell",
+      "sizeLines": 106,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/boot-order.sh",
+      "language": "shell",
+      "sizeLines": 404,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/find-no-extends.sh",
+      "language": "shell",
+      "sizeLines": 25,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/install-boot-service.sh",
+      "language": "shell",
+      "sizeLines": 73,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/install-shutdown-service.sh",
+      "language": "shell",
+      "sizeLines": 68,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/install_docker.sh",
+      "language": "shell",
+      "sizeLines": 484,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/layers.conf.example",
+      "language": "example",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "shell/scripts/restart-all.sh",
+      "language": "shell",
+      "sizeLines": 41,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/start-all.sh",
+      "language": "shell",
+      "sizeLines": 6,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/stop-all.sh",
+      "language": "shell",
+      "sizeLines": 44,
+      "fileCategory": "script"
+    },
+    {
+      "path": "shell/scripts/stop-order.sh",
+      "language": "shell",
+      "sizeLines": 120,
+      "fileCategory": "script"
+    },
+    {
+      "path": "skill-portable/nas-tools-index/README.md",
+      "language": "markdown",
+      "sizeLines": 33,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "skill-portable/nas-tools-index/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 215,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "skill-portable/nas-tools-index/scripts/tool-lookup.sh",
+      "language": "shell",
+      "sizeLines": 39,
+      "fileCategory": "script"
+    },
+    {
+      "path": "svc_py/README.md",
+      "language": "markdown",
+      "sizeLines": 68,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "svc_py/__init__.py",
+      "language": "python",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/__main__.py",
+      "language": "python",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/app.py",
+      "language": "python",
+      "sizeLines": 333,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/backup.py",
+      "language": "python",
+      "sizeLines": 269,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/catalog.py",
+      "language": "python",
+      "sizeLines": 263,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/codemap.py",
+      "language": "python",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/compose.py",
+      "language": "python",
+      "sizeLines": 190,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/docker.py",
+      "language": "python",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/health.py",
+      "language": "python",
+      "sizeLines": 347,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/info.py",
+      "language": "python",
+      "sizeLines": 273,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/menu.py",
+      "language": "python",
+      "sizeLines": 375,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/commands/scanner.py",
+      "language": "python",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/config.py",
+      "language": "python",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/core/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/core/bash_bridge.py",
+      "language": "python",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/core/discovery.py",
+      "language": "python",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/core/docker.py",
+      "language": "python",
+      "sizeLines": 218,
+      "fileCategory": "code"
+    },
+    {
+      "path": "svc_py/ui.py",
+      "language": "python",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/README.md",
+      "language": "markdown",
+      "sizeLines": 87,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "systemd/docker-boot-staged.service.template",
+      "language": "template",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/docker-shutdown-staged.service.template",
+      "language": "template",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/lobehub-mcp-helper.env.example",
+      "language": "example",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/lobehub-mcp-helper.service",
+      "language": "service",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/nas-agent.service",
+      "language": "service",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/nas-mcp-helper.env.example",
+      "language": "example",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/nas-mcp-helper.service",
+      "language": "service",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/conftest.py",
+      "language": "python",
+      "sizeLines": 135,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/simulate_install_docker.sh",
+      "language": "shell",
+      "sizeLines": 243,
+      "fileCategory": "script"
+    },
+    {
+      "path": "tests/test_classify.py",
+      "language": "python",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_compose_generation.py",
+      "language": "python",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_daemon.py",
+      "language": "python",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_memory.py",
+      "language": "python",
+      "sizeLines": 210,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_phase3.py",
+      "language": "python",
+      "sizeLines": 191,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_result.py",
+      "language": "python",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_tool_result.py",
+      "language": "python",
+      "sizeLines": 67,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_validation.py",
+      "language": "python",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "ui/requirements-setup.txt",
+      "language": "txt",
+      "sizeLines": 4,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "ui/setup.py",
+      "language": "python",
+      "sizeLines": 601,
+      "fileCategory": "code"
+    },
+    {
+      "path": "uninstall.sh",
+      "language": "shell",
+      "sizeLines": 96,
+      "fileCategory": "script"
+    }
+  ],
+  "totalFiles": 297,
+  "filteredByIgnore": 27,
+  "estimatedComplexity": "large",
+  "failures": [],
+  "stats": {
+    "filesScanned": 297,
+    "byCategory": {
+      "code": 90,
+      "config": 37,
+      "docs": 114,
+      "infra": 20,
+      "script": 36
+    },
+    "byLanguage": {
+      "example": 5,
+      "json": 13,
+      "markdown": 112,
+      "unknown": 3,
+      "python": 78,
+      "config": 17,
+      "yaml": 23,
+      "shell": 36,
+      "dockerfile": 2,
+      "toml": 1,
+      "txt": 2,
+      "template": 2,
+      "service": 3
+    }
+  }
+}

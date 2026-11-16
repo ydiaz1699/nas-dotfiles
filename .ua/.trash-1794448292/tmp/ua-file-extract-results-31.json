@@ -1,0 +1,715 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 10,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 10,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 10
+    }
+  },
+  "results": [
+    {
+      "path": "docker/cli/lib/backup.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 666,
+      "nonEmptyLines": 558,
+      "functions": [
+        {
+          "name": "svc_backup",
+          "startLine": 7,
+          "endLine": 140,
+          "params": []
+        },
+        {
+          "name": "_svc_backup_rotate",
+          "startLine": 143,
+          "endLine": 157,
+          "params": []
+        },
+        {
+          "name": "svc_restore",
+          "startLine": 160,
+          "endLine": 284,
+          "params": []
+        },
+        {
+          "name": "svc_backup_all",
+          "startLine": 289,
+          "endLine": 403,
+          "params": []
+        },
+        {
+          "name": "_svc_backup_verify",
+          "startLine": 406,
+          "endLine": 420,
+          "params": []
+        },
+        {
+          "name": "svc_logs_grep",
+          "startLine": 423,
+          "endLine": 476,
+          "params": []
+        },
+        {
+          "name": "svc_snapshot",
+          "startLine": 489,
+          "endLine": 562,
+          "params": []
+        },
+        {
+          "name": "svc_rollback",
+          "startLine": 564,
+          "endLine": 666,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "docker/cli/lib/catalog-sync.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 682,
+      "nonEmptyLines": 550,
+      "functions": [
+        {
+          "name": "_sync_log",
+          "startLine": 49,
+          "endLine": 52,
+          "params": []
+        },
+        {
+          "name": "_sync_info",
+          "startLine": 54,
+          "endLine": 54,
+          "params": []
+        },
+        {
+          "name": "_sync_ok",
+          "startLine": 55,
+          "endLine": 55,
+          "params": []
+        },
+        {
+          "name": "_sync_skip",
+          "startLine": 56,
+          "endLine": 56,
+          "params": []
+        },
+        {
+          "name": "_sync_new",
+          "startLine": 57,
+          "endLine": 57,
+          "params": []
+        },
+        {
+          "name": "_sync_warn",
+          "startLine": 58,
+          "endLine": 58,
+          "params": []
+        },
+        {
+          "name": "_extract_from_compose",
+          "startLine": 65,
+          "endLine": 93,
+          "params": []
+        },
+        {
+          "name": "_generate_ficha_from_compose",
+          "startLine": 100,
+          "endLine": 193,
+          "params": []
+        },
+        {
+          "name": "_catalogize_compose",
+          "startLine": 198,
+          "endLine": 203,
+          "params": []
+        },
+        {
+          "name": "_sync_compose",
+          "startLine": 206,
+          "endLine": 232,
+          "params": []
+        },
+        {
+          "name": "_sync_env_example",
+          "startLine": 235,
+          "endLine": 274,
+          "params": []
+        },
+        {
+          "name": "_generate_guide_placeholder",
+          "startLine": 277,
+          "endLine": 351,
+          "params": []
+        },
+        {
+          "name": "_generate_debmenux_script",
+          "startLine": 354,
+          "endLine": 453,
+          "params": []
+        },
+        {
+          "name": "install_service",
+          "startLine": 396,
+          "endLine": 436,
+          "params": []
+        },
+        {
+          "name": "update_service",
+          "startLine": 438,
+          "endLine": 448,
+          "params": []
+        },
+        {
+          "name": "_update_skill_table",
+          "startLine": 456,
+          "endLine": 496,
+          "params": []
+        },
+        {
+          "name": "catalog_sync",
+          "startLine": 502,
+          "endLine": 573,
+          "params": []
+        },
+        {
+          "name": "_sync_service",
+          "startLine": 575,
+          "endLine": 598,
+          "params": []
+        },
+        {
+          "name": "_catalog_status",
+          "startLine": 604,
+          "endLine": 631,
+          "params": []
+        },
+        {
+          "name": "_regenerate_nas_context",
+          "startLine": 639,
+          "endLine": 682,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 20,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "docker/cli/lib/discovery.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 41,
+      "nonEmptyLines": 37,
+      "functions": [
+        {
+          "name": "svc_list",
+          "startLine": 7,
+          "endLine": 13,
+          "params": []
+        },
+        {
+          "name": "svc_compose_file",
+          "startLine": 16,
+          "endLine": 24,
+          "params": []
+        },
+        {
+          "name": "svc_lista",
+          "startLine": 27,
+          "endLine": 41,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "docker/cli/lib/docker.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 80,
+      "nonEmptyLines": 66,
+      "functions": [
+        {
+          "name": "svc_update_all",
+          "startLine": 4,
+          "endLine": 80,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "docker/cli/lib/extras.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 1422,
+      "nonEmptyLines": 1232,
+      "functions": [
+        {
+          "name": "svc_depends",
+          "startLine": 5,
+          "endLine": 27,
+          "params": []
+        },
+        {
+          "name": "svc_open",
+          "startLine": 30,
+          "endLine": 86,
+          "params": []
+        },
+        {
+          "name": "svc_port_map",
+          "startLine": 89,
+          "endLine": 137,
+          "params": []
+        },
+        {
+          "name": "svc_size",
+          "startLine": 140,
+          "endLine": 192,
+          "params": []
+        },
+        {
+          "name": "svc_net",
+          "startLine": 195,
+          "endLine": 227,
+          "params": []
+        },
+        {
+          "name": "svc_env",
+          "startLine": 230,
+          "endLine": 277,
+          "params": []
+        },
+        {
+          "name": "svc_create",
+          "startLine": 280,
+          "endLine": 379,
+          "params": []
+        },
+        {
+          "name": "_svc_layers_reminder",
+          "startLine": 384,
+          "endLine": 399,
+          "params": []
+        },
+        {
+          "name": "svc_watch",
+          "startLine": 402,
+          "endLine": 464,
+          "params": []
+        },
+        {
+          "name": "svc_doctor",
+          "startLine": 468,
+          "endLine": 671,
+          "params": []
+        },
+        {
+          "name": "svc_diff",
+          "startLine": 674,
+          "endLine": 736,
+          "params": []
+        },
+        {
+          "name": "svc_clone",
+          "startLine": 766,
+          "endLine": 884,
+          "params": []
+        },
+        {
+          "name": "svc_cron",
+          "startLine": 887,
+          "endLine": 936,
+          "params": []
+        },
+        {
+          "name": "_svc_cron_add",
+          "startLine": 938,
+          "endLine": 997,
+          "params": []
+        },
+        {
+          "name": "_svc_cron_list",
+          "startLine": 999,
+          "endLine": 1024,
+          "params": []
+        },
+        {
+          "name": "_svc_cron_remove",
+          "startLine": 1026,
+          "endLine": 1026,
+          "params": []
+        },
+        {
+          "name": "_svc_doctor_log",
+          "startLine": 1068,
+          "endLine": 1087,
+          "params": []
+        },
+        {
+          "name": "svc_doctor_history",
+          "startLine": 1090,
+          "endLine": 1127,
+          "params": []
+        },
+        {
+          "name": "svc_lock",
+          "startLine": 1134,
+          "endLine": 1172,
+          "params": []
+        },
+        {
+          "name": "svc_unlock",
+          "startLine": 1174,
+          "endLine": 1203,
+          "params": []
+        },
+        {
+          "name": "_svc_lock_list",
+          "startLine": 1205,
+          "endLine": 1213,
+          "params": []
+        },
+        {
+          "name": "_svc_lock_guard",
+          "startLine": 1217,
+          "endLine": 1249,
+          "params": []
+        },
+        {
+          "name": "svc_no_boot",
+          "startLine": 1259,
+          "endLine": 1297,
+          "params": []
+        },
+        {
+          "name": "svc_boot_enable",
+          "startLine": 1299,
+          "endLine": 1325,
+          "params": []
+        },
+        {
+          "name": "_svc_no_boot_list",
+          "startLine": 1327,
+          "endLine": 1338,
+          "params": []
+        },
+        {
+          "name": "svc_boot_status",
+          "startLine": 1345,
+          "endLine": 1422,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 26,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "docker/cli/lib/health.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 84,
+      "nonEmptyLines": 71,
+      "functions": [
+        {
+          "name": "svc_health",
+          "startLine": 4,
+          "endLine": 84,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "docker/cli/lib/help.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 65,
+      "nonEmptyLines": 65,
+      "functions": [
+        {
+          "name": "_svc_ayuda",
+          "startLine": 1,
+          "endLine": 65,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "docker/cli/lib/lobehub.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 471,
+      "nonEmptyLines": 418,
+      "functions": [
+        {
+          "name": "_lobe_usage",
+          "startLine": 5,
+          "endLine": 22,
+          "params": []
+        },
+        {
+          "name": "_lobe_compose_args",
+          "startLine": 24,
+          "endLine": 28,
+          "params": []
+        },
+        {
+          "name": "_lobe_compose",
+          "startLine": 30,
+          "endLine": 34,
+          "params": []
+        },
+        {
+          "name": "_lobe_env_value",
+          "startLine": 36,
+          "endLine": 40,
+          "params": []
+        },
+        {
+          "name": "_lobe_context_report",
+          "startLine": 42,
+          "endLine": 63,
+          "params": []
+        },
+        {
+          "name": "_lobe_context_check",
+          "startLine": 65,
+          "endLine": 67,
+          "params": []
+        },
+        {
+          "name": "_lobe_compose_resolve_hint",
+          "startLine": 69,
+          "endLine": 93,
+          "params": []
+        },
+        {
+          "name": "_lobe_result",
+          "startLine": 95,
+          "endLine": 102,
+          "params": []
+        },
+        {
+          "name": "_lobe_confirm",
+          "startLine": 104,
+          "endLine": 111,
+          "params": []
+        },
+        {
+          "name": "_lobe_secret_bytes",
+          "startLine": 113,
+          "endLine": 129,
+          "params": []
+        },
+        {
+          "name": "_lobe_preflight",
+          "startLine": 131,
+          "endLine": 203,
+          "params": []
+        },
+        {
+          "name": "_lobe_sql_admin",
+          "startLine": 205,
+          "endLine": 213,
+          "params": []
+        },
+        {
+          "name": "_lobe_redis_ping",
+          "startLine": 215,
+          "endLine": 221,
+          "params": []
+        },
+        {
+          "name": "_lobe_pg_dump",
+          "startLine": 223,
+          "endLine": 228,
+          "params": []
+        },
+        {
+          "name": "_lobe_verify",
+          "startLine": 230,
+          "endLine": 286,
+          "params": []
+        },
+        {
+          "name": "_lobe_status",
+          "startLine": 288,
+          "endLine": 291,
+          "params": []
+        },
+        {
+          "name": "_lobe_providers",
+          "startLine": 293,
+          "endLine": 312,
+          "params": []
+        },
+        {
+          "name": "_lobe_restore_running",
+          "startLine": 314,
+          "endLine": 318,
+          "params": []
+        },
+        {
+          "name": "_lobe_repair_storage",
+          "startLine": 320,
+          "endLine": 363,
+          "params": []
+        },
+        {
+          "name": "_lobe_reconcile_db",
+          "startLine": 365,
+          "endLine": 402,
+          "params": []
+        },
+        {
+          "name": "_lobe_backup_db",
+          "startLine": 404,
+          "endLine": 455,
+          "params": []
+        },
+        {
+          "name": "svc_lobehub",
+          "startLine": 457,
+          "endLine": 471,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 22,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "docker/cli/lib/menu.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 139,
+      "nonEmptyLines": 123,
+      "functions": [
+        {
+          "name": "svc_menu",
+          "startLine": 1,
+          "endLine": 139,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "docker/cli/lib/notifications.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 140,
+      "nonEmptyLines": 124,
+      "functions": [
+        {
+          "name": "ntfy_send",
+          "startLine": 53,
+          "endLine": 76,
+          "params": []
+        },
+        {
+          "name": "ntfy_service_down",
+          "startLine": 83,
+          "endLine": 88,
+          "params": []
+        },
+        {
+          "name": "ntfy_service_restarted",
+          "startLine": 91,
+          "endLine": 96,
+          "params": []
+        },
+        {
+          "name": "ntfy_update_complete",
+          "startLine": 99,
+          "endLine": 105,
+          "params": []
+        },
+        {
+          "name": "ntfy_backup_complete",
+          "startLine": 108,
+          "endLine": 114,
+          "params": []
+        },
+        {
+          "name": "ntfy_backup_failed",
+          "startLine": 117,
+          "endLine": 123,
+          "params": []
+        },
+        {
+          "name": "ntfy_system_alert",
+          "startLine": 126,
+          "endLine": 131,
+          "params": []
+        },
+        {
+          "name": "ntfy_health_failed",
+          "startLine": 134,
+          "endLine": 140,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    }
+  ]
+}

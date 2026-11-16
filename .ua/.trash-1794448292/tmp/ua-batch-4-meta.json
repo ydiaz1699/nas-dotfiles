@@ -1,0 +1,165 @@
+{
+  "files": [
+    {
+      "path": "agent/nas_agent.py",
+      "language": "python",
+      "sizeLines": 1399,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/__init__.py",
+      "language": "python",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/backup_tools.py",
+      "language": "python",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/capabilities.py",
+      "language": "python",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/capability_tools.py",
+      "language": "python",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/compare_tools.py",
+      "language": "python",
+      "sizeLines": 415,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/docker_tools.py",
+      "language": "python",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/memory_tools.py",
+      "language": "python",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/project_scanner.py",
+      "language": "python",
+      "sizeLines": 1201,
+      "fileCategory": "code"
+    },
+    {
+      "path": "agent/tools/system_tools.py",
+      "language": "python",
+      "sizeLines": 391,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_classify.py",
+      "language": "python",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "agent/nas_agent.py": [
+      "agent/tools/__init__.py"
+    ],
+    "agent/tools/__init__.py": [
+      "agent/tools/backup_tools.py",
+      "agent/tools/capability_tools.py",
+      "agent/tools/compare_tools.py",
+      "agent/tools/compose_tools.py",
+      "agent/tools/diagnostic_tools.py",
+      "agent/tools/discovery_tools.py",
+      "agent/tools/docker_tools.py",
+      "agent/tools/memory_tools.py",
+      "agent/tools/project_scanner.py",
+      "agent/tools/search_tools.py",
+      "agent/tools/system_tools.py"
+    ],
+    "agent/tools/backup_tools.py": [],
+    "agent/tools/capabilities.py": [],
+    "agent/tools/capability_tools.py": [
+      "agent/tools/capabilities.py"
+    ],
+    "agent/tools/compare_tools.py": [],
+    "agent/tools/docker_tools.py": [],
+    "agent/tools/memory_tools.py": [],
+    "agent/tools/project_scanner.py": [],
+    "agent/tools/system_tools.py": [
+      "agent/tools/_shell.py"
+    ],
+    "tests/test_classify.py": [
+      "agent/nas_agent.py"
+    ]
+  },
+  "neighborMap": {
+    "agent/tools/__init__.py": [
+      {
+        "path": "agent/tools/compose_tools.py",
+        "batchIndex": 3,
+        "symbols": [
+          "_get_compose_manager",
+          "read_compose",
+          "validate_compose",
+          "create_service"
+        ]
+      },
+      {
+        "path": "agent/tools/diagnostic_tools.py",
+        "batchIndex": 3,
+        "symbols": [
+          "service_health",
+          "port_conflicts",
+          "troubleshoot"
+        ]
+      },
+      {
+        "path": "agent/tools/discovery_tools.py",
+        "batchIndex": 3,
+        "symbols": [
+          "_catalogize_compose_paths",
+          "list_services",
+          "scan_compose",
+          "auto_catalog",
+          "bulk_discover",
+          "export_service"
+        ]
+      },
+      {
+        "path": "agent/tools/search_tools.py",
+        "batchIndex": 3,
+        "symbols": [
+          "search_service_info",
+          "_search_dockerhub",
+          "_search_github_compose",
+          "_extract_info_from_readme"
+        ]
+      }
+    ],
+    "agent/tools/system_tools.py": [
+      {
+        "path": "agent/tools/_shell.py",
+        "batchIndex": 3,
+        "symbols": [
+          "InvalidServiceName",
+          "validate_service_name",
+          "validated_service_path",
+          "safe_run",
+          "find_compose",
+          "service_exists_or_error",
+          "is_readonly",
+          "is_dryrun",
+          "readonly_guard"
+        ]
+      }
+    ]
+  }
+}

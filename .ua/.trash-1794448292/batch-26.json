@@ -1,0 +1,164 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/openwa/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/openwa/.env.example",
+      "filePath": "agent/catalog/services/openwa/.env.example",
+      "lineRange": [1, 20],
+      "summary": "Plantilla de entorno local para OpenWA: define API_MASTER_KEY (autenticación por cabecera X-API-Key), API_KEY_PEPPER para hashing HMAC de API keys y ENGINE_TYPE=baileys como motor por defecto para soporte estable de media.",
+      "tags": [
+        "variables-entorno",
+        "openwa",
+        "whatsapp-gateway",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/openwa/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/openwa/compose.yml",
+      "filePath": "agent/catalog/services/openwa/compose.yml",
+      "lineRange": [1, 114],
+      "summary": "Definición Docker Compose de OpenWA (ghcr.io/rmyndharis/openwa:0.23.5) expuesto en el puerto 2785 sobre db_net con SQLite en ./data, motor baileys por defecto, SSRF_ALLOWED_HOSTS=${SERVER_IP} para webhooks a n8n, root FS read-only con tmpfs /tmp, capacidades mínimas para Chromium y límite pids 2048.",
+      "tags": [
+        "docker-compose",
+        "openwa",
+        "whatsapp-api",
+        "hardening-chromium"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo YAML de Docker Compose que extiende ../../_common.yml y replica la postura de hardening upstream (read_only, tmpfs y cap_add selectivo) para compatibilidad con Chromium."
+    },
+    {
+      "id": "document:agent/catalog/services/openwa/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/openwa/ficha.md",
+      "filePath": "agent/catalog/services/openwa/ficha.md",
+      "lineRange": [1, 87],
+      "summary": "Ficha técnica del catálogo para OpenWA con estado confirmado en runtime, advertencias sobre uso de UUIDs de sesión y envío de media con Baileys, excepción de seguridad para Chromium, integración con n8n en db_net y referencia a wa-send.sh y openwa-guide.md.",
+      "tags": [
+        "ficha-servicio",
+        "openwa",
+        "catalogo-nas",
+        "whatsapp-n8n"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/catalog/services/openwa/wa-send.sh",
+      "type": "file",
+      "name": "agent/catalog/services/openwa/wa-send.sh",
+      "filePath": "agent/catalog/services/openwa/wa-send.sh",
+      "lineRange": [1, 69],
+      "summary": "Script Bash CLI para enviar mensajes de texto de WhatsApp mediante la API REST de OpenWA; lee API_MASTER_KEY desde .env sin exponerla, resuelve el UUID de la sesión por su nombre vía GET /api/sessions y realiza POST a /api/sessions/<id>/messages/send-text.",
+      "tags": [
+        "script-bash",
+        "cli-whatsapp",
+        "openwa",
+        "api-rest"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Script Bash con set -euo pipefail que utiliza curl y python3 inline para parsear JSON y construir el payload de forma segura."
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/openwa/.env.example",
+      "target": "service:agent/catalog/services/openwa/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Provee API_MASTER_KEY, API_KEY_PEPPER y ENGINE_TYPE al contenedor openwa."
+    },
+    {
+      "source": "service:agent/catalog/services/openwa/compose.yml",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Extiende _defaults desde ../../_common.yml para heredar opciones base como no-new-privileges."
+    },
+    {
+      "source": "service:agent/catalog/services/openwa/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde ../.env para CORS_ORIGINS, SSRF_ALLOWED_HOSTS y labels de Homepage."
+    },
+    {
+      "source": "service:agent/catalog/services/openwa/compose.yml",
+      "target": "service:agent/catalog/services/n8n/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Comparte la red db_net y permite SERVER_IP en SSRF_ALLOWED_HOSTS para entregar webhooks de eventos hacia n8n."
+    },
+    {
+      "source": "service:agent/catalog/services/openwa/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Expone labels homepage.* para registrar OpenWA en el grupo IA y Automatización de Homepage."
+    },
+    {
+      "source": "document:agent/catalog/services/openwa/ficha.md",
+      "target": "service:agent/catalog/services/openwa/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la arquitectura, base SQLite, motor baileys, puerto 2785 y excepción de seguridad del compose de OpenWA."
+    },
+    {
+      "source": "document:agent/catalog/services/openwa/ficha.md",
+      "target": "config:agent/catalog/services/openwa/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe las variables requeridas, opcionales y el impacto de API_KEY_PEPPER y ENGINE_TYPE."
+    },
+    {
+      "source": "document:agent/catalog/services/openwa/ficha.md",
+      "target": "file:agent/catalog/services/openwa/wa-send.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia wa-send.sh como script auxiliar para envío de mensajes desde terminal resolviendo name a UUID."
+    },
+    {
+      "source": "document:agent/catalog/services/openwa/ficha.md",
+      "target": "document:docs/services/openwa-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Apunta mediante docs_url a la guía operativa completa de OpenWA."
+    },
+    {
+      "source": "document:agent/catalog/services/openwa/ficha.md",
+      "target": "config:agent/catalog/catalog.json",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Aporta los metadatos de OpenWA indexados en el catálogo."
+    },
+    {
+      "source": "file:agent/catalog/services/openwa/wa-send.sh",
+      "target": "service:agent/catalog/services/openwa/compose.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Consume los endpoints /api/sessions y /api/sessions/<id>/messages/send-text del servicio OpenWA en el puerto 2785."
+    },
+    {
+      "source": "file:agent/catalog/services/openwa/wa-send.sh",
+      "target": "config:agent/catalog/services/openwa/.env.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Extrae API_MASTER_KEY del archivo .env desplegado a partir de .env.example para autenticar con X-API-Key."
+    }
+  ]
+}

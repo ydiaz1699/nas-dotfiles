@@ -1,0 +1,107 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "systemd/README.md",
+      "language": "markdown",
+      "sizeLines": 87,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "systemd/docker-boot-staged.service.template",
+      "language": "template",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/docker-shutdown-staged.service.template",
+      "language": "template",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/lobehub-mcp-helper.env.example",
+      "language": "example",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/lobehub-mcp-helper.service",
+      "language": "service",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/nas-agent.service",
+      "language": "service",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/nas-mcp-helper.env.example",
+      "language": "example",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "systemd/nas-mcp-helper.service",
+      "language": "service",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/conftest.py",
+      "language": "python",
+      "sizeLines": 135,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/simulate_install_docker.sh",
+      "language": "shell",
+      "sizeLines": 243,
+      "fileCategory": "script"
+    },
+    {
+      "path": "tests/test_daemon.py",
+      "language": "python",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "ui/requirements-setup.txt",
+      "language": "txt",
+      "sizeLines": 4,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "ui/setup.py",
+      "language": "python",
+      "sizeLines": 601,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "systemd/README.md": [],
+    "systemd/docker-boot-staged.service.template": [],
+    "systemd/docker-shutdown-staged.service.template": [],
+    "systemd/lobehub-mcp-helper.env.example": [],
+    "systemd/lobehub-mcp-helper.service": [],
+    "systemd/nas-agent.service": [],
+    "systemd/nas-mcp-helper.env.example": [],
+    "systemd/nas-mcp-helper.service": [],
+    "tests/__init__.py": [],
+    "tests/conftest.py": [],
+    "tests/simulate_install_docker.sh": [],
+    "tests/test_daemon.py": [
+      "agent/daemon.py"
+    ],
+    "ui/requirements-setup.txt": [],
+    "ui/setup.py": []
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/catalog/services/n8n/.env.example",
+      "language": "config",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "agent/catalog/services/n8n/compose.yml",
+      "language": "yaml",
+      "sizeLines": 63,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "agent/catalog/services/n8n/ficha.md",
+      "language": "markdown",
+      "sizeLines": 64,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "agent/catalog/services/n8n/.env.example": [],
+    "agent/catalog/services/n8n/compose.yml": [],
+    "agent/catalog/services/n8n/ficha.md": []
+  }
+}

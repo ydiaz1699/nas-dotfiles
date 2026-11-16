@@ -1,0 +1,1185 @@
+{
+  "nodes": [
+    {
+      "id": "file:agent/core/_result.py",
+      "type": "file",
+      "name": "_result.py",
+      "filePath": "agent/core/_result.py",
+      "summary": "Define la estructura estándar de respuesta ToolResult, el enumerado Status y el context manager Timer para todas las herramientas del agente.",
+      "tags": [
+        "resultado-estructurado",
+        "dataclass",
+        "context-manager",
+        "core"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Utiliza @dataclass con métodos de fábrica (@classmethod) y __str__ para mantener compatibilidad retroactiva con Strands SDK."
+    },
+    {
+      "id": "class:agent/core/_result.py:Status",
+      "type": "class",
+      "name": "Status",
+      "filePath": "agent/core/_result.py",
+      "lineRange": [
+        19,
+        23
+      ],
+      "summary": "Enumerado de cadenas que representa los estados semánticos posibles de una herramienta: ok, warning y error.",
+      "tags": [
+        "enum",
+        "estado",
+        "resultado-estructurado"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:agent/core/_result.py:ToolResult",
+      "type": "class",
+      "name": "ToolResult",
+      "filePath": "agent/core/_result.py",
+      "lineRange": [
+        27,
+        124
+      ],
+      "summary": "Dataclass que encapsula el resultado de ejecución de una herramienta con éxito, mensaje, datos estructurados, sugerencias y tiempo transcurrido.",
+      "tags": [
+        "dataclass",
+        "serializacion",
+        "resultado-estructurado",
+        "api-interna"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:agent/core/_result.py:Timer",
+      "type": "class",
+      "name": "Timer",
+      "filePath": "agent/core/_result.py",
+      "lineRange": [
+        127,
+        149
+      ],
+      "summary": "Context manager basado en time.perf_counter para medir la duración de operaciones en milisegundos.",
+      "tags": [
+        "context-manager",
+        "medicion-tiempo",
+        "utilidad"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/core/backup_manager.py",
+      "type": "file",
+      "name": "backup_manager.py",
+      "filePath": "agent/core/backup_manager.py",
+      "summary": "Centraliza las operaciones de creación, restauración y listado de copias de seguridad de servicios Docker en el NAS.",
+      "tags": [
+        "gestion-backups",
+        "docker",
+        "core",
+        "servicio"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:agent/core/backup_manager.py:BackupManager",
+      "type": "class",
+      "name": "BackupManager",
+      "filePath": "agent/core/backup_manager.py",
+      "lineRange": [
+        24,
+        179
+      ],
+      "summary": "Clase con métodos estáticos para crear backups vía CLI svc, listar archivos tar.gz existentes y restaurar con confirmación explícita.",
+      "tags": [
+        "gestion-backups",
+        "validacion-seguridad",
+        "docker"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/core/compose_manager.py",
+      "type": "file",
+      "name": "compose_manager.py",
+      "filePath": "agent/core/compose_manager.py",
+      "summary": "Gestiona la carga de reglas del catálogo, extracción de anchors YAML base, sanitización de valores y validación de archivos Docker Compose.",
+      "tags": [
+        "docker-compose",
+        "validacion-yaml",
+        "seguridad",
+        "core"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Combina validación estática con PyYAML y verificación en tiempo de ejecución mediante docker compose config --quiet."
+    },
+    {
+      "id": "class:agent/core/compose_manager.py:ComposeManager",
+      "type": "class",
+      "name": "ComposeManager",
+      "filePath": "agent/core/compose_manager.py",
+      "lineRange": [
+        39,
+        287
+      ],
+      "summary": "Provee métodos estáticos para leer y validar compose.yml contra _rules.md y _compose_base.md, además de sanitizar entradas YAML.",
+      "tags": [
+        "docker-compose",
+        "validacion-yaml",
+        "sanitizacion"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:agent/core/memory.py",
+      "type": "file",
+      "name": "memory.py",
+      "filePath": "agent/core/memory.py",
+      "summary": "Implementa la gestión CRUD y curación de la memoria persistente del agente basada en archivos Markdown (MEMORY.md, USER.md, SKILLS.md y sessions/).",
+      "tags": [
+        "memoria-persistente",
+        "markdown",
+        "core",
+        "curacion"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Clase sin estado con métodos estáticos que retornan ToolResult y aplican límites de tamaño por archivo."
+    },
+    {
+      "id": "class:agent/core/memory.py:MemoryManager",
+      "type": "class",
+      "name": "MemoryManager",
+      "filePath": "agent/core/memory.py",
+      "lineRange": [
+        45,
+        468
+      ],
+      "summary": "Administra inicialización, lectura, búsqueda por relevancia (recall), registro de hechos/skills/sesiones y poda automática de memoria antigua.",
+      "tags": [
+        "memoria-persistente",
+        "busqueda-relevancia",
+        "curacion"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:agent/core/service_manager.py",
+      "type": "file",
+      "name": "service_manager.py",
+      "filePath": "agent/core/service_manager.py",
+      "summary": "Centraliza las operaciones de ciclo de vida de servicios Docker Compose: inicio, detención confirmada, reinicio, actualización y consulta de logs.",
+      "tags": [
+        "ciclo-vida",
+        "docker-compose",
+        "core",
+        "servicio"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:agent/core/service_manager.py:ServiceManager",
+      "type": "class",
+      "name": "ServiceManager",
+      "filePath": "agent/core/service_manager.py",
+      "lineRange": [
+        19,
+        183
+      ],
+      "summary": "Orquesta comandos docker compose seguros mediante safe_run, guardias read-only y medición de tiempos con Timer.",
+      "tags": [
+        "ciclo-vida",
+        "docker-compose",
+        "control-acceso"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:agent/tools/_shell.py",
+      "type": "file",
+      "name": "_shell.py",
+      "filePath": "agent/tools/_shell.py",
+      "summary": "Módulo común de ejecución segura de subprocesos con shell=False, validación anti path-traversal de nombres de servicio y modos read-only y dry-run.",
+      "tags": [
+        "seguridad",
+        "subprocesos",
+        "validacion",
+        "utilidad"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Centraliza la ejecución de comandos externos con subprocess.run(..., shell=False) y resolución segura de rutas con Path.relative_to."
+    },
+    {
+      "id": "class:agent/tools/_shell.py:InvalidServiceName",
+      "type": "class",
+      "name": "InvalidServiceName",
+      "filePath": "agent/tools/_shell.py",
+      "lineRange": [
+        42,
+        44
+      ],
+      "summary": "Excepción derivada de ValueError lanzada cuando un nombre de servicio o valor es inválido o potencialmente peligroso.",
+      "tags": [
+        "excepcion",
+        "validacion",
+        "seguridad"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "function",
+      "name": "validate_service_name",
+      "filePath": "agent/tools/_shell.py",
+      "lineRange": [
+        47,
+        93
+      ],
+      "summary": "Valida nombres de servicio con regex estricta y bloquea path traversal, barras y nombres reservados del sistema.",
+      "tags": [
+        "validacion",
+        "seguridad",
+        "anti-traversal"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/_shell.py:validated_service_path",
+      "type": "function",
+      "name": "validated_service_path",
+      "filePath": "agent/tools/_shell.py",
+      "lineRange": [
+        96,
+        121
+      ],
+      "summary": "Valida el nombre del servicio y verifica que la ruta resuelta permanezca confinada dentro de DOCKER_BASE.",
+      "tags": [
+        "validacion",
+        "seguridad",
+        "rutas"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/_shell.py:safe_run",
+      "type": "function",
+      "name": "safe_run",
+      "filePath": "agent/tools/_shell.py",
+      "lineRange": [
+        129,
+        179
+      ],
+      "summary": "Ejecuta comandos del sistema con shell=False, timeout configurable e intercepción automática en modo dry-run.",
+      "tags": [
+        "subprocesos",
+        "seguridad",
+        "dry-run"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/_shell.py:find_compose",
+      "type": "function",
+      "name": "find_compose",
+      "filePath": "agent/tools/_shell.py",
+      "lineRange": [
+        187,
+        208
+      ],
+      "summary": "Localiza el archivo compose.yml o docker-compose.yml dentro del directorio validado de un servicio.",
+      "tags": [
+        "docker-compose",
+        "busqueda-archivos",
+        "utilidad"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/_shell.py:service_exists_or_error",
+      "type": "function",
+      "name": "service_exists_or_error",
+      "filePath": "agent/tools/_shell.py",
+      "lineRange": [
+        211,
+        240
+      ],
+      "summary": "Comprueba la existencia y validez de un servicio Docker y retorna un mensaje de error con los servicios disponibles si falla.",
+      "tags": [
+        "validacion",
+        "docker-compose",
+        "control-errores"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/_shell.py:is_readonly",
+      "type": "function",
+      "name": "is_readonly",
+      "filePath": "agent/tools/_shell.py",
+      "lineRange": [
+        257,
+        262
+      ],
+      "summary": "Indica si el agente opera en modo solo lectura según la variable de entorno NAS_AGENT_READONLY.",
+      "tags": [
+        "read-only",
+        "configuracion",
+        "seguridad"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/_shell.py:is_dryrun",
+      "type": "function",
+      "name": "is_dryrun",
+      "filePath": "agent/tools/_shell.py",
+      "lineRange": [
+        265,
+        271
+      ],
+      "summary": "Indica si el agente opera en modo simulación dry-run según la variable de entorno NAS_AGENT_DRYRUN.",
+      "tags": [
+        "dry-run",
+        "configuracion",
+        "seguridad"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/_shell.py:readonly_guard",
+      "type": "function",
+      "name": "readonly_guard",
+      "filePath": "agent/tools/_shell.py",
+      "lineRange": [
+        274,
+        291
+      ],
+      "summary": "Bloquea herramientas marcadas como destructivas cuando el modo read-only está activo.",
+      "tags": [
+        "read-only",
+        "seguridad",
+        "guardia"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:agent/tools/compose_tools.py",
+      "type": "file",
+      "name": "compose_tools.py",
+      "filePath": "agent/tools/compose_tools.py",
+      "summary": "Expone herramientas de Strands para leer, validar y crear nuevos servicios Docker Compose con sus archivos .env y README.md.",
+      "tags": [
+        "herramienta-agente",
+        "docker-compose",
+        "creacion-servicios"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Utiliza el decorador @tool de Strands SDK y carga perezosa (lazy import) de ComposeManager para evitar dependencias circulares."
+    },
+    {
+      "id": "function:agent/tools/compose_tools.py:read_compose",
+      "type": "function",
+      "name": "read_compose",
+      "filePath": "agent/tools/compose_tools.py",
+      "lineRange": [
+        32,
+        41
+      ],
+      "summary": "Tool del agente que delega en ComposeManager.read para devolver el contenido completo del archivo compose de un servicio.",
+      "tags": [
+        "herramienta-agente",
+        "docker-compose",
+        "lectura"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compose_tools.py:validate_compose",
+      "type": "function",
+      "name": "validate_compose",
+      "filePath": "agent/tools/compose_tools.py",
+      "lineRange": [
+        45,
+        55
+      ],
+      "summary": "Tool del agente que delega en ComposeManager.validate para verificar un compose frente a las reglas del NAS.",
+      "tags": [
+        "herramienta-agente",
+        "docker-compose",
+        "validacion"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:agent/tools/compose_tools.py:create_service",
+      "type": "function",
+      "name": "create_service",
+      "filePath": "agent/tools/compose_tools.py",
+      "lineRange": [
+        59,
+        316
+      ],
+      "summary": "Crea el directorio de un nuevo servicio en /docker/ y genera compose.yml con anchors base, .env y README.md tras validar puertos e inputs.",
+      "tags": [
+        "herramienta-agente",
+        "docker-compose",
+        "generacion-codigo",
+        "seguridad"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:agent/tools/diagnostic_tools.py",
+      "type": "file",
+      "name": "diagnostic_tools.py",
+      "filePath": "agent/tools/diagnostic_tools.py",
+      "summary": "Provee herramientas de diagnóstico del agente para evaluar la salud de contenedores, detectar conflictos de puertos y depurar servicios.",
+      "tags": [
+        "herramienta-agente",
+        "diagnostico",
+        "monitoreo",
+        "docker"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:agent/tools/diagnostic_tools.py:service_health",
+      "type": "function",
+      "name": "service_health",
+      "filePath": "agent/tools/diagnostic_tools.py",
+      "lineRange": [
+        25,
+        77
+      ],
+      "summary": "Genera un dashboard de salud de todos los contenedores Docker usando el CLI svc o docker ps como respaldo.",
+      "tags": [
+        "herramienta-agente",
+        "healthcheck",
+        "monitoreo"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/diagnostic_tools.py:port_conflicts",
+      "type": "function",
+      "name": "port_conflicts",
+      "filePath": "agent/tools/diagnostic_tools.py",
+      "lineRange": [
+        82,
+        138
+      ],
+      "summary": "Escanea los archivos compose en /docker/ para construir un mapa de puertos asignados y detectar colisiones entre servicios.",
+      "tags": [
+        "herramienta-agente",
+        "puertos",
+        "diagnostico"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:agent/tools/diagnostic_tools.py:troubleshoot",
+      "type": "function",
+      "name": "troubleshoot",
+      "filePath": "agent/tools/diagnostic_tools.py",
+      "lineRange": [
+        143,
+        241
+      ],
+      "summary": "Ejecuta un diagnóstico integral de un servicio inspeccionando estado, healthcheck, restarts, estadísticas de recursos y errores en logs.",
+      "tags": [
+        "herramienta-agente",
+        "diagnostico",
+        "logs",
+        "troubleshooting"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:agent/core/_result.py",
+      "target": "class:agent/core/_result.py:Status",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/core/_result.py",
+      "target": "class:agent/core/_result.py:Status",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/core/_result.py",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/core/_result.py",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/core/_result.py",
+      "target": "class:agent/core/_result.py:Timer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/core/_result.py",
+      "target": "class:agent/core/_result.py:Timer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/core/backup_manager.py",
+      "target": "class:agent/core/backup_manager.py:BackupManager",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/core/backup_manager.py",
+      "target": "class:agent/core/backup_manager.py:BackupManager",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/core/compose_manager.py",
+      "target": "class:agent/core/compose_manager.py:ComposeManager",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/core/compose_manager.py",
+      "target": "class:agent/core/compose_manager.py:ComposeManager",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/core/memory.py",
+      "target": "class:agent/core/memory.py:MemoryManager",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/core/memory.py",
+      "target": "class:agent/core/memory.py:MemoryManager",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/core/service_manager.py",
+      "target": "class:agent/core/service_manager.py:ServiceManager",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/core/service_manager.py",
+      "target": "class:agent/core/service_manager.py:ServiceManager",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "class:agent/tools/_shell.py:InvalidServiceName",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "class:agent/tools/_shell.py:InvalidServiceName",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:validated_service_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:validated_service_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:find_compose",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:find_compose",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:service_exists_or_error",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:service_exists_or_error",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:is_readonly",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:is_readonly",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:is_dryrun",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:is_dryrun",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:readonly_guard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "function:agent/tools/_shell.py:readonly_guard",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/compose_tools.py",
+      "target": "function:agent/tools/compose_tools.py:read_compose",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/compose_tools.py",
+      "target": "function:agent/tools/compose_tools.py:read_compose",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/compose_tools.py",
+      "target": "function:agent/tools/compose_tools.py:validate_compose",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/compose_tools.py",
+      "target": "function:agent/tools/compose_tools.py:validate_compose",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/compose_tools.py",
+      "target": "function:agent/tools/compose_tools.py:create_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/compose_tools.py",
+      "target": "function:agent/tools/compose_tools.py:create_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/diagnostic_tools.py",
+      "target": "function:agent/tools/diagnostic_tools.py:service_health",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/diagnostic_tools.py",
+      "target": "function:agent/tools/diagnostic_tools.py:service_health",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/diagnostic_tools.py",
+      "target": "function:agent/tools/diagnostic_tools.py:port_conflicts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/diagnostic_tools.py",
+      "target": "function:agent/tools/diagnostic_tools.py:port_conflicts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/tools/diagnostic_tools.py",
+      "target": "function:agent/tools/diagnostic_tools.py:troubleshoot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:agent/tools/diagnostic_tools.py",
+      "target": "function:agent/tools/diagnostic_tools.py:troubleshoot",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/core/backup_manager.py",
+      "target": "file:agent/core/_result.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/core/backup_manager.py",
+      "target": "file:agent/tools/_shell.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/core/compose_manager.py",
+      "target": "file:agent/core/_result.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/core/compose_manager.py",
+      "target": "file:agent/tools/_shell.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/core/memory.py",
+      "target": "file:agent/core/_result.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/core/service_manager.py",
+      "target": "file:agent/core/_result.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/core/service_manager.py",
+      "target": "file:agent/tools/_shell.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/tools/compose_tools.py",
+      "target": "file:agent/core/_result.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/tools/compose_tools.py",
+      "target": "file:agent/tools/_shell.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/tools/diagnostic_tools.py",
+      "target": "file:agent/tools/_shell.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:agent/tools/compose_tools.py",
+      "target": "file:agent/core/compose_manager.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:agent/core/backup_manager.py:BackupManager",
+      "target": "function:agent/tools/_shell.py:readonly_guard",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/backup_manager.py:BackupManager",
+      "target": "function:agent/tools/_shell.py:validated_service_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/backup_manager.py:BackupManager",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/backup_manager.py:BackupManager",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/backup_manager.py:BackupManager",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/backup_manager.py:BackupManager",
+      "target": "class:agent/core/_result.py:Timer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/compose_manager.py:ComposeManager",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/compose_manager.py:ComposeManager",
+      "target": "function:agent/tools/_shell.py:validated_service_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/compose_manager.py:ComposeManager",
+      "target": "function:agent/tools/_shell.py:find_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/compose_manager.py:ComposeManager",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/compose_manager.py:ComposeManager",
+      "target": "class:agent/tools/_shell.py:InvalidServiceName",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/compose_manager.py:ComposeManager",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/memory.py:MemoryManager",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/service_manager.py:ServiceManager",
+      "target": "function:agent/tools/_shell.py:service_exists_or_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/service_manager.py:ServiceManager",
+      "target": "function:agent/tools/_shell.py:find_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/service_manager.py:ServiceManager",
+      "target": "function:agent/tools/_shell.py:readonly_guard",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/service_manager.py:ServiceManager",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/service_manager.py:ServiceManager",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:agent/core/service_manager.py:ServiceManager",
+      "target": "class:agent/core/_result.py:Timer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/_shell.py:validated_service_path",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/_shell.py:find_compose",
+      "target": "function:agent/tools/_shell.py:validated_service_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/_shell.py:service_exists_or_error",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/_shell.py:service_exists_or_error",
+      "target": "function:agent/tools/_shell.py:find_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/_shell.py:safe_run",
+      "target": "function:agent/tools/_shell.py:is_dryrun",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/_shell.py:readonly_guard",
+      "target": "function:agent/tools/_shell.py:is_readonly",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/compose_tools.py:read_compose",
+      "target": "class:agent/core/compose_manager.py:ComposeManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/compose_tools.py:validate_compose",
+      "target": "class:agent/core/compose_manager.py:ComposeManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/compose_tools.py:create_service",
+      "target": "class:agent/core/compose_manager.py:ComposeManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/compose_tools.py:create_service",
+      "target": "function:agent/tools/_shell.py:readonly_guard",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/compose_tools.py:create_service",
+      "target": "function:agent/tools/_shell.py:validated_service_path",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/compose_tools.py:create_service",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/compose_tools.py:create_service",
+      "target": "class:agent/core/_result.py:ToolResult",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/diagnostic_tools.py:service_health",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/diagnostic_tools.py:port_conflicts",
+      "target": "function:agent/tools/_shell.py:validate_service_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/diagnostic_tools.py:port_conflicts",
+      "target": "function:agent/tools/_shell.py:find_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/diagnostic_tools.py:troubleshoot",
+      "target": "function:agent/tools/_shell.py:service_exists_or_error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/diagnostic_tools.py:troubleshoot",
+      "target": "function:agent/tools/_shell.py:find_compose",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:agent/tools/diagnostic_tools.py:troubleshoot",
+      "target": "function:agent/tools/_shell.py:safe_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:agent/core/compose_manager.py",
+      "target": "file:tests/test_compose_generation.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:agent/tools/_shell.py",
+      "target": "file:tests/test_validation.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:agent/core/memory.py",
+      "target": "file:tests/test_memory.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:agent/core/_result.py",
+      "target": "file:tests/test_result.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:agent/core/_result.py",
+      "target": "file:tests/test_tool_result.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 3
+    }
+  },
+  "results": [
+    {
+      "path": "agent/catalog/services/homeassistant/.env.example",
+      "language": "config",
+      "fileCategory": "config",
+      "totalLines": 3,
+      "nonEmptyLines": 3,
+      "definitions": [
+        {
+          "name": "HOMEASSISTANT_TOKEN",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 3,
+          "endLine": 3
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 1
+      }
+    },
+    {
+      "path": "agent/catalog/services/homeassistant/compose.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 43,
+      "nonEmptyLines": 43,
+      "sections": [
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 2
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "agent/catalog/services/homeassistant/ficha.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 93,
+      "nonEmptyLines": 80,
+      "sections": [
+        {
+          "heading": "Home Assistant",
+          "level": 1,
+          "line": 41
+        },
+        {
+          "heading": "Qué es",
+          "level": 2,
+          "line": 43
+        },
+        {
+          "heading": "Estructura",
+          "level": 2,
+          "line": 48
+        },
+        {
+          "heading": "Configuración operacional",
+          "level": 2,
+          "line": 63
+        },
+        {
+          "heading": "Integraciones configuradas",
+          "level": 2,
+          "line": 73
+        },
+        {
+          "heading": "Entidades clave",
+          "level": 2,
+          "line": 81
+        },
+        {
+          "heading": "docs_url",
+          "level": 2,
+          "line": 91
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    }
+  ]
+}

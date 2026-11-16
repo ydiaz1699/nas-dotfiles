@@ -1,0 +1,1104 @@
+{
+  "nodes": [
+    {
+      "id": "file:svc_py/commands/codemap.py",
+      "type": "file",
+      "name": "codemap.py",
+      "filePath": "svc_py/commands/codemap.py",
+      "summary": "Implementa el comando code-map que delega en agent/tools/project_index.py --code-map para generar el mapa estructural docs/CODE-MAP.md.",
+      "tags": [
+        "documentacion",
+        "indice",
+        "cli",
+        "code-map"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/commands/codemap.py:code_map",
+      "type": "function",
+      "name": "code_map",
+      "filePath": "svc_py/commands/codemap.py",
+      "lineRange": [
+        20,
+        48
+      ],
+      "summary": "Ejecuta project_index.py --code-map con las variables de entorno del proyecto y propaga su salida y código de retorno.",
+      "tags": [
+        "cli-command",
+        "indice",
+        "subproceso"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:svc_py/commands/compose.py",
+      "type": "file",
+      "name": "compose.py",
+      "filePath": "svc_py/commands/compose.py",
+      "summary": "Provee los comandos create (wizard interactivo para nuevos servicios con compose.yml, .env y README.md) y diff (comparación contra configuración resuelta o catálogo).",
+      "tags": [
+        "scaffolding",
+        "docker-compose",
+        "diff",
+        "cli",
+        "wizard"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/commands/compose.py:create",
+      "type": "function",
+      "name": "create",
+      "filePath": "svc_py/commands/compose.py",
+      "lineRange": [
+        26,
+        117
+      ],
+      "summary": "Crea la estructura inicial de un nuevo servicio (compose.yml, .env, README.md y data/) usando InquirerPy o prompts de Typer.",
+      "tags": [
+        "cli-command",
+        "scaffolding",
+        "wizard",
+        "docker-compose"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/commands/compose.py:diff",
+      "type": "function",
+      "name": "diff",
+      "filePath": "svc_py/commands/compose.py",
+      "lineRange": [
+        122,
+        190
+      ],
+      "summary": "Compara un compose en disco contra su configuración resuelta resaltando diferencias con Rich Syntax y verificando variables en .env, o delega --all a compare_tools.py.",
+      "tags": [
+        "cli-command",
+        "diff",
+        "validacion",
+        "docker-compose"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:svc_py/commands/docker.py",
+      "type": "file",
+      "name": "docker.py",
+      "filePath": "svc_py/commands/docker.py",
+      "summary": "Implementa el comando update-all para seleccionar múltiples servicios con InquirerPy y actualizar sus imágenes con barra de progreso Rich.",
+      "tags": [
+        "docker-compose",
+        "actualizacion",
+        "cli",
+        "progreso",
+        "interactivo"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/commands/docker.py:update_all",
+      "type": "function",
+      "name": "update_all",
+      "filePath": "svc_py/commands/docker.py",
+      "lineRange": [
+        20,
+        107
+      ],
+      "summary": "Permite seleccionar servicios mediante checkbox InquirerPy o confirmación Typer, ejecuta pull y recrea únicamente los que estaban activos.",
+      "tags": [
+        "cli-command",
+        "actualizacion",
+        "multi-select",
+        "rich"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:svc_py/commands/health.py",
+      "type": "file",
+      "name": "health.py",
+      "filePath": "svc_py/commands/health.py",
+      "summary": "Implementa los comandos de observabilidad health, doctor y watch para inspeccionar salud, uptime, reinicios, recursos del NAS y monitoreo en vivo con Rich Live.",
+      "tags": [
+        "monitoreo",
+        "salud",
+        "diagnostico",
+        "docker",
+        "cli"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Utiliza rich.live.Live en watch para refrescar la tabla in-place sin limpiar la terminal y combina utilidades Linux (df, free, ss) con inspección Docker."
+    },
+    {
+      "id": "function:svc_py/commands/health.py:_uptime_str",
+      "type": "function",
+      "name": "_uptime_str",
+      "filePath": "svc_py/commands/health.py",
+      "lineRange": [
+        40,
+        58
+      ],
+      "summary": "Calcula el tiempo activo legible (m, h, d) a partir de State.StartedAt de un contenedor.",
+      "tags": [
+        "helper",
+        "uptime",
+        "formato"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/commands/health.py:_build_health_table",
+      "type": "function",
+      "name": "_build_health_table",
+      "filePath": "svc_py/commands/health.py",
+      "lineRange": [
+        61,
+        118
+      ],
+      "summary": "Construye la tabla Rich con estado de ejecución, healthcheck, uptime y reinicios de todos los servicios.",
+      "tags": [
+        "helper",
+        "rich",
+        "salud"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/commands/health.py:health",
+      "type": "function",
+      "name": "health",
+      "filePath": "svc_py/commands/health.py",
+      "lineRange": [
+        122,
+        127
+      ],
+      "summary": "Imprime el dashboard puntual de salud de todos los servicios Docker.",
+      "tags": [
+        "cli-command",
+        "salud",
+        "dashboard"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/commands/health.py:doctor",
+      "type": "function",
+      "name": "doctor",
+      "filePath": "svc_py/commands/health.py",
+      "lineRange": [
+        131,
+        285
+      ],
+      "summary": "Ejecuta seis chequeos diagnósticos del NAS: disco, memoria, servicios detenidos o reiniciando, puertos reservados, restart count y almacenamiento Docker.",
+      "tags": [
+        "cli-command",
+        "diagnostico",
+        "sistema",
+        "auditoria"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:svc_py/commands/health.py:watch",
+      "type": "function",
+      "name": "watch",
+      "filePath": "svc_py/commands/health.py",
+      "lineRange": [
+        289,
+        347
+      ],
+      "summary": "Mantiene una tabla Rich Live actualizada periódicamente con estado, CPU, memoria y uptime de cada servicio.",
+      "tags": [
+        "cli-command",
+        "monitoreo",
+        "tiempo-real",
+        "rich"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:svc_py/commands/info.py",
+      "type": "file",
+      "name": "info.py",
+      "filePath": "svc_py/commands/info.py",
+      "summary": "Reúne comandos informativos de inspección (port-map, size, net, depends, env y open) sobre puertos, uso de disco, redes, dependencias, variables de entorno y URLs.",
+      "tags": [
+        "inspeccion",
+        "redes",
+        "puertos",
+        "variables-entorno",
+        "cli"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:svc_py/commands/info.py:port_map",
+      "type": "function",
+      "name": "port_map",
+      "filePath": "svc_py/commands/info.py",
+      "lineRange": [
+        25,
+        62
+      ],
+      "summary": "Recopila puertos expuestos por contenedores activos en una tabla Rich y detecta colisiones entre servicios.",
+      "tags": [
+        "cli-command",
+        "puertos",
+        "conflictos"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/commands/info.py:size",
+      "type": "function",
+      "name": "size",
+      "filePath": "svc_py/commands/info.py",
+      "lineRange": [
+        66,
+        100
+      ],
+      "summary": "Muestra el tamaño en disco del directorio y de la imagen principal de cada servicio mediante du y docker images.",
+      "tags": [
+        "cli-command",
+        "almacenamiento",
+        "disco"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/commands/info.py:net",
+      "type": "function",
+      "name": "net",
+      "filePath": "svc_py/commands/info.py",
+      "lineRange": [
+        104,
+        130
+      ],
+      "summary": "Renderiza un árbol Rich con las redes Docker personalizadas y los contenedores conectados a cada una.",
+      "tags": [
+        "cli-command",
+        "redes",
+        "docker"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:svc_py/commands/info.py:depends",
+      "type": "function",
+      "name": "depends",
+      "filePath": "svc_py/commands/info.py",
+      "lineRange": [
+        134,
+        172
+      ],
+      "summary": "Muestra en formato árbol los subservicios y dependencias depends_on declaradas en el compose file de un servicio.",
+      "tags": [
+        "cli-command",
+        "dependencias",
+        "docker-compose"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/commands/info.py:env_cmd",
+      "type": "function",
+      "name": "env_cmd",
+      "filePath": "svc_py/commands/info.py",
+      "lineRange": [
+        176,
+        210
+      ],
+      "summary": "Muestra con resaltado INI las variables activas del .env de un servicio o lo abre con el editor configurado.",
+      "tags": [
+        "cli-command",
+        "variables-entorno",
+        "configuracion"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:svc_py/commands/info.py:open_cmd",
+      "type": "function",
+      "name": "open_cmd",
+      "filePath": "svc_py/commands/info.py",
+      "lineRange": [
+        214,
+        273
+      ],
+      "summary": "Detecta el puerto expuesto y la IP del host para imprimir la URL del servicio, copiarla al portapapeles y generar un QR si existe qrencode.",
+      "tags": [
+        "cli-command",
+        "url",
+        "utilidades"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:svc_py/commands/codemap.py",
+      "target": "function:svc_py/commands/codemap.py:code_map",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/codemap.py",
+      "target": "function:svc_py/commands/codemap.py:code_map",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/codemap.py",
+      "target": "file:svc_py/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/codemap.py",
+      "target": "file:svc_py/ui.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/codemap.py",
+      "target": "file:agent/tools/project_index.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:svc_py/commands/compose.py",
+      "target": "function:svc_py/commands/compose.py:create",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/compose.py",
+      "target": "function:svc_py/commands/compose.py:create",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/compose.py",
+      "target": "function:svc_py/commands/compose.py:diff",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/compose.py",
+      "target": "function:svc_py/commands/compose.py:diff",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/compose.py",
+      "target": "file:svc_py/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/compose.py",
+      "target": "file:svc_py/core/discovery.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/compose.py",
+      "target": "file:svc_py/core/docker.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/compose.py",
+      "target": "file:svc_py/ui.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:svc_py/commands/compose.py:create",
+      "target": "function:svc_py/ui.py:error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/compose.py:diff",
+      "target": "function:svc_py/ui.py:error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/compose.py:diff",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/compose.py:diff",
+      "target": "function:svc_py/core/docker.py:compose_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/compose.py:diff",
+      "target": "function:svc_py/ui.py:success",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/compose.py:diff",
+      "target": "function:svc_py/ui.py:warn",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/compose.py",
+      "target": "file:agent/tools/compare_tools.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:svc_py/commands/docker.py",
+      "target": "function:svc_py/commands/docker.py:update_all",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/docker.py",
+      "target": "function:svc_py/commands/docker.py:update_all",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/docker.py",
+      "target": "file:svc_py/core/discovery.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/docker.py",
+      "target": "file:svc_py/core/docker.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/docker.py",
+      "target": "file:svc_py/ui.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:svc_py/commands/docker.py:update_all",
+      "target": "function:svc_py/core/discovery.py:svc_list",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/docker.py:update_all",
+      "target": "function:svc_py/ui.py:error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/docker.py:update_all",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/docker.py:update_all",
+      "target": "function:svc_py/core/docker.py:is_service_running",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/docker.py:update_all",
+      "target": "function:svc_py/ui.py:warn",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/docker.py:update_all",
+      "target": "function:svc_py/core/docker.py:compose_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/docker.py:update_all",
+      "target": "function:svc_py/ui.py:success",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "function:svc_py/commands/health.py:_uptime_str",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "function:svc_py/commands/health.py:_uptime_str",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "function:svc_py/commands/health.py:_build_health_table",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "function:svc_py/commands/health.py:_build_health_table",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "function:svc_py/commands/health.py:health",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "function:svc_py/commands/health.py:health",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "function:svc_py/commands/health.py:doctor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "function:svc_py/commands/health.py:doctor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "function:svc_py/commands/health.py:watch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "function:svc_py/commands/health.py:watch",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "file:svc_py/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "file:svc_py/core/discovery.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "file:svc_py/core/docker.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/health.py",
+      "target": "file:svc_py/ui.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:svc_py/commands/health.py:_uptime_str",
+      "target": "function:svc_py/core/docker.py:container_inspect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:_build_health_table",
+      "target": "function:svc_py/ui.py:service_table",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:_build_health_table",
+      "target": "function:svc_py/core/discovery.py:svc_list",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:_build_health_table",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:_build_health_table",
+      "target": "function:svc_py/core/docker.py:is_service_running",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:_build_health_table",
+      "target": "function:svc_py/core/docker.py:get_container_ids",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:_build_health_table",
+      "target": "function:svc_py/core/docker.py:compose_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:_build_health_table",
+      "target": "function:svc_py/core/docker.py:container_inspect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:_build_health_table",
+      "target": "function:svc_py/commands/health.py:_uptime_str",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:_build_health_table",
+      "target": "function:svc_py/ui.py:status_dot",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:_build_health_table",
+      "target": "function:svc_py/ui.py:health_colored",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:_build_health_table",
+      "target": "function:svc_py/ui.py:restart_colored",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:health",
+      "target": "function:svc_py/commands/health.py:_build_health_table",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:doctor",
+      "target": "function:svc_py/ui.py:error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:doctor",
+      "target": "function:svc_py/ui.py:warn",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:doctor",
+      "target": "function:svc_py/ui.py:success",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:doctor",
+      "target": "function:svc_py/core/discovery.py:svc_list",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:doctor",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:doctor",
+      "target": "function:svc_py/core/docker.py:is_service_running",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:doctor",
+      "target": "function:svc_py/core/docker.py:docker_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:doctor",
+      "target": "function:svc_py/core/docker.py:container_inspect",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:watch",
+      "target": "function:svc_py/core/discovery.py:svc_list",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:watch",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:watch",
+      "target": "function:svc_py/core/docker.py:get_container_ids",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:watch",
+      "target": "function:svc_py/ui.py:status_dot",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:watch",
+      "target": "function:svc_py/core/docker.py:docker_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/health.py:watch",
+      "target": "function:svc_py/commands/health.py:_uptime_str",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "function:svc_py/commands/info.py:port_map",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "function:svc_py/commands/info.py:port_map",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "function:svc_py/commands/info.py:size",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "function:svc_py/commands/info.py:size",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "function:svc_py/commands/info.py:net",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "function:svc_py/commands/info.py:net",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "function:svc_py/commands/info.py:depends",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "function:svc_py/commands/info.py:depends",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "function:svc_py/commands/info.py:env_cmd",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "function:svc_py/commands/info.py:env_cmd",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "function:svc_py/commands/info.py:open_cmd",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "function:svc_py/commands/info.py:open_cmd",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "file:svc_py/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "file:svc_py/core/discovery.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "file:svc_py/core/docker.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:svc_py/commands/info.py",
+      "target": "file:svc_py/ui.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:svc_py/commands/info.py:port_map",
+      "target": "function:svc_py/ui.py:service_table",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:port_map",
+      "target": "function:svc_py/core/discovery.py:svc_list",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:port_map",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:port_map",
+      "target": "function:svc_py/core/docker.py:compose_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:size",
+      "target": "function:svc_py/ui.py:service_table",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:size",
+      "target": "function:svc_py/core/discovery.py:svc_list",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:size",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:size",
+      "target": "function:svc_py/core/docker.py:compose_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:size",
+      "target": "function:svc_py/core/docker.py:docker_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:net",
+      "target": "function:svc_py/core/docker.py:docker_run",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:net",
+      "target": "function:svc_py/ui.py:error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:depends",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:depends",
+      "target": "function:svc_py/ui.py:error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:depends",
+      "target": "function:svc_py/core/docker.py:compose_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:env_cmd",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:env_cmd",
+      "target": "function:svc_py/ui.py:error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:open_cmd",
+      "target": "function:svc_py/core/discovery.py:svc_compose_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:open_cmd",
+      "target": "function:svc_py/ui.py:error",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:open_cmd",
+      "target": "function:svc_py/core/docker.py:compose_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:svc_py/commands/info.py:open_cmd",
+      "target": "function:svc_py/ui.py:warn",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

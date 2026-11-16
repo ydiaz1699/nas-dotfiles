@@ -1,0 +1,125 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/karakeep/.env.example",
+      "type": "config",
+      "name": "agent/catalog/services/karakeep/.env.example",
+      "filePath": "agent/catalog/services/karakeep/.env.example",
+      "lineRange": [
+        1,
+        35
+      ],
+      "summary": "Plantilla de secretos y configuración de IA para Karakeep: NEXTAUTH_SECRET, MEILI_MASTER_KEY, credenciales OpenAI-compatible de Ollama Cloud (OPENAI_API_KEY, OPENAI_BASE_URL, INFERENCE_TEXT_MODEL) y opciones comentadas para embeddings.",
+      "tags": [
+        "variables-entorno",
+        "karakeep",
+        "ollama-cloud",
+        "plantilla-env"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:agent/catalog/services/karakeep/compose.yml",
+      "type": "service",
+      "name": "agent/catalog/services/karakeep/compose.yml",
+      "filePath": "agent/catalog/services/karakeep/compose.yml",
+      "lineRange": [
+        1,
+        106
+      ],
+      "summary": "Definición Docker Compose del stack Karakeep (antes Hoarder) con tres contenedores: karakeep (app Next.js con SQLite expuesta en :3400), karakeep-chrome (Chromium headless para archivo) y karakeep-meilisearch (búsqueda full-text), con healthchecks y labels de Homepage.",
+      "tags": [
+        "docker-compose",
+        "karakeep",
+        "gestor-bookmarks",
+        "meilisearch-chrome"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Archivo YAML de Docker Compose donde los tres servicios extienden ../../_common.yml y comparten la red interna por defecto sin depender de DataSQL."
+    },
+    {
+      "id": "document:agent/catalog/services/karakeep/ficha.md",
+      "type": "document",
+      "name": "agent/catalog/services/karakeep/ficha.md",
+      "filePath": "agent/catalog/services/karakeep/ficha.md",
+      "lineRange": [
+        1,
+        88
+      ],
+      "summary": "Ficha técnica del catálogo para Karakeep con metadatos YAML, arquitectura de tres contenedores y SQLite, interfaces de acceso (UI, MCP, CLI, API REST, Floccus) y referencias a karakeep-guide.md y karakeep-floccus-architecture.md.",
+      "tags": [
+        "ficha-servicio",
+        "karakeep",
+        "catalogo-nas",
+        "floccus-bookmarks"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/karakeep/.env.example",
+      "target": "service:agent/catalog/services/karakeep/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Provee NEXTAUTH_SECRET, MEILI_MASTER_KEY y configuración de inferencia IA a karakeep y karakeep-meilisearch."
+    },
+    {
+      "source": "service:agent/catalog/services/karakeep/compose.yml",
+      "target": "config:agent/catalog/_common.yml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Los tres contenedores del stack heredan _defaults desde ../../_common.yml."
+    },
+    {
+      "source": "service:agent/catalog/services/karakeep/compose.yml",
+      "target": "config:agent/catalog/.env.global.example",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Hereda SERVER_IP y TZ desde ../.env para configurar NEXTAUTH_URL y labels de Homepage."
+    },
+    {
+      "source": "service:agent/catalog/services/karakeep/compose.yml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Expone labels homepage.* para integrar Karakeep en el grupo Descargas de Homepage y evita el puerto 3000."
+    },
+    {
+      "source": "document:agent/catalog/services/karakeep/ficha.md",
+      "target": "service:agent/catalog/services/karakeep/compose.yml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la arquitectura de tres contenedores, persistencia SQLite en ./data y publicación en puerto 3400."
+    },
+    {
+      "source": "document:agent/catalog/services/karakeep/ficha.md",
+      "target": "config:agent/catalog/services/karakeep/.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Describe las variables requeridas y opcionales para autenticación, Meilisearch y Ollama Cloud."
+    },
+    {
+      "source": "document:agent/catalog/services/karakeep/ficha.md",
+      "target": "document:docs/services/karakeep-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Apunta mediante docs_url a la guía operativa autocontenida de Karakeep."
+    },
+    {
+      "source": "document:agent/catalog/services/karakeep/ficha.md",
+      "target": "document:docs/services/karakeep-floccus-architecture.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Referencia el documento de arquitectura e integración bidireccional con Floccus."
+    }
+  ]
+}

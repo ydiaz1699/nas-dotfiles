@@ -1,0 +1,485 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 10,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 10,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 10
+    }
+  },
+  "results": [
+    {
+      "path": "shell/scripts/apply-restart-policy.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 106,
+      "nonEmptyLines": 89,
+      "functions": [
+        {
+          "name": "svc_cli",
+          "startLine": 19,
+          "endLine": 21,
+          "params": []
+        },
+        {
+          "name": "compose_services",
+          "startLine": 23,
+          "endLine": 29,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/scripts/boot-order.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 404,
+      "nonEmptyLines": 356,
+      "functions": [
+        {
+          "name": "log",
+          "startLine": 55,
+          "endLine": 57,
+          "params": []
+        },
+        {
+          "name": "fail",
+          "startLine": 59,
+          "endLine": 62,
+          "params": []
+        },
+        {
+          "name": "svc_cli",
+          "startLine": 64,
+          "endLine": 67,
+          "params": []
+        },
+        {
+          "name": "compose_file",
+          "startLine": 69,
+          "endLine": 79,
+          "params": []
+        },
+        {
+          "name": "discovered_services",
+          "startLine": 81,
+          "endLine": 87,
+          "params": []
+        },
+        {
+          "name": "trim",
+          "startLine": 89,
+          "endLine": 94,
+          "params": []
+        },
+        {
+          "name": "flush_layer",
+          "startLine": 99,
+          "endLine": 104,
+          "params": []
+        },
+        {
+          "name": "load_layers",
+          "startLine": 106,
+          "endLine": 125,
+          "params": []
+        },
+        {
+          "name": "validate_layers",
+          "startLine": 131,
+          "endLine": 180,
+          "params": []
+        },
+        {
+          "name": "wait_for_docker",
+          "startLine": 182,
+          "endLine": 190,
+          "params": []
+        },
+        {
+          "name": "wait_service_ready",
+          "startLine": 192,
+          "endLine": 250,
+          "params": []
+        },
+        {
+          "name": "svc_up_one",
+          "startLine": 252,
+          "endLine": 260,
+          "params": []
+        },
+        {
+          "name": "start_service_ready_retrying",
+          "startLine": 267,
+          "endLine": 284,
+          "params": []
+        },
+        {
+          "name": "is_no_boot",
+          "startLine": 289,
+          "endLine": 292,
+          "params": []
+        },
+        {
+          "name": "should_start",
+          "startLine": 296,
+          "endLine": 304,
+          "params": []
+        },
+        {
+          "name": "run_layer_serial",
+          "startLine": 309,
+          "endLine": 324,
+          "params": []
+        },
+        {
+          "name": "run_layer_parallel",
+          "startLine": 329,
+          "endLine": 360,
+          "params": []
+        },
+        {
+          "name": "run_layer",
+          "startLine": 362,
+          "endLine": 377,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 18,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/scripts/find-no-extends.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 25,
+      "nonEmptyLines": 21,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/scripts/install-boot-service.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 73,
+      "nonEmptyLines": 61,
+      "functions": [
+        {
+          "name": "render",
+          "startLine": 44,
+          "endLine": 47,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/scripts/install-shutdown-service.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 68,
+      "nonEmptyLines": 57,
+      "functions": [
+        {
+          "name": "render",
+          "startLine": 46,
+          "endLine": 49,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/scripts/install_docker.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 484,
+      "nonEmptyLines": 407,
+      "functions": [
+        {
+          "name": "usage",
+          "startLine": 29,
+          "endLine": 49,
+          "params": []
+        },
+        {
+          "name": "parse_args",
+          "startLine": 51,
+          "endLine": 81,
+          "params": []
+        },
+        {
+          "name": "echo_info",
+          "startLine": 83,
+          "endLine": 83,
+          "params": []
+        },
+        {
+          "name": "echo_warn",
+          "startLine": 84,
+          "endLine": 84,
+          "params": []
+        },
+        {
+          "name": "echo_error",
+          "startLine": 85,
+          "endLine": 85,
+          "params": []
+        },
+        {
+          "name": "setup_logging",
+          "startLine": 87,
+          "endLine": 106,
+          "params": []
+        },
+        {
+          "name": "print_command",
+          "startLine": 108,
+          "endLine": 112,
+          "params": []
+        },
+        {
+          "name": "run_command",
+          "startLine": 114,
+          "endLine": 120,
+          "params": []
+        },
+        {
+          "name": "run_optional_command",
+          "startLine": 122,
+          "endLine": 128,
+          "params": []
+        },
+        {
+          "name": "apt_update_once",
+          "startLine": 130,
+          "endLine": 140,
+          "params": []
+        },
+        {
+          "name": "detect_docker_user",
+          "startLine": 144,
+          "endLine": 159,
+          "params": []
+        },
+        {
+          "name": "select_docker_user",
+          "startLine": 161,
+          "endLine": 220,
+          "params": []
+        },
+        {
+          "name": "package_installed",
+          "startLine": 222,
+          "endLine": 227,
+          "params": []
+        },
+        {
+          "name": "supported_codename",
+          "startLine": 229,
+          "endLine": 235,
+          "params": []
+        },
+        {
+          "name": "validate_operating_system",
+          "startLine": 237,
+          "endLine": 275,
+          "params": []
+        },
+        {
+          "name": "ensure_curl",
+          "startLine": 277,
+          "endLine": 285,
+          "params": []
+        },
+        {
+          "name": "check_connectivity",
+          "startLine": 287,
+          "endLine": 301,
+          "params": []
+        },
+        {
+          "name": "disable_legacy_repo",
+          "startLine": 303,
+          "endLine": 323,
+          "params": []
+        },
+        {
+          "name": "docker_repo_contents",
+          "startLine": 325,
+          "endLine": 333,
+          "params": []
+        },
+        {
+          "name": "write_docker_repo",
+          "startLine": 335,
+          "endLine": 345,
+          "params": []
+        },
+        {
+          "name": "install_docker",
+          "startLine": 347,
+          "endLine": 395,
+          "params": []
+        },
+        {
+          "name": "start_and_verify_docker",
+          "startLine": 397,
+          "endLine": 404,
+          "params": []
+        },
+        {
+          "name": "configure_user_group",
+          "startLine": 406,
+          "endLine": 432,
+          "params": []
+        },
+        {
+          "name": "print_summary",
+          "startLine": 434,
+          "endLine": 465,
+          "params": []
+        },
+        {
+          "name": "main",
+          "startLine": 467,
+          "endLine": 482,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 25,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/scripts/restart-all.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 41,
+      "nonEmptyLines": 37,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/scripts/start-all.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 6,
+      "nonEmptyLines": 5,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/scripts/stop-all.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 44,
+      "nonEmptyLines": 40,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shell/scripts/stop-order.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 120,
+      "nonEmptyLines": 105,
+      "functions": [
+        {
+          "name": "log",
+          "startLine": 42,
+          "endLine": 44,
+          "params": []
+        },
+        {
+          "name": "svc_cli",
+          "startLine": 46,
+          "endLine": 48,
+          "params": []
+        },
+        {
+          "name": "compose_file",
+          "startLine": 50,
+          "endLine": 59,
+          "params": []
+        },
+        {
+          "name": "is_running",
+          "startLine": 61,
+          "endLine": 65,
+          "params": []
+        },
+        {
+          "name": "trim",
+          "startLine": 67,
+          "endLine": 72,
+          "params": []
+        },
+        {
+          "name": "flush_layer",
+          "startLine": 77,
+          "endLine": 82,
+          "params": []
+        },
+        {
+          "name": "load_layers",
+          "startLine": 83,
+          "endLine": 95,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    }
+  ]
+}

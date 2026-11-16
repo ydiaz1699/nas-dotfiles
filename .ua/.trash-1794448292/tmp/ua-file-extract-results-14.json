@@ -1,0 +1,136 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 3
+    }
+  },
+  "results": [
+    {
+      "path": "agent/catalog/services/filebrowser/.env.example",
+      "language": "config",
+      "fileCategory": "config",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "definitions": [
+        {
+          "name": "FILEBROWSER_USER",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 1,
+          "endLine": 1
+        },
+        {
+          "name": "FILEBROWSER_PASSWORD",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 2,
+          "endLine": 2
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 2
+      }
+    },
+    {
+      "path": "agent/catalog/services/filebrowser/compose.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 38,
+      "nonEmptyLines": 38,
+      "sections": [
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 1
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "agent/catalog/services/filebrowser/ficha.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 60,
+      "nonEmptyLines": 43,
+      "sections": [
+        {
+          "heading": "filebrowser",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Metadata",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Servicios",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Volúmenes",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "Variables de entorno",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "Requeridas (.env local)",
+          "level": 3,
+          "line": 30
+        },
+        {
+          "heading": "Globales (../.env → $dkco/.env)",
+          "level": 3,
+          "line": 37
+        },
+        {
+          "heading": "Redes",
+          "level": 2,
+          "line": 44
+        },
+        {
+          "heading": "Notas",
+          "level": 2,
+          "line": 48
+        },
+        {
+          "heading": "docs_url",
+          "level": 2,
+          "line": 58
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    }
+  ]
+}

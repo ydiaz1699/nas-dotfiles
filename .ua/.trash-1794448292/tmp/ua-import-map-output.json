@@ -1,0 +1,444 @@
+{
+  "scriptCompleted": true,
+  "stats": {
+    "filesScanned": 297,
+    "filesWithImports": 45,
+    "totalEdges": 91
+  },
+  "failures": [],
+  "importMap": {
+    ".config/debmenux.conf.example": [],
+    ".config/user.conf.example": [],
+    ".kiro/hooks/catalog-sync-on-compose.json": [],
+    ".kiro/hooks/code-map-regen-on-file-change.json": [],
+    ".kiro/hooks/dependency-cascade-on-save.json": [],
+    ".kiro/hooks/documentation-evolution-on-prompt.json": [],
+    ".kiro/hooks/session-continuity.json": [],
+    ".kiro/skills/datasql/SKILL.md": [],
+    ".kiro/skills/dependency-cascade/SKILL.md": [],
+    ".kiro/skills/docker-boot-order/SKILL.md": [],
+    ".kiro/skills/documentation-evolution/SKILL.md": [],
+    ".kiro/skills/dotfile-skill/SKILL.md": [],
+    ".kiro/skills/dotfile-skill/references/agent.md": [],
+    ".kiro/skills/dotfile-skill/references/diagnostic.md": [],
+    ".kiro/skills/dotfile-skill/references/extend.md": [],
+    ".kiro/skills/dotfile-skill/references/security.md": [],
+    ".kiro/skills/dotfile-skill/references/shell.md": [],
+    ".kiro/skills/dotfile-skill/references/svc.md": [],
+    ".kiro/skills/nas-diagnostics/SKILL.md": [],
+    ".kiro/skills/nas-dotfiles.md": [],
+    ".kiro/skills/nas-mcp-gateway/SKILL.md": [],
+    ".kiro/skills/nas-runtime-secrets/SKILL.md": [],
+    ".kiro/skills/skill-creator/SKILL.md": [],
+    ".kiro/skills/skill-creator/assets/SKILL-TEMPLATE.md": [],
+    ".kiro/steering/svc-cli-runtime.md": [],
+    ".kiro/steering/verificar-antes-de-entregar.md": [],
+    "AGENTS.md": [],
+    "CONTRIBUTING.md": [],
+    "GUIDE.md": [],
+    "INSTALL.md": [],
+    "README.md": [],
+    "TODO.md": [],
+    "agent/.dockerignore": [],
+    "agent/README.md": [],
+    "agent/__init__.py": [],
+    "agent/architecture/contracts.json": [],
+    "agent/cache/__init__.py": [
+      "agent/cache/store.py"
+    ],
+    "agent/cache/store.py": [],
+    "agent/capabilities/lobehub.json": [],
+    "agent/catalog/.env.global.example": [],
+    "agent/catalog/__init__.py": [],
+    "agent/catalog/_common.yml": [],
+    "agent/catalog/_compose_base.md": [],
+    "agent/catalog/_index.py": [],
+    "agent/catalog/_rules.md": [],
+    "agent/catalog/_template.md": [],
+    "agent/catalog/catalog.json": [],
+    "agent/catalog/services/datasql/.env.example": [],
+    "agent/catalog/services/datasql/compose.yml": [],
+    "agent/catalog/services/datasql/ficha.md": [],
+    "agent/catalog/services/emqx/.env.example": [],
+    "agent/catalog/services/emqx/compose.yml": [],
+    "agent/catalog/services/emqx/ficha.md": [],
+    "agent/catalog/services/esphome/.env.example": [],
+    "agent/catalog/services/esphome/compose.yml": [],
+    "agent/catalog/services/esphome/ficha.md": [],
+    "agent/catalog/services/filebrowser/.env.example": [],
+    "agent/catalog/services/filebrowser/compose.yml": [],
+    "agent/catalog/services/filebrowser/ficha.md": [],
+    "agent/catalog/services/flowise/.env.example": [],
+    "agent/catalog/services/flowise/compose.yml": [],
+    "agent/catalog/services/flowise/ficha.md": [],
+    "agent/catalog/services/homeassistant/.env.example": [],
+    "agent/catalog/services/homeassistant/compose.yml": [],
+    "agent/catalog/services/homeassistant/ficha.md": [],
+    "agent/catalog/services/homepage/compose.yml": [],
+    "agent/catalog/services/homepage/config/docker.yaml": [],
+    "agent/catalog/services/homepage/config/services.yaml": [],
+    "agent/catalog/services/homepage/config/settings.yaml": [],
+    "agent/catalog/services/homepage/config/widgets.yaml": [],
+    "agent/catalog/services/homepage/ficha.md": [],
+    "agent/catalog/services/iobroker/.env.example": [],
+    "agent/catalog/services/iobroker/compose.yml": [],
+    "agent/catalog/services/iobroker/ficha.md": [],
+    "agent/catalog/services/jdownloader/.env.example": [],
+    "agent/catalog/services/jdownloader/compose.yml": [],
+    "agent/catalog/services/jdownloader/ficha.md": [],
+    "agent/catalog/services/karakeep/.env.example": [],
+    "agent/catalog/services/karakeep/compose.yml": [],
+    "agent/catalog/services/karakeep/ficha.md": [],
+    "agent/catalog/services/kiro-cli/ficha.md": [],
+    "agent/catalog/services/lobehub/.env.example": [],
+    "agent/catalog/services/lobehub/bucket.config.json": [],
+    "agent/catalog/services/lobehub/compose.yml": [],
+    "agent/catalog/services/lobehub/ficha.md": [],
+    "agent/catalog/services/n8n/.env.example": [],
+    "agent/catalog/services/n8n/compose.yml": [],
+    "agent/catalog/services/n8n/ficha.md": [],
+    "agent/catalog/services/nas-mcp-gateway/.env.example": [],
+    "agent/catalog/services/nas-mcp-gateway/compose.yml": [],
+    "agent/catalog/services/nas-mcp-gateway/ficha.md": [],
+    "agent/catalog/services/node-red/.env.example": [],
+    "agent/catalog/services/node-red/compose.yml": [],
+    "agent/catalog/services/node-red/ficha.md": [],
+    "agent/catalog/services/ntfy/.env.example": [],
+    "agent/catalog/services/ntfy/compose.yml": [],
+    "agent/catalog/services/ntfy/ficha.md": [],
+    "agent/catalog/services/openwa/.env.example": [],
+    "agent/catalog/services/openwa/compose.yml": [],
+    "agent/catalog/services/openwa/ficha.md": [],
+    "agent/catalog/services/openwa/n8n-flows/README.md": [],
+    "agent/catalog/services/openwa/n8n-flows/auto-reply.json": [],
+    "agent/catalog/services/openwa/n8n-flows/echo-simple.json": [],
+    "agent/catalog/services/openwa/n8n-flows/pide-camara.json": [],
+    "agent/catalog/services/openwa/wa-send.sh": [],
+    "agent/catalog/services/usb-api/ficha.md": [],
+    "agent/catalog/services/vscode/.env.example": [],
+    "agent/catalog/services/vscode/compose.yml": [],
+    "agent/catalog/services/vscode/ficha.md": [],
+    "agent/config/__init__.py": [],
+    "agent/config/defaults.yml": [],
+    "agent/core/__init__.py": [],
+    "agent/core/_result.py": [],
+    "agent/core/backup_manager.py": [
+      "agent/core/_result.py",
+      "agent/tools/_shell.py"
+    ],
+    "agent/core/compose_manager.py": [
+      "agent/core/_result.py",
+      "agent/tools/_shell.py"
+    ],
+    "agent/core/memory.py": [
+      "agent/core/_result.py"
+    ],
+    "agent/core/service_manager.py": [
+      "agent/core/_result.py",
+      "agent/tools/_shell.py"
+    ],
+    "agent/daemon.py": [],
+    "agent/events/__init__.py": [
+      "agent/events/bus.py",
+      "agent/events/mqtt_listener.py"
+    ],
+    "agent/events/bus.py": [],
+    "agent/events/mqtt_listener.py": [],
+    "agent/lobehub_mcp.py": [],
+    "agent/mcp/Dockerfile": [],
+    "agent/mcp/nas_mcp_gateway/Dockerfile": [],
+    "agent/mcp/nas_mcp_gateway/nas_mcp_gateway.py": [],
+    "agent/mcp/nas_mcp_gateway/nas_mcp_manifest.json": [],
+    "agent/mcp/nas_mcp_gateway/nas_mcp_worker.py": [],
+    "agent/memory/MEMORY.md": [],
+    "agent/memory/SKILLS.md": [],
+    "agent/memory/USER.md": [],
+    "agent/memory/sessions/.gitkeep": [],
+    "agent/nas_agent.py": [
+      "agent/tools/__init__.py"
+    ],
+    "agent/plugins/__init__.py": [
+      "agent/plugins/base.py",
+      "agent/plugins/loader.py"
+    ],
+    "agent/plugins/backup_plugin.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/plugins/base.py": [],
+    "agent/plugins/docker_plugin.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/plugins/ha_discovery_plugin.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/plugins/loader.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/plugins/memory_plugin.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/plugins/network_plugin.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/plugins/notification_plugin.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/scheduler/__init__.py": [
+      "agent/scheduler/runner.py"
+    ],
+    "agent/scheduler/runner.py": [
+      "agent/plugins/base.py"
+    ],
+    "agent/tools/__init__.py": [
+      "agent/tools/backup_tools.py",
+      "agent/tools/capability_tools.py",
+      "agent/tools/compare_tools.py",
+      "agent/tools/compose_tools.py",
+      "agent/tools/diagnostic_tools.py",
+      "agent/tools/discovery_tools.py",
+      "agent/tools/docker_tools.py",
+      "agent/tools/memory_tools.py",
+      "agent/tools/project_scanner.py",
+      "agent/tools/search_tools.py",
+      "agent/tools/system_tools.py"
+    ],
+    "agent/tools/_audit.py": [],
+    "agent/tools/_result.py": [],
+    "agent/tools/_shell.py": [],
+    "agent/tools/backup_tools.py": [],
+    "agent/tools/capabilities.py": [],
+    "agent/tools/capability_tools.py": [
+      "agent/tools/capabilities.py"
+    ],
+    "agent/tools/compare_tools.py": [],
+    "agent/tools/compose_tools.py": [
+      "agent/core/_result.py",
+      "agent/tools/_shell.py"
+    ],
+    "agent/tools/diagnostic_tools.py": [
+      "agent/tools/_shell.py"
+    ],
+    "agent/tools/discovery_tools.py": [
+      "agent/core/_result.py",
+      "agent/tools/_shell.py"
+    ],
+    "agent/tools/docker_tools.py": [],
+    "agent/tools/memory_tools.py": [],
+    "agent/tools/project_index.py": [],
+    "agent/tools/project_scanner.py": [],
+    "agent/tools/search_tools.py": [
+      "agent/tools/_shell.py"
+    ],
+    "agent/tools/system_tools.py": [
+      "agent/tools/_shell.py"
+    ],
+    "docker-nas/SKILL.md": [],
+    "docker-nas/references/agent.md": [],
+    "docker-nas/references/diagnostic.md": [],
+    "docker-nas/references/entorno.md": [],
+    "docker-nas/references/extend.md": [],
+    "docker-nas/references/nas-context.md": [],
+    "docker-nas/references/networking-install.md": [],
+    "docker-nas/references/networking-migration.md": [],
+    "docker-nas/references/networking-recovery.md": [],
+    "docker-nas/references/networking.md": [],
+    "docker-nas/references/seguridad.md": [],
+    "docker-nas/references/svc.md": [],
+    "docker/cli/lib/backup.sh": [],
+    "docker/cli/lib/catalog-sync.sh": [],
+    "docker/cli/lib/discovery.sh": [],
+    "docker/cli/lib/docker.sh": [],
+    "docker/cli/lib/extras.sh": [],
+    "docker/cli/lib/health.sh": [],
+    "docker/cli/lib/help.sh": [],
+    "docker/cli/lib/lobehub.sh": [],
+    "docker/cli/lib/menu.sh": [],
+    "docker/cli/lib/notifications.sh": [],
+    "docker/cli/svc.sh": [],
+    "docs/CODE-MAP.md": [],
+    "docs/PLAN-extends-common.md": [],
+    "docs/VS Code Remote.md": [],
+    "docs/architecture-consistency.md": [],
+    "docs/catalog-sync-pipeline.md": [],
+    "docs/cheatsheet.md": [],
+    "docs/dependency-map.md": [],
+    "docs/docker-boot-staged-guide.md": [],
+    "docs/docker-entorno.md": [],
+    "docs/esphome-meta-prompt.md": [],
+    "docs/framework-audit.md": [],
+    "docs/framework-knowledge-compilation.md": [],
+    "docs/github-cli.md": [],
+    "docs/ideas-decisions.md": [],
+    "docs/llm-context-bootstrap.md": [],
+    "docs/lobehub-mcp-gateway.md": [],
+    "docs/meta-prompt-unificar.md": [],
+    "docs/multi-nas-architecture.md": [],
+    "docs/nas-manual.md": [],
+    "docs/nas-mcp-gateway.md": [],
+    "docs/services/datasql-guide.md": [],
+    "docs/services/emqx-guide.md": [],
+    "docs/services/esphome-device-config.md": [],
+    "docs/services/esphome-guide.md": [],
+    "docs/services/esphome-pueba-handoff.md": [],
+    "docs/services/filebrowser-guide.md": [],
+    "docs/services/flowise-guide.md": [],
+    "docs/services/homeassistant-datasql-guide.md": [],
+    "docs/services/homeassistant-guide.md": [],
+    "docs/services/homepage-guide.md": [],
+    "docs/services/iobroker-guide.md": [],
+    "docs/services/jdownloader-guide.md": [],
+    "docs/services/karakeep-floccus-architecture.md": [],
+    "docs/services/karakeep-guide.md": [],
+    "docs/services/lobehub-guide.md": [],
+    "docs/services/n8n-guide.md": [],
+    "docs/services/nas-mcp-gateway-guide.md": [],
+    "docs/services/node-red-guide.md": [],
+    "docs/services/ntfy-guide.md": [],
+    "docs/services/openwa-guide.md": [],
+    "docs/services/vscode-guide.md": [],
+    "docs/session-handoff.md": [],
+    "docs/tools-index.md": [],
+    "docs/troubleshooting.md": [],
+    "install.sh": [],
+    "pyproject.toml": [],
+    "requirements.txt": [],
+    "setup": [],
+    "shell/init.sh": [],
+    "shell/lib/aliases.sh": [],
+    "shell/lib/completions.sh": [],
+    "shell/lib/docker.sh": [],
+    "shell/lib/git.sh": [],
+    "shell/lib/instal.sh": [],
+    "shell/lib/nav.sh": [],
+    "shell/lib/pipins.sh": [],
+    "shell/lib/prompt.sh": [],
+    "shell/lib/system.sh": [],
+    "shell/scripts/apply-restart-policy.sh": [],
+    "shell/scripts/boot-order.sh": [],
+    "shell/scripts/find-no-extends.sh": [],
+    "shell/scripts/install-boot-service.sh": [],
+    "shell/scripts/install-shutdown-service.sh": [],
+    "shell/scripts/install_docker.sh": [],
+    "shell/scripts/layers.conf.example": [],
+    "shell/scripts/restart-all.sh": [],
+    "shell/scripts/start-all.sh": [],
+    "shell/scripts/stop-all.sh": [],
+    "shell/scripts/stop-order.sh": [],
+    "skill-portable/nas-tools-index/README.md": [],
+    "skill-portable/nas-tools-index/SKILL.md": [],
+    "skill-portable/nas-tools-index/scripts/tool-lookup.sh": [],
+    "svc_py/README.md": [],
+    "svc_py/__init__.py": [],
+    "svc_py/__main__.py": [
+      "svc_py/app.py"
+    ],
+    "svc_py/app.py": [
+      "svc_py/commands/__init__.py",
+      "svc_py/core/bash_bridge.py",
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/__init__.py": [],
+    "svc_py/commands/backup.py": [
+      "svc_py/config.py",
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/catalog.py": [
+      "svc_py/config.py",
+      "svc_py/core/discovery.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/codemap.py": [
+      "svc_py/config.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/compose.py": [
+      "svc_py/config.py",
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/docker.py": [
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/health.py": [
+      "svc_py/config.py",
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/info.py": [
+      "svc_py/config.py",
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/menu.py": [
+      "svc_py/core/discovery.py",
+      "svc_py/core/docker.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/commands/scanner.py": [
+      "svc_py/config.py",
+      "svc_py/ui.py"
+    ],
+    "svc_py/config.py": [],
+    "svc_py/core/__init__.py": [],
+    "svc_py/core/bash_bridge.py": [
+      "svc_py/config.py"
+    ],
+    "svc_py/core/discovery.py": [
+      "svc_py/config.py"
+    ],
+    "svc_py/core/docker.py": [],
+    "svc_py/ui.py": [],
+    "systemd/README.md": [],
+    "systemd/docker-boot-staged.service.template": [],
+    "systemd/docker-shutdown-staged.service.template": [],
+    "systemd/lobehub-mcp-helper.env.example": [],
+    "systemd/lobehub-mcp-helper.service": [],
+    "systemd/nas-agent.service": [],
+    "systemd/nas-mcp-helper.env.example": [],
+    "systemd/nas-mcp-helper.service": [],
+    "tests/__init__.py": [],
+    "tests/conftest.py": [],
+    "tests/simulate_install_docker.sh": [],
+    "tests/test_classify.py": [
+      "agent/nas_agent.py"
+    ],
+    "tests/test_compose_generation.py": [
+      "agent/core/compose_manager.py",
+      "agent/tools/_shell.py"
+    ],
+    "tests/test_daemon.py": [
+      "agent/daemon.py"
+    ],
+    "tests/test_memory.py": [
+      "agent/core/_result.py",
+      "agent/core/memory.py"
+    ],
+    "tests/test_phase3.py": [
+      "agent/cache/store.py",
+      "agent/events/bus.py",
+      "agent/plugins/base.py",
+      "agent/plugins/loader.py"
+    ],
+    "tests/test_result.py": [
+      "agent/core/_result.py"
+    ],
+    "tests/test_tool_result.py": [
+      "agent/core/_result.py"
+    ],
+    "tests/test_validation.py": [
+      "agent/tools/_shell.py"
+    ],
+    "ui/requirements-setup.txt": [],
+    "ui/setup.py": [],
+    "uninstall.sh": []
+  }
+}

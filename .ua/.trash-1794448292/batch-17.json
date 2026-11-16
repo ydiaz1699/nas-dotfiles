@@ -1,0 +1,158 @@
+{
+  "nodes": [
+    {
+      "id": "config:agent/catalog/services/homepage/config/docker.yaml",
+      "type": "config",
+      "name": "agent/catalog/services/homepage/config/docker.yaml",
+      "filePath": "agent/catalog/services/homepage/config/docker.yaml",
+      "lineRange": [
+        1,
+        5
+      ],
+      "summary": "Configuración de integración Docker para Homepage que conecta el socket /var/run/docker.sock bajo el proveedor my-docker para autodescubrir servicios por labels.",
+      "tags": [
+        "homepage-config",
+        "docker-socket",
+        "autodescubrimiento",
+        "yaml"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:agent/catalog/services/homepage/config/services.yaml",
+      "type": "config",
+      "name": "agent/catalog/services/homepage/config/services.yaml",
+      "filePath": "agent/catalog/services/homepage/config/services.yaml",
+      "lineRange": [
+        1,
+        33
+      ],
+      "summary": "Definición manual de servicios nativos (systemd) para Homepage bajo la filosofía 'labels primero', registrando USB Manager (:8091) con un widget customapi sobre /usb/list.",
+      "tags": [
+        "homepage-config",
+        "servicios-nativos",
+        "usb-manager",
+        "widget-customapi"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:agent/catalog/services/homepage/config/settings.yaml",
+      "type": "config",
+      "name": "agent/catalog/services/homepage/config/settings.yaml",
+      "filePath": "agent/catalog/services/homepage/config/settings.yaml",
+      "lineRange": [
+        1,
+        31
+      ],
+      "summary": "Configuración general de apariencia y diseño de Homepage (título NAS Dashboard, tema oscuro slate, idioma español, layout en filas por categoría y proveedores de clima).",
+      "tags": [
+        "homepage-config",
+        "tema-layout",
+        "dashboard-nas",
+        "yaml"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:agent/catalog/services/homepage/config/widgets.yaml",
+      "type": "config",
+      "name": "agent/catalog/services/homepage/config/widgets.yaml",
+      "filePath": "agent/catalog/services/homepage/config/widgets.yaml",
+      "lineRange": [
+        1,
+        19
+      ],
+      "summary": "Configuración de widgets informativos de la barra superior de Homepage: monitor de recursos del NAS (CPU, memoria, disco), buscador DuckDuckGo y reloj/fecha en formato 24h.",
+      "tags": [
+        "homepage-config",
+        "widgets-sistema",
+        "monitoreo-recursos",
+        "yaml"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:agent/catalog/services/homepage/config/docker.yaml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Configura el conector Docker socket montado por el contenedor Homepage para leer labels de servicios."
+    },
+    {
+      "source": "config:agent/catalog/services/homepage/config/services.yaml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Provee el catálogo de servicios nativos mostrados por Homepage (USB Manager en :8091)."
+    },
+    {
+      "source": "config:agent/catalog/services/homepage/config/services.yaml",
+      "target": "service:agent/catalog/services/emqx/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta en comentarios que EMQX se descubre vía labels en su propio compose.yml."
+    },
+    {
+      "source": "config:agent/catalog/services/homepage/config/services.yaml",
+      "target": "service:agent/catalog/services/esphome/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta en comentarios que ESPHome se descubre vía labels en su propio compose.yml."
+    },
+    {
+      "source": "config:agent/catalog/services/homepage/config/services.yaml",
+      "target": "service:agent/catalog/services/filebrowser/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta en comentarios que File Browser se descubre vía labels en su propio compose.yml."
+    },
+    {
+      "source": "config:agent/catalog/services/homepage/config/services.yaml",
+      "target": "service:agent/catalog/services/datasql/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta en comentarios que pgAdmin (datasql) se descubre vía labels en su propio compose.yml."
+    },
+    {
+      "source": "config:agent/catalog/services/homepage/config/services.yaml",
+      "target": "service:agent/catalog/services/ntfy/compose.yml",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta en comentarios que ntfy se descubre vía labels en su propio compose.yml."
+    },
+    {
+      "source": "config:agent/catalog/services/homepage/config/settings.yaml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Configura el tema, idioma y grupos de layout (Redes, IoT, Archivos, Bases de datos, Sistema) de Homepage."
+    },
+    {
+      "source": "config:agent/catalog/services/homepage/config/widgets.yaml",
+      "target": "service:agent/catalog/services/homepage/compose.yml",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Configura los widgets globales de recursos, búsqueda y fecha en la barra superior de Homepage."
+    },
+    {
+      "source": "config:agent/catalog/services/homepage/config/settings.yaml",
+      "target": "document:docs/services/homepage-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Complementa la configuración documentada en la guía operativa de Homepage."
+    }
+  ]
+}

@@ -1,0 +1,496 @@
+{
+  "nodes": [
+    {
+      "id": "document:AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "AGENTS.md",
+      "lineRange": [
+        1,
+        310
+      ],
+      "summary": "Manual operativo principal para agentes de IA en nas-dotfiles: entorno del NAS, variables obligatorias, aliases, comandos svc, servicios desplegados, reglas estrictas, tabla auto-invoke de skills y pipeline documental.",
+      "tags": [
+        "manual-agentes",
+        "reglas-proyecto",
+        "comandos-svc",
+        "skills-auto-invoke"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:CONTRIBUTING.md",
+      "type": "document",
+      "name": "CONTRIBUTING.md",
+      "filePath": "CONTRIBUTING.md",
+      "lineRange": [
+        1,
+        478
+      ],
+      "summary": "Guía de desarrollo con patrones y pasos concretos para añadir comandos svc en Bash, tools @tool seguras para el agente, plugins, eventos en EventBus/MQTT, auditoría y convenciones del repositorio.",
+      "tags": [
+        "guia-desarrollo",
+        "patrones-extension",
+        "event-bus",
+        "seguridad-tools"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:GUIDE.md",
+      "type": "document",
+      "name": "GUIDE.md",
+      "filePath": "GUIDE.md",
+      "lineRange": [
+        1,
+        874
+      ],
+      "summary": "Documentación exhaustiva de usuario y arquitectura de nas-dotfiles que cubre filosofía, estructura de archivos, shell framework, dashboard, CLI svc, agente IA, seguridad, variables de entorno e instalación.",
+      "tags": [
+        "guia-completa",
+        "arquitectura-nas",
+        "shell-y-svc",
+        "agente-ia"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:INSTALL.md",
+      "type": "document",
+      "name": "INSTALL.md",
+      "filePath": "INSTALL.md",
+      "lineRange": [
+        1,
+        408
+      ],
+      "summary": "Guía detallada de instalación, actualización, desinstalación y resolución de problemas para desplegar nas-dotfiles en /nas-dotfiles mediante setup TUI, install.sh en Bash o pasos manuales.",
+      "tags": [
+        "guia-instalacion",
+        "troubleshooting",
+        "configuracion-bashrc",
+        "despliegue-nas"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "lineRange": [
+        1,
+        210
+      ],
+      "summary": "Portada y resumen general del proyecto nas-dotfiles: presenta las tres capas (shell, svc Bash/Python, agente IA y gateways MCP), uso rápido, árbol del repositorio, proveedores de IA y proyectos relacionados.",
+      "tags": [
+        "readme-principal",
+        "vision-general",
+        "uso-rapido",
+        "estructura-repo"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:TODO.md",
+      "type": "document",
+      "name": "TODO.md",
+      "filePath": "TODO.md",
+      "lineRange": [
+        1,
+        172
+      ],
+      "summary": "Hoja de ruta y backlog priorizado del proyecto con funcionalidades pendientes, descartadas y completadas para el CLI svc, agente Python, seguridad, observabilidad y backups.",
+      "tags": [
+        "roadmap",
+        "backlog-features",
+        "estado-proyecto",
+        "pendientes"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:install.sh",
+      "type": "file",
+      "name": "install.sh",
+      "filePath": "install.sh",
+      "lineRange": [
+        1,
+        418
+      ],
+      "summary": "Instalador interactivo en Bash (fallback de ./setup cuando no hay Python/TUI) que verifica pre-requisitos, detecta el sistema, recopila configuración, copia archivos a /nas-dotfiles, configura .bashrc, genera .env.agent e instala dependencias Python.",
+      "tags": [
+        "instalador-bash",
+        "configuracion-inicial",
+        "fallback-setup",
+        "script-sistema"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Script Bash con set -e organizado en 7 pasos interactivos y dos funciones auxiliares (_check_install_pkg y _configure_bashrc)."
+    },
+    {
+      "id": "function:install.sh:_check_install_pkg",
+      "type": "function",
+      "name": "_check_install_pkg",
+      "filePath": "install.sh",
+      "lineRange": [
+        33,
+        45
+      ],
+      "summary": "Comprueba mediante dpkg -l si un paquete Debian requerido u opcional está instalado y, si falta, intenta instalarlo silenciosamente con apt-get.",
+      "tags": [
+        "apt-get",
+        "verificacion-paquetes",
+        "pre-requisitos",
+        "funcion-bash"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:install.sh:_configure_bashrc",
+      "type": "function",
+      "name": "_configure_bashrc",
+      "filePath": "install.sh",
+      "lineRange": [
+        247,
+        310
+      ],
+      "summary": "Crea un respaldo con timestamp del archivo .bashrc indicado, depura líneas heredadas de versiones previas del framework e inserta la exportación de NAS_DOTFILES y el source de shell/init.sh.",
+      "tags": [
+        "configuracion-bashrc",
+        "migracion-shell",
+        "respaldo-seguro",
+        "funcion-bash"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:pyproject.toml",
+      "type": "config",
+      "name": "pyproject.toml",
+      "filePath": "pyproject.toml",
+      "lineRange": [
+        1,
+        19
+      ],
+      "summary": "Manifiesto del proyecto Python nas-dotfiles (Python >=3.10) que configura el descubrimiento de pruebas en pytest y el cálculo de cobertura sobre agent/ excluyendo agent/tools/_shell.py.",
+      "tags": [
+        "configuracion-python",
+        "pytest",
+        "cobertura-codigo",
+        "manifiesto-proyecto"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:requirements.txt",
+      "type": "document",
+      "name": "requirements.txt",
+      "filePath": "requirements.txt",
+      "lineRange": [
+        1,
+        18
+      ],
+      "summary": "Lista de dependencias Python requeridas por el agente IA: strands-agents[gemini], strands-agents-tools, python-frontmatter, PyYAML, rich y paho-mqtt opcional para eventos MQTT.",
+      "tags": [
+        "dependencias-python",
+        "pip-requirements",
+        "strands-agents",
+        "mqtt-opcional"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:uninstall.sh",
+      "type": "file",
+      "name": "uninstall.sh",
+      "filePath": "uninstall.sh",
+      "lineRange": [
+        1,
+        96
+      ],
+      "summary": "Script de desinstalación que respalda y elimina las referencias a nas-dotfiles en ~/.bashrc y /root/.bashrc, además de limpiar symlinks residuales de versiones anteriores.",
+      "tags": [
+        "desinstalador-bash",
+        "limpieza-bashrc",
+        "reversion-sistema",
+        "symlinks"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Script Bash con set -e que preserva respaldos .bak antes de ejecutar sed sobre los archivos .bashrc."
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:install.sh",
+      "target": "function:install.sh:_check_install_pkg",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "install.sh define la función _check_install_pkg para validar e instalar paquetes Debian."
+    },
+    {
+      "source": "file:install.sh",
+      "target": "function:install.sh:_configure_bashrc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1,
+      "description": "install.sh define la función _configure_bashrc para actualizar ~/.bashrc y /root/.bashrc."
+    },
+    {
+      "source": "file:install.sh",
+      "target": "document:requirements.txt",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Instala las dependencias Python declaradas en requirements.txt mediante pip o venv."
+    },
+    {
+      "source": "file:install.sh",
+      "target": "file:shell/init.sh",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Inyecta NAS_DOTFILES y source \"$NAS_DOTFILES/shell/init.sh\" en los archivos .bashrc."
+    },
+    {
+      "source": "file:install.sh",
+      "target": "file:setup",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Es invocado como fallback en Bash por el entrypoint ./setup cuando no hay Python TUI."
+    },
+    {
+      "source": "file:install.sh",
+      "target": "file:ui/setup.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Implementa en Bash el mismo flujo de instalación en 7 pasos que el instalador TUI ui/setup.py."
+    },
+    {
+      "source": "file:uninstall.sh",
+      "target": "file:install.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Revierte los cambios en .bashrc y symlinks realizados durante la instalación."
+    },
+    {
+      "source": "file:uninstall.sh",
+      "target": "file:shell/init.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Elimina la carga automática de shell/init.sh de los archivos .bashrc del usuario y root."
+    },
+    {
+      "source": "config:pyproject.toml",
+      "target": "file:agent/nas_agent.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Configura la medición de cobertura de código sobre el paquete agent/."
+    },
+    {
+      "source": "config:pyproject.toml",
+      "target": "file:tests/test_result.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6,
+      "description": "Define testpaths=['tests'] y patrones de descubrimiento para la suite pytest."
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:agent/nas_agent.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Provee strands-agents y rich utilizados por el agente principal agent/nas_agent.py."
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:agent/events/mqtt_listener.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Incluye la dependencia opcional paho-mqtt consumida por mqtt_listener.py."
+    },
+    {
+      "source": "document:requirements.txt",
+      "target": "file:agent/catalog/_index.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Incluye python-frontmatter y PyYAML para parsear fichas del catálogo."
+    },
+    {
+      "source": "document:AGENTS.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el uso obligatorio de aliases y comandos globales/por servicio de svc."
+    },
+    {
+      "source": "document:AGENTS.md",
+      "target": "file:shell/scripts/boot-order.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el arranque escalonado por capas ejecutado por boot-order.sh."
+    },
+    {
+      "source": "document:AGENTS.md",
+      "target": "document:docs/docker-boot-staged-guide.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Enlaza a la guía completa de arranque escalonado del NAS."
+    },
+    {
+      "source": "document:AGENTS.md",
+      "target": "file:agent/nas_agent.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Establece reglas estrictas y contexto del agente IA del proyecto."
+    },
+    {
+      "source": "document:CONTRIBUTING.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica el procedimiento paso a paso para agregar nuevos comandos a svc.sh."
+    },
+    {
+      "source": "document:CONTRIBUTING.md",
+      "target": "file:agent/tools/_shell.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta safe_run, validate_service_name y readonly_guard para crear tools seguras."
+    },
+    {
+      "source": "document:CONTRIBUTING.md",
+      "target": "file:agent/tools/_audit.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica cómo configurar y registrar auditoría de llamadas de herramientas."
+    },
+    {
+      "source": "document:CONTRIBUTING.md",
+      "target": "file:agent/events/bus.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la emisión y suscripción de eventos en el EventBus interno."
+    },
+    {
+      "source": "document:CONTRIBUTING.md",
+      "target": "file:agent/plugins/base.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Muestra la anatomía de un plugin heredando de BasePlugin."
+    },
+    {
+      "source": "document:GUIDE.md",
+      "target": "file:shell/init.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la arquitectura del shell framework y su carga desde shell/init.sh."
+    },
+    {
+      "source": "document:GUIDE.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta en detalle los comandos de administración Docker del CLI svc."
+    },
+    {
+      "source": "document:GUIDE.md",
+      "target": "file:agent/nas_agent.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica la arquitectura de prompt, sesiones, memoria y herramientas del agente IA."
+    },
+    {
+      "source": "document:INSTALL.md",
+      "target": "file:install.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la instalación sin TUI ejecutando install.sh."
+    },
+    {
+      "source": "document:INSTALL.md",
+      "target": "file:uninstall.sh",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta el proceso de desinstalación mediante uninstall.sh."
+    },
+    {
+      "source": "document:INSTALL.md",
+      "target": "file:setup",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Documenta la instalación rápida en 3 comandos con ./setup."
+    },
+    {
+      "source": "document:INSTALL.md",
+      "target": "file:ui/setup.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Explica el wizard TUI interactivo y los archivos generados durante el setup."
+    },
+    {
+      "source": "document:README.md",
+      "target": "document:GUIDE.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Remite a GUIDE.md para la documentación detallada de cada componente."
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:svc_py/app.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Presenta el CLI Python alternativo (NAS_CLI=python) con Rich e InquirerPy."
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:agent/daemon.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Resume el funcionamiento del daemon 24/7 bajo systemd."
+    },
+    {
+      "source": "document:TODO.md",
+      "target": "file:docker/cli/svc.sh",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Registra las mejoras completadas y pendientes del CLI svc."
+    },
+    {
+      "source": "document:TODO.md",
+      "target": "file:agent/nas_agent.py",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5,
+      "description": "Registra el roadmap de mejoras para el agente Python."
+    }
+  ]
+}

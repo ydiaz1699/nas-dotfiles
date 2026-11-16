@@ -1,0 +1,145 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 4,
+  "filesSkipped": [],
+  "filesUnreadable": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 4,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 4
+    }
+  },
+  "results": [
+    {
+      "path": "agent/catalog/services/openwa/.env.example",
+      "language": "config",
+      "fileCategory": "config",
+      "totalLines": 20,
+      "nonEmptyLines": 17,
+      "definitions": [
+        {
+          "name": "API_MASTER_KEY",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 8,
+          "endLine": 8
+        },
+        {
+          "name": "API_KEY_PEPPER",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 14,
+          "endLine": 14
+        },
+        {
+          "name": "ENGINE_TYPE",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 20,
+          "endLine": 20
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 3
+      }
+    },
+    {
+      "path": "agent/catalog/services/openwa/compose.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 114,
+      "nonEmptyLines": 113,
+      "sections": [
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 11
+        },
+        {
+          "heading": "networks",
+          "level": 1,
+          "line": 112
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "agent/catalog/services/openwa/ficha.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 87,
+      "nonEmptyLines": 79,
+      "sections": [
+        {
+          "heading": "OpenWA",
+          "level": 1,
+          "line": 55
+        },
+        {
+          "heading": "Resumen de arquitectura",
+          "level": 2,
+          "line": 61
+        },
+        {
+          "heading": "Excepción de seguridad (importante)",
+          "level": 2,
+          "line": 74
+        },
+        {
+          "heading": "Aviso de uso",
+          "level": 2,
+          "line": 83
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": "agent/catalog/services/openwa/wa-send.sh",
+      "language": "shell",
+      "fileCategory": "script",
+      "totalLines": 69,
+      "nonEmptyLines": 58,
+      "functions": [
+        {
+          "name": "die",
+          "startLine": 27,
+          "endLine": 27,
+          "params": []
+        },
+        {
+          "name": "cleanup",
+          "startLine": 50,
+          "endLine": 50,
+          "params": []
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    }
+  ]
+}

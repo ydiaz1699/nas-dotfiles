@@ -1,0 +1,14 @@
+{
+  "projectRoot": "C:/Users/Alex/Desktop/1-Github/nas-dotfiles",
+  "batchFiles": [
+    {
+      "path": "agent/mcp/Dockerfile",
+      "language": "dockerfile",
+      "sizeLines": 12,
+      "fileCategory": "infra"
+    }
+  ],
+  "batchImportData": {
+    "agent/mcp/Dockerfile": []
+  }
+}
